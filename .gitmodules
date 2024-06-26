@@ -1,0 +1,3 @@
+[submodule "StrikeEngine/vendor/spdlog"]
+	path = StrikeEngine/vendor/spdlog
+	url = https://github.com/gabime/spdlog
