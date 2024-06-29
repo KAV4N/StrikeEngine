@@ -4,7 +4,8 @@
 
 extern StrikeEngine::Application* StrikeEngine::CreateApplication();
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
 
 	StrikeEngine::Log::Init();
 	STRIKE_CORE_WARN("INIT");

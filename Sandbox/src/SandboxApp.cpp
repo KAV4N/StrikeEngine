@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include <StrikeEngine.h>
 
 class Sandbox : public StrikeEngine::Application {

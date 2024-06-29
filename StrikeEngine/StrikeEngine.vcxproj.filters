@@ -1,42 +1,75 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{64FBD71A-50F4-F66C-7926-DCF1657ED678}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="StrikeEngine">
+      <UniqueIdentifier>{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StrikeEngine\Events">
+      <UniqueIdentifier>{119F263F-7D00-044D-066E-4AFF72CE3A0C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\StrikeEngine\Core.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\StrikeEngine\Application.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\StrikeEngine.h" />
+    <ClInclude Include="src\StrikeEngine\Application.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Core.h">
+      <Filter>StrikeEngine</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\EntryPoint.h">
-      <Filter>Header Files</Filter>
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Events\ApplicationEvent.h">
+      <Filter>StrikeEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Events\Event.h">
+      <Filter>StrikeEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h">
+      <Filter>StrikeEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h">
+      <Filter>StrikeEngine\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Log.h">
-      <Filter>Header Files</Filter>
+      <Filter>StrikeEngine</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Window.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\strikepch.h" />
+    <ClInclude Include="LayerStack.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Layer.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Application.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Log.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\strikepch.cpp" />
+    <ClCompile Include="LayerStack.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Layer.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
