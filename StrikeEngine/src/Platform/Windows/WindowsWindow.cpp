@@ -5,6 +5,7 @@
 #include "StrikeEngine/Events/MouseEvent.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
 
+#include <glad/glad.h>
 
 namespace StrikeEngine {
 
@@ -40,7 +41,6 @@ namespace StrikeEngine {
 
 		if (!s_GLFWInitialized)
 		{
-
 			int success = glfwInit();
 			STRIKE_CORE_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
@@ -49,6 +49,10 @@ namespace StrikeEngine {
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_Window);
+
+		int status = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+		STRIKE_CORE_ASSERT(status, "Failed to init Glad!");
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 

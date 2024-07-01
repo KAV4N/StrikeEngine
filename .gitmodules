@@ -4,3 +4,6 @@
 [submodule "StrikeEngine/vendor/GLFW"]
 	path = StrikeEngine/vendor/GLFW
 	url = https://github.com/glfw/glfw.git
+[submodule "StrikeEngine/vendor/imgui"]
+	path = StrikeEngine/vendor/imgui
+	url = https://github.com/ocornut/imgui

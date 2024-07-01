@@ -3,6 +3,8 @@
 #include "StrikeEngine/Window.h"
 #include <GLFW/glfw3.h>
 
+
+
 namespace StrikeEngine {
 
 	class WindowsWindow : public Window

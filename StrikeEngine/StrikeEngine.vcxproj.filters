@@ -4,6 +4,9 @@
     <Filter Include="Platform">
       <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform\OpenGL">
+      <UniqueIdentifier>{1E7D2C1D-8A08-9AE1-9319-1DD6FF23F6E1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Platform\Windows">
       <UniqueIdentifier>{64FBD71A-50F4-F66C-7926-DCF1657ED678}</UniqueIdentifier>
     </Filter>
@@ -13,8 +16,17 @@
     <Filter Include="StrikeEngine\Events">
       <UniqueIdentifier>{119F263F-7D00-044D-066E-4AFF72CE3A0C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="StrikeEngine\ImGui">
+      <UniqueIdentifier>{B736A1D3-A31A-6229-0C7B-5C7CF87D4CAB}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRendererLoader.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>Platform\Windows</Filter>
     </ClInclude>
@@ -40,6 +52,15 @@
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h">
       <Filter>StrikeEngine\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
+      <Filter>StrikeEngine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Layer.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\LayerStack.h">
+      <Filter>StrikeEngine</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Log.h">
       <Filter>StrikeEngine</Filter>
     </ClInclude>
@@ -47,29 +68,29 @@
       <Filter>StrikeEngine</Filter>
     </ClInclude>
     <ClInclude Include="src\strikepch.h" />
-    <ClInclude Include="LayerStack.h">
-      <Filter>StrikeEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="Layer.h">
-      <Filter>StrikeEngine</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Application.cpp">
       <Filter>StrikeEngine</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
+      <Filter>StrikeEngine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Layer.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\LayerStack.cpp">
+      <Filter>StrikeEngine</Filter>
+    </ClCompile>
     <ClCompile Include="src\StrikeEngine\Log.cpp">
       <Filter>StrikeEngine</Filter>
     </ClCompile>
     <ClCompile Include="src\strikepch.cpp" />
-    <ClCompile Include="LayerStack.cpp">
-      <Filter>StrikeEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="Layer.cpp">
-      <Filter>StrikeEngine</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
