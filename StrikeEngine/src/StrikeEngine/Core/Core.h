@@ -1,13 +1,23 @@
 #pragma once
 
 #ifdef PLATFORM_WINDOWS
-	#ifdef BUILD_DLL
-		#define STRIKE_API __declspec(dllexport)
+	#if STRIKE_DYNAMIC_LINK
+		#ifdef BUILD_DLL
+			#define STRIKE_API __declspec(dllexport)
+		#else
+			#define STRIKE_API __declspec(dllimport)
+		#endif
 	#else
-		#define STRIKE_API __declspec(dllimport)
+		#define STRIKE_API
 	#endif
 #else
 	#error Only Windows OS is supported!
+#endif
+
+
+
+#ifdef STRIKE_DEBUG
+	#define STRIKE_ENABLE_ASSERTS
 #endif
 
 #ifdef STRIKE_ENABLE_ASSERTS

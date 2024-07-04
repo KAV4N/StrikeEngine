@@ -1,10 +1,15 @@
 #pragma once
 
-#include "StrikeEngine/Application.h"
-#include "StrikeEngine/Layer.h"
-#include "StrikeEngine/Log.h"
+#include "StrikeEngine/Core/Application.h"
+#include "StrikeEngine/Core/Layer.h"
+#include "StrikeEngine/Core/Log.h"
+
+#include "StrikeEngine/Core/Input.h"
+#include "StrikeEngine/Events/KeyCodes.h"
+
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
 // ENTRY POINT ---------------------
-#include "StrikeEngine/EntryPoint.h"
+#include "StrikeEngine/Core/EntryPoint.h"
 //----------------------------------

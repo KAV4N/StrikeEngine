@@ -1,7 +1,7 @@
 #pragma once
 
 #include "strikepch.h"
-#include "StrikeEngine/Core.h"
+#include "StrikeEngine/Core/Core.h"
 
 
 namespace StrikeEngine 
@@ -48,12 +48,14 @@ namespace StrikeEngine
 
 	class EventDispatcher 
 	{
-		template<typename T> using EventFn = std::function<bool(T&)>;
+		template<typename T> 
+		using EventFn = std::function<bool(T&)>;
 	public:
 		EventDispatcher(Event& event)
 			: m_Event(event) {}
 
-		template<typename T> bool Dispatch(EventFn<T> func) 
+		template<typename T> 
+		bool Dispatch(EventFn<T> func) 
 		{
 			if (m_Event.GetEventType() == T::GetStaticType()) 
 			{

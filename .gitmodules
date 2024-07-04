@@ -7,3 +7,6 @@
 [submodule "StrikeEngine/vendor/imgui"]
 	path = StrikeEngine/vendor/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "StrikeEngine/vendor/glm"]
+	path = StrikeEngine/vendor/glm
+	url = https://github.com/g-truc/glm

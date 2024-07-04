@@ -9,6 +9,7 @@ includeDir = {}
 includeDir["GLFW"] = "StrikeEngine/vendor/GLFW/include"
 includeDir["Glad"] = "StrikeEngine/vendor/Glad/include"
 includeDir["ImGui"] = "StrikeEngine/vendor/imgui"
+includeDir["glm"] = "StrikeEngine/vendor/glm"
 
 include "StrikeEngine/vendor/GLFW"
 include "StrikeEngine/vendor/Glad"
@@ -16,18 +17,27 @@ include "StrikeEngine/vendor/imgui"
 
 project "StrikeEngine"
     location "StrikeEngine"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputDir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
 
     pchheader "strikepch.h"
     pchsource "StrikeEngine/src/strikepch.cpp"
-        
+
+    defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
     files {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/vendor/glm/glm/**.hpp",
+        "%{prj.name}/vendor/glm/glm/**.inl"
     }
     
     includedirs {
@@ -35,7 +45,8 @@ project "StrikeEngine"
         "%{prj.name}/vendor/spdlog/include",
         "%{includeDir.GLFW}",
         "%{includeDir.Glad}",
-        "%{includeDir.ImGui}"
+        "%{includeDir.ImGui}",
+        "%{includeDir.glm}"
     }
 
     links {
@@ -48,7 +59,6 @@ project "StrikeEngine"
 
     filter "system:windows"
         cppdialect "C++17"
-        staticruntime "On"
         systemversion "latest"
 
         defines {
@@ -56,36 +66,32 @@ project "StrikeEngine"
             "BUILD_DLL",
             "GLFW_INCLUDE_NONE"
         }
-
+        --[[
         postbuildcommands {
             "copy /B /Y ..\\bin\\" .. outputDir .. "\\StrikeEngine\\StrikeEngine.dll ..\\bin\\" .. outputDir .. "\\Sandbox\\ > nul"
-        }
+        }--]]
 
     filter "configurations:Debug"
         defines "STRIKE_DEBUG"
-        buildoptions "/MDd"
-        staticruntime "off"
         runtime "Debug"
-        symbols "On"
+        symbols "on"
 
     filter "configurations:Release"
         defines "STRIKE_RELEASE"
-        buildoptions "/MD"
-        staticruntime "off"
         runtime "Release"
-        optimize "On"
+        optimize "on"
 
     filter "configurations:Dist"
         defines "STRIKE_DIST"
-        buildoptions "/MD"
-        staticruntime "off"
         runtime "Release"
-        optimize "On"
+        optimize "on"
 
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputDir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
@@ -99,7 +105,9 @@ project "Sandbox"
 
     includedirs {
         "StrikeEngine/vendor/spdlog/include",
-        "StrikeEngine/src"
+        "StrikeEngine/src",
+        "%{includeDir.glm}",
+        "%{includeDir.ImGui}"
     }
 
     links {
@@ -108,28 +116,24 @@ project "Sandbox"
 
     filter "system:windows"
         cppdialect "C++17"
-        staticruntime "On"
+        staticruntime "on"
         systemversion "latest"
 
         defines {
             "PLATFORM_WINDOWS"
         }
 
-        postbuildcommands {
-            "copy /B /Y ..\\bin\\" .. outputDir .. "\\StrikeEngine\\StrikeEngine.dll ..\\bin\\" .. outputDir .. "\\Sandbox\\ > nul"
-        }
-
     filter "configurations:Debug"
         defines "STRIKE_DEBUG"
-        buildoptions "/MDd"
-        symbols "On"
+        runtime "Debug"
+        symbols "on"
 
     filter "configurations:Release"
         defines "STRIKE_RELEASE"
-        buildoptions "/MD"
-        optimize "On"
+        runtime "Release"
+        optimize "on"
 
     filter "configurations:Dist"
         defines "STRIKE_DIST"
-        buildoptions "/MD"
-        optimize "On"
+        runtime "Release"
+        optimize "on"

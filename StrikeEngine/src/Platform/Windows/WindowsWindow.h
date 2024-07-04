@@ -1,8 +1,9 @@
 #pragma once
 
-#include "StrikeEngine/Window.h"
-#include <GLFW/glfw3.h>
+#include "StrikeEngine/Core/Window.h"
+#include "StrikeEngine/Renderer/RendererContext.h"
 
+#include <GLFW/glfw3.h>
 
 
 namespace StrikeEngine {
@@ -22,11 +23,15 @@ namespace StrikeEngine {
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
+
+		inline virtual void* GetNativeWindow() const { return m_Window; };
+
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
+		RendererContext* m_Context;
 
 		struct WindowData
 		{

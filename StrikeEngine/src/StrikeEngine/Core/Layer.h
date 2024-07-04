@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StrikeEngine/Core.h"
+#include "StrikeEngine/Core/Core.h"
 #include "StrikeEngine/Events/Event.h"
 
 namespace StrikeEngine {
@@ -14,6 +14,7 @@ namespace StrikeEngine {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
+		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 
 		inline const std::string& GetName() const { return m_DebugName; }

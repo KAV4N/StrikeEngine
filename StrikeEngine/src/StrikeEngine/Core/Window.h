@@ -2,7 +2,7 @@
 
 #include "strikepch.h"
 
-#include "StrikeEngine/Core.h"
+#include "StrikeEngine/Core/Core.h"
 #include "StrikeEngine/Events/Event.h"
 
 namespace StrikeEngine
@@ -38,6 +38,8 @@ namespace StrikeEngine
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
+
+		virtual void* GetNativeWindow() const = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};

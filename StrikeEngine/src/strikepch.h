@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "StrikeEngine/Log.h"
+#include "StrikeEngine/Core/Log.h"
 
 #ifdef PLATFORM_WINDOWS
 	#include <Windows.h>
