@@ -1,9 +1,8 @@
 #pragma once
 
 #include "StrikeEngine/Core/Window.h"
-#include "StrikeEngine/Renderer/RendererContext.h"
-
 #include <GLFW/glfw3.h>
+#include <StrikeEngine/Renderer/RenderManager.h>
 
 
 namespace StrikeEngine {
@@ -31,7 +30,7 @@ namespace StrikeEngine {
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
-		RendererContext* m_Context;
+		RenderManager* m_RenderManager;
 
 		struct WindowData
 		{
@@ -41,7 +40,7 @@ namespace StrikeEngine {
 
 			EventCallbackFn EventCallback;
 		};
-
+		Model* m_Model; // ONLY FOR TESTING
 		WindowData m_Data;
 	};
 

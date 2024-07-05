@@ -4,9 +4,7 @@
 #include "StrikeEngine/Events/KeyEvent.h"
 #include "StrikeEngine/Events/MouseEvent.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
-
-#include "Platform/OpenGL/OpenGLContext.h"
-
+#include "StrikeEngine/Core/ObjectLoader.h"
 
 
 namespace StrikeEngine {
@@ -55,11 +53,24 @@ namespace StrikeEngine {
 		}
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-
-		m_Context = new OpenGLContext(m_Window);
-		m_Context->Init();
-
 		
+		m_RenderManager = new RenderManager(static_cast<GLFWwindow*>(m_Window));
+		m_RenderManager->Init();
+
+
+		/*test*/
+		float vertices[] = {
+				-0.5f, 0.5f, 0.f,
+				-0.5f, -0.5f, 0.f,
+				0.5f, -0.5f, 0.f,
+				0.5f, -0.5f, 0.f,
+				0.5f, 0.5f, 0.f,
+				-0.5f, 0.5f, 0.f
+		};
+		
+		ObjectLoader* objectLoader = new ObjectLoader();
+		m_Model = objectLoader->LoadModel(vertices, 18);
+
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
@@ -177,9 +188,9 @@ namespace StrikeEngine {
 
 	void WindowsWindow::OnUpdate()
 	{
+		m_RenderManager->Render(m_Model);
 		glfwPollEvents();
-		m_Context->SwapBuffers();
-
+		m_RenderManager->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)

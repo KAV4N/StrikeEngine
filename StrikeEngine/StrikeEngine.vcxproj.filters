@@ -1347,6 +1347,12 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\RenderManager.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h" />
+    <ClInclude Include="src\StrikeEngine\Entity\Model.h" />
+    <ClInclude Include="src\StrikeEngine\Core\ObjectLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1376,5 +1382,7 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\RenderManager.cpp" />
+    <ClCompile Include="src\StrikeEngine\Core\ObjectLoader.cpp" />
   </ItemGroup>
 </Project>

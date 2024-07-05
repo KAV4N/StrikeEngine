@@ -143,7 +143,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\StrikeEngine.h" />
@@ -154,14 +153,19 @@
     <ClInclude Include="src\StrikeEngine\Core\Layer.h" />
     <ClInclude Include="src\StrikeEngine\Core\LayerStack.h" />
     <ClInclude Include="src\StrikeEngine\Core\Log.h" />
+    <ClInclude Include="src\StrikeEngine\Core\ObjectLoader.h" />
     <ClInclude Include="src\StrikeEngine\Core\Window.h" />
+    <ClInclude Include="src\StrikeEngine\Entity\Model.h" />
     <ClInclude Include="src\StrikeEngine\Events\ApplicationEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\Event.h" />
     <ClInclude Include="src\StrikeEngine\Events\KeyCodes.h" />
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\RendererContext.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\RenderManager.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
     <ClInclude Include="src\strikepch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
     <ClInclude Include="vendor\glm\glm\detail\_features.hpp" />
@@ -581,13 +585,14 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\RenderManager.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\Application.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\Layer.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp" />
+    <ClCompile Include="src\StrikeEngine\Core\ObjectLoader.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\strikepch.cpp">
