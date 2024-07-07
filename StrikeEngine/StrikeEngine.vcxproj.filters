@@ -16,11 +16,20 @@
     <Filter Include="src\StrikeEngine\Core">
       <UniqueIdentifier>{1CB117E7-881D-D3E1-5111-6B3FBD3CF549}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\StrikeEngine\Entity">
+      <UniqueIdentifier>{10DA6110-7C11-AAA7-851B-0ECBF1D1D0A0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\StrikeEngine\Events">
       <UniqueIdentifier>{A879EA10-14B1-32A8-1DBB-96CB897159A1}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\StrikeEngine\ImGui">
       <UniqueIdentifier>{6E9A78CA-5A94-A11C-4301-382D2F9A0789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StrikeEngine\Renderer">
+      <UniqueIdentifier>{6A926AEC-D654-9E76-1F05-2D038B067754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StrikeEngine\Scene">
+      <UniqueIdentifier>{619228CB-4D8C-511D-36F9-E72D2292B789}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
@@ -75,8 +84,14 @@
     <ClInclude Include="src\StrikeEngine\Core\Log.h">
       <Filter>src\StrikeEngine\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h">
+      <Filter>src\StrikeEngine\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Core\Window.h">
       <Filter>src\StrikeEngine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\Entity\Model.h">
+      <Filter>src\StrikeEngine\Entity</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Events\ApplicationEvent.h">
       <Filter>src\StrikeEngine\Events</Filter>
@@ -95,6 +110,18 @@
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\RenderManager.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\strikepch.h">
       <Filter>src</Filter>
@@ -1347,12 +1374,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\RenderManager.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h" />
-    <ClInclude Include="src\StrikeEngine\Entity\Model.h" />
-    <ClInclude Include="src\StrikeEngine\Core\ObjectLoader.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\ShaderManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1373,16 +1395,21 @@
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp">
       <Filter>src\StrikeEngine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\ObjectLoader.cpp">
+      <Filter>src\StrikeEngine\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\RenderManager.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\RenderManager.cpp" />
-    <ClCompile Include="src\StrikeEngine\Core\ObjectLoader.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp" />
   </ItemGroup>
 </Project>

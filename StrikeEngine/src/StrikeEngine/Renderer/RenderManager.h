@@ -3,25 +3,31 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <gl/GL.h>
-#include <StrikeEngine/Entity/Model.h>
+#include <StrikeEngine/Renderer/Entity/Model.h>
 
 class GLFWwindow;
 
 namespace StrikeEngine
 {
-	class RenderManager
-	{
-	public:
-		RenderManager(GLFWwindow* windowHandle);
-		~RenderManager();
-		virtual void Init();
-		virtual void SwapBuffers();
-		virtual void Render(Model* model);
-		virtual void Clear();
-		virtual void CleanUp();
-		
-	private:
-		GLFWwindow* m_WindowHandle;
-	};
+    class RenderManager
+    {
+    public:
+        static RenderManager& Get();
+        static void Create();
+        static void Shutdown();
+        static void Render(Model* model);
+        static void Clear();
+        void Init();
+        
+        
 
+    private:
+        RenderManager() = default;
+        ~RenderManager() = default;
+
+        RenderManager(const RenderManager&) = delete;
+        RenderManager& operator=(const RenderManager&) = delete;
+
+        static RenderManager* s_Instance;
+    };
 }

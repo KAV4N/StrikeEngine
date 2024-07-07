@@ -1,53 +1,51 @@
 #include "strikepch.h"
 #include "RenderManager.h"
-
+#include "ShaderManager.h"
 
 namespace StrikeEngine
 {
-	RenderManager::RenderManager(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
-	{
-		STRIKE_CORE_ASSERT(windowHandle, "WindowHandle is null!!");
-	}
+    RenderManager* RenderManager::s_Instance = nullptr;
 
-	RenderManager::~RenderManager()
-	{
-	}
+    RenderManager& RenderManager::Get()
+    {
+        if (s_Instance == nullptr)
+        {
+            STRIKE_CORE_ASSERT(true, "instance was not created!");
+        }
+        return *s_Instance;
+    }
 
+    void RenderManager::Create()
+    {
+        if (s_Instance == nullptr)
+        {
+            s_Instance = new RenderManager();
+        }
 
-	void RenderManager::Init()
-	{
-		glfwMakeContextCurrent(m_WindowHandle);
+    }
 
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		STRIKE_CORE_ASSERT(status, "Failed to init Glad!");
+    void RenderManager::Shutdown()
+    {
 
+    }
 
-	}
-	void RenderManager::SwapBuffers()
-	{
-		glfwSwapBuffers(m_WindowHandle);
-	}
+    void RenderManager::Init()
+    {
+        ShaderManager::Create();
+    }
 
-	void RenderManager::Render(Model* model)
-	{
-		Clear();
-		glBindVertexArray(model->GetId());
-		glEnableVertexAttribArray(0);
-		glDrawArrays(GL_TRIANGLES, 0, model->GetVertexCount());
-		glDisableVertexAttribArray(0);
-		glBindVertexArray(0);
-	}
+    void RenderManager::Render(Model* model)
+    {
+        Clear();
+        glBindVertexArray(model->GetId());
+        glEnableVertexAttribArray(0);
+        glDrawArrays(GL_TRIANGLES, 0, model->GetVertexCount());
+        glDisableVertexAttribArray(0);
+        glBindVertexArray(0);
+    }
 
-
-	void RenderManager::Clear()
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-
-
-	void RenderManager::CleanUp()
-	{
-
-	}
+    void RenderManager::Clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 }

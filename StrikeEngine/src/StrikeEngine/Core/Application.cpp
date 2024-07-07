@@ -2,11 +2,13 @@
 #include "Application.h"
 
 #include "StrikeEngine/Core/Log.h"
-
+#include "StrikeEngine/Renderer/RenderManager.h"
+#include "StrikeEngine/Renderer/ObjectLoader.h"
 
 #include "Input.h"
 
 #include <glad/glad.h>
+
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -22,7 +24,8 @@ namespace StrikeEngine
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-
+		RenderManager::Create();
+		RenderManager::Get().Init();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -72,6 +75,20 @@ namespace StrikeEngine
 
 	void Application::Run() 
 	{
+		// TEST RENDER
+		float vertices[] = {
+				-0.5f, 0.5f, 0.f,
+				-0.5f, -0.5f, 0.f,
+				0.5f, -0.5f, 0.f,
+				0.5f, -0.5f, 0.f,
+				0.5f, 0.5f, 0.f,
+				-0.5f, 0.5f, 0.f
+		};
+
+		ObjectLoader* objectLoader = new ObjectLoader();
+		Model* model = objectLoader->LoadModel(vertices, 18);
+
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		while (m_Running)
 		{
@@ -84,6 +101,9 @@ namespace StrikeEngine
 				layer->OnUpdate();
 				layer->OnImGuiRender();
 			}
+
+			RenderManager::Render(model);
+
 			m_ImGuiLayer->End();
 			m_Window->OnUpdate();
 		}

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <glad/glad.h>
-#include "StrikeEngine/Entity/Model.h"
+#include <StrikeEngine/Renderer/Entity/Model.h>
 
 namespace StrikeEngine {
     class ObjectLoader
