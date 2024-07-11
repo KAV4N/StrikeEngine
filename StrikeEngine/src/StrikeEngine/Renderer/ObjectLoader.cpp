@@ -4,12 +4,22 @@
 #include <glad/glad.h>
 
 namespace StrikeEngine {
-    Model* ObjectLoader::LoadModel(float vertices[], size_t vertexCount)
+    RawModel* ObjectLoader::LoadModel(float vertices[], size_t verticesSize, int indices[], size_t indicesSize)
     {
-        int id = CreateVertexArrayObj();
-        StoreDataInAttribList(0, 3, vertices, vertexCount * 3); 
-        unbind();
-        return new Model(id, static_cast<int>(vertexCount));
+        int vao = CreateVertexArrayObj();
+        BindIndicesBuffer(indices, indicesSize);
+        StoreDataInAttribList(0, 3, vertices, verticesSize);
+        Unbind();
+        return new RawModel(vao, static_cast<int>(indicesSize));
+    }
+
+    void ObjectLoader::BindIndicesBuffer(int indices[], size_t indexCount)
+    {
+        unsigned int vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
+        m_IndexBufferObjs.push_back(vbo);
     }
 
     int ObjectLoader::CreateVertexArrayObj()
@@ -32,12 +42,12 @@ namespace StrikeEngine {
         m_VertexBufferObjs.push_back(vbo);
     }
 
-    void ObjectLoader::unbind()
+    void ObjectLoader::Unbind()
     {
         glBindVertexArray(0);
     }
 
-    void ObjectLoader::cleanup()
+    void ObjectLoader::Cleanup()
     {
         for (unsigned int vao : m_VertexArrayObjs)
         {
@@ -52,4 +62,6 @@ namespace StrikeEngine {
         m_VertexArrayObjs.clear();
         m_VertexBufferObjs.clear();
     }
+
+
 }

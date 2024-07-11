@@ -2,7 +2,7 @@
 
 #include "StrikeEngine/Core/Window.h"
 #include <GLFW/glfw3.h>
-#include <StrikeEngine/Renderer/RenderManager.h>
+#include <StrikeEngine/Renderer/Renderer.h>
 
 
 namespace StrikeEngine {
@@ -30,7 +30,6 @@ namespace StrikeEngine {
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
-		RenderManager* m_RenderManager;
 
 		struct WindowData
 		{
@@ -40,7 +39,6 @@ namespace StrikeEngine {
 
 			EventCallbackFn EventCallback;
 		};
-		Model* m_Model; // ONLY FOR TESTING
 		WindowData m_Data;
 	};
 

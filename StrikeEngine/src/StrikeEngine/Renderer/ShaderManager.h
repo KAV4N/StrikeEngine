@@ -2,30 +2,27 @@
 
 #include <string>
 #include <unordered_map>
+#include "Shader.h"
 
 namespace StrikeEngine {
 
-	class Shader {
-		// Shader class implementation
-	};
+    class ShaderManager {
+    public:
+        static void Create();
+        static ShaderManager* Get();
+        static void Shutdown();
 
-	class ShaderManager {
-	public:
-		static void Create();
-		static ShaderManager* Get();
-		static void Shutdown();
+        Shader* LoadShaderFromFile(const std::string& name, const std::string& shaderPath, const unsigned int shaderType);
+        Shader* GetShader(const std::string& name);
+        void Bind();
 
-		Shader* GetShader(const std::string& name);
+    private:
+        ShaderManager();
+        ~ShaderManager();
 
-	private:
-		ShaderManager() = default;
-		~ShaderManager() = default;
+        static ShaderManager* s_Instance;
+        unsigned int m_ProgramID;
+        std::unordered_map<std::string, Shader*> m_Shaders;
+    };
 
-		ShaderManager(const ShaderManager&) = delete;
-		ShaderManager& operator=(const ShaderManager&) = delete;
-
-		static ShaderManager* s_Instance;
-
-		std::unordered_map<std::string, Shader*> m_Shaders;
-	};
 }

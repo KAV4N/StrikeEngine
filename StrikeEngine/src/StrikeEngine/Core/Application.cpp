@@ -2,8 +2,9 @@
 #include "Application.h"
 
 #include "StrikeEngine/Core/Log.h"
-#include "StrikeEngine/Renderer/RenderManager.h"
+#include "StrikeEngine/Renderer/Renderer.h"
 #include "StrikeEngine/Renderer/ObjectLoader.h"
+#include "StrikeEngine/Renderer/ShaderManager.h"
 
 #include "Input.h"
 
@@ -24,8 +25,10 @@ namespace StrikeEngine
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		RenderManager::Create();
-		RenderManager::Get().Init();
+		
+		Renderer::Create();
+		Renderer::Get().Init();
+		
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -77,35 +80,49 @@ namespace StrikeEngine
 	{
 		// TEST RENDER
 		float vertices[] = {
-				-0.5f, 0.5f, 0.f,
-				-0.5f, -0.5f, 0.f,
-				0.5f, -0.5f, 0.f,
-				0.5f, -0.5f, 0.f,
-				0.5f, 0.5f, 0.f,
-				-0.5f, 0.5f, 0.f
+		-0.5f,  0.5f, 0.0f,  // Top Left
+		-0.5f, -0.5f, 0.0f,  // Bottom Left
+		 0.5f, -0.5f, 0.0f,  // Bottom Right
+		 0.5f,  0.5f, 0.0f   // Top Right
 		};
 
+		int indices[] = {
+			0, 1, 2,   // First triangle
+			2, 3, 0    // Second triangle
+		};
+
+
+		size_t indicesCount = sizeof(indices) / sizeof(indices[0]);
+		size_t verticesCount = sizeof(vertices) / sizeof(vertices[0]);
+
 		ObjectLoader* objectLoader = new ObjectLoader();
-		Model* model = objectLoader->LoadModel(vertices, 18);
+		RawModel* model = objectLoader->LoadModel(vertices, verticesCount, indices, indicesCount);
+		
 
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		ShaderManager::Get()->LoadShaderFromFile("DefaultVertexShader", "assets/shaders/VertexShader.glsl",GL_VERTEX_SHADER);
+		ShaderManager::Get()->LoadShaderFromFile("DefaultFragmentShader", "assets/shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
+		ShaderManager::Get()->Bind();
+
+
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		while (m_Running)
 		{
-			glClearColor(0.20f, 0.25f, 0.29f, 1);
-			glClear(GL_COLOR_BUFFER_BIT);	
-			
+			glClearColor(0.20f, 0.25f, 0.29f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
 			m_ImGuiLayer->Begin();
-			for (Layer* layer : m_LayerStack) 
+			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate();
 				layer->OnImGuiRender();
 			}
 
-			RenderManager::Render(model);
+			Renderer::Render(model);
 
 			m_ImGuiLayer->End();
 			m_Window->OnUpdate();
 		}
+
 	}
 }

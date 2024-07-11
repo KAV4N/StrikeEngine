@@ -4,9 +4,10 @@ D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\Application.cpp;D
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\Layer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Layer.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\LayerStack.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\LayerStack.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\Log.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Log.obj
-D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ObjectLoader.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ObjectLoader.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiBuild.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiBuild.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiLayer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiLayer.obj
-D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\RenderManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\RenderManager.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ObjectLoader.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ObjectLoader.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Renderer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Renderer.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Shader.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Shader.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ShaderManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ShaderManager.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\strikepch.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\strikepch.obj
