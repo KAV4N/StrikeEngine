@@ -142,8 +142,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\FragmentShader.glsl" />
-    <None Include="assets\shaders\VertexShader.glsl" />
+    <Image Include="assets\textures\DefaultTexture.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\InlineShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

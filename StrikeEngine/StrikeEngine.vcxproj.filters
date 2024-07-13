@@ -25,9 +25,6 @@
     <Filter Include="src\StrikeEngine\Renderer">
       <UniqueIdentifier>{6A926AEC-D654-9E76-1F05-2D038B067754}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\StrikeEngine\Renderer\Shaders">
-      <UniqueIdentifier>{43814739-AFEF-9CB8-F8D8-57B864869254}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\StrikeEngine\Scene">
       <UniqueIdentifier>{619228CB-4D8C-511D-36F9-E72D2292B789}</UniqueIdentifier>
     </Filter>
@@ -51,6 +48,27 @@
     </Filter>
     <Filter Include="vendor\glm\glm\gtx">
       <UniqueIdentifier>{B3A6A76B-9F8A-68C1-08EB-6214F4ED5243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb">
+      <UniqueIdentifier>{8BD3C5A8-778B-07F6-E092-E051CC69A2E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\deprecated">
+      <UniqueIdentifier>{4B110A4A-B77D-C544-8071-5DA2EC9CE7AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\stb_image_resize_test">
+      <UniqueIdentifier>{55CD6635-411E-5277-6A82-40395632E5E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\tests">
+      <UniqueIdentifier>{ADFA85EA-99F3-A43C-C225-8AC1AE7D8448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\tests\caveview">
+      <UniqueIdentifier>{964AC9A2-020D-FD2C-4BBD-8BB9B7BED50A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\tests\oversample">
+      <UniqueIdentifier>{3A63C469-A670-F24F-2F57-EE3A9B63BE06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\stb\tests\prerelease">
+      <UniqueIdentifier>{2463F77B-9070-2562-1957-214D8563F118}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -105,10 +123,10 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\RawModel.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\Renderer.h">
@@ -120,6 +138,18 @@
     <ClInclude Include="src\StrikeEngine\Renderer\ShaderManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\Texture.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\TextureManager.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
@@ -127,6 +157,9 @@
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\SceneCamera.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\strikepch.h">
@@ -1380,6 +1413,105 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\stb\deprecated\rrsprintf.h">
+      <Filter>vendor\stb\deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\deprecated\stb.h">
+      <Filter>vendor\stb\deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\deprecated\stb_image_resize.h">
+      <Filter>vendor\stb\deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\deprecated\stretchy_buffer.h">
+      <Filter>vendor\stb\deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_c_lexer.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_connected_components.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_divide.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_ds.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_dxt.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_easy_font.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_herringbone_wang_tile.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_hexwave.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_image.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_image_resize2.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_image_resize_test\old_image_resize.h">
+      <Filter>vendor\stb\stb_image_resize_test</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_image_write.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_include.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_leakcheck.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_perlin.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_rect_pack.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_sprintf.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_textedit.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_tilemap_editor.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_truetype.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\stb_voxel_render.h">
+      <Filter>vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\cave_parse.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\caveview.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\glext.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\glext_list.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\stb_gl.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\caveview\stb_glprog.h">
+      <Filter>vendor\stb\tests\caveview</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\oversample\stb_wingraph.h">
+      <Filter>vendor\stb\tests\oversample</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
+      <Filter>vendor\stb\tests\prerelease</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1417,6 +1549,18 @@
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Scene\Entity.cpp">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Scene\SceneCamera.cpp">
+      <Filter>src\StrikeEngine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>

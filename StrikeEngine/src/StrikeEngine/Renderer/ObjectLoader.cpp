@@ -1,17 +1,30 @@
+
 #include "strikepch.h"
 #include "ObjectLoader.h"
-
 #include <glad/glad.h>
 
 namespace StrikeEngine {
-    RawModel* ObjectLoader::LoadModel(float vertices[], size_t verticesSize, int indices[], size_t indicesSize)
+    Model* ObjectLoader::LoadModel(float vertices[], size_t verticesSize, int indices[], size_t indicesSize, Texture* texture)
     {
         int vao = CreateVertexArrayObj();
         BindIndicesBuffer(indices, indicesSize);
         StoreDataInAttribList(0, 3, vertices, verticesSize);
+
         Unbind();
-        return new RawModel(vao, static_cast<int>(indicesSize));
+        return new Model(vao, static_cast<int>(indicesSize), texture);
     }
+
+    Model* ObjectLoader::LoadModel(float vertices[], size_t verticesSize, int indices[], size_t indicesSize, Texture* texture, float textureCoords[], size_t textureSize)
+    {
+        int vao = CreateVertexArrayObj();
+        BindIndicesBuffer(indices, indicesSize);
+        StoreDataInAttribList(0, 3, vertices, verticesSize);
+        StoreDataInAttribList(1, 2, textureCoords, textureSize);
+        Unbind();
+        return new Model(vao, static_cast<int>(indicesSize), texture);
+    }
+
+
 
     void ObjectLoader::BindIndicesBuffer(int indices[], size_t indexCount)
     {

@@ -10,3 +10,6 @@
 [submodule "StrikeEngine/vendor/glm"]
 	path = StrikeEngine/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "StrikeEngine/vendor/stb"]
+	path = StrikeEngine/vendor/stb
+	url = https://github.com/nothings/stb.git

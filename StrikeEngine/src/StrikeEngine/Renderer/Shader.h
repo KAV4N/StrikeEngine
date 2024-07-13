@@ -1,23 +1,27 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <glad/glad.h>
 
 namespace StrikeEngine {
 
     class Shader {
     public:
-        Shader(unsigned int type);
+        Shader(const std::string& filepath);
+        Shader(const std::string& vertexSrc, const std::string& fragmentSrc);
         ~Shader();
 
-        bool LoadFromFile(const std::string& filePath, unsigned int& programID);
-        bool Compile();
-        bool LinkProgram();
+        void Bind() const;
+        void Unbind() const;
 
     private:
-        unsigned int m_Type;
-        unsigned int m_ShaderID;
-        unsigned int m_ProgramID;
-        std::string m_SourceCode;
+        std::string ReadFile(const std::string& filepath);
+        std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+        void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+
+    private:
+        GLuint m_ProgramID;
     };
 
 }

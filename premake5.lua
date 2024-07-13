@@ -10,6 +10,7 @@ includeDir["GLFW"] = "StrikeEngine/vendor/GLFW/include"
 includeDir["Glad"] = "StrikeEngine/vendor/Glad/include"
 includeDir["ImGui"] = "StrikeEngine/vendor/imgui"
 includeDir["glm"] = "StrikeEngine/vendor/glm"
+includeDir["stb"] = "StrikeEngine/vendor/stb"
 
 include "StrikeEngine/vendor/GLFW"
 include "StrikeEngine/vendor/Glad"
@@ -38,7 +39,8 @@ project "StrikeEngine"
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.glsl",
         "%{prj.name}/vendor/glm/glm/**.hpp",
-        "%{prj.name}/vendor/glm/glm/**.inl"
+        "%{prj.name}/vendor/glm/glm/**.inl",
+        "%{prj.name}/vendor/stb/**.h"
     }
     
     includedirs {
@@ -47,7 +49,8 @@ project "StrikeEngine"
         "%{includeDir.GLFW}",
         "%{includeDir.Glad}",
         "%{includeDir.ImGui}",
-        "%{includeDir.glm}"
+        "%{includeDir.glm}",
+        "%{includeDir.stb}"
     }
 
     links {
@@ -101,7 +104,9 @@ project "Sandbox"
 
     files {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/src/**.glsl",
+        "%{prj.name}/src/**.png"
     }
 
     includedirs {

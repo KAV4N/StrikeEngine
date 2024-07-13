@@ -1,71 +1,149 @@
 #include "strikepch.h"
 #include "Shader.h"
 #include <fstream>
-#include "glad/glad.h"
+#include <unordered_map>
+#include <vector>
+#include <cstring>
 
 namespace StrikeEngine {
 
-    Shader::Shader(unsigned int type)
-        : m_Type(type), m_ShaderID(0), m_ProgramID(0) {}
+    static GLenum ShaderTypeFromString(const std::string& type) {
+        if (type == "vertex")
+            return GL_VERTEX_SHADER;
+        if (type == "fragment" || type == "pixel")
+            return GL_FRAGMENT_SHADER;
+
+        STRIKE_CORE_ASSERT(false, "Unknown shader type!");
+        return 0;
+    }
+
+    Shader::Shader(const std::string& filepath) {
+        std::string source = ReadFile(filepath);
+        auto shaderSources = PreProcess(source);
+        Compile(shaderSources);
+    }
+
+    Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) {
+        std::unordered_map<GLenum, std::string> sources;
+        sources[GL_VERTEX_SHADER] = vertexSrc;
+        sources[GL_FRAGMENT_SHADER] = fragmentSrc;
+        Compile(sources);
+    }
 
     Shader::~Shader() {
-        if (m_ShaderID) {
-            glDeleteShader(m_ShaderID);
-        }
+        glDeleteProgram(m_ProgramID);
     }
 
-    bool Shader::LoadFromFile(const std::string& filePath, unsigned int& programID) {
-        m_ProgramID = programID;
-        std::ifstream shaderFile(filePath);
-        if (!shaderFile.is_open()) {
-            //std::cerr << "Failed to open shader file: " << filePath << std::endl;
-            return false;
+    std::string Shader::ReadFile(const std::string& filepath) {
+        std::string result;
+        std::ifstream in(filepath, std::ios::in | std::ios::binary);
+        if (in) {
+            in.seekg(0, std::ios::end);
+            result.resize(in.tellg());
+            in.seekg(0, std::ios::beg);
+            in.read(&result[0], result.size());
+            in.close();
+        }
+        else {
+            STRIKE_CORE_ERROR("Could not open file '{0}'", filepath);
         }
 
-        std::stringstream shaderStream;
-        shaderStream << shaderFile.rdbuf();
-        shaderFile.close();
-
-        m_SourceCode = shaderStream.str();
-        return true;
+        return result;
     }
 
-    bool Shader::Compile() {
-        int success = 0;
-        const char* shaderSource = m_SourceCode.c_str();
+    std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source) {
+        std::unordered_map<GLenum, std::string> shaderSources;
 
-        m_ShaderID = glCreateShader(m_Type);
+        const char* typeToken = "#type";
+        size_t typeTokenLength = std::strlen(typeToken);
+        size_t pos = source.find(typeToken, 0);
 
-        glShaderSource(m_ShaderID, 1, &shaderSource, nullptr);
+        while (pos != std::string::npos) {
+            size_t eol = source.find_first_of("\r\n", pos);
+            STRIKE_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 
-        glCompileShader(m_ShaderID);
+            size_t begin = pos + typeTokenLength + 1;
+            std::string type = source.substr(begin, eol - begin);
+            STRIKE_CORE_ASSERT(ShaderTypeFromString(type), "Invalid shader type specified");
 
-        glGetShaderiv(m_ShaderID, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            char infoLog[512];
-            glGetShaderInfoLog(m_ShaderID, 512, nullptr, infoLog);
-            STRIKE_CORE_ERROR(infoLog, "ERROR: Shader compilation failed");
-            return false;
+            size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+            pos = source.find(typeToken, nextLinePos);
+
+            shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - nextLinePos);
         }
 
-        glAttachShader(m_ProgramID, m_ShaderID);
-        return true;
+        return shaderSources;
     }
 
-    bool Shader::LinkProgram() {
-        int success = 0;
 
-        glLinkProgram(m_ProgramID);
-        glGetProgramiv(m_ProgramID, GL_LINK_STATUS, &success);
+    void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {
+        GLuint program = glCreateProgram();
+        std::vector<GLuint> glShaderIDs(shaderSources.size());
+        int glShaderIDIndex = 0;
 
-        if (!success) {
-            char infoLog[512];
-            glGetProgramInfoLog(m_ProgramID, 512, nullptr, infoLog);
-            STRIKE_CORE_ERROR(infoLog, "ERROR: Program linking failed");
-            return false;
+        for (auto& kv : shaderSources) {
+            GLenum type = kv.first;
+            const std::string& source = kv.second;
+
+            GLuint shader = glCreateShader(type);
+
+            const GLchar* sourceCStr = source.c_str();
+            glShaderSource(shader, 1, &sourceCStr, 0);
+
+            glCompileShader(shader);
+
+            GLint isCompiled = 0;
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+            if (isCompiled == GL_FALSE) {
+                GLint maxLength = 0;
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+                std::vector<GLchar> infoLog(maxLength);
+                glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+
+                glDeleteShader(shader);
+
+                STRIKE_CORE_ERROR("{0}", infoLog.data());
+                STRIKE_CORE_ASSERT(false, "Shader compilation failure!");
+                return;
+            }
+
+            glAttachShader(program, shader);
+            glShaderIDs[glShaderIDIndex++] = shader;
         }
 
-        glDetachShader(m_ProgramID, m_ShaderID);
-        return true;
+        m_ProgramID = program;
+
+        glLinkProgram(program);
+
+        GLint isLinked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+        if (isLinked == GL_FALSE) {
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+            std::vector<GLchar> infoLog(maxLength);
+            glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+            glDeleteProgram(program);
+
+            for (auto id : glShaderIDs)
+                glDeleteShader(id);
+
+            STRIKE_CORE_ERROR("{0}", infoLog.data());
+            STRIKE_CORE_ASSERT(false, "Shader link failure!");
+            return;
+        }
+
+        for (auto id : glShaderIDs)
+            glDetachShader(program, id);
+    }
+
+    void Shader::Bind() const {
+        glUseProgram(m_ProgramID);
+    }
+
+    void Shader::Unbind() const {
+        glUseProgram(0);
     }
 }

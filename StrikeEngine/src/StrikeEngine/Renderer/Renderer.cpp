@@ -1,6 +1,7 @@
 #include "strikepch.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
+#include "TextureManager.h"
 
 namespace StrikeEngine
 {
@@ -35,15 +36,22 @@ namespace StrikeEngine
     void Renderer::Init()
     {
         ShaderManager::Create();
+        TextureManager::Create();
     }
 
-    void Renderer::Render(RawModel* model)
+    void Renderer::Update(Model* model)
     {
         Clear();
+
+        glBindTexture(GL_TEXTURE_2D, model->GetTextureID()->getID());
         glBindVertexArray(model->GetVaoID());
+
         glDrawElements(GL_TRIANGLES, model->GetVertexCount(), GL_UNSIGNED_INT, nullptr);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
     }
+
 
 
     void Renderer::Clear()

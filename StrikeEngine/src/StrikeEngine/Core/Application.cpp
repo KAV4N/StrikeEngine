@@ -5,6 +5,7 @@
 #include "StrikeEngine/Renderer/Renderer.h"
 #include "StrikeEngine/Renderer/ObjectLoader.h"
 #include "StrikeEngine/Renderer/ShaderManager.h"
+#include "StrikeEngine/Renderer/TextureManager.h"
 
 #include "Input.h"
 
@@ -76,53 +77,72 @@ namespace StrikeEngine
 		overlay->OnAttach();
 	}
 
-	void Application::Run() 
-	{
-		// TEST RENDER
+    void Application::Run()
+    {
 		float vertices[] = {
-		-0.5f,  0.5f, 0.0f,  // Top Left
-		-0.5f, -0.5f, 0.0f,  // Bottom Left
-		 0.5f, -0.5f, 0.0f,  // Bottom Right
-		 0.5f,  0.5f, 0.0f   // Top Right
+			-0.5f,  0.5f, 0.0f,  // Top Left
+			-0.5f, -0.5f, 0.0f,  // Bottom Left
+			 0.5f, -0.5f, 0.0f,  // Bottom Right
+			 0.5f,  0.5f, 0.0f   // Top Right
 		};
+
+
 
 		int indices[] = {
-			0, 1, 2,   // First triangle
-			2, 3, 0    // Second triangle
+			0, 1, 2,   // First triangle (top left, bottom left, bottom right)
+			0, 2, 3    // Second triangle (top left, bottom right, top right)
 		};
 
 
-		size_t indicesCount = sizeof(indices) / sizeof(indices[0]);
-		size_t verticesCount = sizeof(vertices) / sizeof(vertices[0]);
-
-		ObjectLoader* objectLoader = new ObjectLoader();
-		RawModel* model = objectLoader->LoadModel(vertices, verticesCount, indices, indicesCount);
-		
-
-
-		ShaderManager::Get()->LoadShaderFromFile("DefaultVertexShader", "assets/shaders/VertexShader.glsl",GL_VERTEX_SHADER);
-		ShaderManager::Get()->LoadShaderFromFile("DefaultFragmentShader", "assets/shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
-		ShaderManager::Get()->Bind();
+		float textureCoords[] = {
+	0.0f, 1.0f,  // Top Left
+	0.0f, 0.0f,  // Bottom Left
+	1.0f, 0.0f,  // Bottom Right
+	1.0f, 1.0f   // Top Right
+		};
 
 
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		while (m_Running)
-		{
-			glClearColor(0.20f, 0.25f, 0.29f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
 
-			m_ImGuiLayer->Begin();
-			for (Layer* layer : m_LayerStack)
-			{
-				layer->OnUpdate();
-				layer->OnImGuiRender();
-			}
 
-			Renderer::Render(model);
+        size_t indicesCount = sizeof(indices) / sizeof(indices[0]);
+        size_t verticesCount = sizeof(vertices) / sizeof(vertices[0]);
+        size_t textureCount = sizeof(textureCoords) / sizeof(textureCoords[0]);
 
-			m_ImGuiLayer->End();
-			m_Window->OnUpdate();
-		}
+        TextureManager::Get()->LoadTexture("test", "assets/textures/untitled.png");
+        Texture* texture = TextureManager::Get()->GetTexture("test");
 
-	}
+        ObjectLoader* objectLoader = new ObjectLoader();
+        Model* model = objectLoader->LoadModel(vertices, verticesCount, indices, indicesCount, texture, textureCoords, textureCount);
+
+        ShaderManager* shaderManager = ShaderManager::Get();
+        auto retrievedShader = shaderManager->LoadShader("testShader", "assets/shaders/InlineShader.glsl");
+        if (retrievedShader) {
+            retrievedShader->Bind();
+        }
+
+
+
+        // Render loop
+        while (m_Running)
+        {
+            glClearColor(0.20f, 0.25f, 0.29f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+
+            m_ImGuiLayer->Begin();
+            for (Layer* layer : m_LayerStack)
+            {
+                layer->OnUpdate();
+                layer->OnImGuiRender();
+            }
+
+            // Draw the model
+            Renderer::Update(model);
+
+            m_ImGuiLayer->End();
+            m_Window->OnUpdate();
+        }
+
+        delete objectLoader;
+    }
 }

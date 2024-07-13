@@ -2,8 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <gl/GL.h>
-#include <StrikeEngine/Renderer/RawModel.h>
+#include "Model.h"
 
 class GLFWwindow;
 
@@ -15,7 +14,7 @@ namespace StrikeEngine
         static Renderer& Get();
         static void Create();
         static void Shutdown();
-        static void Render(RawModel* model);
+        static void Update(Model* model);
         static void Clear();
         void Init();
         

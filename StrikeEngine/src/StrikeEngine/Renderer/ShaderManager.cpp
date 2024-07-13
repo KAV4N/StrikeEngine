@@ -1,75 +1,44 @@
+#pragma once
+
 #include "strikepch.h"
+#include "Shader.h"
 #include "ShaderManager.h"
-#include <glad/glad.h>
 
 namespace StrikeEngine {
 
-    ShaderManager* ShaderManager::s_Instance = nullptr;
+   ShaderManager* ShaderManager::s_Instance = nullptr;
 
-    ShaderManager::ShaderManager()
-        : m_ProgramID(glCreateProgram()) {}
+    ShaderManager* ShaderManager::Get() {
+        
+        return s_Instance;
+    }
 
-    void ShaderManager::Create() {
+    void ShaderManager::Create()
+    {
         if (!s_Instance) {
             s_Instance = new ShaderManager();
         }
     }
 
-    ShaderManager* ShaderManager::Get() {
-        return s_Instance;
-    }
-
-    void ShaderManager::Shutdown() {
-        if (s_Instance) {
-            delete s_Instance;
-            s_Instance = nullptr;
-        }
-    }
-
-    Shader* ShaderManager::LoadShaderFromFile(const std::string& name, const std::string& shaderPath, const unsigned int shaderType) {
-        if (m_Shaders.find(name) != m_Shaders.end()) {
-            // std::cerr << "Shader with name '" << name << "' already exists." << std::endl;
-            return nullptr;
-        }
-
-        Shader* shader = new Shader(shaderType);
-        if (!shader->LoadFromFile(shaderPath, m_ProgramID)) {
-            delete shader;
-            return nullptr;
-        }
-        if (!shader->Compile()) {
-            delete shader;
-            return nullptr;
-        }
-
+    std::shared_ptr<Shader> ShaderManager::LoadShader(const std::string& name, const std::string& filepath) {
+        auto shader = std::make_shared<Shader>(filepath);
         m_Shaders[name] = shader;
-
         return shader;
     }
 
-    Shader* ShaderManager::GetShader(const std::string& name) {
+    std::shared_ptr<Shader> ShaderManager::LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {
+        auto shader = std::make_shared<Shader>(vertexSrc, fragmentSrc);
+        m_Shaders[name] = shader;
+        return shader;
+    }
+
+    std::shared_ptr<Shader> ShaderManager::GetShader(const std::string& name) const {
         auto it = m_Shaders.find(name);
         if (it != m_Shaders.end()) {
             return it->second;
         }
+        STRIKE_CORE_ERROR("Shader not found: {0}", name);
         return nullptr;
     }
 
-    void ShaderManager::Bind() {
-        for (auto& pair : m_Shaders) {
-            Shader* shader = pair.second;
-            if (!shader->LinkProgram()) {
-                STRIKE_CORE_ERROR("Failed to link shader program");
-                return;
-            }
-        }
-        glUseProgram(m_ProgramID);
-    }
-
-    ShaderManager::~ShaderManager() {
-        for (auto& pair : m_Shaders) {
-            delete pair.second;
-        }
-        m_Shaders.clear();
-    }
 }
