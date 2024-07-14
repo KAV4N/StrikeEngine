@@ -21,6 +21,7 @@ namespace StrikeEngine {
         std::string source = ReadFile(filepath);
         auto shaderSources = PreProcess(source);
         Compile(shaderSources);
+        GetAllUniformLocations();
     }
 
     Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) {

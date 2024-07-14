@@ -113,20 +113,23 @@ namespace StrikeEngine
 
         ObjectLoader* objectLoader = new ObjectLoader();
         Model* model = objectLoader->LoadModel(vertices, verticesCount, indices, indicesCount, texture, textureCoords, textureCount);
-
+		Entity* entity = new Entity(model);
         ShaderManager* shaderManager = ShaderManager::Get();
         auto retrievedShader = shaderManager->LoadShader("testShader", "assets/shaders/InlineShader.glsl");
         if (retrievedShader) {
             retrievedShader->Bind();
         }
 
-
+		
 
         // Render loop
         while (m_Running)
         {
             glClearColor(0.20f, 0.25f, 0.29f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+
+			//entity->IncreasePosition(glm::vec3(0.002f, 0.0f, 0.0f));
+			entity->IncreaseRotation(glm::vec3(0.0f, 1.0f, 1.0f));
 
 
             m_ImGuiLayer->Begin();
@@ -137,7 +140,7 @@ namespace StrikeEngine
             }
 
             // Draw the model
-            Renderer::Update(model);
+            Renderer::Update(entity, retrievedShader);
 
             m_ImGuiLayer->End();
             m_Window->OnUpdate();

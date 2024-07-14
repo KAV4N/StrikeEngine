@@ -20,19 +20,19 @@ namespace StrikeEngine {
         }
     }
 
-    std::shared_ptr<Shader> ShaderManager::LoadShader(const std::string& name, const std::string& filepath) {
-        auto shader = std::make_shared<Shader>(filepath);
+    Shader* ShaderManager::LoadShader(const std::string& name, const std::string& filepath) {
+        Shader* shader = new Shader(filepath);
         m_Shaders[name] = shader;
         return shader;
     }
 
-    std::shared_ptr<Shader> ShaderManager::LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {
-        auto shader = std::make_shared<Shader>(vertexSrc, fragmentSrc);
+    Shader* ShaderManager::LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {
+        Shader* shader = new Shader(vertexSrc, fragmentSrc);
         m_Shaders[name] = shader;
         return shader;
     }
 
-    std::shared_ptr<Shader> ShaderManager::GetShader(const std::string& name) const {
+    Shader* ShaderManager::GetShader(const std::string& name) const {
         auto it = m_Shaders.find(name);
         if (it != m_Shaders.end()) {
             return it->second;

@@ -13,11 +13,11 @@ namespace StrikeEngine {
 
         static void Create();
 
-        std::shared_ptr<Shader> LoadShader(const std::string& name, const std::string& filepath);
+        Shader* LoadShader(const std::string& name, const std::string& filepath);
 
-        std::shared_ptr<Shader> LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+        Shader* LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 
-        std::shared_ptr<Shader> GetShader(const std::string& name) const;
+        Shader* GetShader(const std::string& name) const;
 
 
 
@@ -27,7 +27,7 @@ namespace StrikeEngine {
         ShaderManager(const ShaderManager&) = delete;
         ShaderManager& operator=(const ShaderManager&) = delete;
 
-        std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+        std::unordered_map<std::string, Shader*> m_Shaders;
         static ShaderManager* s_Instance;
     };
 

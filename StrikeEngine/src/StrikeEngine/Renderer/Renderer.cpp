@@ -7,6 +7,10 @@ namespace StrikeEngine
 {
     Renderer* Renderer::s_Instance = nullptr;
 
+    const float Renderer::s_FOW = 70.f;
+    const float Renderer::s_NEAR_PLANE = 0.1f;
+    const float Renderer::s_FAR_PLANE = 1000.f;
+
     Renderer& Renderer::Get()
     {
         if (s_Instance == nullptr)
@@ -22,7 +26,6 @@ namespace StrikeEngine
         {
             s_Instance = new Renderer();
         }
-
     }
 
     void Renderer::Shutdown()
@@ -37,22 +40,30 @@ namespace StrikeEngine
     {
         ShaderManager::Create();
         TextureManager::Create();
+        CreateProjectionMatrix();
     }
 
-    void Renderer::Update(Model* model)
+    void Renderer::CreateProjectionMatrix()
+    {
+        float aspectRatio = 16.0f / 9.0f; 
+        m_ProjectionMatrix = glm::perspective(glm::radians(s_FOW), aspectRatio, s_NEAR_PLANE, s_FAR_PLANE);
+    }
+
+    void Renderer::Update(Entity* entity, Shader* shader)
     {
         Clear();
-
+        Model* model = entity->GetModel();
         glBindTexture(GL_TEXTURE_2D, model->GetTextureID()->getID());
         glBindVertexArray(model->GetVaoID());
+
+        shader->GetAllUniformLocations();
+        shader->LoadTransformationMatrix(entity->GetTransformationMatrix());
 
         glDrawElements(GL_TRIANGLES, model->GetVertexCount(), GL_UNSIGNED_INT, nullptr);
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
     }
-
-
 
     void Renderer::Clear()
     {
