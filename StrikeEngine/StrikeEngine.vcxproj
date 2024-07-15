@@ -160,9 +160,8 @@
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\Camera.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\Entity.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\Model.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Camera.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Model.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Renderer.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Shader.h" />
@@ -170,7 +169,6 @@
     <ClInclude Include="src\StrikeEngine\Renderer\Texture.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\TextureManager.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
     <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h" />
     <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
@@ -635,14 +633,13 @@
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\StrikeEngine\Renderer\Camera.cpp" />
+    <ClCompile Include="src\StrikeEngine\Scene\Camera.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\ObjectLoader.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Shader.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp" />
-    <ClCompile Include="src\StrikeEngine\Scene\Entity.cpp" />
     <ClCompile Include="src\StrikeEngine\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\strikepch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

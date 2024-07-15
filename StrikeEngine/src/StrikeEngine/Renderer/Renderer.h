@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Shader.h"
-#include "Entity.h"
+#include "StrikeEngine/Scene/Entity.h"
 
 class GLFWwindow;
 

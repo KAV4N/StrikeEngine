@@ -1,5 +1,5 @@
 #pragma once
-#include "Texture.h"
+#include "StrikeEngine/Renderer/Texture.h"
 
 namespace StrikeEngine {
 	class Model
