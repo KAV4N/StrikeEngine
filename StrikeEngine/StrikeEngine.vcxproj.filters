@@ -123,9 +123,6 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Model.h">
-      <Filter>src\StrikeEngine\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
@@ -144,19 +141,19 @@
     <ClInclude Include="src\StrikeEngine\Renderer\TextureManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Components.h">
+    <ClInclude Include="src\StrikeEngine\Scene\Camera.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\LevelEditorScene.h">
+    <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\LevelScene.h">
+    <ClInclude Include="src\StrikeEngine\Scene\Model.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\SceneCamera.h">
+    <ClInclude Include="src\StrikeEngine\Scene\World.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\strikepch.h">
@@ -1509,8 +1506,6 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1555,12 +1550,17 @@
     <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Scene\SceneCamera.cpp">
+    <ClCompile Include="src\StrikeEngine\Scene\Camera.cpp">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Scene\World.cpp">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Scene\Camera.cpp" />
   </ItemGroup>
 </Project>

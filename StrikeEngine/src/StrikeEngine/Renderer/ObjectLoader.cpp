@@ -1,7 +1,6 @@
 
 #include "strikepch.h"
 #include "ObjectLoader.h"
-#include <glad/glad.h>
 
 namespace StrikeEngine {
     Model* ObjectLoader::LoadModel(float vertices[], size_t verticesSize, int indices[], size_t indicesSize, Texture* texture)

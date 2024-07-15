@@ -3,7 +3,7 @@
 #include <vector>
 #include <glad/glad.h>
 #include "StrikeEngine/Scene/Model.h"
-#include <StrikeEngine/Renderer/TextureManager.h>
+#include "StrikeEngine/Renderer/TextureManager.h"
 
 namespace StrikeEngine {
     class ObjectLoader {

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <string>
-#include <iostream>
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 
 namespace StrikeEngine {
@@ -14,12 +13,13 @@ namespace StrikeEngine {
         Texture(const std::string& path);
         ~Texture();
 
-        unsigned int getID() const { return m_TextureID; }
+        
         void Bind(unsigned int slot = 0) const;
         void Unbind() const; 
 
-        unsigned int getWidth() const { return m_Width; }
-        unsigned int getHeight() const { return m_Height; }
+        inline unsigned int getWidth() const { return m_Width; }
+        inline unsigned int getHeight() const { return m_Height; }
+        inline unsigned int GetID() const { return m_TextureID; }
 
     private:
         unsigned int m_TextureID;

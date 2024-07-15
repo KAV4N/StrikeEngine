@@ -76,7 +76,6 @@ namespace StrikeEngine {
         return shaderSources;
     }
 
-
     void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {
         GLuint program = glCreateProgram();
         std::vector<GLuint> glShaderIDs(shaderSources.size());
@@ -146,5 +145,10 @@ namespace StrikeEngine {
 
     void Shader::Unbind() const {
         glUseProgram(0);
+    }
+
+    void Shader::GetAllUniformLocations() {
+        m_TransformationMatrix = GetUniformLocation("transform");
+        m_ProjectionMatrix = GetUniformLocation("projection");
     }
 }

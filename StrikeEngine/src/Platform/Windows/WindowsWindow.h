@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StrikeEngine/Core/Window.h"
+
 #include <GLFW/glfw3.h>
 #include <StrikeEngine/Renderer/Renderer.h>
 

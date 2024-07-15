@@ -1,40 +1,39 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Shader.h"
-#include "StrikeEngine/Scene/Entity.h"
 
-class GLFWwindow;
+#include <StrikeEngine/Scene/Camera.h>
+#include <StrikeEngine/Scene/Entity.h>
 
-namespace StrikeEngine
-{
-    class Renderer
-    {
+
+namespace StrikeEngine {
+    class Renderer {
     public:
-        static Renderer& Get();
-        static void Create();
-        static void Shutdown();
-        static void Update(Entity* entity, Shader* shader);
-        static void Clear();
-        void Init();
+        void BeginScene(Camera* camera);
+        void EndScene();
+        void Update(Entity* entity, Shader* shader);
 
-    private:
-        void CreateProjectionMatrix();
+    public:
+        static void Create();
+        static Renderer* Get();
+        static void Destroy();
+        static void Init();
+
+        static void Render(Entity* entity, Shader* shader);
 
     private:
         Renderer() = default;
         ~Renderer() = default;
+
         Renderer(const Renderer&) = delete;
         Renderer& operator=(const Renderer&) = delete;
 
-        static const float s_FOW;
-        static const float s_NEAR_PLANE;
-        static const float s_FAR_PLANE;
-        glm::mat4 m_ProjectionMatrix;
-
         static Renderer* s_Instance;
+
+        glm::mat4 m_ViewProjectionMatrix;
     };
 }

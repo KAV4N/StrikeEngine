@@ -1,30 +1,25 @@
 #pragma once
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace StrikeEngine
-{
-    class Camera
-    {
+namespace StrikeEngine {
+    class Camera {
     public:
         Camera(float fov, float aspectRatio, float nearPlane, float farPlane);
 
-        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-        const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-
         void SetPosition(const glm::vec3& position);
-        void SetRotation(float pitch, float yaw);
+        void SetRotation(const glm::vec3& rotation);
+
+        glm::mat4 GetViewMatrix() const;
+        glm::mat4 GetProjectionMatrix() const;
 
     private:
-        void UpdateViewMatrix();
+        glm::vec3 m_Position;
+        glm::vec3 m_Rotation;
 
-    private:
-        glm::mat4 m_ViewMatrix;
         glm::mat4 m_ProjectionMatrix;
 
-        glm::vec3 m_Position;
-        float m_Pitch;
-        float m_Yaw;
+        void UpdateViewMatrix();
+        glm::mat4 m_ViewMatrix;
     };
 }

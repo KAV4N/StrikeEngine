@@ -141,12 +141,6 @@
       <Project>{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="assets\textures\DefaultTexture.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\InlineShader.glsl" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
