@@ -637,7 +637,6 @@
     <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp" />
-    <ClCompile Include="src\StrikeEngine\Scene\Camera.cpp" />
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp" />
     <ClCompile Include="src\StrikeEngine\Scene\World.cpp" />
     <ClCompile Include="src\strikepch.cpp">

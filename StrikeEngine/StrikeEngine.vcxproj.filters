@@ -1550,9 +1550,6 @@
     <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Scene\Camera.cpp">
-      <Filter>src\StrikeEngine\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClCompile>

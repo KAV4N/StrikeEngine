@@ -12,4 +12,6 @@ D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Shader.cpp;D:
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ShaderManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ShaderManager.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Texture.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Texture.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\TextureManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\TextureManager.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Scene\Scene.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Scene.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Scene\World.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\World.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\strikepch.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\strikepch.obj
