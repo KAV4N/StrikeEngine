@@ -13,3 +13,6 @@
 [submodule "StrikeEngine/vendor/stb"]
 	path = StrikeEngine/vendor/stb
 	url = https://github.com/nothings/stb.git
+[submodule "StrikeEngine/vendor/assimp"]
+	path = StrikeEngine/vendor/assimp
+	url = https://github.com/AminAliari/assimp.git

@@ -1,39 +1,47 @@
 #pragma once
 
-
-#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "Shader.h"
-
-#include <StrikeEngine/Scene/Camera.h>
-#include <StrikeEngine/Scene/Entity.h>
-
+#include "StrikeEngine/Scene/Camera.h"
+#include "StrikeEngine/Renderer/Shader.h"
+#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Texture.h"
 
 namespace StrikeEngine {
-    class Renderer {
-    public:
-        void BeginScene(Camera* camera);
-        void EndScene();
-        void Update(Entity* entity, Shader* shader);
 
+    class Renderer
+    {
     public:
-        static void Create();
-        static Renderer* Get();
-        static void Destroy();
+        static void Create() {
+            if (!s_Instance)
+                s_Instance = new Renderer();
+        }
+
+        static Renderer* Get() {
+            return s_Instance;
+        }
+
+        static void Destroy() {
+            if (s_Instance) {
+                delete s_Instance;
+                s_Instance = nullptr;
+            }
+        }
+
         static void Init();
 
-        static void Render(Entity* entity, Shader* shader);
+        void BeginScene(Camera* camera);
+        void EndScene();
+        void Update(glm::mat4 modelMatrix, Shader* shader);
+        void SetDefaultTexture(const std::string& path);
+        void Render(Model* model);
 
     private:
-        Renderer() = default;
-        ~Renderer() = default;
-
-        Renderer(const Renderer&) = delete;
-        Renderer& operator=(const Renderer&) = delete;
+        Renderer() {}
+        ~Renderer() {}
 
         static Renderer* s_Instance;
-
         glm::mat4 m_ViewProjectionMatrix;
+        Texture* m_DefaultTexture = nullptr;
     };
+
 }

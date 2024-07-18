@@ -11,10 +11,12 @@ includeDir["Glad"] = "StrikeEngine/vendor/Glad/include"
 includeDir["ImGui"] = "StrikeEngine/vendor/imgui"
 includeDir["glm"] = "StrikeEngine/vendor/glm"
 includeDir["stb"] = "StrikeEngine/vendor/stb"
+includeDir["assimp"] = "StrikeEngine/vendor/assimp/include"
 
 include "StrikeEngine/vendor/GLFW"
 include "StrikeEngine/vendor/Glad"
 include "StrikeEngine/vendor/imgui"
+include "StrikeEngine/vendor/assimp"
 
 project "StrikeEngine"
     location "StrikeEngine"
@@ -50,16 +52,19 @@ project "StrikeEngine"
         "%{includeDir.Glad}",
         "%{includeDir.ImGui}",
         "%{includeDir.glm}",
-        "%{includeDir.stb}"
+        "%{includeDir.stb}",
+        "%{includeDir.assimp}"
     }
 
     links {
         "GLFW",
         "Glad",
         "ImGui",
-        "opengl32.lib"
+        "opengl32.lib",
+        "assimp"
     }
-   
+ 
+
 
     filter "system:windows"
         cppdialect "C++17"
@@ -113,7 +118,8 @@ project "Sandbox"
         "StrikeEngine/vendor/spdlog/include",
         "StrikeEngine/src",
         "%{includeDir.glm}",
-        "%{includeDir.ImGui}"
+        "%{includeDir.ImGui}",
+   
     }
 
     links {

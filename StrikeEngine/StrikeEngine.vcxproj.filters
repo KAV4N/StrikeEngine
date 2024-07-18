@@ -123,7 +123,7 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\ObjectLoader.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\Renderer.h">
@@ -138,16 +138,13 @@
     <ClInclude Include="src\StrikeEngine\Renderer\Texture.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\TextureManager.h">
-      <Filter>src\StrikeEngine\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Model.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
@@ -1532,7 +1529,7 @@
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\ObjectLoader.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\ModelManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer.cpp">
@@ -1545,9 +1542,6 @@
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp">
-      <Filter>src\StrikeEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\TextureManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp">

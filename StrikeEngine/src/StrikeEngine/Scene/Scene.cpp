@@ -3,7 +3,13 @@
 #include "StrikeEngine/Renderer/Renderer.h"
 
 namespace StrikeEngine {
-    Scene::Scene() : m_Camera(nullptr) {}
+    Scene::Scene()
+    {
+        m_Camera = new Camera(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+        m_Camera->SetPosition(glm::vec3(0.0f, 0.0f, 10.f));
+        m_Camera->RotatePitch(15);
+       
+    }
 
     Scene::~Scene() {
         for (auto entity : m_Entities) {
@@ -29,9 +35,9 @@ namespace StrikeEngine {
 
     void Scene::Render(Shader* shader) {
         for (auto entity : m_Entities) {
-            entity->IncreaseRotation(glm::vec3(1.f, 1.f, 1.f)); // TODO: REMOVE, ONLY FOR TESTING
-            Renderer::Get()->Update(entity, shader);
-            Renderer::Render(entity, shader);
+            entity->IncreaseRotation(glm::vec3(0.f, 1.f, 0.f)); // TODO: REMOVE, ONLY FOR TESTING
+            Renderer::Get()->Update(entity->GetTransformationMatrix(), shader);
+            Renderer::Get()->Render(entity->GetModel());
         }
     }
 

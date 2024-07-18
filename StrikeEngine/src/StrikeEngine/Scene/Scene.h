@@ -24,6 +24,5 @@ namespace StrikeEngine {
     private:
         std::vector<Entity*> m_Entities;
         Camera* m_Camera;
-        
     };
 }
