@@ -40,8 +40,8 @@ namespace StrikeEngine
         Model* model = ModelManager::Get()->LoadModel("assets/objects/IS7.obj");
         Entity* entity = new Entity(model);
 
-        Model* model2 = ModelManager::Get()->LoadModel("assets/objects/PenguinBaseMesh.obj");
-        
+        Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
+        //model2->GetParts()[0]->AddTexture(new Texture("assets/objects/penguin/Penguin Diffuse Color.png"));
         Entity* entity2 = new Entity(model2);
 
         entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
