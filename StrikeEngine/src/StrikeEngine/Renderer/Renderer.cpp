@@ -1,72 +1,71 @@
 #include "strikepch.h"
 #include "Renderer.h"
-#include "ShaderManager.h"
-#include "TextureManager.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include "StrikeEngine/Renderer/ShaderManager.h"
+#include "StrikeEngine/Renderer/ModelManager.h"
 
-namespace StrikeEngine
-{
+namespace StrikeEngine {
+
     Renderer* Renderer::s_Instance = nullptr;
 
-    const float Renderer::s_FOW = 70.f;
-    const float Renderer::s_NEAR_PLANE = 0.1f;
-    const float Renderer::s_FAR_PLANE = 1000.f;
-
-    Renderer& Renderer::Get()
-    {
-        if (s_Instance == nullptr)
-        {
-            STRIKE_CORE_ASSERT(true, "instance was not created!");
-        }
-        return *s_Instance;
-    }
-
-    void Renderer::Create()
-    {
-        if (s_Instance == nullptr)
-        {
-            s_Instance = new Renderer();
-        }
-    }
-
-    void Renderer::Shutdown()
-    {
-        if (s_Instance) {
-            delete s_Instance;
-            s_Instance = nullptr;
-        }
-    }
-
-    void Renderer::Init()
-    {
+    void Renderer::Init() {
+        ModelManager::Create();
         ShaderManager::Create();
-        TextureManager::Create();
-        CreateProjectionMatrix();
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    void Renderer::CreateProjectionMatrix()
-    {
-        float aspectRatio = 16.0f / 9.0f; 
-        m_ProjectionMatrix = glm::perspective(glm::radians(s_FOW), aspectRatio, s_NEAR_PLANE, s_FAR_PLANE);
+    void Renderer::BeginScene(Camera* camera) {
+        m_ViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
     }
 
-    void Renderer::Update(Entity* entity, Shader* shader)
-    {
-        Clear();
-        Model* model = entity->GetModel();
-        glBindTexture(GL_TEXTURE_2D, model->GetTextureID()->getID());
-        glBindVertexArray(model->GetVaoID());
-
-        shader->GetAllUniformLocations();
-        shader->LoadTransformationMatrix(entity->GetTransformationMatrix());
-
-        glDrawElements(GL_TRIANGLES, model->GetVertexCount(), GL_UNSIGNED_INT, nullptr);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindVertexArray(0);
+    void Renderer::EndScene() {
+        // Optional: Clean-up after rendering scene
     }
 
-    void Renderer::Clear()
-    {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    void Renderer::Update(glm::mat4 modelMatrix, Shader* shader) {
+        shader->Bind();
+        glm::mat4 mvp = m_ViewProjectionMatrix * modelMatrix;
+        shader->LoadMatrix(shader->GetUniformLocation("transform"), modelMatrix);
+        shader->LoadMatrix(shader->GetUniformLocation("projection"), m_ViewProjectionMatrix);
     }
+
+    void Renderer::SetDefaultTexture(const std::string& path) {
+        if (m_DefaultTexture) {
+            delete m_DefaultTexture;
+        }
+        m_DefaultTexture = new Texture(path);
+    }
+
+    void Renderer::Render(Model* model) {
+        int textureUnit = 0;
+
+        for (auto& part : model->GetParts()) {
+            if (part->GetTextures().empty()) {
+                s_Instance->m_DefaultTexture->Bind(GL_TEXTURE0);
+            }
+            else {
+                for (auto& texture : part->GetTextures()) {
+                    texture->Bind(GL_TEXTURE0 + textureUnit);
+                    textureUnit++;
+                }
+            }
+
+            glBindVertexArray(part->GetVaoID());
+            glDrawElements(GL_TRIANGLES, part->GetVertexCount(), GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+
+            if (part->GetTextures().empty() && s_Instance->m_DefaultTexture) {
+                s_Instance->m_DefaultTexture->Unbind();
+            }
+            else {
+                for (auto& texture : part->GetTextures()) {
+                    texture->Unbind();
+                }
+            }
+        }
+    }
+
 }

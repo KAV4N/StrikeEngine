@@ -142,10 +142,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\textures\DefaultTexture.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\InlineShader.glsl" />
+    <None Include="..\StrikeEngine\vendor\assimp\premake5.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

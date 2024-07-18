@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StrikeEngine", "StrikeEngine\StrikeEngine.vcxproj", "{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assimp", "StrikeEngine\vendor\assimp\assimp.vcxproj", "{724885F2-5EEA-AFC8-47A5-C31C33E63619}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -48,6 +50,12 @@ Global
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Dist|x64.Build.0 = Dist|x64
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Release|x64.ActiveCfg = Release|x64
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Release|x64.Build.0 = Release|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Debug|x64.ActiveCfg = Debug|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Debug|x64.Build.0 = Debug|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Dist|x64.ActiveCfg = Dist|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Dist|x64.Build.0 = Dist|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Release|x64.ActiveCfg = Release|x64
+		{724885F2-5EEA-AFC8-47A5-C31C33E63619}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

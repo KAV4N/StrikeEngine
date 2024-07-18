@@ -1,16 +1,28 @@
 #pragma once
-#include "StrikeEngine/Core/Layer.h"
+#include <vector>
+#include <memory>
+#include "Entity.h"
+#include "StrikeEngine/Renderer/Shader.h"
+#include "Camera.h"
 
 namespace StrikeEngine {
-	class Scene : public Layer
-	{
-	public:
-		Scene()
-		{
-			
-		}
+    class Scene {
+    public:
+        Scene();
+        ~Scene();
 
-		virtual void OnUpdate() override {};
-	};
+        void AddEntity(Entity* entity);
+        void SetCamera(Camera* camera);
 
+        void Update();
+        void Render(Shader* shader);
+
+        Camera* GetCamera();
+
+    public:
+        std::string m_Name = "default";
+    private:
+        std::vector<Entity*> m_Entities;
+        Camera* m_Camera;
+    };
 }

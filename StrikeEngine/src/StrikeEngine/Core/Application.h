@@ -7,46 +7,48 @@
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
 
+
+
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
-namespace StrikeEngine 
+
+
+namespace StrikeEngine
 {
 
+    class World;
 
-	class STRIKE_API Application 
-	{
-	
-	public: 
-		Application();
+    class STRIKE_API Application
+    {
+    public:
+        Application();
+        virtual ~Application();
 
-		virtual ~Application();
+        void Run();
+        void OnEvent(Event& e);
 
-		void OnEvent(Event& e);
+        void PushLayer(Layer* layer);
+        void PushOverlay(Layer* overlay);
 
-		void Run();
+        inline Window& GetWindow() { return *m_Window; }
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlay);
+        inline static Application& Get() { return *s_Instance; }
+    private:
+        bool OnWindowClose(WindowCloseEvent& e);
 
-		inline static Application& Get() { return *s_Instance; }
+        std::unique_ptr<Window> m_Window;
+        ImGuiLayer* m_ImGuiLayer;
+        bool m_Running = true;
+        LayerStack m_LayerStack;
 
-		inline Window& GetWindow(){ return *m_Window; }
-	
-	private:
-		bool OnWindowClose(WindowCloseEvent& e);
+        World* m_World;
 
-		ImGuiLayer* m_ImGuiLayer;
-		std::unique_ptr<Window> m_Window;
-		bool m_Running = true;
-		LayerStack m_LayerStack;
-	private:
+    private:
+        static Application* s_Instance;
+    };
 
-		static Application* s_Instance;
-
-	};
-
-	Application* CreateApplication();
+    // To be defined in CLIENT
+    Application* CreateApplication();
 }
-
-
 

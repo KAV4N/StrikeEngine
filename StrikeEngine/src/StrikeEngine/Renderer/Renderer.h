@@ -1,40 +1,47 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "Shader.h"
-#include "Entity.h"
+#include "StrikeEngine/Scene/Camera.h"
+#include "StrikeEngine/Renderer/Shader.h"
+#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Texture.h"
 
-class GLFWwindow;
+namespace StrikeEngine {
 
-namespace StrikeEngine
-{
     class Renderer
     {
     public:
-        static Renderer& Get();
-        static void Create();
-        static void Shutdown();
-        static void Update(Entity* entity, Shader* shader);
-        static void Clear();
-        void Init();
+        static void Create() {
+            if (!s_Instance)
+                s_Instance = new Renderer();
+        }
+
+        static Renderer* Get() {
+            return s_Instance;
+        }
+
+        static void Destroy() {
+            if (s_Instance) {
+                delete s_Instance;
+                s_Instance = nullptr;
+            }
+        }
+
+        static void Init();
+
+        void BeginScene(Camera* camera);
+        void EndScene();
+        void Update(glm::mat4 modelMatrix, Shader* shader);
+        void SetDefaultTexture(const std::string& path);
+        void Render(Model* model);
 
     private:
-        void CreateProjectionMatrix();
-
-    private:
-        Renderer() = default;
-        ~Renderer() = default;
-        Renderer(const Renderer&) = delete;
-        Renderer& operator=(const Renderer&) = delete;
-
-        static const float s_FOW;
-        static const float s_NEAR_PLANE;
-        static const float s_FAR_PLANE;
-        glm::mat4 m_ProjectionMatrix;
+        Renderer() {}
+        ~Renderer() {}
 
         static Renderer* s_Instance;
+        glm::mat4 m_ViewProjectionMatrix;
+        Texture* m_DefaultTexture = nullptr;
     };
+
 }

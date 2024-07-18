@@ -1,18 +1,13 @@
 #include "strikepch.h"
 #include "Texture.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <iostream>
 
 namespace StrikeEngine {
 
-    Texture::Texture(unsigned int id)
-        : m_TextureID(id), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
-    {
-    }
-
     Texture::Texture(const std::string& path)
-        : m_TextureID(0), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0)
+        : m_TextureID(0), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0), m_Path(path)
     {
         LoadTextureFromFile(path);
     }
@@ -23,10 +18,15 @@ namespace StrikeEngine {
             glDeleteTextures(1, &m_TextureID);
     }
 
-    void Texture::Bind(unsigned int slot) const
+    void Texture::Bind(unsigned int slot)
     {
-        glActiveTexture(slot);
+        glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, m_TextureID);
+    }
+
+    void Texture::Unbind()
+    {
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void Texture::LoadTextureFromFile(const std::string& path)
@@ -66,6 +66,5 @@ namespace StrikeEngine {
 
         stbi_image_free(data);
     }
-
 
 }

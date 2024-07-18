@@ -1,28 +1,49 @@
 #pragma once
-#include "Texture.h"
+
+#include "StrikeEngine/Renderer/Texture.h"
+#include <vector>
 
 namespace StrikeEngine {
-	class Model
-	{
-	public:
-		Model(unsigned int vaoID, unsigned int vertexCount, Texture* texture)
-			: m_vaoID(vaoID), m_VertexCount(vertexCount), m_Texture(texture)
-		{
 
-		}
+    class ModelPart {
+    public:
+        ModelPart(unsigned int vaoID, unsigned int vertexCount,
+            unsigned int vboID, unsigned int eboID)
+            : m_vaoID(vaoID), m_VertexCount(vertexCount),
+            m_vboID(vboID), m_eboID(eboID)
+        {}
 
-		Model(unsigned int vaoID, unsigned int vertexCount)
-			: m_vaoID(vaoID), m_VertexCount(vertexCount), m_Texture(0)
-		{
+        void AddTexture(Texture* texture) {
+            m_Textures.push_back(texture);
+        }
 
-		}
+        inline unsigned int GetVaoID() const { return m_vaoID; }
+        inline unsigned int GetVertexCount() const { return m_VertexCount; }
+        inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
+        inline unsigned int GetVboID() const { return m_vboID; }
+        inline unsigned int GetEboID() const { return m_eboID; }
 
-		inline unsigned int GetVaoID() { return m_vaoID; };
-		inline unsigned int GetVertexCount() { return m_VertexCount; };
-		inline Texture* GetTextureID() { return m_Texture; };
-	private:
-		unsigned int m_vaoID;
-		unsigned int m_VertexCount;
-		Texture* m_Texture;
-	};
+    private:
+        unsigned int m_vaoID;
+        unsigned int m_VertexCount;
+        std::vector<Texture*> m_Textures;
+        unsigned int m_vboID;
+        unsigned int m_eboID;
+    };
+
+    class Model
+    {
+    public:
+        Model() {}
+
+        void AddPart(ModelPart* part) {
+            m_Parts.push_back(part);
+        }
+
+        inline const std::vector<ModelPart*>& GetParts() const { return m_Parts; }
+
+    private:
+        std::vector<ModelPart*> m_Parts;
+    };
+
 }

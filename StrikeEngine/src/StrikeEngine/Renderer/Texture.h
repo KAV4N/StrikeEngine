@@ -1,30 +1,32 @@
 #pragma once
 
 #include <string>
-#include <iostream>
-#include "glad/glad.h"
-
+#include <glad/glad.h>  // Include GLAD instead of GLEW
 
 namespace StrikeEngine {
 
     class Texture
     {
     public:
-        Texture(unsigned int id = 0);
         Texture(const std::string& path);
         ~Texture();
 
-        unsigned int getID() const { return m_TextureID; }
-        void Bind(unsigned int slot = 0) const;
-        void Unbind() const; 
+        void Bind(unsigned int slot = 0);
+        void Unbind();
 
-        unsigned int getWidth() const { return m_Width; }
-        unsigned int getHeight() const { return m_Height; }
-
+        inline int GetWidth() const { return m_Width; }
+        inline int GetHeight() const { return m_Height; }
+        inline const std::string& GetPath() const { return m_Path; }
+        inline void SetType(const std::string& type) { m_Type = type; }
+        inline const std::string& GetType() const { return m_Type; }
+        inline unsigned int GetTextureID() { return m_TextureID; }
     private:
         unsigned int m_TextureID;
-        unsigned int m_Width, m_Height;
-        GLenum m_InternalFormat, m_DataFormat;
+        int m_Width, m_Height;
+        unsigned int m_InternalFormat;
+        unsigned int m_DataFormat;
+        std::string m_Path;
+        std::string m_Type;  // Store type information
 
         void LoadTextureFromFile(const std::string& path);
     };

@@ -26,7 +26,7 @@ namespace StrikeEngine {
  
     }
 
-    Texture* TextureManager::GetTexture(const std::string& name) const
+    Texture* TextureManager::GetTexture(const std::string& name)
     {
         auto it = m_Textures.find(name);
         if (it != m_Textures.end()) {

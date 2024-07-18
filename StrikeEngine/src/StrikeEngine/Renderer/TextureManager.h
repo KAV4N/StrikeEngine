@@ -15,7 +15,7 @@ namespace StrikeEngine {
 
         Texture* LoadTexture(const std::string& name, const std::string& path);
 
-        Texture* GetTexture(const std::string& name) const;
+        Texture* GetTexture(const std::string& name);
 
         void ReleaseTexture(const std::string& name);
 

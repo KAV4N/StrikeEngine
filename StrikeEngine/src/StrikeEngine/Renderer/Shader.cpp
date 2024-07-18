@@ -7,7 +7,8 @@
 
 namespace StrikeEngine {
 
-    static GLenum ShaderTypeFromString(const std::string& type) {
+    static GLenum ShaderTypeFromString(const std::string& type) 
+    {
         if (type == "vertex")
             return GL_VERTEX_SHADER;
         if (type == "fragment" || type == "pixel")
@@ -17,14 +18,16 @@ namespace StrikeEngine {
         return 0;
     }
 
-    Shader::Shader(const std::string& filepath) {
+    Shader::Shader(const std::string& filepath) 
+    {
         std::string source = ReadFile(filepath);
         auto shaderSources = PreProcess(source);
         Compile(shaderSources);
         GetAllUniformLocations();
     }
 
-    Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) {
+    Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) 
+    {
         std::unordered_map<GLenum, std::string> sources;
         sources[GL_VERTEX_SHADER] = vertexSrc;
         sources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -35,7 +38,8 @@ namespace StrikeEngine {
         glDeleteProgram(m_ProgramID);
     }
 
-    std::string Shader::ReadFile(const std::string& filepath) {
+    std::string Shader::ReadFile(const std::string& filepath) 
+    {
         std::string result;
         std::ifstream in(filepath, std::ios::in | std::ios::binary);
         if (in) {
@@ -52,7 +56,8 @@ namespace StrikeEngine {
         return result;
     }
 
-    std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source) {
+    std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source) 
+    {
         std::unordered_map<GLenum, std::string> shaderSources;
 
         const char* typeToken = "#type";
@@ -76,8 +81,8 @@ namespace StrikeEngine {
         return shaderSources;
     }
 
-
-    void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {
+    void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
+    {
         GLuint program = glCreateProgram();
         std::vector<GLuint> glShaderIDs(shaderSources.size());
         int glShaderIDIndex = 0;
@@ -140,11 +145,19 @@ namespace StrikeEngine {
             glDetachShader(program, id);
     }
 
-    void Shader::Bind() const {
+    void Shader::Bind() 
+    {
         glUseProgram(m_ProgramID);
     }
 
-    void Shader::Unbind() const {
+    void Shader::Unbind() 
+    {
         glUseProgram(0);
+    }
+
+    void Shader::GetAllUniformLocations() 
+    {
+        m_TransformationMatrix = GetUniformLocation("transform");
+        m_ProjectionMatrix = GetUniformLocation("projection");
     }
 }
