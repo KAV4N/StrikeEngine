@@ -76,16 +76,24 @@ namespace StrikeEngine {
         std::vector<unsigned int> indices;
 
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+            // Position
             vertices.push_back(mesh->mVertices[i].x);
             vertices.push_back(mesh->mVertices[i].y);
             vertices.push_back(mesh->mVertices[i].z);
 
+            // Normals
             if (mesh->HasNormals()) {
                 vertices.push_back(mesh->mNormals[i].x);
                 vertices.push_back(mesh->mNormals[i].y);
                 vertices.push_back(mesh->mNormals[i].z);
             }
+            else {
+                vertices.push_back(0.0f);
+                vertices.push_back(0.0f);
+                vertices.push_back(0.0f);
+            }
 
+            // Texture coordinates
             if (mesh->HasTextureCoords(0)) {
                 vertices.push_back(mesh->mTextureCoords[0][i].x);
                 vertices.push_back(mesh->mTextureCoords[0][i].y);
@@ -102,21 +110,6 @@ namespace StrikeEngine {
                 indices.push_back(face.mIndices[j]);
             }
         }
-
-        std::vector<Texture*> textures;
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-        auto diffuseTextures = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
-        textures.insert(textures.end(), diffuseTextures.begin(), diffuseTextures.end());
-
-        auto specularTextures = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
-        textures.insert(textures.end(), specularTextures.begin(), specularTextures.end());
-
-        auto normalTextures = LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal", directory);
-        textures.insert(textures.end(), normalTextures.begin(), normalTextures.end());
-
-        auto heightTextures = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", directory);
-        textures.insert(textures.end(), heightTextures.begin(), heightTextures.end());
 
         unsigned int vao, vbo, ebo;
         glGenVertexArrays(1, &vao);
@@ -145,8 +138,25 @@ namespace StrikeEngine {
 
         glBindVertexArray(0);
 
-        return new ModelPart(vao, indices.size(), vbo, ebo);
+        ModelPart* modelPart = new ModelPart(vao, indices.size(), vbo, ebo);
+
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+        auto diffuseTextures = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
+        modelPart->AddTextures(diffuseTextures);
+
+        auto specularTextures = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
+        modelPart->AddTextures(specularTextures);
+
+        auto normalTextures = LoadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal", directory);
+        modelPart->AddTextures(normalTextures);
+
+        auto heightTextures = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", directory);
+        modelPart->AddTextures(heightTextures);
+
+        return modelPart;
     }
+
 
     std::vector<Texture*> ModelManager::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const std::string& directory) {
         std::vector<Texture*> textures;

@@ -13,9 +13,8 @@ namespace StrikeEngine {
             m_vboID(vboID), m_eboID(eboID)
         {}
 
-        void AddTexture(Texture* texture) {
-            m_Textures.push_back(texture);
-        }
+        inline void AddTextures(std::vector<Texture*> textures) { m_Textures.insert(m_Textures.end(), textures.begin(), textures.end()); }
+        inline void AddTexture(Texture* texture) { m_Textures.push_back(texture); }
 
         inline unsigned int GetVaoID() const { return m_vaoID; }
         inline unsigned int GetVertexCount() const { return m_VertexCount; }

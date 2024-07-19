@@ -40,15 +40,16 @@ namespace StrikeEngine {
     }
 
     void Renderer::Render(Model* model) {
-        int textureUnit = 0;
+        
 
         for (auto& part : model->GetParts()) {
             if (part->GetTextures().empty()) {
                 s_Instance->m_DefaultTexture->Bind(GL_TEXTURE0);
             }
             else {
+                int textureUnit = 0;
                 for (auto& texture : part->GetTextures()) {
-                    texture->Bind(GL_TEXTURE0 + textureUnit);
+                    texture->Bind(textureUnit);
                     textureUnit++;
                 }
             }
@@ -67,5 +68,6 @@ namespace StrikeEngine {
             }
         }
     }
+
 
 }
