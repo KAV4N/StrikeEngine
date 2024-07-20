@@ -19,18 +19,27 @@ namespace StrikeEngine {
 
     void Renderer::BeginScene(Camera* camera) {
         m_ViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+        m_ViewMatrix = camera->GetViewMatrix();
     }
 
     void Renderer::EndScene() {
-        // Optional: Clean-up after rendering scene
+        
     }
 
-    void Renderer::Update(glm::mat4 modelMatrix, Shader* shader) {
+    void Renderer::Update(const glm::mat4& transformationMatrix, Shader* shader, const std::vector<Light*>& lights, const glm::vec3& cameraPosition) {
         shader->Bind();
-        glm::mat4 mvp = m_ViewProjectionMatrix * modelMatrix;
-        shader->LoadMatrix(shader->GetUniformLocation("transform"), modelMatrix);
-        shader->LoadMatrix(shader->GetUniformLocation("projection"), m_ViewProjectionMatrix);
+        shader->LoadTransformationMatrix(transformationMatrix);
+        shader->LoadViewMatrix(m_ViewMatrix);
+        shader->LoadProjectionMatrix(m_ViewProjectionMatrix); 
+        shader->LoadViewPosition(cameraPosition);
+
+        int lightIndex = 0;
+        for (auto light : lights) {
+            shader->LoadLight(lightIndex, light->GetPosition(), light->GetColor(), light->GetIntensity());
+            lightIndex++;
+        }
     }
+
 
     void Renderer::SetDefaultTexture(const std::string& path) {
         if (m_DefaultTexture) {
@@ -40,8 +49,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::Render(Model* model) {
-        
-
         for (auto& part : model->GetParts()) {
             if (part->GetTextures().empty()) {
                 s_Instance->m_DefaultTexture->Bind(GL_TEXTURE0);
@@ -68,6 +75,4 @@ namespace StrikeEngine {
             }
         }
     }
-
-
 }

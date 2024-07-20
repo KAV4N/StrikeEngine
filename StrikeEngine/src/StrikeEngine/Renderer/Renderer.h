@@ -5,11 +5,11 @@
 #include "StrikeEngine/Renderer/Shader.h"
 #include "StrikeEngine/Renderer/Model.h"
 #include "StrikeEngine/Renderer/Texture.h"
+#include "StrikeEngine/Scene/Light.h"
 
 namespace StrikeEngine {
 
-    class Renderer
-    {
+    class Renderer {
     public:
         static void Create() {
             if (!s_Instance)
@@ -31,7 +31,9 @@ namespace StrikeEngine {
 
         void BeginScene(Camera* camera);
         void EndScene();
-        void Update(glm::mat4 modelMatrix, Shader* shader);
+        void Update(const glm::mat4& transformationMatrix, Shader* shader, const std::vector<Light*>& lights, const glm::vec3& cameraPosition);
+       
+        //void Update(glm::mat4 modelMatrix, Shader* shader, std::vector<Light*> lights, glm::vec3 viewPosition);
         void SetDefaultTexture(const std::string& path);
         void Render(Model* model);
 
@@ -41,6 +43,7 @@ namespace StrikeEngine {
 
         static Renderer* s_Instance;
         glm::mat4 m_ViewProjectionMatrix;
+        glm::mat4 m_ViewMatrix;
         Texture* m_DefaultTexture = nullptr;
     };
 

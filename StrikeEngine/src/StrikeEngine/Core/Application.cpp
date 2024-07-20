@@ -36,25 +36,27 @@ namespace StrikeEngine
         m_World = new World();
         Scene* scene = new Scene();
 
-       
+        // Load models
         Model* model = ModelManager::Get()->LoadModel("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj");
-        
-
         Entity* entity = new Entity(model);
-        entity->IncreaseRotation(glm::uvec3(270.f, 0.f,0.f));
-
+        entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
 
         Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
         model2->GetParts()[0]->AddTexture(new Texture("assets/objects/penguin/Penguin Diffuse Color.png"));
         Entity* entity2 = new Entity(model2);
-
         entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
 
         scene->AddEntity(entity);
         scene->AddEntity(entity2);
 
+        Light* light1 = new Light(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 3.f);
+        Light* light2 = new Light(glm::vec3(5.0f, 5.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f),2.5f);
+        scene->AddLight(light1);
+        scene->AddLight(light2);
+
         m_World->AddScene(scene);
     }
+
 
     Application::~Application()
     {

@@ -26,15 +26,28 @@ namespace StrikeEngine {
 
         inline void LoadTransformationMatrix(glm::mat4 matrix) { LoadMatrix(m_TransformationMatrix, matrix); }
         inline void LoadProjectionMatrix(glm::mat4 projection) { LoadMatrix(m_ProjectionMatrix, projection); }
+        inline void LoadViewMatrix(glm::mat4 view) { LoadMatrix(m_ViewMatrix, view); }
+        
+        void LoadLight(int index, const glm::vec3& position, const glm::vec3& color, float intensity) {
+            std::string prefix = "lights[" + std::to_string(index) + "]";
+            LoadVector(GetUniformLocation(prefix + ".position"), position);
+            LoadVector(GetUniformLocation(prefix + ".color"), color);
+            LoadFloat(GetUniformLocation(prefix + ".intensity"), intensity);
+        }
+
+        inline void LoadViewPosition(glm::vec3 viewPosition) { LoadVector(m_ViewPosition, viewPosition); }
 
     private:
         std::string ReadFile(const std::string& filepath);
         std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+        GLenum ShaderTypeFromString(const std::string& type);
         void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 
     private:
         GLuint m_ProgramID;
         int m_TransformationMatrix;
         int m_ProjectionMatrix;
+        int m_ViewMatrix;
+        int m_ViewPosition;
     };
 }

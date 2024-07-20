@@ -93,6 +93,8 @@ namespace StrikeEngine {
             UpdateViewMatrix();
         }
 
+        inline glm::vec3 GetPosition() { return m_Position; }
+
     private:
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;

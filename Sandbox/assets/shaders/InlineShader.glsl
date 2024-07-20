@@ -7,12 +7,18 @@ layout(location = 2) in vec2 aTexCoord;
 
 uniform mat4 transform;
 uniform mat4 projection;
+uniform mat4 view;
 
 out vec2 TexCoord;
+out vec3 FragPos;
+out vec3 Normal;
 
 void main() {
-    gl_Position = projection * transform * vec4(aPos, 1.0);
+    FragPos = vec3(transform * vec4(aPos, 1.0));
+    Normal = mat3(transpose(inverse(transform))) * aNormal;
     TexCoord = aTexCoord;
+
+    gl_Position = projection * view * vec4(FragPos, 1.0);
 }
 
 
@@ -21,12 +27,44 @@ void main() {
 #version 330 core
 
 in vec2 TexCoord;
+in vec3 FragPos;
+in vec3 Normal;
+
 out vec4 FragColor;
 
 uniform sampler2D ourTexture;
+uniform vec3 viewPosition;
+
+#define MAX_LIGHTS 10
+
+struct Light {
+    vec3 position;
+    vec3 color;
+    float intensity;
+};
+
+uniform Light lights[MAX_LIGHTS];
 
 void main() {
-    FragColor = texture(ourTexture, TexCoord);
+    vec3 norm = normalize(Normal);
+    vec3 result = vec3(0.0);
+
+    for (int i = 0; i < MAX_LIGHTS; ++i) {
+        vec3 lightDir = normalize(lights[i].position - FragPos);
+        
+        // Diffuse shading
+        float diff = max(dot(norm, lightDir), 0.0);
+        vec3 diffuse = diff * lights[i].color * lights[i].intensity;
+
+        // Specular shading
+        float specularStrength = 0.5;
+        vec3 viewDir = normalize(viewPosition - FragPos);
+        vec3 reflectDir = reflect(-lightDir, norm);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+        vec3 specular = specularStrength * spec * lights[i].color * lights[i].intensity;
+
+        result += (diffuse + specular);
+    }
+
+    FragColor = vec4(result * texture(ourTexture, TexCoord).rgb, 1.0);
 }
-
-
