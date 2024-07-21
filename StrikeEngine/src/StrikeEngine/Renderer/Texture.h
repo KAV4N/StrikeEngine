@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEFAULT_TEXTURE "assets/textures/default.png"
+
 #include <string>
 #include <glad/glad.h>  // Include GLAD instead of GLEW
 

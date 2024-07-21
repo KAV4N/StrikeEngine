@@ -19,11 +19,14 @@ namespace StrikeEngine {
         void GetAllUniformLocations();
 
         inline int GetUniformLocation(const std::string& uniformName) { return glGetUniformLocation(m_ProgramID, uniformName.c_str()); }
+
+
         inline void LoadFloat(int location, float value) { glUniform1f(location, value); }
         inline void LoadVector(int location, glm::vec3 vector) { glUniform3f(location, vector.x, vector.y, vector.z); }
         inline void LoadBoolean(int location, bool value) { glUniform1f(location, static_cast<float>(value)); }
         inline void LoadMatrix(int location, glm::mat4 matrix) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)); }
 
+        inline void LoadViewPosition(glm::vec3 viewPosition) { LoadVector(m_ViewPosition, viewPosition); }
         inline void LoadTransformationMatrix(glm::mat4 matrix) { LoadMatrix(m_TransformationMatrix, matrix); }
         inline void LoadProjectionMatrix(glm::mat4 projection) { LoadMatrix(m_ProjectionMatrix, projection); }
         inline void LoadViewMatrix(glm::mat4 view) { LoadMatrix(m_ViewMatrix, view); }
@@ -35,7 +38,15 @@ namespace StrikeEngine {
             LoadFloat(GetUniformLocation(prefix + ".intensity"), intensity);
         }
 
-        inline void LoadViewPosition(glm::vec3 viewPosition) { LoadVector(m_ViewPosition, viewPosition); }
+        inline void LoadMaterialAmbient(const glm::vec3& ambient) { LoadVector(GetUniformLocation("materialAmbient"), ambient);}
+
+        inline void LoadMaterialDiffuse(const glm::vec3& diffuse) {LoadVector(GetUniformLocation("materialDiffuse"), diffuse);}
+
+        inline void LoadMaterialSpecular(const glm::vec3& specular) {LoadVector(GetUniformLocation("materialSpecular"), specular);}
+
+        inline void LoadMaterialShininess(float shininess) {LoadFloat(GetUniformLocation("materialShininess"), shininess); }
+
+        
 
     private:
         std::string ReadFile(const std::string& filepath);

@@ -1,5 +1,5 @@
 #type vertex
-#version 330 core
+#version 430 core
 
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal; 
@@ -24,7 +24,7 @@ void main() {
 
 
 #type fragment
-#version 330 core
+#version 430 core
 
 in vec2 TexCoord;
 in vec3 FragPos;
@@ -45,6 +45,12 @@ struct Light {
 
 uniform Light lights[MAX_LIGHTS];
 
+// Material properties
+uniform vec3 materialAmbient;
+uniform vec3 materialDiffuse;
+uniform vec3 materialSpecular;
+uniform float materialShininess;
+
 void main() {
     vec3 norm = normalize(Normal);
     vec3 result = vec3(0.0);
@@ -54,14 +60,14 @@ void main() {
         
         // Diffuse shading
         float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * lights[i].color * lights[i].intensity;
+        vec3 diffuse = diff * materialDiffuse * lights[i].color * lights[i].intensity;
 
         // Specular shading
         float specularStrength = 0.5;
         vec3 viewDir = normalize(viewPosition - FragPos);
         vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-        vec3 specular = specularStrength * spec * lights[i].color * lights[i].intensity;
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialShininess);
+        vec3 specular = specularStrength * spec * materialSpecular * lights[i].color * lights[i].intensity;
 
         result += (diffuse + specular);
     }

@@ -123,6 +123,9 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
@@ -144,7 +147,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
+    <ClInclude Include="src\StrikeEngine\Scene\Light.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
@@ -1503,7 +1506,6 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">

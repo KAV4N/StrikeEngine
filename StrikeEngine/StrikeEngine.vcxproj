@@ -160,6 +160,7 @@
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Model.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Renderer.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Shader.h" />
@@ -167,7 +168,6 @@
     <ClInclude Include="src\StrikeEngine\Renderer\Texture.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\Model.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Light.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
     <ClInclude Include="src\StrikeEngine\Scene\World.h" />

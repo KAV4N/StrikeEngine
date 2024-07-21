@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEFAULT_SHADER "default"
+
 #include <string>
 #include <unordered_map>
 #include <memory>

@@ -11,6 +11,22 @@ namespace StrikeEngine {
 
     ModelManager* ModelManager::s_Instance = nullptr;
 
+    void ModelManager::Create() {
+        if (!s_Instance)
+            s_Instance = new ModelManager();
+    }
+
+    ModelManager* ModelManager::Get() {
+        return s_Instance;
+    }
+
+    void ModelManager::Destroy() {
+        if (s_Instance) {
+            delete s_Instance;
+            s_Instance = nullptr;
+        }
+    }
+
     ModelManager::ModelManager() {}
 
     ModelManager::~ModelManager() {
@@ -18,8 +34,9 @@ namespace StrikeEngine {
     }
 
     Model* ModelManager::LoadModel(const std::string& path) {
-        if (m_Models.find(path) != m_Models.end())
-            return m_Models[path];
+        auto it = m_Models.find(path);
+        if (it != m_Models.end())
+            return it->second;
 
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
@@ -42,9 +59,8 @@ namespace StrikeEngine {
     }
 
     Model* ModelManager::GetModel(const std::string& path) {
-        if (m_Models.find(path) != m_Models.end())
-            return m_Models[path];
-        return nullptr;
+        auto it = m_Models.find(path);
+        return (it != m_Models.end()) ? it->second : nullptr;
     }
 
     void ModelManager::Clear() {
@@ -57,13 +73,13 @@ namespace StrikeEngine {
     std::vector<ModelPart*> ModelManager::ProcessNode(aiNode* node, const aiScene* scene, const std::string& directory) {
         std::vector<ModelPart*> parts;
 
-        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
             ModelPart* part = ProcessMesh(mesh, scene, directory);
             parts.push_back(part);
         }
 
-        for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) {
             auto childParts = ProcessNode(node->mChildren[i], scene, directory);
             parts.insert(parts.end(), childParts.begin(), childParts.end());
         }
@@ -75,72 +91,17 @@ namespace StrikeEngine {
         std::vector<float> vertices;
         std::vector<unsigned int> indices;
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-            // Position
-            vertices.push_back(mesh->mVertices[i].x);
-            vertices.push_back(mesh->mVertices[i].y);
-            vertices.push_back(mesh->mVertices[i].z);
-
-            // Normals
-            if (mesh->HasNormals()) {
-                vertices.push_back(mesh->mNormals[i].x);
-                vertices.push_back(mesh->mNormals[i].y);
-                vertices.push_back(mesh->mNormals[i].z);
-            }
-            else {
-                vertices.push_back(0.0f);
-                vertices.push_back(0.0f);
-                vertices.push_back(0.0f);
-            }
-
-            // Texture coordinates
-            if (mesh->HasTextureCoords(0)) {
-                vertices.push_back(mesh->mTextureCoords[0][i].x);
-                vertices.push_back(mesh->mTextureCoords[0][i].y);
-            }
-            else {
-                vertices.push_back(0.0f);
-                vertices.push_back(0.0f);
-            }
-        }
-
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-            aiFace face = mesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++) {
-                indices.push_back(face.mIndices[j]);
-            }
-        }
+        ExtractMeshData(mesh, vertices, indices);
 
         unsigned int vao, vbo, ebo;
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
-
-        glBindVertexArray(vao);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-
-        // Vertex positions
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        // Vertex normals
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        // Vertex texture coordinates
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-
-        glBindVertexArray(0);
+        SetupMeshBuffers(vertices, indices, vao, vbo, ebo);
 
         ModelPart* modelPart = new ModelPart(vao, indices.size(), vbo, ebo);
 
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        Material mat = ExtractMaterial(material);
+
+        modelPart->SetMaterial(mat);
 
         auto diffuseTextures = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
         modelPart->AddTextures(diffuseTextures);
@@ -153,14 +114,96 @@ namespace StrikeEngine {
 
         auto heightTextures = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", directory);
         modelPart->AddTextures(heightTextures);
+        /*
+        if (modelPart->GetTextures().empty()) {
+            modelPart->AddTexture(new Texture(DEFAULT_TEXTURE));
+        }*/
 
         return modelPart;
     }
 
+    void ModelManager::ExtractMeshData(aiMesh* mesh, std::vector<float>& vertices, std::vector<unsigned int>& indices) {
+        for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
+            vertices.push_back(mesh->mVertices[i].x);
+            vertices.push_back(mesh->mVertices[i].y);
+            vertices.push_back(mesh->mVertices[i].z);
+
+            if (mesh->HasNormals()) {
+                vertices.push_back(mesh->mNormals[i].x);
+                vertices.push_back(mesh->mNormals[i].y);
+                vertices.push_back(mesh->mNormals[i].z);
+            }
+            else {
+                vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
+            }
+
+            if (mesh->HasTextureCoords(0)) {
+                vertices.push_back(mesh->mTextureCoords[0][i].x);
+                vertices.push_back(mesh->mTextureCoords[0][i].y);
+            }
+            else {
+                vertices.insert(vertices.end(), { 0.0f, 0.0f });
+            }
+        }
+
+        for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
+            aiFace face = mesh->mFaces[i];
+            indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
+        }
+    }
+
+    void ModelManager::SetupMeshBuffers(const std::vector<float>& vertices, const std::vector<unsigned int>& indices, unsigned int& vao, unsigned int& vbo, unsigned int& ebo) {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
+
+        glBindVertexArray(vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+
+        glBindVertexArray(0);
+    }
+
+    Material ModelManager::ExtractMaterial(aiMaterial* material) {
+        Material mat = DEFAULT_MATERIAL;
+        aiColor3D color;
+        float shininess;
+
+        if (material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) {
+            mat.ambient = glm::vec3(color.r, color.g, color.b);
+        }
+
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+            mat.diffuse = glm::vec3(color.r, color.g, color.b);
+        }
+
+        if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+            mat.specular = glm::vec3(color.r, color.g, color.b);
+        }
+
+        if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
+            mat.shininess = shininess;
+        }
+
+        return mat;
+    }
 
     std::vector<Texture*> ModelManager::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const std::string& directory) {
         std::vector<Texture*> textures;
-        for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+        for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
             aiString str;
             mat->GetTexture(type, i, &str);
             std::string fullPath = directory + '/' + std::string(str.C_Str());
@@ -168,7 +211,6 @@ namespace StrikeEngine {
             bool skip = false;
             for (auto& texture : textures) {
                 if (texture->GetPath() == fullPath) {
-                    textures.push_back(texture);
                     skip = true;
                     break;
                 }
