@@ -12,27 +12,27 @@ namespace StrikeEngine {
 
     Renderer::~Renderer() {}
 
-    void Renderer::Create() 
+    void Renderer::Create()
     {
         if (!s_Instance)
             s_Instance = new Renderer();
     }
 
-    Renderer* Renderer::Get() 
+    Renderer* Renderer::Get()
     {
         return s_Instance;
     }
 
-    void Renderer::Destroy() 
+    void Renderer::Destroy()
     {
-        if (s_Instance) 
+        if (s_Instance)
         {
             delete s_Instance;
             s_Instance = nullptr;
         }
     }
 
-    void Renderer::Init() 
+    void Renderer::Init()
     {
         ModelManager::Create();
         ShaderManager::Create();
@@ -42,40 +42,57 @@ namespace StrikeEngine {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    void Renderer::BeginScene(Camera* camera) 
-    {
+    void Renderer::BeginScene(Camera* camera) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_ViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
         m_ViewMatrix = camera->GetViewMatrix();
+        m_ProjectionMatrix = camera->GetProjectionMatrix();
     }
 
-    void Renderer::EndScene() 
+
+    void Renderer::EndScene()
     {
         Render();
     }
 
-    void Renderer::SubmitScene(const std::vector<Entity*>& entities, const std::vector<Light>& lights, const glm::vec3& cameraPosition) 
+    void Renderer::SubmitScene(const std::vector<Entity*>& entities, const std::vector<Light>& lights, const glm::vec3& cameraPosition)
     {
-        for (auto entity : entities) 
+        for (auto entity : entities)
         {
             entity->IncreaseRotation(glm::vec3(0.f, 0.f, 1.f)); // TODO: REMOVE, ONLY FOR TESTING
             Submit(entity->GetTransformationMatrix(), entity->GetModel(), lights, cameraPosition);
         }
     }
 
-    void Renderer::Submit(const glm::mat4& transformationMatrix, Model* model, const std::vector<Light>& lights, const glm::vec3& cameraPosition) 
+    void Renderer::Submit(const glm::mat4& transformationMatrix, Model* model, const std::vector<Light>& lights, const glm::vec3& cameraPosition)
     {
         Shader* shader = model->GetShader();
         m_RenderQueue[shader].push_back({ transformationMatrix, model, lights, cameraPosition });
     }
-
-    void Renderer::Render() 
+    /*
+    void Renderer::SubmitSkybox(Skybox* skybox, glm::vec3 cameraPosition, glm::vec3 cameraOrientation, glm::vec3 cameraUp)
     {
-        for (auto& pair : m_RenderQueue) 
+        m_SkyboxRenderCommand = { skybox, cameraPosition, cameraOrientation, cameraUp };
+        m_RenderSkybox = true;
+    }
+    */
+    void Renderer::SubmitSkybox(Skybox* skybox)
+    {
+        m_Skybox =  skybox;
+        m_RenderSkybox = true;
+    }
+
+    void Renderer::Render()
+    {
+
+       
+        RenderSkybox();
+        for (auto& pair : m_RenderQueue)
         {
             Shader* shader = pair.first;
             shader->Bind();
 
-            for (const auto& command : pair.second) 
+            for (const auto& command : pair.second)
             {
                 BindShaderAndSetUniforms(shader, command);
                 RenderModelParts(command);
@@ -83,11 +100,35 @@ namespace StrikeEngine {
 
             shader->Unbind();
         }
-
+        
+        
         m_RenderQueue.clear();
     }
 
-    void Renderer::BindShaderAndSetUniforms(Shader* shader, const RenderCommand& command) 
+    void Renderer::RenderSkybox()
+    {
+        if (m_Skybox)
+        {
+
+            glDepthFunc(GL_LEQUAL);
+            glDisable(GL_DEPTH_TEST);
+
+            Shader* skyboxShader = m_Skybox->GetShader();
+            skyboxShader->Bind();
+
+            glUniformMatrix4fv(skyboxShader->GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(glm::mat4(glm::mat3(m_ViewMatrix))));
+            glUniformMatrix4fv(skyboxShader->GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));
+
+            m_Skybox->Draw();
+
+
+            glDepthFunc(GL_LESS);
+            glEnable(GL_DEPTH_TEST);
+            skyboxShader->Unbind();
+        }
+    }
+
+    void Renderer::BindShaderAndSetUniforms(Shader* shader, const RenderCommand& command)
     {
         shader->LoadTransformationMatrix(command.transformationMatrix);
         shader->LoadViewMatrix(m_ViewMatrix);
@@ -95,13 +136,13 @@ namespace StrikeEngine {
         shader->LoadViewPosition(command.cameraPosition);
 
         int lightIndex = 0;
-        for (auto light : command.lights) 
+        for (auto light : command.lights)
         {
             shader->LoadLight(lightIndex, light.position, light.color, light.intensity);
             lightIndex++;
         }
 
-        for (auto part : command.model->GetParts()) 
+        for (auto part : command.model->GetParts())
         {
             const Material& material = part->GetMaterial();
             shader->LoadMaterialAmbient(material.ambient);
@@ -111,9 +152,9 @@ namespace StrikeEngine {
         }
     }
 
-    void Renderer::RenderModelParts(const RenderCommand& command) 
+    void Renderer::RenderModelParts(const RenderCommand& command)
     {
-        for (auto& part : command.model->GetParts()) 
+        for (auto& part : command.model->GetParts())
         {
             BindTextures(part);
 
@@ -125,16 +166,16 @@ namespace StrikeEngine {
         }
     }
 
-    void Renderer::BindTextures(ModelPart* part) 
+    void Renderer::BindTextures(ModelPart* part)
     {
         int textureUnit = 0;
 
-        if (part->GetTextures().empty() && m_DefaultTexture) 
+        if (part->GetTextures().empty() && m_DefaultTexture)
         {
             m_DefaultTexture->Bind(textureUnit);
         }
         else {
-            for (auto& texture : part->GetTextures()) 
+            for (auto& texture : part->GetTextures())
             {
                 texture->Bind(textureUnit);
                 textureUnit++;
@@ -142,28 +183,27 @@ namespace StrikeEngine {
         }
     }
 
-    void Renderer::UnbindTextures(ModelPart* part) 
+    void Renderer::UnbindTextures(ModelPart* part)
     {
-        if (part->GetTextures().empty() && m_DefaultTexture) 
+        if (part->GetTextures().empty() && m_DefaultTexture)
         {
             m_DefaultTexture->Unbind();
         }
         else {
-            for (auto& texture : part->GetTextures()) 
+            for (auto& texture : part->GetTextures())
             {
                 texture->Unbind();
             }
         }
     }
-    
-    void Renderer::SetDefaultTexture(const std::string& path) 
+
+    void Renderer::SetDefaultTexture(const std::string& path)
     {
-        if (m_DefaultTexture) 
+        if (m_DefaultTexture)
         {
             delete m_DefaultTexture;
             m_DefaultTexture = nullptr;
         }
         m_DefaultTexture = new Texture(path);
     }
-    
 }

@@ -9,9 +9,9 @@
 #include "StrikeEngine/Renderer/Texture.h"
 #include "StrikeEngine/Scene/Light.h"
 #include <StrikeEngine/Scene/Entity.h>
+#include "Skybox.h"
 
 namespace StrikeEngine {
-
 
     struct RenderCommand {
         glm::mat4 transformationMatrix;
@@ -19,6 +19,7 @@ namespace StrikeEngine {
         std::vector<Light> lights;
         glm::vec3 cameraPosition;
     };
+
 
     class Renderer {
     public:
@@ -32,7 +33,8 @@ namespace StrikeEngine {
         void EndScene();
         void SubmitScene(const std::vector<Entity*>& entities, const std::vector<Light>& lights, const glm::vec3& cameraPosition);
         void Submit(const glm::mat4& transformationMatrix, Model* model, const std::vector<Light>& lights, const glm::vec3& cameraPosition);
-        void Render();
+        //void SubmitSkybox(Skybox* skybox, glm::vec3 cameraPosition, glm::vec3 cameraOrientation, glm::vec3 cameraUp);
+        void SubmitSkybox(Skybox* skybox);
 
         void SetDefaultTexture(const std::string& path);
 
@@ -40,12 +42,18 @@ namespace StrikeEngine {
         Renderer();
         ~Renderer();
 
+        void Render();
+        void RenderSkybox();
+
         static Renderer* s_Instance;
         glm::mat4 m_ViewProjectionMatrix;
         glm::mat4 m_ViewMatrix;
+        glm::mat4 m_ProjectionMatrix;
+        Skybox* m_Skybox;
         Texture* m_DefaultTexture = nullptr;
 
         std::unordered_map<Shader*, std::vector<RenderCommand>> m_RenderQueue;
+        bool m_RenderSkybox = false;
 
         void BindShaderAndSetUniforms(Shader* shader, const RenderCommand& command);
         void RenderModelParts(const RenderCommand& command);

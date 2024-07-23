@@ -29,9 +29,9 @@ namespace StrikeEngine {
         }
     }
 
-    void World::Render(Shader* shader) {
+    void World::Render() {
         if (m_ActiveScene) {
-            m_ActiveScene->Render(shader);
+            m_ActiveScene->Render();
         }
     }
 

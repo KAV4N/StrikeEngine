@@ -138,6 +138,9 @@
     <ClInclude Include="src\StrikeEngine\Renderer\ShaderManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\Skybox.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\Texture.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
@@ -1542,6 +1545,9 @@
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\Skybox.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp">

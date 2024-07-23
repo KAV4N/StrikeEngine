@@ -5,20 +5,15 @@
 namespace StrikeEngine {
     Scene::Scene() {
         m_Camera = new Camera(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-        // ONLY FOR TESTING
+        //m_Camera->MoveRight(1);
         m_Camera->SetPosition(glm::vec3(0.0f, 1.f, 3.f));
-        // m_Camera->RotatePitch(-15.f);
+        m_Skybox = new Skybox();
     }
 
     Scene::~Scene() {
         for (auto entity : m_Entities) {
             delete entity;
         }
-        /*
-        for (auto light : m_Lights) {
-            delete light;
-        }
-        */
         delete m_Camera;
     }
 
@@ -34,24 +29,26 @@ namespace StrikeEngine {
         m_Camera = camera;
     }
 
+
     void Scene::Update() {
-        /*
-        for (auto entity : m_Entities) {
-            entity->Update();
-        }
-        */
+        // Update entities and other scene elements
     }
 
-    void Scene::Render(Shader* shader) {
+    void Scene::Render() {
         Renderer* renderer = Renderer::Get();
         renderer->BeginScene(m_Camera);
 
+        //renderer->SubmitSkybox(m_Skybox, m_Camera->GetPosition(), m_Camera->GetOrientation(), m_Camera->GetUp());
+        renderer->SubmitSkybox(m_Skybox);
         renderer->SubmitScene(m_Entities, m_Lights, m_Camera->GetPosition());
 
         renderer->EndScene();
     }
 
+
     Camera* Scene::GetCamera() {
         return m_Camera;
     }
+
+
 }

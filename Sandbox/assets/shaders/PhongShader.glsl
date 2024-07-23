@@ -2,8 +2,8 @@
 #version 430 core
 
 layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 aNormal; 
-layout(location = 2) in vec2 aTexCoord; 
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoord;
 
 uniform mat4 transform;
 uniform mat4 projection;
@@ -20,7 +20,6 @@ void main() {
 
     gl_Position = projection * view * vec4(FragPos, 1.0);
 }
-
 
 
 #type fragment
@@ -57,7 +56,7 @@ void main() {
 
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         vec3 lightDir = normalize(lights[i].position - FragPos);
-        
+
         // Diffuse shading
         float diff = max(dot(norm, lightDir), 0.0);
         vec3 diffuse = diff * materialDiffuse * lights[i].color * lights[i].intensity;

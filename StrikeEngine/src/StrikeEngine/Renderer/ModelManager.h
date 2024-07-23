@@ -8,6 +8,7 @@
 
 namespace StrikeEngine {
 
+
     class ModelManager
     {
     public:

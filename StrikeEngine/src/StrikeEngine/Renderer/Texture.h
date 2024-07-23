@@ -3,7 +3,7 @@
 #define DEFAULT_TEXTURE "assets/textures/default.png"
 
 #include <string>
-#include <glad/glad.h>  // Include GLAD instead of GLEW
+#include <glad/glad.h>  
 
 namespace StrikeEngine {
 
@@ -28,7 +28,7 @@ namespace StrikeEngine {
         unsigned int m_InternalFormat;
         unsigned int m_DataFormat;
         std::string m_Path;
-        std::string m_Type;  // Store type information
+        std::string m_Type; 
 
         void LoadTextureFromFile(const std::string& path);
     };

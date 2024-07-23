@@ -29,7 +29,6 @@ namespace StrikeEngine
         Renderer::Create();
         Renderer::Init();
         Renderer::Get()->SetDefaultTexture(DEFAULT_TEXTURE);
-        ShaderManager::Get()->LoadShader("default", "assets/shaders/InlineShader.glsl");
 
         m_ImGuiLayer = new ImGuiLayer();
         PushOverlay(m_ImGuiLayer);
@@ -39,11 +38,12 @@ namespace StrikeEngine
 
         // Load models
         Model* model = ModelManager::Get()->LoadModel("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj");
+        
         Entity* entity = new Entity(model);
         entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
 
         Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
-        //model2->GetParts()[0]->AddTexture(new Texture("assets/objects/penguin/Penguin Diffuse Color.png"));
+        model2->SetShader(ShaderManager::Get()->GetShader("GouraudShader"));
         Entity* entity2 = new Entity(model2);
         entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
 
@@ -94,12 +94,12 @@ namespace StrikeEngine
 
 
         while (m_Running) {
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
             m_World->Update();
-            m_World->Render(ShaderManager::Get()->GetShader(DEFAULT_SHADER));
+            m_World->Render();
 
 
             for (Layer* layer : m_LayerStack)

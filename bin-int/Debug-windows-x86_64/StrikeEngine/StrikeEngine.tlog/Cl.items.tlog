@@ -10,6 +10,7 @@ D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ModelManager.
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Renderer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Renderer.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Shader.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Shader.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ShaderManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ShaderManager.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Skybox.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Skybox.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Texture.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Texture.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Scene\Scene.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Scene.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Scene\World.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\World.obj

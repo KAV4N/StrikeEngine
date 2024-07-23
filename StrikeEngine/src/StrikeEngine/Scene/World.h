@@ -13,7 +13,7 @@ namespace StrikeEngine {
         void SetActiveScene(int index);
 
         void Update();
-        void Render(Shader* shader);
+        void Render();
 
         Scene* GetActiveScene();
 

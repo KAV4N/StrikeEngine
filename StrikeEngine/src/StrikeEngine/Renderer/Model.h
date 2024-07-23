@@ -131,12 +131,10 @@ namespace StrikeEngine {
         Material m_Material;
     };
 
-    class Model
-    {
+    class Model {
     public:
         Model(Shader* shader = nullptr)
-            : m_Shader(shader ? shader : ShaderManager::Get()->GetShader(DEFAULT_SHADER))
-        {}
+            : m_Shader(shader ? shader : ShaderManager::Get()->GetShader(DEFAULT_SHADER)) {}
 
         void AddPart(ModelPart* part) {
             m_Parts.push_back(part);

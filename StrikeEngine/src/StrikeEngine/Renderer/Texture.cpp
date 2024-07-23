@@ -12,7 +12,9 @@ namespace StrikeEngine {
     Texture::Texture(const std::string& path)
         : m_TextureID(0), m_Width(0), m_Height(0), m_InternalFormat(0), m_DataFormat(0), m_Path(path)
     {
+
         LoadTextureFromFile(path);
+        
     }
 
     Texture::~Texture()
@@ -25,6 +27,8 @@ namespace StrikeEngine {
     {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, m_TextureID);
+
+      
     }
 
     void Texture::Unbind()

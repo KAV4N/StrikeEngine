@@ -20,7 +20,7 @@ namespace StrikeEngine {
 
         inline int GetUniformLocation(const std::string& uniformName) { return glGetUniformLocation(m_ProgramID, uniformName.c_str()); }
 
-
+        inline void LoadInt(int location, int value) { glUniform1i(location, value); }
         inline void LoadFloat(int location, float value) { glUniform1f(location, value); }
         inline void LoadVector(int location, glm::vec3 vector) { glUniform3f(location, vector.x, vector.y, vector.z); }
         inline void LoadBoolean(int location, bool value) { glUniform1f(location, static_cast<float>(value)); }
@@ -46,7 +46,9 @@ namespace StrikeEngine {
 
         inline void LoadMaterialShininess(float shininess) {LoadFloat(GetUniformLocation("materialShininess"), shininess); }
 
-        
+        inline void LoadColor(glm::vec3 color) { LoadVector(GetUniformLocation("color"), color); }
+
+        inline void LoadCubeMapTextureUnit(int unit) { LoadInt(GetUniformLocation("skybox"), unit); }
 
     private:
         std::string ReadFile(const std::string& filepath);
