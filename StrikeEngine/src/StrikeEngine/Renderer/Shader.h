@@ -2,65 +2,41 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <nlohmann/json.hpp>
 
 namespace StrikeEngine {
+
     class Shader {
     public:
         Shader(const std::string& filepath);
-        Shader(const std::string& vertexSrc, const std::string& fragmentSrc);
         ~Shader();
 
         void Bind();
         void Unbind();
 
-        void GetAllUniformLocations();
+        void LoadUniform(const std::string& name, const std::vector<glm::vec3>& values);
+        void LoadUniform(const std::string& name, const std::vector<glm::mat4>& values);
 
-        inline int GetUniformLocation(const std::string& uniformName) { return glGetUniformLocation(m_ProgramID, uniformName.c_str()); }
-
-        inline void LoadInt(int location, int value) { glUniform1i(location, value); }
-        inline void LoadFloat(int location, float value) { glUniform1f(location, value); }
-        inline void LoadVector(int location, glm::vec3 vector) { glUniform3f(location, vector.x, vector.y, vector.z); }
-        inline void LoadBoolean(int location, bool value) { glUniform1f(location, static_cast<float>(value)); }
-        inline void LoadMatrix(int location, glm::mat4 matrix) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)); }
-
-        inline void LoadViewPosition(glm::vec3 viewPosition) { LoadVector(m_ViewPosition, viewPosition); }
-        inline void LoadTransformationMatrix(glm::mat4 matrix) { LoadMatrix(m_TransformationMatrix, matrix); }
-        inline void LoadProjectionMatrix(glm::mat4 projection) { LoadMatrix(m_ProjectionMatrix, projection); }
-        inline void LoadViewMatrix(glm::mat4 view) { LoadMatrix(m_ViewMatrix, view); }
-        
-        void LoadLight(int index, const glm::vec3& position, const glm::vec3& color, float intensity) {
-            std::string prefix = "lights[" + std::to_string(index) + "]";
-            LoadVector(GetUniformLocation(prefix + ".position"), position);
-            LoadVector(GetUniformLocation(prefix + ".color"), color);
-            LoadFloat(GetUniformLocation(prefix + ".intensity"), intensity);
-        }
-
-        inline void LoadMaterialAmbient(const glm::vec3& ambient) { LoadVector(GetUniformLocation("materialAmbient"), ambient);}
-
-        inline void LoadMaterialDiffuse(const glm::vec3& diffuse) {LoadVector(GetUniformLocation("materialDiffuse"), diffuse);}
-
-        inline void LoadMaterialSpecular(const glm::vec3& specular) {LoadVector(GetUniformLocation("materialSpecular"), specular);}
-
-        inline void LoadMaterialShininess(float shininess) {LoadFloat(GetUniformLocation("materialShininess"), shininess); }
-
-        inline void LoadColor(glm::vec3 color) { LoadVector(GetUniformLocation("color"), color); }
-
-        inline void LoadCubeMapTextureUnit(int unit) { LoadInt(GetUniformLocation("skybox"), unit); }
+        void LoadUniform(const std::string& name, const glm::vec3& value);
+        void LoadUniform(const std::string& name, const glm::mat4& value);
+        void LoadUniform(const std::string& name, float value);
+        void LoadUniform(const std::string& name, int value);
 
     private:
         std::string ReadFile(const std::string& filepath);
-        std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-        GLenum ShaderTypeFromString(const std::string& type);
+        void ParseUniforms(const std::string& source);
         void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+        void SetUniformsFromJSON(const nlohmann::json& json);
 
-    private:
+        GLenum ShaderTypeFromString(const std::string& type);
+        std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+
         GLuint m_ProgramID;
-        int m_TransformationMatrix;
-        int m_ProjectionMatrix;
-        int m_ViewMatrix;
-        int m_ViewPosition;
+        std::unordered_map<std::string, GLint> m_UniformLocations;
+        std::unordered_map<std::string, std::string> m_UniformTypes;
     };
 }

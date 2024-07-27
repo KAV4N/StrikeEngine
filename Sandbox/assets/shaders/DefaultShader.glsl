@@ -1,9 +1,53 @@
+#RootSignature
+{
+  "RootSignature": [
+    {
+      "name": "transform",
+      "type": "matrix4"
+    },
+    {
+      "name": "projection",
+      "type": "matrix4"
+    },
+    {
+      "name": "view",
+      "type": "matrix4"
+    },
+    {
+      "name": "viewPosition",
+      "type": "vec3"
+    },
+    {
+      "name": "lights",
+      "type": "ssbo",
+      "binding": 0
+    },
+    {
+      "name": "material.ambient",
+      "type": "vec3"
+    },
+    {
+      "name": "material.diffuse",
+      "type": "vec3"
+    },
+    {
+      "name": "material.specular",
+      "type": "vec3"
+    },
+    {
+      "name": "material.shininess",
+      "type": "float"
+    }
+  ]
+}
+#end
+
 #type vertex
 #version 430 core
 
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 aNormal; 
-layout(location = 2) in vec2 aTexCoord; 
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal; 
+layout (location = 2) in vec2 aTexCoord; 
 
 uniform mat4 transform;
 uniform mat4 projection;
@@ -21,9 +65,6 @@ void main() {
     gl_Position = projection * view * vec4(FragPos, 1.0);
 }
 
-
-
-
 #type fragment
 #version 430 core
 
@@ -36,42 +77,67 @@ out vec4 FragColor;
 uniform sampler2D ourTexture;
 uniform vec3 viewPosition;
 
-#define MAX_LIGHTS 10
-
 struct Light {
     vec3 position;
+    float radius; 
     vec3 color;
     float intensity;
 };
 
-uniform Light lights[MAX_LIGHTS];
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
 
-// Material properties
-uniform vec3 materialAmbient;
-uniform vec3 materialDiffuse;
-uniform vec3 materialSpecular;
-uniform float materialShininess;
+layout (std430, binding = 0) buffer LightBuffer {
+    Light lights[];
+};
+
+uniform Material material;
+
+vec3 calculateLight(Light light, vec3 normal, vec3 viewDir, vec3 texColor) {
+    // Calculate light direction and distance
+    vec3 lightDir = normalize(light.position - FragPos);
+    float distance = length(light.position - FragPos);
+    float attenuation = 1.0 / (distance * distance * light.radius + 1.0);
+
+    // Diffuse lighting
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * light.color * light.intensity * material.diffuse * texColor;
+
+    // Specular lighting
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = spec * light.color * light.intensity * material.specular;
+
+    // Fresnel effect
+    float fresnelFactor = pow(1.0 - max(dot(viewDir, normal), 0.0), 5.0);
+    specular *= fresnelFactor;
+
+    // Final light contribution
+    return attenuation * (diffuse + specular);
+}
 
 void main() {
+    // Texture color
+    vec3 texColor = texture(ourTexture, TexCoord).rgb;
+    
+    // Calculate ambient lighting
+    vec3 ambient = material.ambient * texColor;
+
+    // Initialize result color with ambient lighting
+    vec3 result = ambient;
+
+    // Normalization
     vec3 norm = normalize(Normal);
-    vec3 result = vec3(0.0);
+    vec3 viewDir = normalize(viewPosition - FragPos);
 
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        vec3 lightDir = normalize(lights[i].position - FragPos);
-        
-        // Diffuse shading
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * materialDiffuse * lights[i].color * lights[i].intensity;
-
-        // Specular shading
-        float specularStrength = 0.5;
-        vec3 viewDir = normalize(viewPosition - FragPos);
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialShininess);
-        vec3 specular = specularStrength * spec * materialSpecular * lights[i].color * lights[i].intensity;
-
-        result += (diffuse + specular);
+    // Iterate over each light source
+    for (int i = 0; i < lights.length(); i++) {
+        result += calculateLight(lights[i], norm, viewDir, texColor);
     }
 
-    FragColor = vec4(result * texture(ourTexture, TexCoord).rgb, 1.0);
+    FragColor = vec4(result, 1.0);
 }

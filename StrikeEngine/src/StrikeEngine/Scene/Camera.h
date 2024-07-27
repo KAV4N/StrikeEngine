@@ -105,8 +105,8 @@ namespace StrikeEngine {
         }
     };
 }
-*/
 
+*/
 
 #pragma once
 #include <glm/glm.hpp>

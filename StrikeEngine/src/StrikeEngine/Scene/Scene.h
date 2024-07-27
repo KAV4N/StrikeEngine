@@ -16,20 +16,36 @@ namespace StrikeEngine {
         ~Scene();
 
         void AddEntity(Entity* entity);
-        void AddLight(Light light);
+        Entity* CreateEntity(Model* model, const glm::vec3& position = glm::vec3(0.0f),
+            const glm::vec3& rotation = glm::vec3(0.0f),
+            const glm::vec3& scale = glm::vec3(1.0f));
+
+
+        void RemoveEntity(size_t index);
+
+
+
+
+        void Setup();
+
         void SetCamera(Camera* camera);
-        void SetSkyboxModel(Model* model); 
 
         void Update();
         void Render();
 
         Camera* GetCamera();
-        const std::vector<Light>& GetLights() const;
-        Model* GetSkyboxModel() const;
+        const std::vector<Light>& GetLights();
+
+        friend class LightManager;
 
     public:
-        std::string m_Name = "default";
+        std::string Name = "default";
 
+    private:
+        void AddLight(const Light& light);
+        void RemoveLight(size_t index);
+        void UpdateLight(size_t index, const Light& light);
+        void ClearLights();
     private:
         std::vector<Entity*> m_Entities;
         std::vector<Light> m_Lights;
@@ -37,4 +53,3 @@ namespace StrikeEngine {
         Skybox* m_Skybox;
     };
 }
-

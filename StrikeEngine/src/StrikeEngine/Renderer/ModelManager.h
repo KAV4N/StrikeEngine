@@ -20,6 +20,12 @@ namespace StrikeEngine {
         Model* GetModel(const std::string& path);
         void Clear();
 
+        Model* CreatePlane(float width, float height);
+        Model* CreateCylinder(float radius, float height, unsigned int sectors);
+        Model* CreateSphere(float radius, unsigned int rings, unsigned int sectors);
+        Model* CreateCuboid(float width, float height, float depth);
+
+
     private:
         ModelManager();
         ~ModelManager();
@@ -28,6 +34,12 @@ namespace StrikeEngine {
         ModelPart* ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory);
         void ExtractMeshData(aiMesh* mesh, std::vector<float>& vertices, std::vector<unsigned int>& indices);
         std::vector<Texture*> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const std::string& directory);
+
+
+        ModelPart* CreateSphereMesh(float radius, unsigned int rings, unsigned int sectors);
+        ModelPart* CreateCuboidMesh(float width, float height, float depth);
+        ModelPart* CreatePlaneMesh(float width, float height);
+        ModelPart* CreateCylinderMesh(float radius, float height, unsigned int sectors);
 
         static ModelManager* s_Instance;
         std::unordered_map<std::string, Model*> m_Models;

@@ -16,10 +16,8 @@ namespace StrikeEngine {
     struct RenderCommand {
         glm::mat4 transformationMatrix;
         Model* model;
-        std::vector<Light> lights;
         glm::vec3 cameraPosition;
     };
-
 
     class Renderer {
     public:
@@ -31,9 +29,8 @@ namespace StrikeEngine {
 
         void BeginScene(Camera* camera);
         void EndScene();
-        void SubmitScene(const std::vector<Entity*>& entities, const std::vector<Light>& lights, const glm::vec3& cameraPosition);
-        void Submit(const glm::mat4& transformationMatrix, Model* model, const std::vector<Light>& lights, const glm::vec3& cameraPosition);
-        //void SubmitSkybox(Skybox* skybox, glm::vec3 cameraPosition, glm::vec3 cameraOrientation, glm::vec3 cameraUp);
+        void SubmitScene(const std::vector<Entity*>& entities, const glm::vec3& cameraPosition);
+        void Submit(const glm::mat4& transformationMatrix, Model* model, const glm::vec3& cameraPosition);
         void SubmitSkybox(Skybox* skybox);
 
         void SetDefaultTexture(const std::string& path);
@@ -45,6 +42,15 @@ namespace StrikeEngine {
         void Render();
         void RenderSkybox();
 
+        void BindShaderMVP(Shader* shader, const RenderCommand& command);
+        void BindShaderMaterials(Shader* shader, ModelPart* part);
+
+
+        void RenderModelParts(Shader* shader, const RenderCommand& command);
+        void BindTextures(ModelPart* part);
+        void UnbindTextures(ModelPart* part);
+
+    private:
         static Renderer* s_Instance;
         glm::mat4 m_ViewProjectionMatrix;
         glm::mat4 m_ViewMatrix;
@@ -55,10 +61,5 @@ namespace StrikeEngine {
         std::unordered_map<Shader*, std::vector<RenderCommand>> m_RenderQueue;
         bool m_RenderSkybox = false;
 
-        void BindShaderAndSetUniforms(Shader* shader, const RenderCommand& command);
-        void RenderModelParts(const RenderCommand& command);
-        void BindTextures(ModelPart* part);
-        void UnbindTextures(ModelPart* part);
     };
-
 }

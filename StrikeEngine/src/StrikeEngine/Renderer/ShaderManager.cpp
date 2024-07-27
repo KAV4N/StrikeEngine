@@ -24,12 +24,6 @@ namespace StrikeEngine {
         return shader;
     }
 
-    Shader* ShaderManager::LoadShader(const std::string& name,  const std::string& vertexSrc, const std::string& fragmentSrc) {
-        Shader* shader = new Shader(vertexSrc, fragmentSrc);
-        m_Shaders[name] = shader;
-        return shader;
-    }
-
     void ShaderManager::LoadAllShaders() {
         for (const auto& entry : std::filesystem::directory_iterator(SHADER_DIRECTORY)) {
             if (entry.is_regular_file()) {

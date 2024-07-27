@@ -9,6 +9,7 @@ includeDir = {}
 includeDir["GLFW"] = "StrikeEngine/vendor/GLFW/include"
 includeDir["Glad"] = "StrikeEngine/vendor/Glad/include"
 includeDir["ImGui"] = "StrikeEngine/vendor/imgui"
+includeDir["json"] = "StrikeEngine/vendor/json/include"
 includeDir["glm"] = "StrikeEngine/vendor/glm"
 includeDir["stb"] = "StrikeEngine/vendor/stb"
 includeDir["assimp"] = "StrikeEngine/vendor/assimp/include"
@@ -42,6 +43,7 @@ project "StrikeEngine"
         "%{prj.name}/src/**.glsl",
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
+        "%{prj.name}/vendor/json/include/nlohmann/**.hpp",
         "%{prj.name}/vendor/stb/**.h"
     }
     
@@ -53,7 +55,8 @@ project "StrikeEngine"
         "%{includeDir.ImGui}",
         "%{includeDir.glm}",
         "%{includeDir.stb}",
-        "%{includeDir.assimp}"
+        "%{includeDir.assimp}",
+        "%{includeDir.json}",
     }
 
     links {

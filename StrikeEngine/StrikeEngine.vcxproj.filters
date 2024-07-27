@@ -49,6 +49,42 @@
     <Filter Include="vendor\glm\glm\gtx">
       <UniqueIdentifier>{B3A6A76B-9F8A-68C1-08EB-6214F4ED5243}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\json">
+      <UniqueIdentifier>{5C537BC1-C808-F4B6-51FD-ED8DBDB1EABA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include">
+      <UniqueIdentifier>{CF16643C-3B78-414A-C4E5-87FC30467809}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann">
+      <UniqueIdentifier>{B90B2005-A5C6-0FB1-4E7E-88FB3A185A41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail">
+      <UniqueIdentifier>{5B7972A3-C732-DD4D-5092-F727BC4A93BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\conversions">
+      <UniqueIdentifier>{A3BEA835-0FFA-08F9-18EF-858884A98D29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\input">
+      <UniqueIdentifier>{BA91E909-26AC-4CAB-6FCE-5C3FDB2774B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\iterators">
+      <UniqueIdentifier>{87772456-F3E7-26CF-BC06-A15728365FD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\meta">
+      <UniqueIdentifier>{318CBBB2-1D09-AFF5-4686-AF0932624B89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\meta\call_std">
+      <UniqueIdentifier>{86756371-F23B-C08D-3B97-4EF0A79C2EF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\detail\output">
+      <UniqueIdentifier>{1B859B55-07ED-6123-7058-76395CDF780F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\thirdparty">
+      <UniqueIdentifier>{13B33329-7F42-F513-883E-D62BF44C3020}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\json\include\nlohmann\thirdparty\hedley">
+      <UniqueIdentifier>{3D22751E-29A0-C5B7-1298-834FFEB407E0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor\stb">
       <UniqueIdentifier>{8BD3C5A8-778B-07F6-E092-E051CC69A2E6}</UniqueIdentifier>
     </Filter>
@@ -1410,6 +1446,141 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\adl_serializer.hpp">
+      <Filter>vendor\json\include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\byte_container_with_subtype.hpp">
+      <Filter>vendor\json\include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\abi_macros.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\conversions\from_json.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\conversions</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\conversions\to_chars.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\conversions</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\conversions\to_json.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\conversions</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\exceptions.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\hash.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\binary_reader.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\input_adapters.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\json_sax.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\lexer.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\parser.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\input\position_t.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\input</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\internal_iterator.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\iter_impl.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\iteration_proxy.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\iterator_traits.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\json_reverse_iterator.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\iterators\primitive_iterator.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\iterators</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\json_custom_base_class.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\json_pointer.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\json_ref.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\macro_scope.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\macro_unscope.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\call_std\begin.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta\call_std</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\call_std\end.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta\call_std</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\cpp_future.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\detected.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\identity_tag.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\is_sax.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\std_fs.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\type_traits.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\meta\void_t.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\output\binary_writer.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\output</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\output\output_adapters.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\output</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\output\serializer.hpp">
+      <Filter>vendor\json\include\nlohmann\detail\output</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\string_concat.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\string_escape.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\detail\value_t.hpp">
+      <Filter>vendor\json\include\nlohmann\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\json.hpp">
+      <Filter>vendor\json\include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\json_fwd.hpp">
+      <Filter>vendor\json\include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\ordered_map.hpp">
+      <Filter>vendor\json\include\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\thirdparty\hedley\hedley.hpp">
+      <Filter>vendor\json\include\nlohmann\thirdparty\hedley</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\json\include\nlohmann\thirdparty\hedley\hedley_undef.hpp">
+      <Filter>vendor\json\include\nlohmann\thirdparty\hedley</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\stb\deprecated\rrsprintf.h">
       <Filter>vendor\stb\deprecated</Filter>
     </ClInclude>
@@ -1509,6 +1680,8 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1562,5 +1735,6 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp" />
   </ItemGroup>
 </Project>

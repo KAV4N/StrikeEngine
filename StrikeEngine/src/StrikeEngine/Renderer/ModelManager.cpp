@@ -225,4 +225,238 @@ namespace StrikeEngine {
         return textures;
     }
 
+
+    Model* ModelManager::CreateSphere(float radius, unsigned int rings, unsigned int sectors)
+    {
+        ModelPart* spherePart = CreateSphereMesh(radius, rings, sectors);
+        Model* sphereModel = new Model();
+        sphereModel->AddPart(spherePart);
+        return sphereModel;
+    }
+
+    Model* ModelManager::CreateCuboid(float width, float height, float depth)
+    {
+        ModelPart* cuboidPart = CreateCuboidMesh(width, height, depth);
+        Model* cuboidModel = new Model();
+        cuboidModel->AddPart(cuboidPart);
+        return cuboidModel;
+    }
+
+    Model* ModelManager::CreatePlane(float width, float height)
+    {
+        ModelPart* planePart = CreatePlaneMesh(width, height);
+        Model* planeModel = new Model();
+        planeModel->AddPart(planePart);
+        return planeModel;
+    }
+
+    Model* ModelManager::CreateCylinder(float radius, float height, unsigned int sectors)
+    {
+        ModelPart* cylinderPart = CreateCylinderMesh(radius, height, sectors);
+        Model* cylinderModel = new Model();
+        cylinderModel->AddPart(cylinderPart);
+        return cylinderModel;
+    }
+
+    ModelPart* ModelManager::CreateSphereMesh(float radius, unsigned int rings, unsigned int sectors)
+    {
+        std::vector<float> vertices;
+        std::vector<unsigned int> indices;
+
+        float const R = 1.0f / (float)(rings - 1);
+        float const S = 1.0f / (float)(sectors - 1);
+
+        for (unsigned int r = 0; r < rings; ++r) {
+            for (unsigned int s = 0; s < sectors; ++s) {
+                float const y = sin(-glm::half_pi<float>() + glm::pi<float>() * r * R);
+                float const x = cos(2 * glm::pi<float>() * s * S) * sin(glm::pi<float>() * r * R);
+                float const z = sin(2 * glm::pi<float>() * s * S) * sin(glm::pi<float>() * r * R);
+
+                vertices.push_back(x * radius);
+                vertices.push_back(y * radius);
+                vertices.push_back(z * radius);
+
+                vertices.push_back(x);
+                vertices.push_back(y);
+                vertices.push_back(z);
+
+                vertices.push_back(s * S);
+                vertices.push_back(r * R);
+            }
+        }
+
+        for (unsigned int r = 0; r < rings - 1; ++r) {
+            for (unsigned int s = 0; s < sectors - 1; ++s) {
+                indices.push_back(r * sectors + s);
+                indices.push_back(r * sectors + (s + 1));
+                indices.push_back((r + 1) * sectors + (s + 1));
+
+                indices.push_back(r * sectors + s);
+                indices.push_back((r + 1) * sectors + (s + 1));
+                indices.push_back((r + 1) * sectors + s);
+            }
+        }
+
+        unsigned int vao, vbo, ebo;
+        SetupMeshBuffers(vertices, indices, vao, vbo, ebo);
+
+        return new ModelPart(vao, indices.size(), vbo, ebo);
+    }
+
+    ModelPart* ModelManager::CreateCuboidMesh(float width, float height, float depth)
+    {
+        std::vector<float> vertices = {
+            // Front face
+            -width / 2, -height / 2,  depth / 2,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+             width / 2, -height / 2,  depth / 2,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+             width / 2,  height / 2,  depth / 2,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+            -width / 2,  height / 2,  depth / 2,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
+            // Back face
+            -width / 2, -height / 2, -depth / 2,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+            -width / 2,  height / 2, -depth / 2,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+             width / 2,  height / 2, -depth / 2,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+             width / 2, -height / 2, -depth / 2,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+             // Top face
+             -width / 2,  height / 2, -depth / 2,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+             -width / 2,  height / 2,  depth / 2,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+              width / 2,  height / 2,  depth / 2,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+              width / 2,  height / 2, -depth / 2,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+              // Bottom face
+              -width / 2, -height / 2, -depth / 2,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+               width / 2, -height / 2, -depth / 2,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+               width / 2, -height / 2,  depth / 2,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+              -width / 2, -height / 2,  depth / 2,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+              // Right face
+               width / 2, -height / 2, -depth / 2,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+               width / 2,  height / 2, -depth / 2,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+               width / 2,  height / 2,  depth / 2,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+               width / 2, -height / 2,  depth / 2,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+               // Left face
+               -width / 2, -height / 2, -depth / 2, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+               -width / 2, -height / 2,  depth / 2, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+               -width / 2,  height / 2,  depth / 2, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+               -width / 2,  height / 2, -depth / 2, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f
+        };
+
+        std::vector<unsigned int> indices = {
+             0,  1,  2,  2,  3,  0,
+             4,  5,  6,  6,  7,  4,
+             8,  9, 10, 10, 11,  8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 21, 22, 22, 23, 20
+        };
+
+        unsigned int vao, vbo, ebo;
+        SetupMeshBuffers(vertices, indices, vao, vbo, ebo);
+
+        return new ModelPart(vao, indices.size(), vbo, ebo);
+    }
+
+    ModelPart* ModelManager::CreatePlaneMesh(float width, float height)
+    {
+        std::vector<float> vertices = {
+            -width / 2, 0.0f, -height / 2,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+             width / 2, 0.0f, -height / 2,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+             width / 2, 0.0f,  height / 2,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+            -width / 2, 0.0f,  height / 2,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+        };
+
+        std::vector<unsigned int> indices = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        unsigned int vao, vbo, ebo;
+        SetupMeshBuffers(vertices, indices, vao, vbo, ebo);
+
+        return new ModelPart(vao, indices.size(), vbo, ebo);
+    }
+
+    ModelPart* ModelManager::CreateCylinderMesh(float radius, float height, unsigned int sectors)
+    {
+        std::vector<float> vertices;
+        std::vector<unsigned int> indices;
+
+        float const S = 1.0f / static_cast<float>(sectors);
+
+        // Vertices for the sides
+        for (unsigned int i = 0; i <= sectors; ++i) {
+            float const x = cos(2 * glm::pi<float>() * i * S);
+            float const z = sin(2 * glm::pi<float>() * i * S);
+
+            // Bottom vertex
+            vertices.push_back(x * radius);
+            vertices.push_back(-height / 2);
+            vertices.push_back(z * radius);
+            vertices.push_back(x);
+            vertices.push_back(0.0f);
+            vertices.push_back(z);
+            vertices.push_back(i * S);
+            vertices.push_back(0.0f);
+
+            // Top vertex
+            vertices.push_back(x * radius);
+            vertices.push_back(height / 2);
+            vertices.push_back(z * radius);
+            vertices.push_back(x);
+            vertices.push_back(0.0f);
+            vertices.push_back(z);
+            vertices.push_back(i * S);
+            vertices.push_back(1.0f);
+        }
+
+        // Indices for the sides
+        for (unsigned int i = 0; i < sectors; ++i) {
+            indices.push_back(2 * i);
+            indices.push_back(2 * i + 1);
+            indices.push_back(2 * i + 2);
+
+            indices.push_back(2 * i + 2);
+            indices.push_back(2 * i + 1);
+            indices.push_back(2 * i + 3);
+        }
+
+        // Add center vertices for top and bottom caps
+        vertices.push_back(0.0f);
+        vertices.push_back(-height / 2);
+        vertices.push_back(0.0f);
+        vertices.push_back(0.0f);
+        vertices.push_back(-1.0f);
+        vertices.push_back(0.0f);
+        vertices.push_back(0.5f);
+        vertices.push_back(0.5f);
+
+        vertices.push_back(0.0f);
+        vertices.push_back(height / 2);
+        vertices.push_back(0.0f);
+        vertices.push_back(0.0f);
+        vertices.push_back(1.0f);
+        vertices.push_back(0.0f);
+        vertices.push_back(0.5f);
+        vertices.push_back(0.5f);
+
+        unsigned int bottomCenterIndex = vertices.size() / 8 - 2;
+        unsigned int topCenterIndex = vertices.size() / 8 - 1;
+
+        // Indices for bottom cap
+        for (unsigned int i = 0; i < sectors; ++i) {
+            indices.push_back(bottomCenterIndex);
+            indices.push_back(2 * i);
+            indices.push_back(2 * (i + 1));
+        }
+
+        // Indices for top cap
+        for (unsigned int i = 0; i < sectors; ++i) {
+            indices.push_back(topCenterIndex);
+            indices.push_back(2 * (i + 1) + 1);
+            indices.push_back(2 * i + 1);
+        }
+
+        unsigned int vao, vbo, ebo;
+        SetupMeshBuffers(vertices, indices, vao, vbo, ebo);
+
+        return new ModelPart(vao, indices.size(), vbo, ebo);
+    }
+
 }

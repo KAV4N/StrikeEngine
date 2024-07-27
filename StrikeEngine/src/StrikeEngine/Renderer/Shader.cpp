@@ -4,22 +4,20 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
+#include <nlohmann/json.hpp> 
 
 namespace StrikeEngine {
 
     Shader::Shader(const std::string& filepath) {
         std::string source = ReadFile(filepath);
-        auto shaderSources = PreProcess(source);
-        Compile(shaderSources);
-        GetAllUniformLocations();
-    }
 
-    Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) {
-        std::unordered_map<GLenum, std::string> sources;
-        sources[GL_VERTEX_SHADER] = vertexSrc;
-        sources[GL_FRAGMENT_SHADER] = fragmentSrc;
-        Compile(sources);
-        GetAllUniformLocations();
+        size_t end = source.find("#type");
+        if (end != std::string::npos) {
+            std::string newSource = source.substr(end);
+            auto shaderSources = PreProcess(newSource);
+            Compile(shaderSources);
+            ParseUniforms(source);
+        }
     }
 
     Shader::~Shader() {
@@ -34,19 +32,95 @@ namespace StrikeEngine {
         glUseProgram(0);
     }
 
-    void Shader::GetAllUniformLocations() {
-        m_TransformationMatrix = GetUniformLocation("transform");
-        m_ProjectionMatrix = GetUniformLocation("projection");
-        m_ViewMatrix = GetUniformLocation("view");
-        m_ViewPosition = GetUniformLocation("viewPosition");
-        
-    }
-
     std::string Shader::ReadFile(const std::string& filepath) {
         std::ifstream file(filepath);
         std::stringstream buffer;
         buffer << file.rdbuf();
         return buffer.str();
+    }
+
+    void Shader::ParseUniforms(const std::string& source) {
+        std::string jsonStr;
+        size_t pos = source.find("#RootSignature");
+        if (pos != std::string::npos) {
+            pos = source.find("{", pos);
+            size_t endPos = source.find("#end", pos);
+            if (pos != std::string::npos && endPos != std::string::npos) {
+                jsonStr = source.substr(pos, endPos - pos);
+            }
+        }
+
+        if (!jsonStr.empty()) {
+            try {
+                auto json = nlohmann::json::parse(jsonStr);
+                SetUniformsFromJSON(json["RootSignature"]);
+            }
+            catch (const nlohmann::json::exception& e) {
+                std::cerr << "JSON parsing error: " << e.what() << std::endl;
+                return;
+            }
+        }
+    }
+
+    void Shader::SetUniformsFromJSON(const nlohmann::json& json) {
+        for (const auto& item : json) {
+            std::string name = item["name"];
+            std::string type = item["type"];
+            m_UniformTypes[name] = type;
+            m_UniformLocations[name] = glGetUniformLocation(m_ProgramID, name.c_str());
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, const std::vector<glm::vec3>& values) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniform3fv(it->second, values.size(), glm::value_ptr(values[0]));
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, const std::vector<glm::mat4>& values) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniformMatrix4fv(it->second, values.size(), GL_FALSE, glm::value_ptr(values[0]));
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, const glm::vec3& value) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniform3f(it->second, value.x, value.y, value.z);
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, const glm::mat4& value) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniformMatrix4fv(it->second, 1, GL_FALSE, glm::value_ptr(value));
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, float value) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniform1f(it->second, value);
+        }
+    }
+
+    void Shader::LoadUniform(const std::string& name, int value) {
+        auto it = m_UniformLocations.find(name);
+        if (it != m_UniformLocations.end()) {
+            glUniform1i(it->second, value);
+        }
+    }
+
+    GLenum Shader::ShaderTypeFromString(const std::string& type) {
+        if (type == "vertex")
+            return GL_VERTEX_SHADER;
+        else if (type == "fragment")
+            return GL_FRAGMENT_SHADER;
+
+        assert(false && "Unknown shader type!");
+        return 0;
     }
 
     std::unordered_map<GLenum, std::string> Shader::PreProcess(const std::string& source) {
@@ -66,16 +140,6 @@ namespace StrikeEngine {
         }
 
         return shaderSources;
-    }
-
-    GLenum Shader::ShaderTypeFromString(const std::string& type) {
-        if (type == "vertex")
-            return GL_VERTEX_SHADER;
-        else if (type == "fragment")
-            return GL_FRAGMENT_SHADER;
-
-        assert(false && "Unknown shader type!");
-        return 0;
     }
 
     void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources) {

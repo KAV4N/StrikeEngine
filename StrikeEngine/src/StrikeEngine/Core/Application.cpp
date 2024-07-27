@@ -6,6 +6,7 @@
 #include "StrikeEngine/Renderer/Renderer.h"
 #include "StrikeEngine/Renderer/ModelManager.h"
 #include "StrikeEngine/Renderer/ShaderManager.h"
+#include "StrikeEngine/Renderer/LightManager.h"
 
 #include "Input.h"
 #include <glad/glad.h>
@@ -33,30 +34,31 @@ namespace StrikeEngine
         m_ImGuiLayer = new ImGuiLayer();
         PushOverlay(m_ImGuiLayer);
 
-        m_World = new World();
         Scene* scene = new Scene();
+        //TODO: CREATE WORLD ON STACK
+        m_World = new World();
+        m_World->AddScene(scene);
 
         // Load models
         Model* model = ModelManager::Get()->LoadModel("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj");
+        model->SetShader(ShaderManager::Get()->GetShader("ShinyShader"));
         
-        Entity* entity = new Entity(model);
+        Entity* entity = m_World->GetActiveScene()->CreateEntity(model);
         entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
 
         Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
-        model2->SetShader(ShaderManager::Get()->GetShader("GouraudShader"));
-        Entity* entity2 = new Entity(model2);
+        model2->SetShader(ShaderManager::Get()->GetShader("ComicShader"));
+        Entity* entity2 = m_World->GetActiveScene()->CreateEntity(model2);
         entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
 
-        scene->AddEntity(entity);
-        scene->AddEntity(entity2);
 
-        Light light1 = { glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
-        Light light2 = { glm::vec3(5.0f, 5.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
-    
-        scene->AddLight(light1);
-        scene->AddLight(light2);
+       Light light1 = { glm::vec3(0.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
+       Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
+ 
 
-        m_World->AddScene(scene);
+        
+        LightManager::Get()->AddLight(light1);
+        LightManager::Get()->AddLight(light2);
     }
 
 

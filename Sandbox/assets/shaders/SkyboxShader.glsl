@@ -1,3 +1,14 @@
+
+#RootSignature
+{
+    "RootSignature": [
+        {"name": "projection", "type": "matrix4"},
+        {"name": "view", "type": "matrix4"},
+        {"name": "skybox", "type": "textureCube"}
+    ]
+}
+#end
+
 #type vertex
 #version 430 core
 layout(location = 0) in vec3 aPos;
@@ -8,7 +19,7 @@ uniform mat4 view;
 out vec3 TexCoords;
 
 void main() {
-    gl_Position = projection * vec4(aPos, 1.0);
+    gl_Position = projection * view *vec4(aPos, 1.0);
     TexCoords = aPos;
 }
 
