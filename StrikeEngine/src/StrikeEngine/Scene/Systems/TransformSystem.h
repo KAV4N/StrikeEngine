@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "StrikeEngine/Scene/Entity.h"
 
@@ -9,7 +10,7 @@ namespace StrikeEngine {
     class TransformSystem {
     public:
         static void Update(Scene* scene) {
-            auto view = scene->GetRegistry().view<PositionComponent, RotationComponent, ScaleComponent, TransformComponent>();
+            auto view = scene->GetRegistry().view<PositionComponent, RotationComponent, ScaleComponent, TransformComponent, ModelComponent>();
 
             for (auto entityHandle : view) {
                 Entity entity(entityHandle, scene);
@@ -18,14 +19,15 @@ namespace StrikeEngine {
                 auto& rotation = entity.GetComponent<RotationComponent>().rotation;
                 auto& scale = entity.GetComponent<ScaleComponent>().scale;
                 auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
+                auto& modelComp = entity.GetComponent<ModelComponent>();
 
-                glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), position);
-                glm::mat4 rotationXMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0));
-                glm::mat4 rotationYMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0, 1, 0));
-                glm::mat4 rotationZMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1));
-                glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+                glm::mat4 entityTransform = CalculateTransformMatrix(position, rotation, scale);
 
-                transform = translationMatrix * rotationXMatrix * rotationYMatrix * rotationZMatrix * scaleMatrix;
+                transform = entityTransform;
+
+                for (auto& part : modelComp.parts) {
+                    part.UpdateLocalTransform();
+                }
             }
         }
 
@@ -51,6 +53,16 @@ namespace StrikeEngine {
 
         static void IncreaseScale(Entity entity, const glm::vec3& delta) {
             entity.GetComponent<ScaleComponent>().scale += delta;
+        }
+
+    private:
+        static glm::mat4 CalculateTransformMatrix(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) {
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0))
+                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0, 1, 0))
+                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1))
+                * glm::scale(glm::mat4(1.0f), scale);
+            return transform;
         }
     };
 }

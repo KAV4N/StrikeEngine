@@ -171,6 +171,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Light.h" />

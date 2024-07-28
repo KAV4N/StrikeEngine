@@ -3,6 +3,7 @@
 #include "StrikeEngine/Renderer/Renderer.h"
 #include "StrikeEngine/Renderer/LightManager.h"
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"
+#include "Components/ModelComponent.h"
 
 namespace StrikeEngine {
     Scene::Scene() {
@@ -74,7 +75,7 @@ namespace StrikeEngine {
         renderer->BeginScene(&camera);
         renderer->SubmitSkybox(m_Skybox.get());
 
-        renderer->SubmitScene(m_Registry);
+        renderer->SubmitScene(this);
 
         renderer->EndScene();
     }

@@ -18,7 +18,7 @@ namespace StrikeEngine {
 
     struct RenderCommand {
         glm::mat4 transformationMatrix;
-        Model* model;
+        Entity entity;
         glm::vec3 cameraPosition;
     };
 
@@ -30,8 +30,8 @@ namespace StrikeEngine {
         static void Init();
         void BeginScene(CameraComponent* camera);
         void EndScene();
-        void SubmitScene(const entt::registry& registry);
-        void SubmitModel(Model* model, const glm::mat4& transformationMatrix);
+        void SubmitScene(Scene* scene);
+        void SubmitEntity(Entity entity, const glm::mat4& transformationMatrix);
         void SubmitSkybox(Skybox* skybox);
         void Render();
         void SetDefaultTexture(const std::string& path);
@@ -45,11 +45,14 @@ namespace StrikeEngine {
         void RenderModelParts(Shader* shader, const RenderCommand& command);
         void BindTextures(ModelPart* part);
         void UnbindTextures(ModelPart* part);
-
+    private:
         static Renderer* s_Instance;
-        glm::mat4 m_ViewProjectionMatrix;
-        glm::mat4 m_ViewMatrix;
-        glm::mat4 m_ProjectionMatrix;
+
+        glm::mat4 m_CameraViewProjectionMatrix;
+        glm::mat4 m_CameraViewMatrix;
+        glm::mat4 m_CameraProjectionMatrix;
+        glm::vec3 m_CameraPosition;
+
         Texture* m_DefaultTexture;
         Skybox* m_Skybox;
         bool m_RenderSkybox;

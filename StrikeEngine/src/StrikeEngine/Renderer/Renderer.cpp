@@ -4,6 +4,12 @@
 #include "StrikeEngine/Renderer/ShaderManager.h"
 #include "StrikeEngine/Renderer/ModelManager.h"
 #include "StrikeEngine/Renderer/LightManager.h"
+#include <StrikeEngine/Scene/Components/ModelComponent.h>
+
+
+//TODO: REMOVE AFTER TESTING
+#include <StrikeEngine/Scene/Systems/TransformSystem.h> 
+//---------------------------------------------
 
 namespace StrikeEngine {
 
@@ -48,9 +54,10 @@ namespace StrikeEngine {
 
     void Renderer::BeginScene(CameraComponent* camera) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_ViewProjectionMatrix = camera->ProjectionMatrix * camera->ViewMatrix;
-        m_ViewMatrix = camera->ViewMatrix;
-        m_ProjectionMatrix = camera->ProjectionMatrix;
+        m_CameraViewProjectionMatrix = camera->ProjectionMatrix * camera->ViewMatrix;
+        m_CameraViewMatrix = camera->ViewMatrix;
+        m_CameraProjectionMatrix = camera->ProjectionMatrix;
+        m_CameraPosition = camera->Position;
     }
 
 
@@ -59,18 +66,26 @@ namespace StrikeEngine {
         Render();
     }
 
-    void Renderer::SubmitScene(const entt::registry& registry) {
-        auto view = registry.view<ModelComponent, TransformComponent>();
-        for (auto entity : view) {
-            auto& model = view.get<ModelComponent>(entity).model;
-            auto& transform = view.get<TransformComponent>(entity).transformationMatrix;
-            SubmitModel(model, transform);
+    void Renderer::SubmitScene(Scene* scene) {
+        const auto view = scene->GetRegistry().view<ModelComponent, TransformComponent>();
+        for (auto entityHandle : view) {
+            Entity entity { entityHandle, scene };
+
+            //TO DO: REMOVE AFTER TESTING-----------------------------------------
+            TransformSystem::IncreaseRotation(entity, glm::uvec3(0.f, 0.f, 1.f));
+            auto& modelComp = entity.GetComponent<ModelComponent>();
+            modelComp.parts[0].rotation += glm::vec3(0.0f, 0.0f, 45.0f);
+            //---------------------------------------------------------------------
+            
+            auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
+            SubmitEntity(entity, transform);
         }
     }
 
-    void Renderer::SubmitModel(Model* model, const glm::mat4& transformationMatrix) {
-        Shader* shader = model->GetShader();
-        m_RenderQueue[shader].push_back({ transformationMatrix, model, glm::vec3(0.0f) });  // cameraPosition will be updated later
+    void Renderer::SubmitEntity(Entity entity, const glm::mat4& transformationMatrix) {
+        auto& modelComp = entity.GetComponent<ModelComponent>();
+        Shader* shader = modelComp.model->GetShader();
+        m_RenderQueue[shader].push_back({ transformationMatrix, entity, m_CameraPosition });
     }
 
     void Renderer::SubmitSkybox(Skybox* skybox) {
@@ -107,9 +122,9 @@ namespace StrikeEngine {
             Shader* skyboxShader = m_Skybox->GetShader();
             skyboxShader->Bind();
 
-            glm::mat4 view = glm::mat4(glm::mat3(m_ViewMatrix));
+            glm::mat4 view = glm::mat4(glm::mat3(m_CameraViewMatrix));
             skyboxShader->LoadUniform("view", view);
-            skyboxShader->LoadUniform("projection", m_ProjectionMatrix);
+            skyboxShader->LoadUniform("projection", m_CameraProjectionMatrix);
 
             m_Skybox->Draw();
 
@@ -120,10 +135,10 @@ namespace StrikeEngine {
     }
 
     void Renderer::BindShaderMVP(Shader* shader, const RenderCommand& command) {
-        shader->LoadUniform("transform", command.transformationMatrix);
-        shader->LoadUniform("view", m_ViewMatrix);
-        shader->LoadUniform("projection", m_ProjectionMatrix);
-        shader->LoadUniform("viewPosition", command.cameraPosition);
+        //shader->LoadUniform("transform", command.transformationMatrix);
+        shader->LoadUniform("view", m_CameraViewMatrix);
+        shader->LoadUniform("projection", m_CameraProjectionMatrix);
+        shader->LoadUniform("viewPosition", m_CameraPosition);
     }
 
     void Renderer::BindShaderMaterials(Shader* shader, ModelPart* part) {
@@ -135,15 +150,19 @@ namespace StrikeEngine {
     }
 
     void Renderer::RenderModelParts(Shader* shader, const RenderCommand& command) {
-        for (const auto& part : command.model->GetParts()) {
-            BindShaderMaterials(shader, part);
-            BindTextures(part);
+        const auto& modelComp = command.entity.GetComponent<ModelComponent>();
+        for (const auto& partComp : modelComp.parts) {
+            BindShaderMaterials(shader, partComp.part);
+            BindTextures(partComp.part);
 
-            glBindVertexArray(part->GetVaoID());
-            glDrawElements(GL_TRIANGLES, part->GetVertexCount(), GL_UNSIGNED_INT, 0);
+            glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
+            shader->LoadUniform("transform", partTransform);
+
+            glBindVertexArray(partComp.part->GetVaoID());
+            glDrawElements(GL_TRIANGLES, partComp.part->GetVertexCount(), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
 
-            UnbindTextures(part);
+            UnbindTextures(partComp.part);
         }
     }
 

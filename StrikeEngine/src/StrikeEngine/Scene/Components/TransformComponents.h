@@ -5,10 +5,6 @@
 
 namespace StrikeEngine {
 
-    struct ModelComponent {
-        Model* model;
-        ModelComponent(Model* model) : model(model) {}
-    };
 
     struct PositionComponent {
         glm::vec3 position;

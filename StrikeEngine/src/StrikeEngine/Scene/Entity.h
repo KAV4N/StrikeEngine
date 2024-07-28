@@ -3,7 +3,6 @@
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include "StrikeEngine/Renderer/Model.h"
-#include "StrikeEngine/Scene/Components/TransformComponents.h"
 
 namespace StrikeEngine {
 
@@ -23,6 +22,11 @@ namespace StrikeEngine {
         void RemoveComponent() {
             m_Scene->m_Registry.remove<T>(m_EntityHandle);
         }
+        
+        template<typename T>
+        T& GetComponent() const {
+            return m_Scene->m_Registry.get<T>(m_EntityHandle);
+        }
 
         template<typename T>
         T& GetComponent() {
@@ -34,7 +38,7 @@ namespace StrikeEngine {
             return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
         }
 
-        entt::entity GetHandle() const { return m_EntityHandle; }
+        inline entt::entity GetHandle() const { return m_EntityHandle; }
 
     private:
         entt::entity m_EntityHandle;
