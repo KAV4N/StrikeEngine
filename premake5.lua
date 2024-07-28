@@ -13,6 +13,7 @@ includeDir["json"] = "StrikeEngine/vendor/json/include"
 includeDir["glm"] = "StrikeEngine/vendor/glm"
 includeDir["stb"] = "StrikeEngine/vendor/stb"
 includeDir["assimp"] = "StrikeEngine/vendor/assimp/include"
+includeDir["entt"] = "StrikeEngine/vendor/entt/single_include"
 
 include "StrikeEngine/vendor/GLFW"
 include "StrikeEngine/vendor/Glad"
@@ -44,7 +45,8 @@ project "StrikeEngine"
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
         "%{prj.name}/vendor/json/include/nlohmann/**.hpp",
-        "%{prj.name}/vendor/stb/**.h"
+        "%{prj.name}/vendor/stb/**.h",
+        "%{prj.name}/vendor/entt/single_include/entt/**.hpp"
     }
     
     includedirs {
@@ -57,6 +59,7 @@ project "StrikeEngine"
         "%{includeDir.stb}",
         "%{includeDir.assimp}",
         "%{includeDir.json}",
+        "%{includeDir.entt}"
     }
 
     links {
@@ -122,6 +125,7 @@ project "Sandbox"
         "StrikeEngine/src",
         "%{includeDir.glm}",
         "%{includeDir.ImGui}",
+        "%{includeDir.entt}"
    
     }
 

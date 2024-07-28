@@ -46,27 +46,31 @@ namespace StrikeEngine {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    void Renderer::BeginScene(Camera* camera) {
+    void Renderer::BeginScene(CameraComponent* camera) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_ViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
-        m_ViewMatrix = camera->GetViewMatrix();
-        m_ProjectionMatrix = camera->GetProjectionMatrix();
+        m_ViewProjectionMatrix = camera->ProjectionMatrix * camera->ViewMatrix;
+        m_ViewMatrix = camera->ViewMatrix;
+        m_ProjectionMatrix = camera->ProjectionMatrix;
     }
+
+
 
     void Renderer::EndScene() {
         Render();
     }
 
-    void Renderer::SubmitScene(const std::vector<Entity*>& entities, const glm::vec3& cameraPosition) {
-        for (auto entity : entities) {
-            entity->IncreaseRotation(glm::vec3(0.f, 0.f, 1.f)); // TODO: REMOVE, ONLY FOR TESTING
-            Submit(entity->GetTransformationMatrix(), entity->GetModel(), cameraPosition);
+    void Renderer::SubmitScene(const entt::registry& registry) {
+        auto view = registry.view<ModelComponent, TransformComponent>();
+        for (auto entity : view) {
+            auto& model = view.get<ModelComponent>(entity).model;
+            auto& transform = view.get<TransformComponent>(entity).transformationMatrix;
+            SubmitModel(model, transform);
         }
     }
 
-    void Renderer::Submit(const glm::mat4& transformationMatrix, Model* model, const glm::vec3& cameraPosition) {
+    void Renderer::SubmitModel(Model* model, const glm::mat4& transformationMatrix) {
         Shader* shader = model->GetShader();
-        m_RenderQueue[shader].push_back({ transformationMatrix, model, cameraPosition });
+        m_RenderQueue[shader].push_back({ transformationMatrix, model, glm::vec3(0.0f) });  // cameraPosition will be updated later
     }
 
     void Renderer::SubmitSkybox(Skybox* skybox) {
@@ -84,7 +88,7 @@ namespace StrikeEngine {
         for (auto& pair : m_RenderQueue) {
             Shader* shader = pair.first;
             shader->Bind();
-            
+
             for (const auto& command : pair.second) {
                 BindShaderMVP(shader, command);
                 RenderModelParts(shader, command);
@@ -94,7 +98,6 @@ namespace StrikeEngine {
         }
         m_RenderQueue.clear();
     }
-
 
     void Renderer::RenderSkybox() {
         if (m_Skybox) {
@@ -130,7 +133,6 @@ namespace StrikeEngine {
         shader->LoadUniform("material.specular", material.specular);
         shader->LoadUniform("material.shininess", material.shininess);
     }
-
 
     void Renderer::RenderModelParts(Shader* shader, const RenderCommand& command) {
         for (const auto& part : command.model->GetParts()) {

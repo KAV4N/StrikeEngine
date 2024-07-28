@@ -31,6 +31,15 @@
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\entt">
+      <UniqueIdentifier>{DD8078C1-4936-F1B6-D22A-EB8D3EDFE7BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\entt\single_include">
+      <UniqueIdentifier>{B1108E46-9D20-3A17-06DA-9E35F20829B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\entt\single_include\entt">
+      <UniqueIdentifier>{9BEC4482-07D0-53C2-10D3-81FE7C351A13}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor\glm">
       <UniqueIdentifier>{829FC5A8-6E57-07F6-D75E-E051C335A2E6}</UniqueIdentifier>
     </Filter>
@@ -159,6 +168,9 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
@@ -180,6 +192,9 @@
     <ClInclude Include="src\StrikeEngine\Renderer\Texture.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
@@ -197,6 +212,9 @@
     </ClInclude>
     <ClInclude Include="src\strikepch.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\entt\single_include\entt\entt.hpp">
+      <Filter>vendor\entt\single_include\entt</Filter>
     </ClInclude>
     <ClInclude Include="vendor\glm\glm\common.hpp">
       <Filter>vendor\glm\glm</Filter>
@@ -1680,8 +1698,6 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1707,6 +1723,9 @@
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\ModelManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
@@ -1735,6 +1754,5 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp" />
   </ItemGroup>
 </Project>

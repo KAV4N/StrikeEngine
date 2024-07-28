@@ -12,6 +12,7 @@
 #include <glad/glad.h>
 #include <StrikeEngine/Scene/Scene.h>
 #include <StrikeEngine/Scene/World.h>
+#include <StrikeEngine/Scene/Systems/TransformSystem.h> // ONLY FOR TESTING
 
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
@@ -42,21 +43,29 @@ namespace StrikeEngine
         // Load models
         Model* model = ModelManager::Get()->LoadModel("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj");
         model->SetShader(ShaderManager::Get()->GetShader("ShinyShader"));
-        
-        Entity* entity = m_World->GetActiveScene()->CreateEntity(model);
-        entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
 
         Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
         model2->SetShader(ShaderManager::Get()->GetShader("ComicShader"));
+        /*
+        Entity* entity = m_World->GetActiveScene()->CreateEntity(model);
+        entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
+        
+
         Entity* entity2 = m_World->GetActiveScene()->CreateEntity(model2);
         entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
+        */
 
-
-       Light light1 = { glm::vec3(0.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
-       Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
- 
-
+        Light light1 = { glm::vec3(0.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
+        Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
         
+
+        Entity entity = m_World->GetActiveScene()->CreateEntity(model);
+        TransformSystem::IncreaseRotation(entity, glm::uvec3(270.f, 0.f, 0.f));
+        Model* modelTest = entity.GetComponent<ModelComponent>().model;
+
+        Entity entity2 = m_World->GetActiveScene()->CreateEntity(model2);
+        TransformSystem::SetPosition(entity2, glm::uvec3(5.f, 0.f, 0.f));
+
         LightManager::Get()->AddLight(light1);
         LightManager::Get()->AddLight(light2);
     }

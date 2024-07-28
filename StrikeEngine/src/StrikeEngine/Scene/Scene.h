@@ -2,11 +2,15 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <entt/entt.hpp>
 #include "Entity.h"
 #include "StrikeEngine/Renderer/Shader.h"
-#include "Camera.h"
-#include "Light.h" 
-#include <StrikeEngine/Renderer/Skybox.h>
+#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Scene/Light.h"
+#include "StrikeEngine/Renderer/Skybox.h"
+#include "StrikeEngine/Scene/Components/CameraComponent.h"
+#include "StrikeEngine/Scene/Components/TransformComponents.h"
 
 namespace StrikeEngine {
 
@@ -15,41 +19,34 @@ namespace StrikeEngine {
         Scene();
         ~Scene();
 
-        void AddEntity(Entity* entity);
-        Entity* CreateEntity(Model* model, const glm::vec3& position = glm::vec3(0.0f),
-            const glm::vec3& rotation = glm::vec3(0.0f),
-            const glm::vec3& scale = glm::vec3(1.0f));
-
-
-        void RemoveEntity(size_t index);
-
-
-
+        Entity CreateEntity(Model* model, const std::string& name = std::string());
+        void RemoveEntity(entt::entity entity);
 
         void Setup();
-
-        void SetCamera(Camera* camera);
+        void SetCamera(entt::entity cameraEntity);
 
         void Update();
         void Render();
 
-        Camera* GetCamera();
-        const std::vector<Light>& GetLights();
+        Entity GetCameraEntity() const;
+        const std::vector<Light>& GetLights() const;
+        inline const entt::registry& GetRegistry() const { return m_Registry; }
 
         friend class LightManager;
-
-    public:
-        std::string Name = "default";
+        friend class TransformSystem;
+        friend class Entity;
 
     private:
         void AddLight(const Light& light);
         void RemoveLight(size_t index);
         void UpdateLight(size_t index, const Light& light);
         void ClearLights();
+
     private:
-        std::vector<Entity*> m_Entities;
+        entt::registry m_Registry;
+        entt::entity m_CameraEntity{ entt::null };
         std::vector<Light> m_Lights;
-        Camera* m_Camera;
-        Skybox* m_Skybox;
+        std::unique_ptr<Skybox> m_Skybox;
     };
+
 }

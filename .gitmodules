@@ -16,3 +16,6 @@
 [submodule "StrikeEngine/vendor/assimp"]
 	path = StrikeEngine/vendor/assimp
 	url = https://github.com/AminAliari/assimp.git
+[submodule "StrikeEngine/vendor/entt"]
+	path = StrikeEngine/vendor/entt
+	url = https://github.com/skypjack/entt.git

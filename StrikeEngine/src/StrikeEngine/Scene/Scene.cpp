@@ -1,78 +1,90 @@
 #include "strikepch.h"
 #include "Scene.h"
 #include "StrikeEngine/Renderer/Renderer.h"
-#include <StrikeEngine/Renderer/LightManager.h>
+#include "StrikeEngine/Renderer/LightManager.h"
+#include "StrikeEngine/Scene/Systems/TransformSystem.h"
 
 namespace StrikeEngine {
     Scene::Scene() {
-        m_Camera = new Camera(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-        m_Camera->SetPosition(glm::vec3(0.0f, 3.f, 6.f));
-        m_Skybox = new Skybox();
+        m_Skybox = std::make_unique<Skybox>();
+
+        m_CameraEntity = m_Registry.create();
+        auto& camera = m_Registry.emplace<CameraComponent>(m_CameraEntity, 70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+        camera.Position = glm::vec3(0.0f, 3.0f, 6.0f);
+        camera.UpdateViewMatrix();
     }
 
     Scene::~Scene() {
-        for (auto entity : m_Entities) {
-            delete entity;
-        }
-        delete m_Camera;
+  
     }
 
-    Entity* Scene::CreateEntity(Model* model, const glm::vec3& position,
-        const glm::vec3& rotation, const glm::vec3& scale) {
-        Entity* entity = new Entity(model, position, rotation, scale);
-        AddEntity(entity);
+    Entity Scene::CreateEntity(Model* model, const std::string& name) {
+        Entity entity(m_Registry.create(), this);
+        entity.AddComponent<TransformComponent>();
+        entity.AddComponent<ModelComponent>(model);
+        entity.AddComponent<PositionComponent>();
+        entity.AddComponent<RotationComponent>();
+        entity.AddComponent<ScaleComponent>();
+
         return entity;
     }
 
-    void Scene::AddEntity(Entity* entity) {
-        m_Entities.push_back(entity);
+    void Scene::RemoveEntity(entt::entity entity) {
+        m_Registry.destroy(entity);
     }
 
     void Scene::AddLight(const Light& light) {
         m_Lights.push_back(light);
     }
 
-    void Scene::RemoveLight(size_t index)
-    {
+    void Scene::RemoveLight(size_t index) {
+        if (index < m_Lights.size()) {
+            m_Lights.erase(m_Lights.begin() + index);
+        }
     }
 
-    void Scene::UpdateLight(size_t index, const Light& light)
-    {
+    void Scene::UpdateLight(size_t index, const Light& light) {
+        if (index < m_Lights.size()) {
+            m_Lights[index] = light;
+        }
     }
 
-    void Scene::ClearLights()
-    {
-
+    void Scene::ClearLights() {
+        m_Lights.clear();
     }
 
     void Scene::Setup() {
+        // Scene setup code
     }
-
-
 
     void Scene::Update() {
-
+        TransformSystem::Update(this);
     }
 
-    void Scene::SetCamera(Camera* camera) {
-        m_Camera = camera;
+    void Scene::SetCamera(entt::entity cameraEntity) {
+        m_CameraEntity = cameraEntity;
     }
 
     void Scene::Render() {
-        Renderer* renderer = Renderer::Get();
-        renderer->BeginScene(m_Camera);
+        Update();
 
-        renderer->SubmitSkybox(m_Skybox);
-        renderer->SubmitScene(m_Entities, m_Camera->GetPosition());
+        Renderer* renderer = Renderer::Get();
+        auto& camera = m_Registry.get<CameraComponent>(m_CameraEntity);
+
+        renderer->BeginScene(&camera);
+        renderer->SubmitSkybox(m_Skybox.get());
+
+        renderer->SubmitScene(m_Registry);
 
         renderer->EndScene();
     }
 
-    Camera* Scene::GetCamera() {
-        return m_Camera;
+
+    Entity Scene::GetCameraEntity() const {
+        return Entity{ m_CameraEntity, const_cast<Scene*>(this) };
     }
 
-    const std::vector<Light>& Scene::GetLights() {
+    const std::vector<Light>& Scene::GetLights() const {
         return m_Lights;
     }
 }
