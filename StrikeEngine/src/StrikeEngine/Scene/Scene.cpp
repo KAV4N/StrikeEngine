@@ -34,65 +34,25 @@ namespace StrikeEngine {
         m_Registry.destroy(entity);
     }
 
-    void Scene::AddDirectionalLight(const DirectionalLight& light) {
-        m_DirectionalLights.push_back(light);
+    Entity Scene::CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity) {
+        Entity entity(m_Registry.create(), this);
+        entity.AddComponent<DirectionalLightComponent>(direction, color, intensity);
+        return entity;
     }
 
-    void Scene::RemoveDirectionalLight(size_t index) {
-        if (index < m_DirectionalLights.size()) {
-            m_DirectionalLights.erase(m_DirectionalLights.begin() + index);
-        }
+    Entity Scene::CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius) {
+        Entity entity(m_Registry.create(), this);
+        entity.AddComponent<PointLightComponent>(position, color, intensity, radius);
+        return entity;
     }
 
-    void Scene::UpdateDirectionalLight(size_t index, const DirectionalLight& light) {
-        if (index < m_DirectionalLights.size()) {
-            m_DirectionalLights[index] = light;
-        }
+    Entity Scene::CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity) {
+        Entity entity(m_Registry.create(), this);
+        entity.AddComponent<SpotLightComponent>(position, direction, cutoff, color, intensity);
+        return entity;
     }
 
-    void Scene::AddPointLight(const PointLight& light) {
-        m_PointLights.push_back(light);
-    }
 
-    void Scene::RemovePointLight(size_t index) {
-        if (index < m_PointLights.size()) {
-            m_PointLights.erase(m_PointLights.begin() + index);
-        }
-    }
-
-    void Scene::UpdatePointLight(size_t index, const PointLight& light) {
-        if (index < m_PointLights.size()) {
-            m_PointLights[index] = light;
-        }
-    }
-
-    void Scene::AddSpotLight(const SpotLight& light) {
-        m_SpotLights.push_back(light);
-    }
-
-    void Scene::RemoveSpotLight(size_t index) {
-        if (index < m_SpotLights.size()) {
-            m_SpotLights.erase(m_SpotLights.begin() + index);
-        }
-    }
-
-    void Scene::UpdateSpotLight(size_t index, const SpotLight& light) {
-        if (index < m_SpotLights.size()) {
-            m_SpotLights[index] = light;
-        }
-    }
-
-    void Scene::ClearDirectionalLights() {
-        m_DirectionalLights.clear();
-    }
-
-    void Scene::ClearPointLights() {
-        m_PointLights.clear();
-    }
-
-    void Scene::ClearSpotLights() {
-        m_SpotLights.clear();
-    }
 
     void Scene::Setup() {
         // Scene setup code
@@ -113,10 +73,8 @@ namespace StrikeEngine {
         auto& camera = m_Registry.get<CameraComponent>(m_CameraEntity);
 
         renderer->BeginScene(&camera);
+
         renderer->SubmitSkybox(m_Skybox.get());
-
-        
-
         renderer->SubmitScene(this);
 
         renderer->EndScene();
@@ -124,18 +82,6 @@ namespace StrikeEngine {
 
     Entity Scene::GetCameraEntity() const {
         return Entity{ m_CameraEntity, const_cast<Scene*>(this) };
-    }
-
-    std::vector<DirectionalLight>& Scene::GetDirectionalLights() {
-        return m_DirectionalLights;
-    }
-
-    std::vector<PointLight>& Scene::GetPointLights() {
-        return m_PointLights;
-    }
-
-    std::vector<SpotLight>& Scene::GetSpotLights() {
-        return m_SpotLights;
     }
 
 }

@@ -201,9 +201,6 @@
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Light.h">
-      <Filter>src\StrikeEngine\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
@@ -1703,8 +1700,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponent.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Systems\LightRenderSystem.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">

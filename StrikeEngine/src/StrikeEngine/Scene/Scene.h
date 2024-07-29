@@ -7,14 +7,13 @@
 #include "Entity.h"
 #include "StrikeEngine/Renderer/Shader.h"
 #include "StrikeEngine/Renderer/Model.h"
-#include "StrikeEngine/Scene/Light.h"
 #include "StrikeEngine/Renderer/Skybox.h"
 #include "StrikeEngine/Renderer/LightManager.h"
 
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
-#include "StrikeEngine/Scene/Components/LightComponent.h"
+#include "StrikeEngine/Scene/Components/LightComponents.h"
 
 namespace StrikeEngine {
 
@@ -34,9 +33,6 @@ namespace StrikeEngine {
         void Render();
 
         Entity GetCameraEntity() const;
-        std::vector<DirectionalLight>& GetDirectionalLights();
-        std::vector<PointLight>& GetPointLights();
-        std::vector<SpotLight>& GetSpotLights();
 
         inline const entt::registry& GetRegistry() const { return m_Registry; }
 
@@ -45,34 +41,15 @@ namespace StrikeEngine {
         friend class Entity;
 
     private:
+        Entity CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity);
+        Entity CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius);
+        Entity CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity);
 
-        
-
-        void AddDirectionalLight(const DirectionalLight& light);
-        void RemoveDirectionalLight(size_t index);
-        void UpdateDirectionalLight(size_t index, const DirectionalLight& light);
-
-        void AddPointLight(const PointLight& light);
-        void RemovePointLight(size_t index);
-        void UpdatePointLight(size_t index, const PointLight& light);
-
-        void AddSpotLight(const SpotLight& light);
-        void RemoveSpotLight(size_t index);
-        void UpdateSpotLight(size_t index, const SpotLight& light);
-
-        void ClearDirectionalLights();
-        void ClearPointLights();
-        void ClearSpotLights();
 
     private:
         entt::registry m_Registry;
         entt::entity m_CameraEntity{ entt::null };
         std::unique_ptr<Skybox> m_Skybox;
-
-        // Light management
-        std::vector<DirectionalLight> m_DirectionalLights;
-        std::vector<PointLight> m_PointLights;
-        std::vector<SpotLight> m_SpotLights;
     };
 
 }

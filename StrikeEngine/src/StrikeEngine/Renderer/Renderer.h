@@ -8,7 +8,6 @@
 #include "StrikeEngine/Renderer/Shader.h"
 #include "StrikeEngine/Renderer/Model.h"
 #include "StrikeEngine/Renderer/Texture.h"
-#include "StrikeEngine/Scene/Light.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Scene/Components/TransformComponents.h"

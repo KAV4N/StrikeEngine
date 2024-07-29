@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "StrikeEngine/Scene/Light.h"
-#include <StrikeEngine/Scene/Scene.h>
+#include "StrikeEngine/Scene/Scene.h"
+#include "StrikeEngine/Scene/Components/LightComponents.h"
 
 namespace StrikeEngine {
     class Shader;
@@ -12,21 +12,11 @@ namespace StrikeEngine {
         static LightManager* Get();
         static void Destroy();
 
-        void AddDirectionalLight(const DirectionalLight& light);
-        void RemoveDirectionalLight(size_t index);
-        void UpdateDirectionalLight(size_t index, const DirectionalLight& light);
+        void CreateDirectionalLight(const glm::vec3& direction = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f);
 
-        void AddPointLight(const PointLight& light);
-        void RemovePointLight(size_t index);
-        void UpdatePointLight(size_t index, const PointLight& light);
+        void CreatePointLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f, float radius = 5.0f);
 
-        void AddSpotLight(const SpotLight& light);
-        void RemoveSpotLight(size_t index);
-        void UpdateSpotLight(size_t index, const SpotLight& light);
-
-        void ClearDirectionalLights();
-        void ClearPointLights();
-        void ClearSpotLights();
+        void CreateSpotLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& direction = glm::vec3(0.0f), float cutoff = cos(glm::radians(30.f)), const glm::vec3& color = glm::vec3(1.0f), float intensity=1.0f);
 
         void BindLightsToShader();
         void SetActiveScene(Scene* activeScene);

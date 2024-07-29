@@ -69,7 +69,7 @@ struct PointLight {
     vec3 color;
     float intensity;
     float radius;
-    float padding2;
+    float padding2[3];
 };
 
 // Define the SpotLight struct
