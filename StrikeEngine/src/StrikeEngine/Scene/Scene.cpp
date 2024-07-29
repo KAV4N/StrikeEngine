@@ -1,11 +1,11 @@
 #include "strikepch.h"
 #include "Scene.h"
 #include "StrikeEngine/Renderer/Renderer.h"
-#include "StrikeEngine/Renderer/LightManager.h"
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"
 #include "Components/ModelComponent.h"
 
 namespace StrikeEngine {
+
     Scene::Scene() {
         m_Skybox = std::make_unique<Skybox>();
 
@@ -16,7 +16,7 @@ namespace StrikeEngine {
     }
 
     Scene::~Scene() {
-  
+        // Cleanup resources if needed
     }
 
     Entity Scene::CreateEntity(Model* model, const std::string& name) {
@@ -34,24 +34,64 @@ namespace StrikeEngine {
         m_Registry.destroy(entity);
     }
 
-    void Scene::AddLight(const Light& light) {
-        m_Lights.push_back(light);
+    void Scene::AddDirectionalLight(const DirectionalLight& light) {
+        m_DirectionalLights.push_back(light);
     }
 
-    void Scene::RemoveLight(size_t index) {
-        if (index < m_Lights.size()) {
-            m_Lights.erase(m_Lights.begin() + index);
+    void Scene::RemoveDirectionalLight(size_t index) {
+        if (index < m_DirectionalLights.size()) {
+            m_DirectionalLights.erase(m_DirectionalLights.begin() + index);
         }
     }
 
-    void Scene::UpdateLight(size_t index, const Light& light) {
-        if (index < m_Lights.size()) {
-            m_Lights[index] = light;
+    void Scene::UpdateDirectionalLight(size_t index, const DirectionalLight& light) {
+        if (index < m_DirectionalLights.size()) {
+            m_DirectionalLights[index] = light;
         }
     }
 
-    void Scene::ClearLights() {
-        m_Lights.clear();
+    void Scene::AddPointLight(const PointLight& light) {
+        m_PointLights.push_back(light);
+    }
+
+    void Scene::RemovePointLight(size_t index) {
+        if (index < m_PointLights.size()) {
+            m_PointLights.erase(m_PointLights.begin() + index);
+        }
+    }
+
+    void Scene::UpdatePointLight(size_t index, const PointLight& light) {
+        if (index < m_PointLights.size()) {
+            m_PointLights[index] = light;
+        }
+    }
+
+    void Scene::AddSpotLight(const SpotLight& light) {
+        m_SpotLights.push_back(light);
+    }
+
+    void Scene::RemoveSpotLight(size_t index) {
+        if (index < m_SpotLights.size()) {
+            m_SpotLights.erase(m_SpotLights.begin() + index);
+        }
+    }
+
+    void Scene::UpdateSpotLight(size_t index, const SpotLight& light) {
+        if (index < m_SpotLights.size()) {
+            m_SpotLights[index] = light;
+        }
+    }
+
+    void Scene::ClearDirectionalLights() {
+        m_DirectionalLights.clear();
+    }
+
+    void Scene::ClearPointLights() {
+        m_PointLights.clear();
+    }
+
+    void Scene::ClearSpotLights() {
+        m_SpotLights.clear();
     }
 
     void Scene::Setup() {
@@ -75,17 +115,27 @@ namespace StrikeEngine {
         renderer->BeginScene(&camera);
         renderer->SubmitSkybox(m_Skybox.get());
 
+        
+
         renderer->SubmitScene(this);
 
         renderer->EndScene();
     }
 
-
     Entity Scene::GetCameraEntity() const {
         return Entity{ m_CameraEntity, const_cast<Scene*>(this) };
     }
 
-    const std::vector<Light>& Scene::GetLights() const {
-        return m_Lights;
+    std::vector<DirectionalLight>& Scene::GetDirectionalLights() {
+        return m_DirectionalLights;
     }
+
+    std::vector<PointLight>& Scene::GetPointLights() {
+        return m_PointLights;
+    }
+
+    std::vector<SpotLight>& Scene::GetSpotLights() {
+        return m_SpotLights;
+    }
+
 }

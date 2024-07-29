@@ -94,7 +94,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::Render() {
-        LightManager::Get()->BindLightsToShader();
+        
         if (m_RenderSkybox) {
             RenderSkybox();
             m_RenderSkybox = false;
@@ -103,7 +103,7 @@ namespace StrikeEngine {
         for (auto& pair : m_RenderQueue) {
             Shader* shader = pair.first;
             shader->Bind();
-
+            LightManager::Get()->BindLightsToShader();
             for (const auto& command : pair.second) {
                 BindShaderMVP(shader, command);
                 RenderModelParts(shader, command);

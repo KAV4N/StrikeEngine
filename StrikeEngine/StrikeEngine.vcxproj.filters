@@ -1698,6 +1698,13 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\LightRenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">

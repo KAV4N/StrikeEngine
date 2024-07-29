@@ -171,12 +171,14 @@
     <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Light.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\LightRenderSystem.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h" />
     <ClInclude Include="src\StrikeEngine\Scene\World.h" />
     <ClInclude Include="src\strikepch.h" />

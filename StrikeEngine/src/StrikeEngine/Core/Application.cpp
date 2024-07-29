@@ -49,9 +49,8 @@ namespace StrikeEngine
         Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
         model2->SetShader(ShaderManager::Get()->GetShader("ComicShader"));
 
-        Light light1 = { glm::vec3(-5.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
-        Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
-        
+
+
 
         Entity entity = m_World->GetActiveScene()->CreateEntity(model);
         TransformSystem::IncreaseRotation(entity, glm::uvec3(270.f, 0.f, 45.f));
@@ -64,8 +63,53 @@ namespace StrikeEngine
         Entity entity2 = m_World->GetActiveScene()->CreateEntity(model2);
         TransformSystem::SetPosition(entity2, glm::uvec3(5.f, 0.f, 0.f));
 
-        LightManager::Get()->AddLight(light1);
-        LightManager::Get()->AddLight(light2);
+        /*
+        Light light1 = { glm::vec3(-5.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
+        Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
+
+        LightManager::Get()->AddTestLight(light1);
+        LightManager::Get()->AddTestLight(light2);
+        */
+
+        SpotLight spotlight1(glm::vec3(0.0f, 1.0f, 0.0f),
+            glm::vec3(0.0f, -1.0f, 0.0f),
+            cos(glm::radians(30.f)),
+            glm::vec3(1.0f, 1.0f, 1.0f),
+            1.0f);
+
+        SpotLight spotlight2(glm::vec3(2.0f, 2.0f, 1.0f),
+            glm::vec3(-0.5f, -0.5f, -0.5f),
+            cos(glm::radians(15.0f)),
+            glm::vec3(1.0f, 1.0f, 1.0f),
+            5.0f);
+
+        DirectionalLight dirlight1(glm::vec3(-0.2f, -1.0f, -0.3f),
+            glm::vec3(1.0f, 1.0f, 1.0f),
+            0.8f);
+
+        DirectionalLight dirlight2(glm::vec3(0.5f, -1.0f, 0.0f),
+            glm::vec3(1.0f, 0.5f, 0.5f),
+            1.0f);
+
+        PointLight light1(glm::vec3(0.0f, 1.0f, 0.0f),
+            glm::vec3(1.0f, 1.0f, 1.0f),
+            0.8f,
+            1.0f);
+
+        PointLight light2(glm::vec3(2.0f, 3.0f, 1.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f),
+            5.0f,
+            1.2f);
+
+
+        LightManager::Get()->AddPointLight(light1);
+        LightManager::Get()->AddPointLight(light2);
+
+        LightManager::Get()->AddSpotLight(spotlight1);
+        LightManager::Get()->AddSpotLight(spotlight2);
+
+        LightManager::Get()->AddDirectionalLight(dirlight1);
+        LightManager::Get()->AddDirectionalLight(dirlight2);
     }
 
 
