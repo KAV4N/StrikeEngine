@@ -1701,6 +1701,9 @@
     <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\FrameBufferManager.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1757,5 +1760,7 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\FrameBufferManager.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp" />
   </ItemGroup>
 </Project>

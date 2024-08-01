@@ -4,8 +4,8 @@
 #include "StrikeEngine/Renderer/ShaderManager.h"
 #include "StrikeEngine/Renderer/ModelManager.h"
 #include "StrikeEngine/Renderer/LightManager.h"
-#include <StrikeEngine/Scene/Components/ModelComponent.h>
-
+#include "StrikeEngine/Scene/Components/ModelComponent.h"
+#include "StrikeEngine/Renderer/FrameBufferManager.h"
 
 //TODO: REMOVE AFTER TESTING
 #include <StrikeEngine/Scene/Systems/TransformSystem.h> 
@@ -47,6 +47,8 @@ namespace StrikeEngine {
         ModelManager::Create();
         ShaderManager::Create();
         LightManager::Create();
+        FrameBufferManager::Create();
+
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -58,6 +60,8 @@ namespace StrikeEngine {
         m_CameraViewMatrix = camera->ViewMatrix;
         m_CameraProjectionMatrix = camera->ProjectionMatrix;
         m_CameraPosition = camera->Position;
+
+
     }
 
 
@@ -69,14 +73,14 @@ namespace StrikeEngine {
     void Renderer::SubmitScene(Scene* scene) {
         const auto view = scene->GetRegistry().view<ModelComponent, TransformComponent>();
         for (auto entityHandle : view) {
-            Entity entity { entityHandle, scene };
+            Entity entity{ entityHandle, scene };
 
             //TO DO: REMOVE AFTER TESTING-----------------------------------------
             TransformSystem::IncreaseRotation(entity, glm::uvec3(0.f, 0.f, 1.f));
             auto& modelComp = entity.GetComponent<ModelComponent>();
             modelComp.parts[0].rotation += glm::vec3(0.0f, 0.0f, 45.0f);
             //---------------------------------------------------------------------
-            
+
             auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
             SubmitEntity(entity, transform);
         }
@@ -92,26 +96,32 @@ namespace StrikeEngine {
         m_Skybox = skybox;
         m_RenderSkybox = true;
     }
+    void RenderShadowMaps() {
+        LightManager::Get()->UpdateShadowMaps();
+    }
 
     void Renderer::Render() {
+        LightManager::Get()->BindLightsToShader();
+        RenderShadowMaps();
+        RenderSkybox();
         
-        if (m_RenderSkybox) {
-            RenderSkybox();
-            m_RenderSkybox = false;
-        }
-
         for (auto& pair : m_RenderQueue) {
             Shader* shader = pair.first;
             shader->Bind();
-            LightManager::Get()->BindLightsToShader();
+            
+            BindShadowMapsToShader(shader);
             for (const auto& command : pair.second) {
                 BindShaderMVP(shader, command);
                 RenderModelParts(shader, command);
             }
-
+            
             shader->Unbind();
         }
         m_RenderQueue.clear();
+    }
+
+    void Renderer::BindShadowMapsToShader(Shader* shader) {
+       
     }
 
     void Renderer::RenderSkybox() {
@@ -123,8 +133,8 @@ namespace StrikeEngine {
             skyboxShader->Bind();
 
             glm::mat4 view = glm::mat4(glm::mat3(m_CameraViewMatrix));
-            skyboxShader->LoadUniform("view", view);
-            skyboxShader->LoadUniform("projection", m_CameraProjectionMatrix);
+
+            skyboxShader->LoadUniform("MVP", m_CameraProjectionMatrix * view);
 
             m_Skybox->Draw();
 
@@ -136,8 +146,7 @@ namespace StrikeEngine {
 
     void Renderer::BindShaderMVP(Shader* shader, const RenderCommand& command) {
         //shader->LoadUniform("transform", command.transformationMatrix);
-        shader->LoadUniform("view", m_CameraViewMatrix);
-        shader->LoadUniform("projection", m_CameraProjectionMatrix);
+        shader->LoadUniform("MVP", m_CameraProjectionMatrix * m_CameraViewMatrix);
         shader->LoadUniform("viewPosition", m_CameraPosition);
     }
 
@@ -197,4 +206,7 @@ namespace StrikeEngine {
         }
         m_DefaultTexture = new Texture(path);
     }
+
+    
+
 }

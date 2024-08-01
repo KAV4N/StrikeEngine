@@ -15,6 +15,8 @@
 
 //TODO: REMOVE AFTER TESTING
 #include <StrikeEngine/Scene/Systems/TransformSystem.h> 
+#include <chrono>
+#include <imgui.h>
 //---------------------------------------------
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
@@ -24,6 +26,7 @@ namespace StrikeEngine
     Application* Application::s_Instance = nullptr;
 
     Application::Application()
+
     {
         STRIKE_CORE_ASSERT(!s_Instance, "Application already exists!");
         s_Instance = this;
@@ -31,7 +34,7 @@ namespace StrikeEngine
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
         Renderer::Create();
-        Renderer::Init();
+        Renderer::Get()->Init();
         Renderer::Get()->SetDefaultTexture(DEFAULT_TEXTURE);
 
         m_ImGuiLayer = new ImGuiLayer();
@@ -126,6 +129,8 @@ namespace StrikeEngine
 
     void Application::Run() {
 
+        std::chrono::time_point<std::chrono::steady_clock> lastTime = std::chrono::steady_clock::now();
+        float fps = 0;
 
         while (m_Running) {
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -142,6 +147,27 @@ namespace StrikeEngine
             m_ImGuiLayer->Begin();
             for (Layer* layer : m_LayerStack)
                 layer->OnImGuiRender();
+
+            // TEST-----------------------------------------------------------------------------------------------------
+            static int frameCount = 0;
+            static auto lastTime = std::chrono::steady_clock::now();
+
+            frameCount++;
+            auto currentTime = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count();
+
+            if (duration > 1000) {
+                fps = frameCount * 1000.0f / duration;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            // Display FPS
+            ImGui::Begin("FPS Counter");
+            ImGui::Text("FPS: %.2f", fps);
+            ImGui::End();
+            // TEST-----------------------------------------------------------------------------------------------------
+
             m_ImGuiLayer->End();
 
             m_Window->OnUpdate();

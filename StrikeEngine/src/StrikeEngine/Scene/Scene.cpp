@@ -3,6 +3,8 @@
 #include "StrikeEngine/Renderer/Renderer.h"
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"
 #include "Components/ModelComponent.h"
+#include "Components/ShadowCasterComponent.h"
+#include "Components/LightComponents.h"
 
 namespace StrikeEngine {
 
@@ -18,6 +20,46 @@ namespace StrikeEngine {
     Scene::~Scene() {
         // Cleanup resources if needed
     }
+
+
+
+    std::vector<Entity>  Scene::GetDirectionalLights() const {
+        std::vector<Entity> lights;
+        auto view = m_Registry.view<DirectionalLightComponent>();
+        for (auto entity : view) {
+            lights.emplace_back(entity, const_cast<Scene*>(this));
+            
+        }
+        return lights;
+    }
+
+    std::vector<Entity>  Scene::GetPointLights() const {
+        std::vector<Entity> lights;
+        auto view = m_Registry.view<PointLightComponent>();
+        for (auto entity : view) {
+            lights.emplace_back(entity, const_cast<Scene*>(this));
+        }
+        return lights;
+    }
+
+    std::vector<Entity>  Scene::GetSpotLights() const {
+        std::vector<Entity> lights;
+        auto view = m_Registry.view<SpotLightComponent>();
+        for (auto entity : view) {
+            lights.emplace_back(entity, const_cast<Scene*>(this));    
+        }
+        return lights;
+    }
+
+    std::vector<Entity> Scene::GetShadowCastingLights() const {
+        std::vector<Entity> shadowCasters;
+        auto view = m_Registry.view<ShadowCasterComponent>();
+        for (auto entity : view) {
+            shadowCasters.emplace_back(entity, const_cast<Scene*>(this));
+        }
+        return shadowCasters;
+    }
+
 
     Entity Scene::CreateEntity(Model* model, const std::string& name) {
         Entity entity(m_Registry.create(), this);
@@ -52,6 +94,17 @@ namespace StrikeEngine {
         return entity;
     }
 
+    Entity Scene::CreateShadowCaster(Entity lightEntity)
+    {
+        if (!lightEntity.HasComponent<DirectionalLightComponent>() &&
+            !lightEntity.HasComponent<PointLightComponent>() &&
+            !lightEntity.HasComponent<SpotLightComponent>()) {
+            throw std::runtime_error("Entity must have a light component to create a ShadowCasterComponent.");
+        }
+
+        lightEntity.AddComponent<ShadowCasterComponent>();
+        return lightEntity;
+    }
 
 
     void Scene::Setup() {

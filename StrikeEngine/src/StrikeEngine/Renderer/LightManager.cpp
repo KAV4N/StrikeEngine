@@ -2,6 +2,7 @@
 #include "LightManager.h"
 #include "Shader.h"
 #include <glad/glad.h>
+#include <StrikeEngine/Scene/Components/ShadowCasterComponent.h>
 
 namespace StrikeEngine {
 
@@ -80,6 +81,12 @@ namespace StrikeEngine {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPOT_LIGHT_BUFFER_BINDING, m_SpotSSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+
+        glGenBuffers(1, &m_ShadowMapSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ShadowMapSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADOW_MAP_BUFFER_BINDING, m_ShadowMapSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
    
@@ -133,5 +140,74 @@ namespace StrikeEngine {
     void LightManager::SetActiveScene(Scene* activeScene) {
         m_ActiveScene = activeScene;
     }
+
+    void LightManager::UpdateShadowMaps() {
+        const std::vector<Entity> shadowCasters = m_ActiveScene->GetShadowCastingLights();
+        for (const auto& entity : shadowCasters) {
+            auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
+
+            if (entity.HasComponent<DirectionalLightComponent>()) {
+                UpdateDirectionalLightShadowMap(entity, shadowCaster);
+            }
+            else if (entity.HasComponent<PointLightComponent>()) {
+                UpdatePointLightShadowMap(entity, shadowCaster);
+            }
+            else if (entity.HasComponent<SpotLightComponent>()) {
+                UpdateSpotLightShadowMap(entity, shadowCaster);
+            }
+        }
+    }
+
+    void LightManager::UpdateDirectionalLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster) {
+        auto& light = entity.GetComponent<DirectionalLightComponent>();
+
+        // Calculate light space matrix
+        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
+        glm::mat4 lightView = glm::lookAt(-light.direction * 10.0f, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shadowCaster.lightSpaceMatrix = lightProjection * lightView;
+
+        shadowCaster.shadowMap->Bind();
+        glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        shadowCaster.shadowMap->Unbind();
+    }
+
+    void LightManager::UpdatePointLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster) {
+        auto& light = entity.GetComponent<PointLightComponent>();
+
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
+        std::vector<glm::mat4> shadowTransforms;
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+
+        // Render to cubemap shadow map
+        shadowCaster.shadowMap->Bind();
+        glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        shadowCaster.shadowMap->Unbind();
+    }
+
+    void LightManager::UpdateSpotLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster) {
+        auto& light = entity.GetComponent<SpotLightComponent>();
+
+        glm::mat4 lightProjection = glm::perspective(glm::acos(light.cutoff) * 2.0f, 1.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
+        glm::mat4 lightView = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+        shadowCaster.lightSpaceMatrix = lightProjection * lightView;
+
+        // Render shadow map
+        shadowCaster.shadowMap->Bind();
+        glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+
+        shadowCaster.shadowMap->Unbind();
+    }
+
 
 }

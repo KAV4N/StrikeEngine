@@ -16,7 +16,6 @@ namespace StrikeEngine {
         static void Create();
 
         Shader* LoadShader(const std::string& name, const std::string& filepath);
-        Shader* LoadShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
         Shader* GetShader(const std::string& name) const;
         void LoadAllShaders();
         std::vector<std::string> GetShaderNames();

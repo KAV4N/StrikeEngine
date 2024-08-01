@@ -22,7 +22,18 @@ namespace StrikeEngine {
         Scene();
         ~Scene();
 
+        std::vector<Entity> GetDirectionalLights() const;
+
+        std::vector<Entity> GetPointLights() const;
+
+        std::vector<Entity> GetSpotLights() const;
+
+        std::vector<Entity> GetShadowCastingLights() const;
+
+
         Entity CreateEntity(Model* model, const std::string& name = std::string());
+        Entity CreateShadowCaster(Entity lightEntity);
+
 
         void RemoveEntity(entt::entity entity);
 
@@ -44,6 +55,7 @@ namespace StrikeEngine {
         Entity CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity);
         Entity CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius);
         Entity CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity);
+
 
 
     private:

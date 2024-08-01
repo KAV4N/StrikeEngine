@@ -160,6 +160,8 @@
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\FrameBufferManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Model.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h" />
@@ -173,6 +175,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />
@@ -685,6 +688,8 @@
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\FrameBufferManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\ModelManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer.cpp" />

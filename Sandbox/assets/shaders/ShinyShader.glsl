@@ -6,11 +6,7 @@
       "type": "matrix4"
     },
     {
-      "name": "projection",
-      "type": "matrix4"
-    },
-    {
-      "name": "view",
+      "name": "MVP",
       "type": "matrix4"
     },
     {
@@ -35,8 +31,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord; 
 
 uniform mat4 transform;
-uniform mat4 projection;
-uniform mat4 view;
+uniform mat4 MVP;
 
 out vec2 TexCoord;
 out vec3 FragPos;
@@ -47,7 +42,7 @@ void main() {
     Normal = mat3(transpose(inverse(transform))) * aNormal;
     TexCoord = aTexCoord;
 
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+    gl_Position = MVP * vec4(FragPos, 1.0);
 }
 
 #type fragment
