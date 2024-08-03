@@ -12,6 +12,7 @@
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
 #include "Skybox.h"
+#include <StrikeEngine/Scene/Components/ModelComponent.h>
 
 namespace StrikeEngine {
 
@@ -27,15 +28,16 @@ namespace StrikeEngine {
         static Renderer* Get();
         static void Destroy();
         void Init();
-        
+
         void BeginScene(CameraComponent* camera);
         void EndScene();
         void SubmitScene(Scene* scene);
         void SubmitSkybox(Skybox* skybox);
         void Render();
+        void RenderShadowMaps();
 
         void SetDefaultTexture(const std::string& path);
-        
+
     private:
         Renderer();
         ~Renderer();
@@ -47,13 +49,28 @@ namespace StrikeEngine {
         void RenderModelParts(Shader* shader, const RenderCommand& command);
         void BindTextures(ModelPart* part);
         void UnbindTextures(ModelPart* part);
-        void BindShadowMapsToShader(Shader* shader);
+
+        void CreateFramebuffer();
+        // Full-screen quad setup
+        void SetupFullScreenQuad();
+        void RenderFullScreenQuad();
+
+        void RenderShadowMapTexture();
 
         static Renderer* s_Instance;
         std::unordered_map<Shader*, std::vector<RenderCommand>> m_RenderQueue;
         Skybox* m_Skybox;
         bool m_RenderSkybox;
         Texture* m_DefaultTexture;
+
+        GLuint m_Framebuffer;
+        GLuint m_ColorAttachment;
+        GLuint m_DepthAttachment;
+        GLuint m_Width;
+        GLuint m_Height;
+
+        GLuint m_QuadVAO, m_QuadVBO;
+        Shader* m_FullScreenQuadShader;
 
         glm::mat4 m_CameraViewProjectionMatrix;
         glm::mat4 m_CameraViewMatrix;

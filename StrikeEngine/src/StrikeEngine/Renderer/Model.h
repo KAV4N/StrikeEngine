@@ -32,9 +32,9 @@ namespace StrikeEngine {
             m_vboID(vboID), m_eboID(eboID)
         {}
 
-        ~ModelPart() 
+        ~ModelPart()
         {
-            for (Texture* texture : m_Textures) 
+            for (Texture* texture : m_Textures)
             {
                 delete texture;
             }
@@ -42,19 +42,19 @@ namespace StrikeEngine {
 
         inline void AddTextures(const std::vector<Texture*>& textures) { m_Textures.insert(m_Textures.end(), textures.begin(), textures.end()); }
 
-        void AddTexture(Texture* texture) 
+        void AddTexture(Texture* texture)
         {
-            if (texture) 
+            if (texture)
             {
                 m_Textures.push_back(texture);
             }
         }
 
-        void AddTextureAt(size_t index, Texture* texture) 
+        void AddTextureAt(size_t index, Texture* texture)
         {
-            if (texture) 
+            if (texture)
             {
-                if (index > m_Textures.size()) 
+                if (index > m_Textures.size())
                 {
                     index = m_Textures.size();
                 }
@@ -62,19 +62,19 @@ namespace StrikeEngine {
             }
         }
 
-        Texture* GetTexture(size_t index) const 
+        Texture* GetTexture(size_t index) const
         {
-            if (index < m_Textures.size()) 
+            if (index < m_Textures.size())
             {
                 return m_Textures[index];
             }
             return nullptr;
         }
 
-        bool GetTexture(Texture* textureToFind, size_t& index) const 
+        bool GetTexture(Texture* textureToFind, size_t& index) const
         {
             auto it = std::find(m_Textures.begin(), m_Textures.end(), textureToFind);
-            if (it != m_Textures.end()) 
+            if (it != m_Textures.end())
             {
                 index = std::distance(m_Textures.begin(), it);
                 return true;
@@ -101,9 +101,9 @@ namespace StrikeEngine {
             return false;
         }
 
-        bool ReplaceTextureAt(size_t index, Texture* newTexture) 
+        bool ReplaceTextureAt(size_t index, Texture* newTexture)
         {
-            if (index < m_Textures.size()) 
+            if (index < m_Textures.size())
             {
                 delete m_Textures[index];
                 m_Textures[index] = newTexture;
@@ -112,16 +112,22 @@ namespace StrikeEngine {
             return false;
         }
 
-        bool DeleteTexture(Texture* textureToRemove) 
+        bool DeleteTexture(Texture* textureToRemove)
         {
             auto it = std::find(m_Textures.begin(), m_Textures.end(), textureToRemove);
-            if (it != m_Textures.end()) 
+            if (it != m_Textures.end())
             {
                 delete* it;
                 m_Textures.erase(it);
                 return true;
             }
             return false;
+        }
+
+        void Draw(Shader* shader) {
+            glBindVertexArray(m_vaoID);
+            glDrawElements(GL_TRIANGLES, m_VertexCount, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
         }
 
     private:

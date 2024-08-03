@@ -27,7 +27,7 @@ namespace StrikeEngine {
             float intensity = 1.0f,
             float near = 0.1f,
             float far = 100.0f)
-            : shadowMap(std::make_unique<FrameBuffer>(resolution, resolution, true)),
+            : shadowMap(std::make_unique<FrameBuffer>(resolution, resolution)),
             lightSpaceMatrix(glm::mat4(1.0f)),
             shadowBias(bias),
             shadowIntensity(intensity),

@@ -7,7 +7,7 @@ namespace StrikeEngine {
 
     class FrameBuffer {
     public:
-        FrameBuffer(int width, int height, bool useDepthTexture = true);
+        FrameBuffer(int width, int height);
         ~FrameBuffer();
 
         void Create();
@@ -19,6 +19,8 @@ namespace StrikeEngine {
         void SetDepthAttachment(GLenum internalFormat);
         void SetStencilAttachment(GLenum internalFormat);
         void SetShadowMap(GLenum internalFormat);
+
+        void CreateShadowMapTextureArray(int count, GLenum internalFormat);
 
         unsigned int GetColorAttachment(int index) const;
         unsigned int GetDepthAttachment() const;

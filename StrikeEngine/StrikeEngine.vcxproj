@@ -161,7 +161,6 @@
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\FrameBufferManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Model.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h" />
@@ -689,7 +688,6 @@
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp" />
-    <ClCompile Include="src\StrikeEngine\Renderer\FrameBufferManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\ModelManager.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer.cpp" />

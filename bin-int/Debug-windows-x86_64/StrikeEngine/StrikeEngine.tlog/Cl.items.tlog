@@ -7,7 +7,6 @@ D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\Log.cpp;D:\CppPro
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiBuild.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiBuild.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiLayer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiLayer.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\FrameBuffer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\FrameBuffer.obj
-D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\FrameBufferManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\FrameBufferManager.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\LightManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\LightManager.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\ModelManager.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ModelManager.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Renderer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Renderer.obj

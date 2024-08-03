@@ -53,11 +53,12 @@ namespace StrikeEngine
         model2->SetShader(ShaderManager::Get()->GetShader("ComicShader"));
 
 
-
+        Model* model3 = ModelManager::Get()->LoadModel("assets/objects/box/circle.obj");
+        model3->SetShader(ShaderManager::Get()->GetShader("ShinyShader"));
 
         Entity entity = m_World->GetActiveScene()->CreateEntity(model);
         TransformSystem::IncreaseRotation(entity, glm::uvec3(270.f, 0.f, 45.f));
-
+        TransformSystem::SetPosition(entity, glm::uvec3(1.f, 0.f, 0.f));
         /*
         modelComp.parts[1].rotation = glm::vec3(0.0f, 0.0f, 45.0f);
         modelComp.parts[2].rotation = glm::vec3(0.0f, 0.0f, 45.0f);
@@ -66,34 +67,46 @@ namespace StrikeEngine
         Entity entity2 = m_World->GetActiveScene()->CreateEntity(model2);
         TransformSystem::SetPosition(entity2, glm::uvec3(5.f, 0.f, 0.f));
 
-
+        Entity entity3 = m_World->GetActiveScene()->CreateEntity(model3);
+        TransformSystem::SetScale(entity3, glm::vec3(10.f));
+        /*
         LightManager::Get()->CreatePointLight(glm::vec3(2.0f, 3.0f, 1.0f),
             glm::vec3(1.0f, 0.0f, 0.0f),
             5.0f,
             1.2f);
+            
+        
         LightManager::Get()->CreatePointLight(glm::vec3(0.0f, 1.0f, 0.0f),
             glm::vec3(1.0f, 1.0f, 1.0f),
             0.8f,
             1.0f);
-
-        LightManager::Get()->CreateSpotLight(glm::vec3(2.0f, 2.0f, 1.0f),
-            glm::vec3(-0.5f, -0.5f, -0.5f),
-            cos(glm::radians(15.0f)),
+        */
+        
+        Entity light = LightManager::Get()->CreateSpotLight(
+            glm::vec3(2.0f, 2.0f, 1.0f),
+            glm::vec3(-0.5f, 0.2f, -0.5f),
+            cos(glm::radians(60.0f)),
             glm::vec3(1.0f, 1.0f, 1.0f),
-            5.0f);
-
-        LightManager::Get()->CreateSpotLight(glm::vec3(0.0f, 1.0f, 0.0f),
-            glm::vec3(0.0f, -1.0f, 0.0f),
-            cos(glm::radians(30.f)),
+            50.0f);
+        LightManager::Get()->CreateShadowCaster(light);
+        /*
+        LightManager::Get()->CreateSpotLight(
+            glm::vec3(0.0f, 2.0f, 0.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            cos(glm::radians(60.f)),
             glm::vec3(1.0f, 1.0f, 1.0f),
             1.0f);
-
+        
         LightManager::Get()->CreateDirectionalLight(glm::vec3(0.5f, -1.0f, 0.0f),
             glm::vec3(1.0f, 0.5f, 0.5f),
             1.0f);
-        LightManager::Get()->CreateDirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
+        
+        
+        Entity light = LightManager::Get()->CreateDirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
             glm::vec3(1.0f, 1.0f, 1.0f),
             0.8f);
+        
+          */  
     }
 
 
@@ -133,7 +146,7 @@ namespace StrikeEngine
         float fps = 0;
 
         while (m_Running) {
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 

@@ -3,6 +3,7 @@
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Components/LightComponents.h"
 #include "StrikeEngine/Scene/Components/ShadowCasterComponent.h"
+#include "StrikeEngine/Scene/Components/ModelComponent.h"
 
 namespace StrikeEngine {
     class Shader;
@@ -13,16 +14,21 @@ namespace StrikeEngine {
         static LightManager* Get();
         static void Destroy();
 
-        void CreateDirectionalLight(const glm::vec3& direction = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f);
+        Entity CreateDirectionalLight(const glm::vec3& direction = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f);
+        Entity CreatePointLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f, float radius = 5.0f);
+        Entity CreateSpotLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& direction = glm::vec3(0.0f), float cutoff = cos(glm::radians(30.f)), const glm::vec3& color = glm::vec3(1.0f), float intensity=1.0f);
 
-        void CreatePointLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f, float radius = 5.0f);
+        Entity CreateShadowCaster(Entity light);
 
-        void CreateSpotLight(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& direction = glm::vec3(0.0f), float cutoff = cos(glm::radians(30.f)), const glm::vec3& color = glm::vec3(1.0f), float intensity=1.0f);
 
-        void InitializeShadowBuffers(int maxShadowMaps);
-        void UpdateShadowMaps();
         void BindLightsToShader();
         void SetActiveScene(Scene* activeScene);
+
+        void UpdateShadowMaps(const ModelPartComponent& partComp, glm::mat4& partTransform);
+
+        void UpdateDirectionalLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
+        void UpdatePointLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
+        void UpdateSpotLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
 
         inline Scene* GetActiveScene() { return m_ActiveScene; }
 
@@ -30,16 +36,16 @@ namespace StrikeEngine {
         LightManager();
         ~LightManager();
         void CreateSSBOs();
+
         void UpdateSSBOs();
 
-
-        void UpdateDirectionalLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster);
-        void UpdatePointLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster);
-        void UpdateSpotLightShadowMap(const Entity& entity, ShadowCasterComponent& shadowCaster);
-
+        void UpdateSSBOPoint(const entt::registry& registry);
+        void UpdateSSBODirect(const entt::registry& registry);
+        void UpdateSSBOSpot(const entt::registry& registry);
 
 
     private:
+        Shader* m_ShadowMapShader;
 
         static LightManager* s_Instance;
         Scene* m_ActiveScene;
@@ -49,13 +55,14 @@ namespace StrikeEngine {
         unsigned int m_DirectionalSSBO;
         unsigned int m_PointSSBO;
         unsigned int m_SpotSSBO;
-        unsigned int m_ShadowMapSSBO;
-        bool m_IsDirty;
+        bool m_PointDirty, m_DirectionalDirty, m_SpotDirty;
 
         const unsigned int DIRECTIONAL_LIGHT_BUFFER_BINDING = 0;
         const unsigned int POINT_LIGHT_BUFFER_BINDING = 1;
         const unsigned int SPOT_LIGHT_BUFFER_BINDING = 2;
-        const unsigned int SHADOW_MAP_BUFFER_BINDING = 3;
+
+       
+       
 
     };
 }

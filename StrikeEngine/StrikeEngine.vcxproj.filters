@@ -28,6 +28,12 @@
     <Filter Include="src\StrikeEngine\Scene">
       <UniqueIdentifier>{619228CB-4D8C-511D-36F9-E72D2292B789}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\StrikeEngine\Scene\Components">
+      <UniqueIdentifier>{D698CC36-4207-22B6-8BF0-DCB5F79D1752}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StrikeEngine\Scene\Systems">
+      <UniqueIdentifier>{68B99B06-54DF-656D-3D25-EB3829EA8A39}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
@@ -168,6 +174,9 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h">
+      <Filter>src\StrikeEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
@@ -198,11 +207,32 @@
     <ClInclude Include="src\StrikeEngine\Scene\Camera.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h">
+      <Filter>src\StrikeEngine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h">
+      <Filter>src\StrikeEngine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h">
+      <Filter>src\StrikeEngine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h">
+      <Filter>src\StrikeEngine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h">
+      <Filter>src\StrikeEngine\Scene\Components</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
       <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h">
+      <Filter>src\StrikeEngine\Scene\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h">
+      <Filter>src\StrikeEngine\Scene\Systems</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\World.h">
       <Filter>src\StrikeEngine\Scene</Filter>
@@ -1695,15 +1725,6 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Components\CameraComponent.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Systems\CameraSystem.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Systems\TransformSystem.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\FrameBufferManager.h" />
-    <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1729,6 +1750,9 @@
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp">
+      <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
@@ -1760,7 +1784,5 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\FrameBufferManager.cpp" />
-    <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp" />
   </ItemGroup>
 </Project>

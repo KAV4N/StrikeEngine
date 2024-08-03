@@ -5,6 +5,7 @@
 #include "Components/ModelComponent.h"
 #include "Components/ShadowCasterComponent.h"
 #include "Components/LightComponents.h"
+#include "Systems/CameraSystem.h"
 
 namespace StrikeEngine {
 
@@ -13,7 +14,8 @@ namespace StrikeEngine {
 
         m_CameraEntity = m_Registry.create();
         auto& camera = m_Registry.emplace<CameraComponent>(m_CameraEntity, 70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-        camera.Position = glm::vec3(0.0f, 3.0f, 6.0f);
+        camera.Position = glm::vec3(0.0f, 6.0f, 4.0f);
+        CameraSystem::RotatePitch(m_Registry, m_CameraEntity, -60.f);
         camera.UpdateViewMatrix();
     }
 

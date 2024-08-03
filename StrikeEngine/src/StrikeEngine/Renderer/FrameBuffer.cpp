@@ -4,13 +4,10 @@
 
 namespace StrikeEngine {
 
-    FrameBuffer::FrameBuffer(int width, int height, bool useDepthTexture)
+    FrameBuffer::FrameBuffer(int width, int height)
         : m_Width(width), m_Height(height), m_HasDepthAttachment(false),
         m_HasStencilAttachment(false), m_HasShadowMap(false) {
         Create();
-        if (useDepthTexture) {
-            SetShadowMap(GL_DEPTH_COMPONENT24);
-        }
     }
 
     FrameBuffer::~FrameBuffer() {
@@ -109,6 +106,7 @@ namespace StrikeEngine {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
+
         float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor);
 
@@ -122,6 +120,8 @@ namespace StrikeEngine {
         m_HasShadowMap = true;
         CheckFramebufferStatus();
     }
+
+
 
     unsigned int FrameBuffer::GetColorAttachment(int index) const {
         return m_ColorAttachments[index];

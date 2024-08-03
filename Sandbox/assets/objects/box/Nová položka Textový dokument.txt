@@ -103,23 +103,22 @@ namespace StrikeEngine {
 
     void Renderer::BeginScene(CameraComponent* camera) {
         LightManager::Get()->BindLightsToShader();
+        RenderShadowMaps();
 
-
+        glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
+        glViewport(0, 0, m_Width, m_Height); 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         m_CameraViewProjectionMatrix = camera->ProjectionMatrix * camera->ViewMatrix;
         m_CameraViewMatrix = camera->ViewMatrix;
         m_CameraProjectionMatrix = camera->ProjectionMatrix;
         m_CameraPosition = camera->Position;
     }
 
-    void Renderer::EndScene() 
-    {
-        RenderShadowMaps();
-        glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
-        glViewport(0, 0, m_Width, m_Height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    void Renderer::EndScene() {
         Render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_FullScreenQuadShader->Bind();
@@ -128,8 +127,7 @@ namespace StrikeEngine {
         glBindTexture(GL_TEXTURE_2D, 0);
         m_FullScreenQuadShader->Unbind();
 
-        RenderShadowMapTexture();
-
+        LightManager::Get()->UnBindLightsToShader();
     }
 
     void Renderer::SubmitScene(Scene* scene) {
@@ -158,7 +156,7 @@ namespace StrikeEngine {
         m_Skybox = skybox;
         m_RenderSkybox = true;
     }
-    
+
     void Renderer::RenderShadowMaps() {
         for (auto& pair : m_RenderQueue) {
             for (const auto& command : pair.second) {
@@ -173,7 +171,7 @@ namespace StrikeEngine {
 
 
     void Renderer::Render() {
-
+        
         RenderSkybox();
 
         for (auto& pair : m_RenderQueue) {
@@ -187,9 +185,9 @@ namespace StrikeEngine {
 
             shader->Unbind();
         }
-
+        
         m_RenderQueue.clear();
-
+        
     }
 
     void Renderer::RenderSkybox() {
@@ -299,30 +297,82 @@ namespace StrikeEngine {
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
+}
+#pragma once
 
-    void Renderer::RenderShadowMapTexture() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_DEPTH_BUFFER_BIT);
+#include <glm/glm.hpp>
+#include <vector>
+#include <unordered_map>
+#include <entt/entt.hpp>
+#include "StrikeEngine/Scene/Camera.h"
+#include "StrikeEngine/Renderer/Shader.h"
+#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Texture.h"
+#include "StrikeEngine/Scene/Entity.h"
+#include "StrikeEngine/Scene/Components/CameraComponent.h"
+#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "Skybox.h"
+#include <StrikeEngine/Scene/Components/ModelComponent.h>
 
-        Shader* shadowMapShader = ShaderManager::Get()->GetShader("ShadowMapTestShader");
-        shadowMapShader->Bind();
+namespace StrikeEngine {
 
-        Scene* scene = LightManager::Get()->GetActiveScene();
-        Entity spotlight = scene->GetShadowCastingLights().front();
-        ShadowCasterComponent& shadowCaster = spotlight.GetComponent<ShadowCasterComponent>();
-        GLuint shadowMapTexture = shadowCaster.shadowMap->GetShadowMap();
+    struct RenderCommand {
+        glm::mat4 transformationMatrix;
+        Entity entity;
+        glm::vec3 cameraPosition;
+    };
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
-        shadowMapShader->LoadUniform("shadowMap", 0);
+    class Renderer {
+    public:
+        static void Create();
+        static Renderer* Get();
+        static void Destroy();
+        void Init();
 
-        // Set viewport to match the window size
-        glViewport(0, 0, m_Width, m_Height);
+        void BeginScene(CameraComponent* camera);
+        void EndScene();
+        void SubmitScene(Scene* scene);
+        void SubmitSkybox(Skybox* skybox);
+        void Render();
+        void RenderShadowMaps();
 
-        RenderFullScreenQuad();
+        void SetDefaultTexture(const std::string& path);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        shadowMapShader->Unbind();
-    }
+    private:
+        Renderer();
+        ~Renderer();
 
+        void RenderSkybox();
+        void SubmitEntity(Entity entity, const glm::mat4& transformationMatrix);
+        void BindShaderMVP(Shader* shader, const RenderCommand& command);
+        void BindShaderMaterials(Shader* shader, ModelPart* part);
+        void RenderModelParts(Shader* shader, const RenderCommand& command);
+        void BindTextures(ModelPart* part);
+        void UnbindTextures(ModelPart* part);
+
+        void CreateFramebuffer();
+        // Full-screen quad setup
+        void SetupFullScreenQuad();
+        void RenderFullScreenQuad();
+
+        static Renderer* s_Instance;
+        std::unordered_map<Shader*, std::vector<RenderCommand>> m_RenderQueue;
+        Skybox* m_Skybox;
+        bool m_RenderSkybox;
+        Texture* m_DefaultTexture;
+
+        GLuint m_Framebuffer;
+        GLuint m_ColorAttachment;
+        GLuint m_DepthAttachment;
+        GLuint m_Width;
+        GLuint m_Height;
+
+        GLuint m_QuadVAO, m_QuadVBO;
+        Shader* m_FullScreenQuadShader;
+
+        glm::mat4 m_CameraViewProjectionMatrix;
+        glm::mat4 m_CameraViewMatrix;
+        glm::mat4 m_CameraProjectionMatrix;
+        glm::vec3 m_CameraPosition;
+    };
 }
