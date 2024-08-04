@@ -101,6 +101,7 @@ namespace StrikeEngine {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+
     void Renderer::BeginScene(CameraComponent* camera) {
         LightManager::Get()->BindLightsToShader();
 
@@ -114,6 +115,7 @@ namespace StrikeEngine {
     void Renderer::EndScene() 
     {
         RenderShadowMaps();
+        
         glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
         glViewport(0, 0, m_Width, m_Height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -127,9 +129,14 @@ namespace StrikeEngine {
         RenderFullScreenQuad();
         glBindTexture(GL_TEXTURE_2D, 0);
         m_FullScreenQuadShader->Unbind();
-
+        
+        /*
+        //TEST AREA
+        RenderShadowMaps();
+        m_RenderQueue.clear();
         RenderShadowMapTexture();
-
+        */
+        
     }
 
     void Renderer::SubmitScene(Scene* scene) {
@@ -160,15 +167,7 @@ namespace StrikeEngine {
     }
     
     void Renderer::RenderShadowMaps() {
-        for (auto& pair : m_RenderQueue) {
-            for (const auto& command : pair.second) {
-                const auto& modelComp = command.entity.GetComponent<ModelComponent>();
-                for (const auto& partComp : modelComp.parts) {
-                    glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
-                    LightManager::Get()->UpdateShadowMaps(partComp, partTransform);
-                }
-            }
-        }
+        LightManager::Get()->UpdateShadowMaps(m_RenderQueue);
     }
 
 
@@ -233,7 +232,7 @@ namespace StrikeEngine {
 
             shader->LoadUniform("transform", partTransform);
 
-            partComp.part->Draw(shader);
+            partComp.part->Draw();
 
             UnbindTextures(partComp.part);
         }
@@ -302,7 +301,8 @@ namespace StrikeEngine {
 
     void Renderer::RenderShadowMapTexture() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, m_Width, m_Height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Shader* shadowMapShader = ShaderManager::Get()->GetShader("ShadowMapTestShader");
         shadowMapShader->Bind();
@@ -312,17 +312,16 @@ namespace StrikeEngine {
         ShadowCasterComponent& shadowCaster = spotlight.GetComponent<ShadowCasterComponent>();
         GLuint shadowMapTexture = shadowCaster.shadowMap->GetShadowMap();
 
+        glDisable(GL_DEPTH_TEST); 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
-        shadowMapShader->LoadUniform("shadowMap", 0);
 
-        // Set viewport to match the window size
-        glViewport(0, 0, m_Width, m_Height);
 
         RenderFullScreenQuad();
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        shadowMapShader->Unbind();
+        //glBindTexture(GL_TEXTURE_2D, 0);
+        //shadowMapShader->Unbind();
     }
+
 
 }

@@ -124,7 +124,7 @@ namespace StrikeEngine {
             return false;
         }
 
-        void Draw(Shader* shader) {
+        void Draw() {
             glBindVertexArray(m_vaoID);
             glDrawElements(GL_TRIANGLES, m_VertexCount, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);

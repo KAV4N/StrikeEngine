@@ -4,6 +4,7 @@
 #include "StrikeEngine/Scene/Components/LightComponents.h"
 #include "StrikeEngine/Scene/Components/ShadowCasterComponent.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
+#include "Renderer.h" 
 
 namespace StrikeEngine {
     class Shader;
@@ -24,11 +25,17 @@ namespace StrikeEngine {
         void BindLightsToShader();
         void SetActiveScene(Scene* activeScene);
 
-        void UpdateShadowMaps(const ModelPartComponent& partComp, glm::mat4& partTransform);
+        void UpdateShadowMaps(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
+        void Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
+        void UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
+        void UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
+        void UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
 
-        void UpdateDirectionalLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
-        void UpdatePointLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
-        void UpdateSpotLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
+        //void UpdateShadowMaps(const ModelPartComponent& partComp, glm::mat4& partTransform);
+
+        //void UpdateDirectionalLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
+        //void UpdatePointLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
+        //void UpdateSpotLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
 
         inline Scene* GetActiveScene() { return m_ActiveScene; }
 

@@ -41,7 +41,7 @@ namespace StrikeEngine
         PushOverlay(m_ImGuiLayer);
 
         Scene* scene = new Scene();
-        //TODO: CREATE WORLD ON STACK
+
         m_World = new World();
         m_World->AddScene(scene);
 
@@ -89,6 +89,7 @@ namespace StrikeEngine
             glm::vec3(1.0f, 1.0f, 1.0f),
             50.0f);
         LightManager::Get()->CreateShadowCaster(light);
+        
         /*
         LightManager::Get()->CreateSpotLight(
             glm::vec3(0.0f, 2.0f, 0.0f),
@@ -102,11 +103,13 @@ namespace StrikeEngine
             1.0f);
         
         
-        Entity light = LightManager::Get()->CreateDirectionalLight(glm::vec3(-0.2f, -1.0f, -0.3f),
+        Entity light = LightManager::Get()->CreateDirectionalLight(
+            glm::vec3(0.f, 4.f, 6.f),
             glm::vec3(1.0f, 1.0f, 1.0f),
             0.8f);
-        
-          */  
+        LightManager::Get()->CreateShadowCaster(light);
+        */
+          
     }
 
 

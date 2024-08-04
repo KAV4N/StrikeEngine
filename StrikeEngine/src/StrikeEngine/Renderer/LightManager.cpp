@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include <glad/glad.h>
 #include <StrikeEngine/Scene/Components/ShadowCasterComponent.h>
+#include "Renderer.h"
 
 namespace StrikeEngine {
 
@@ -158,7 +159,7 @@ namespace StrikeEngine {
         m_ActiveScene = activeScene;
     }
 
-    void LightManager::UpdateShadowMaps(const ModelPartComponent& partComp, glm::mat4& partTransform) {
+    void LightManager::UpdateShadowMaps(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
 
         auto& registry = m_ActiveScene->GetRegistry();
 
@@ -167,63 +168,96 @@ namespace StrikeEngine {
         auto spotView = registry.view<SpotLightComponent, ShadowCasterComponent>();
 
         for (auto entity : pointView) {
-            UpdatePointLightShadowMap({ entity, m_ActiveScene }, partComp, partTransform);
+            UpdatePointLightShadowMap({ entity, m_ActiveScene }, renderQueue);
         }
 
         m_ShadowMapShader->Bind();
         for (auto entity : dirView) {
-            UpdateDirectionalLightShadowMap({ entity, m_ActiveScene }, partComp, partTransform);
+            UpdateDirectionalLightShadowMap({ entity, m_ActiveScene }, renderQueue);
         }
 
         for (auto entity : spotView) {
-            UpdateSpotLightShadowMap({ entity, m_ActiveScene }, partComp, partTransform);
+            UpdateSpotLightShadowMap({ entity, m_ActiveScene }, renderQueue);
         }
         m_ShadowMapShader->Unbind();
 
     }
 
-    void LightManager::UpdateDirectionalLightShadowMap(const Entity& entity, const ModelPartComponent& partComp, glm::mat4& partTransform) {
+    void LightManager::Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
+        for (auto& pair : renderQueue) {
+            for (const auto& command : pair.second) {
+                const auto& modelComp = command.entity.GetComponent<ModelComponent>();
+                for (const auto& partComp : modelComp.parts) {
+                    glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
+                    m_ShadowMapShader->LoadUniform("transform", partTransform);
+                    partComp.part->Draw();
+                }
+            }
+        }
+    }
+
+    void LightManager::UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
         auto& light = entity.GetComponent<DirectionalLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
-        // Calculate light space matrix
-        glm::mat4 orthoProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
-        glm::mat4 lightView = glm::lookAt(light.direction, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shadowCaster.lightSpaceMatrix = orthoProjection * lightView;
+        glm::mat4 orthgonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
+        glm::mat4 lightView = glm::lookAt(light.direction, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shadowCaster.lightSpaceMatrix = orthgonalProjection * lightView;
 
         m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowCaster.lightSpaceMatrix);
-        m_ShadowMapShader->LoadUniform("transform", partTransform);
 
         glEnable(GL_DEPTH_TEST);
         glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
         shadowCaster.shadowMap->Bind();
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        partComp.part->Draw(m_ShadowMapShader);
+        Render(renderQueue);
 
-        shadowCaster.shadowMap->Unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void LightManager::UpdatePointLightShadowMap(const Entity& entity, const ModelPartComponent& partComp, glm::mat4& partTransform) {
+    void LightManager::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
 
     }
 
-    void LightManager::UpdateSpotLightShadowMap(const Entity& entity, const ModelPartComponent& partComp, glm::mat4& partTransform) {
+    void LightManager::UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
         auto& light = entity.GetComponent<SpotLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
-        glm::mat4 lightProjection = glm::perspective(glm::acos(light.cutoff) * 2.0f, 1.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
-        glm::mat4 lightView = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0.0f, 1.0f, 0.0f));
-        shadowCaster.lightSpaceMatrix = lightProjection * lightView;
 
-        m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowCaster.lightSpaceMatrix);
-        m_ShadowMapShader->LoadUniform("transform", partTransform);
+        // Set up shadow map shader
+        m_ShadowMapShader->Bind();
 
+        // Calculate light space matrix
+        glm::mat4 lightView = glm::lookAt(
+            light.position,
+            light.position + light.direction,
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
+        float nearPlane = 0.1f;
+        float farPlane = 1000.0f;
+        float fov = 90.0f;
+        float aspect = 1.0f; // Assuming square shadow map for simplicity
+
+        glm::mat4 lightProjection = glm::perspective(glm::radians(fov), aspect, nearPlane, farPlane);
+        glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+        // Load the light space matrix into the shader
+        m_ShadowMapShader->LoadUniform("lightSpaceMatrix", lightSpaceMatrix);
+
+        // Set up OpenGL states for shadow mapping
         glEnable(GL_DEPTH_TEST);
         glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
+
         shadowCaster.shadowMap->Bind();
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        partComp.part->Draw(m_ShadowMapShader);
+        // Render the scene from the light's perspective
+        Render(renderQueue);
 
-        shadowCaster.shadowMap->Unbind();
+        // Cleanup
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
+
 }

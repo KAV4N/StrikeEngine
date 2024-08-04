@@ -37,7 +37,7 @@ namespace StrikeEngine {
         void RenderShadowMaps();
 
         void SetDefaultTexture(const std::string& path);
-
+        friend class LightManager;
     private:
         Renderer();
         ~Renderer();

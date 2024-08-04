@@ -22,7 +22,7 @@ namespace StrikeEngine {
         float farPlane;
 
         ShadowCasterComponent(
-            int resolution = 1024,
+            int resolution = 2048,
             float bias = 0.005f,
             float intensity = 1.0f,
             float near = 0.1f,

@@ -24,7 +24,6 @@ uniform mat4 transform;
 void main()
 {
     gl_Position = lightSpaceMatrix * transform * vec4(aPos, 1.0);
-
 }
 
 
@@ -33,5 +32,5 @@ void main()
 
 void main()
 {
-    gl_FragDepth = gl_FragCoord.z;
+
 }
