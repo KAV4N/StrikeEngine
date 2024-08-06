@@ -5,6 +5,7 @@
 #include "StrikeEngine/Scene/Components/ShadowCasterComponent.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "Renderer.h" 
+#include <StrikeEngine/Renderer/ShadowAtlas.h>
 
 namespace StrikeEngine {
     class Shader;
@@ -31,13 +32,9 @@ namespace StrikeEngine {
         void UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
         void UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
 
-        //void UpdateShadowMaps(const ModelPartComponent& partComp, glm::mat4& partTransform);
-
-        //void UpdateDirectionalLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
-        //void UpdatePointLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
-        //void UpdateSpotLightShadowMap(const Entity& entity,  const ModelPartComponent& partComp, glm::mat4& partTransform);
 
         inline Scene* GetActiveScene() { return m_ActiveScene; }
+        inline std::unique_ptr<ShadowAtlas>& LightManager::GetShadowAtlas() { return m_ShadowAtlas; }
 
     private:
         LightManager();
@@ -57,7 +54,7 @@ namespace StrikeEngine {
         static LightManager* s_Instance;
         Scene* m_ActiveScene;
 
-        std::vector<ShadowData> m_ShadowDataVector;
+        std::unique_ptr<ShadowAtlas> m_ShadowAtlas;
 
         unsigned int m_DirectionalSSBO;
         unsigned int m_PointSSBO;

@@ -153,6 +153,7 @@
     <ClInclude Include="src\StrikeEngine\Core\Layer.h" />
     <ClInclude Include="src\StrikeEngine\Core\LayerStack.h" />
     <ClInclude Include="src\StrikeEngine\Core\Log.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\ShadowAtlas.h" />
     <ClInclude Include="src\StrikeEngine\Core\Window.h" />
     <ClInclude Include="src\StrikeEngine\Events\ApplicationEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\Event.h" />
@@ -685,6 +686,7 @@
     <ClCompile Include="src\StrikeEngine\Core\Layer.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\ShadowAtlas.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp" />

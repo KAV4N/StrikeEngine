@@ -114,6 +114,7 @@ namespace StrikeEngine {
 
     void Renderer::EndScene() 
     {
+        /*
         RenderShadowMaps();
         
         glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
@@ -129,13 +130,13 @@ namespace StrikeEngine {
         RenderFullScreenQuad();
         glBindTexture(GL_TEXTURE_2D, 0);
         m_FullScreenQuadShader->Unbind();
+        */
         
-        /*
         //TEST AREA
         RenderShadowMaps();
         m_RenderQueue.clear();
         RenderShadowMapTexture();
-        */
+        
         
     }
 
@@ -143,13 +144,13 @@ namespace StrikeEngine {
         const auto view = scene->GetRegistry().view<ModelComponent, TransformComponent>();
         for (auto entityHandle : view) {
             Entity entity{ entityHandle, scene };
-            /*
+            
             // TODO: REMOVE AFTER TESTING-----------------------------------------
             TransformSystem::IncreaseRotation(entity, glm::uvec3(0.f, 0.f, 1.f));
             auto& modelComp = entity.GetComponent<ModelComponent>();
-            modelComp.parts[0].rotation += glm::vec3(0.0f, 0.0f, 45.0f);
+            modelComp.parts[0].rotation += glm::vec3(0.0f, 0.0f, 5.0f);
             //---------------------------------------------------------------------
-            */
+            
             auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
             SubmitEntity(entity, transform);
         }
@@ -307,14 +308,10 @@ namespace StrikeEngine {
         Shader* shadowMapShader = ShaderManager::Get()->GetShader("ShadowMapTestShader");
         shadowMapShader->Bind();
 
-        Scene* scene = LightManager::Get()->GetActiveScene();
-        Entity spotlight = scene->GetShadowCastingLights().front();
-        ShadowCasterComponent& shadowCaster = spotlight.GetComponent<ShadowCasterComponent>();
-        GLuint shadowMapTexture = shadowCaster.shadowMap->GetShadowMap();
-
-        glDisable(GL_DEPTH_TEST); 
+        glDisable(GL_DEPTH_TEST);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+        glBindTexture(GL_TEXTURE_2D, LightManager::Get()->GetShadowAtlas()->GetTextureID());
+        shadowMapShader->LoadUniform("shadowAtlas", 0);
 
 
         RenderFullScreenQuad();

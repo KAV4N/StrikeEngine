@@ -90,25 +90,26 @@ namespace StrikeEngine
             50.0f);
         LightManager::Get()->CreateShadowCaster(light);
         
-        /*
-        LightManager::Get()->CreateSpotLight(
-            glm::vec3(0.0f, 2.0f, 0.0f),
-            glm::vec3(0.0f, 0.0f, 0.0f),
+        
+        Entity light1 = LightManager::Get()->CreateSpotLight(
+            glm::vec3(0.0f, 2.0f, 1.0f),
+            glm::vec3(0.0f, 0.2f, -1.f),
             cos(glm::radians(60.f)),
             glm::vec3(1.0f, 1.0f, 1.0f),
             1.0f);
-        
+        LightManager::Get()->CreateShadowCaster(light1);
+        /*
         LightManager::Get()->CreateDirectionalLight(glm::vec3(0.5f, -1.0f, 0.0f),
             glm::vec3(1.0f, 0.5f, 0.5f),
             1.0f);
         
-        
-        Entity light = LightManager::Get()->CreateDirectionalLight(
+        */
+        Entity light2 = LightManager::Get()->CreateDirectionalLight(
             glm::vec3(0.f, 4.f, 6.f),
             glm::vec3(1.0f, 1.0f, 1.0f),
             0.8f);
-        LightManager::Get()->CreateShadowCaster(light);
-        */
+        LightManager::Get()->CreateShadowCaster(light2);
+        
           
     }
 

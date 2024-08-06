@@ -14,6 +14,7 @@ namespace StrikeEngine {
         m_DirectionalDirty(false), m_PointDirty(false), m_SpotDirty(false) {
         m_ShadowMapShader = ShaderManager::Get()->GetShader("ShadowMapShader");
         CreateSSBOs();
+        m_ShadowAtlas = std::make_unique<ShadowAtlas>(4092, 1024); 
     }
 
     void LightManager::Create() {
@@ -160,18 +161,15 @@ namespace StrikeEngine {
     }
 
     void LightManager::UpdateShadowMaps(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
-
         auto& registry = m_ActiveScene->GetRegistry();
 
         auto pointView = registry.view<PointLightComponent, ShadowCasterComponent>();
         auto dirView = registry.view<DirectionalLightComponent, ShadowCasterComponent>();
         auto spotView = registry.view<SpotLightComponent, ShadowCasterComponent>();
 
-        for (auto entity : pointView) {
-            UpdatePointLightShadowMap({ entity, m_ActiveScene }, renderQueue);
-        }
-
+        m_ShadowAtlas->Bind();
         m_ShadowMapShader->Bind();
+
         for (auto entity : dirView) {
             UpdateDirectionalLightShadowMap({ entity, m_ActiveScene }, renderQueue);
         }
@@ -179,8 +177,13 @@ namespace StrikeEngine {
         for (auto entity : spotView) {
             UpdateSpotLightShadowMap({ entity, m_ActiveScene }, renderQueue);
         }
-        m_ShadowMapShader->Unbind();
 
+        for (auto entity : pointView) {
+            UpdatePointLightShadowMap({ entity, m_ActiveScene }, renderQueue);
+        }
+
+        m_ShadowMapShader->Unbind();
+        m_ShadowAtlas->Unbind();
     }
 
     void LightManager::Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
@@ -199,65 +202,98 @@ namespace StrikeEngine {
     void LightManager::UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
         auto& light = entity.GetComponent<DirectionalLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
-        glm::mat4 orthgonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
-        glm::mat4 lightView = glm::lookAt(light.direction, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shadowCaster.lightSpaceMatrix = orthgonalProjection * lightView;
 
+        if (shadowCaster.atlasInfo == glm::vec4(-1)) {
+            if (m_ShadowAtlas->GetFreeTileCount() > 0) {
+                shadowCaster.atlasInfo = m_ShadowAtlas->AllocateTile();
+            }
+            else {
+                return; // No free tiles available
+            }
+        }
+
+        glm::vec4 tileInfo = shadowCaster.atlasInfo;
+        glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.f);
+        glm::mat4 lightView = glm::lookAt(light.direction, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shadowCaster.lightSpaceMatrix = orthogonalProjection * lightView;
         m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowCaster.lightSpaceMatrix);
 
         glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
-        shadowCaster.shadowMap->Bind();
+        glViewport(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+        glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+        glEnable(GL_SCISSOR_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);
-
         Render(renderQueue);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    void LightManager::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
-
+        glDisable(GL_SCISSOR_TEST);
     }
 
     void LightManager::UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
         auto& light = entity.GetComponent<SpotLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
 
-        // Set up shadow map shader
-        m_ShadowMapShader->Bind();
+        if (shadowCaster.atlasInfo == glm::vec4(-1)) {
+            if (m_ShadowAtlas->GetFreeTileCount() > 0) {
+                shadowCaster.atlasInfo = m_ShadowAtlas->AllocateTile();
+            }
+            else {
+                return; // No free tiles available
+            }
+        }
 
-        // Calculate light space matrix
-        glm::mat4 lightView = glm::lookAt(
-            light.position,
-            light.position + light.direction,
-            glm::vec3(0.0f, 1.0f, 0.0f)
-        );
+        glm::vec4 tileInfo = shadowCaster.atlasInfo;
+        glm::mat4 lightProjection = glm::perspective(glm::radians(90.f), 1.0f, 0.1f, 1000.f);
+        glm::mat4 lightView = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0.0f, 1.0f, 0.0f));
+        shadowCaster.lightSpaceMatrix = lightProjection * lightView;
+        m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowCaster.lightSpaceMatrix);
 
-        float nearPlane = 0.1f;
-        float farPlane = 1000.0f;
-        float fov = 90.0f;
-        float aspect = 1.0f; // Assuming square shadow map for simplicity
-
-        glm::mat4 lightProjection = glm::perspective(glm::radians(fov), aspect, nearPlane, farPlane);
-        glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-
-        // Load the light space matrix into the shader
-        m_ShadowMapShader->LoadUniform("lightSpaceMatrix", lightSpaceMatrix);
-
-        // Set up OpenGL states for shadow mapping
         glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, shadowCaster.shadowMapResolution, shadowCaster.shadowMapResolution);
-
-        shadowCaster.shadowMap->Bind();
+        glViewport(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+        glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+        glEnable(GL_SCISSOR_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);
-
-        // Render the scene from the light's perspective
         Render(renderQueue);
+        glDisable(GL_SCISSOR_TEST);
+    }
 
-        // Cleanup
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    void LightManager::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
+        /*
+        auto& light = entity.GetComponent<PointLightComponent>();
+        auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
+
+        // For point lights, we need 6 shadow maps (one for each face of the cube)
+        std::vector<glm::mat4> shadowTransforms;
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+        
+        for (int i = 0; i < 6; ++i) {
+            glm::vec4 tileInfo = m_ShadowAtlas->AllocateTile();
+            if (tileInfo.x < 0) return; // No free tiles
+
+            if (i == 0) {
+                shadowCaster.atlasInfo = tileInfo;
+            }
+
+            m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowTransforms[i]);
+
+            glEnable(GL_DEPTH_TEST);
+            glViewport(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+            glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
+            glEnable(GL_SCISSOR_TEST);
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            Render(renderQueue);
+
+            glDisable(GL_SCISSOR_TEST);
+        }
+
+        // Store all shadow transforms for later use in shading
+        shadowCaster.lightSpaceMatrices = shadowTransforms;
+        */
     }
 
 }

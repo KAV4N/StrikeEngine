@@ -1725,6 +1725,7 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\ShadowAtlas.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1784,5 +1785,6 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\ShadowAtlas.cpp" />
   </ItemGroup>
 </Project>
