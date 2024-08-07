@@ -5,10 +5,10 @@
 #include <string>
 #include <entt/entt.hpp>
 #include "Entity.h"
-#include "StrikeEngine/Renderer/Shader.h"
-#include "StrikeEngine/Renderer/Model.h"
-#include "StrikeEngine/Renderer/Skybox.h"
-#include "StrikeEngine/Renderer/LightManager.h"
+#include "StrikeEngine/Renderer/Core/Shader.h"
+#include "StrikeEngine/Renderer/Core/Model.h"
+#include "StrikeEngine/Renderer/Core/Skybox.h"
+#include "StrikeEngine/Renderer/Managers/LightManager.h"
 
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"

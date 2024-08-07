@@ -1,8 +1,8 @@
 #pragma once
 
-#include "StrikeEngine/Renderer/Texture.h"
-#include "StrikeEngine/Renderer/Shader.h"
-#include "StrikeEngine/Renderer/ShaderManager.h"
+#include "StrikeEngine/Renderer/Core/Texture.h"
+#include "StrikeEngine/Renderer/Core/Shader.h"
+#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
 #include <vector>
 #include <algorithm> 
 
@@ -130,6 +130,14 @@ namespace StrikeEngine {
             glBindVertexArray(0);
         }
 
+        struct AABB {
+            glm::vec3 min;
+            glm::vec3 max;
+        };
+
+        void SetAABB(const AABB& aabb) { m_AABB = aabb; }
+        const AABB& GetAABB() const { return m_AABB; }
+
     private:
         unsigned int m_vaoID;
         unsigned int m_VertexCount;
@@ -137,6 +145,7 @@ namespace StrikeEngine {
         unsigned int m_vboID;
         unsigned int m_eboID;
         Material m_Material;
+        AABB m_AABB;
     };
 
     class Model {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <StrikeEngine/Renderer/FrameBuffer.h>
 
 namespace StrikeEngine {
 
@@ -26,10 +25,6 @@ namespace StrikeEngine {
             nearPlane(near),
             farPlane(far)
         {}
-        /*
-        // Helper function to get the UV coordinates in the shadow atlas
-        glm::vec2 GetAtlasUV(const glm::vec2& shadowMapUV) const {
-            return (shadowMapUV * atlasInfo.zw + atlasInfo.xy) / glm::vec2(4096, 4096); // Assuming 4096x4096 atlas size
-        }*/
+
     };
 }

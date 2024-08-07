@@ -174,31 +174,28 @@
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\FrameBuffer.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Managers\LightManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\LightManager.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\Model.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Model.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Managers\ModelManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\ModelManager.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Renderer3D\Renderer.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Renderer.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\Shader.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Shader.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Managers\ShaderManager.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\ShaderManager.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\Skybox.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Skybox.h">
-      <Filter>src\StrikeEngine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\Texture.h">
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\Texture.h">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Baseplate.h">
@@ -1725,7 +1722,8 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Renderer\ShadowAtlas.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\ShadowAtlas.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\VisibilityCuller.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1752,28 +1750,25 @@
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\FrameBuffer.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Managers\LightManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\LightManager.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Managers\ModelManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\ModelManager.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Renderer3D\Renderer.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\Renderer.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\Shader.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\Shader.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Managers\ShaderManager.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\ShaderManager.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\Skybox.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\Skybox.cpp">
-      <Filter>src\StrikeEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\Texture.cpp">
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\Texture.cpp">
       <Filter>src\StrikeEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp">
@@ -1785,6 +1780,7 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\StrikeEngine\Renderer\ShadowAtlas.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\ShadowAtlas.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\VisibilityCuller.cpp" />
   </ItemGroup>
 </Project>

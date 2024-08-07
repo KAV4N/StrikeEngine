@@ -1,9 +1,10 @@
 #include "strikepch.h"
 #include "LightManager.h"
-#include "Shader.h"
+#include "StrikeEngine/Renderer/Core/Shader.h" 
 #include <glad/glad.h>
 #include <StrikeEngine/Scene/Components/ShadowCasterComponent.h>
-#include "Renderer.h"
+#include "StrikeEngine/Renderer/Renderer3D/Renderer.h" 
+#include "StrikeEngine/Renderer/Core/VisibilityCuller.h"
 
 namespace StrikeEngine {
 
@@ -14,7 +15,7 @@ namespace StrikeEngine {
         m_DirectionalDirty(false), m_PointDirty(false), m_SpotDirty(false) {
         m_ShadowMapShader = ShaderManager::Get()->GetShader("ShadowMapShader");
         CreateSSBOs();
-        m_ShadowAtlas = std::make_unique<ShadowAtlas>(4092, 1024); 
+        m_ShadowAtlas = std::make_unique<ShadowAtlas>(2048, 1024); 
     }
 
     void LightManager::Create() {
@@ -186,18 +187,21 @@ namespace StrikeEngine {
         m_ShadowAtlas->Unbind();
     }
 
-    void LightManager::Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
+    void LightManager::Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue, const glm::mat4& lightSpaceMatrix) {
         for (auto& pair : renderQueue) {
             for (const auto& command : pair.second) {
                 const auto& modelComp = command.entity.GetComponent<ModelComponent>();
                 for (const auto& partComp : modelComp.parts) {
                     glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
-                    m_ShadowMapShader->LoadUniform("transform", partTransform);
-                    partComp.part->Draw();
+                    if (VisibilityCuller::IsVisible(partComp.part->GetAABB(), partTransform, lightSpaceMatrix)) {
+                        m_ShadowMapShader->LoadUniform("transform", partTransform);
+                        partComp.part->Draw();
+                    }
                 }
             }
         }
     }
+
 
     void LightManager::UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
         auto& light = entity.GetComponent<DirectionalLightComponent>();
@@ -223,7 +227,7 @@ namespace StrikeEngine {
         glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
         glEnable(GL_SCISSOR_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);
-        Render(renderQueue);
+        Render(renderQueue, shadowCaster.lightSpaceMatrix);
         glDisable(GL_SCISSOR_TEST);
     }
 
@@ -251,49 +255,12 @@ namespace StrikeEngine {
         glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
         glEnable(GL_SCISSOR_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);
-        Render(renderQueue);
+        Render(renderQueue, shadowCaster.lightSpaceMatrix);
         glDisable(GL_SCISSOR_TEST);
     }
 
-    void LightManager::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
-        /*
-        auto& light = entity.GetComponent<PointLightComponent>();
-        auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
-
-        // For point lights, we need 6 shadow maps (one for each face of the cube)
-        std::vector<glm::mat4> shadowTransforms;
-        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, shadowCaster.nearPlane, shadowCaster.farPlane);
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-        shadowTransforms.push_back(shadowProj * glm::lookAt(light.position, light.position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
-        
-        for (int i = 0; i < 6; ++i) {
-            glm::vec4 tileInfo = m_ShadowAtlas->AllocateTile();
-            if (tileInfo.x < 0) return; // No free tiles
-
-            if (i == 0) {
-                shadowCaster.atlasInfo = tileInfo;
-            }
-
-            m_ShadowMapShader->LoadUniform("lightSpaceMatrix", shadowTransforms[i]);
-
-            glEnable(GL_DEPTH_TEST);
-            glViewport(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
-            glScissor(tileInfo.x, tileInfo.y, tileInfo.z, tileInfo.w);
-            glEnable(GL_SCISSOR_TEST);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            Render(renderQueue);
-
-            glDisable(GL_SCISSOR_TEST);
-        }
-
-        // Store all shadow transforms for later use in shading
-        shadowCaster.lightSpaceMatrices = shadowTransforms;
-        */
+    void LightManager::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) 
+    {
     }
 
 }

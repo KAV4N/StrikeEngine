@@ -3,7 +3,7 @@
 #include "StrikeEngine/Core/Window.h"
 
 #include <GLFW/glfw3.h>
-#include <StrikeEngine/Renderer/Renderer.h>
+#include <StrikeEngine/Renderer/Renderer3D/Renderer.h>
 
 
 namespace StrikeEngine {

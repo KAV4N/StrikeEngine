@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include "Shader.h"
+#include "StrikeEngine/Renderer/Core/Shader.h"
 
 namespace StrikeEngine {
 

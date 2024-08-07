@@ -1,6 +1,6 @@
 #include "strikepch.h"
 #include "World.h"
-#include "StrikeEngine/Renderer/LightManager.h"
+#include "StrikeEngine/Renderer/Managers/LightManager.h"
 
 namespace StrikeEngine {
     World::World() : m_ActiveScene(nullptr) {}

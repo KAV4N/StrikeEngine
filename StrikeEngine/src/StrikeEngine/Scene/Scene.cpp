@@ -1,6 +1,6 @@
 #include "strikepch.h"
 #include "Scene.h"
-#include "StrikeEngine/Renderer/Renderer.h"
+#include "StrikeEngine/Renderer/Renderer3D/Renderer.h" 
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"
 #include "Components/ModelComponent.h"
 #include "Components/ShadowCasterComponent.h"

@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "ModelManager.h"
-#include "StrikeEngine/Renderer/Texture.h"
-#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Core/Texture.h"
+#include "StrikeEngine/Renderer/Core/Model.h"
 #include <iostream>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -114,13 +114,24 @@ namespace StrikeEngine {
 
         auto heightTextures = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height", directory);
         modelPart->AddTextures(heightTextures);
-        /*
-        if (modelPart->GetTextures().empty()) {
-            modelPart->AddTexture(new Texture(DEFAULT_TEXTURE));
-        }*/
+
+        glm::vec3 min(std::numeric_limits<float>::max());
+        glm::vec3 max(std::numeric_limits<float>::lowest());
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+            glm::vec3 position(
+                mesh->mVertices[i].x,
+                mesh->mVertices[i].y,
+                mesh->mVertices[i].z
+            );
+            min = glm::min(min, position);
+            max = glm::max(max, position);
+        }
+        modelPart->SetAABB({ min, max });
+
 
         return modelPart;
     }
+
 
     void ModelManager::ExtractMeshData(aiMesh* mesh, std::vector<float>& vertices, std::vector<unsigned int>& indices) {
         for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {

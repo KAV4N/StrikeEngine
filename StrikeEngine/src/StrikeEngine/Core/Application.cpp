@@ -3,10 +3,10 @@
 #include "Application.h"
 
 #include "StrikeEngine/Core/Log.h"
-#include "StrikeEngine/Renderer/Renderer.h"
-#include "StrikeEngine/Renderer/ModelManager.h"
-#include "StrikeEngine/Renderer/ShaderManager.h"
-#include "StrikeEngine/Renderer/LightManager.h"
+#include "StrikeEngine/Renderer/Renderer3D/Renderer.h"
+#include "StrikeEngine/Renderer/Managers/ModelManager.h"
+#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
+#include "StrikeEngine/Renderer/Managers/LightManager.h"
 
 #include "Input.h"
 #include <glad/glad.h>

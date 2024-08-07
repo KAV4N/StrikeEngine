@@ -55,7 +55,7 @@ in vec3 Normal;
 out vec4 FragColor;
 
 uniform sampler2D ourTexture;
-uniform sampler2D shadowMap;
+
 uniform vec3 viewPosition;
 
 // Define the PointLight struct

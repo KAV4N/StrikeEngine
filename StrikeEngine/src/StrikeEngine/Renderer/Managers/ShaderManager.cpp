@@ -1,7 +1,7 @@
 #pragma once
 
 #include "strikepch.h"
-#include "Shader.h"
+#include "StrikeEngine/Renderer/Shader.h"
 #include <filesystem>
 #include "ShaderManager.h"
 

@@ -2,10 +2,11 @@
 #include "strikepch.h"
 #include "Renderer.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "StrikeEngine/Renderer/ShaderManager.h"
-#include "StrikeEngine/Renderer/ModelManager.h"
-#include "StrikeEngine/Renderer/LightManager.h"
+#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
+#include "StrikeEngine/Renderer/Managers/ModelManager.h"
+#include "StrikeEngine/Renderer/Managers/LightManager.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
+#include "StrikeEngine/Renderer/Core/VisibilityCuller.h"
 
 // TODO: REMOVE AFTER TESTING
 #include <StrikeEngine/Scene/Systems/TransformSystem.h>
@@ -114,7 +115,7 @@ namespace StrikeEngine {
 
     void Renderer::EndScene() 
     {
-        /*
+        
         RenderShadowMaps();
         
         glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
@@ -130,13 +131,13 @@ namespace StrikeEngine {
         RenderFullScreenQuad();
         glBindTexture(GL_TEXTURE_2D, 0);
         m_FullScreenQuadShader->Unbind();
-        */
         
+        /*
         //TEST AREA
         RenderShadowMaps();
         m_RenderQueue.clear();
         RenderShadowMapTexture();
-        
+        */
         
     }
 
@@ -228,14 +229,17 @@ namespace StrikeEngine {
         const auto& modelComp = command.entity.GetComponent<ModelComponent>();
         for (const auto& partComp : modelComp.parts) {
             glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
-            BindShaderMaterials(shader, partComp.part);
-            BindTextures(partComp.part);
 
-            shader->LoadUniform("transform", partTransform);
+            if (VisibilityCuller::IsVisible(partComp.part->GetAABB(), partTransform, m_CameraViewProjectionMatrix)) {
+                BindShaderMaterials(shader, partComp.part);
+                BindTextures(partComp.part);
 
-            partComp.part->Draw();
+                shader->LoadUniform("transform", partTransform);
 
-            UnbindTextures(partComp.part);
+                partComp.part->Draw();
+
+                UnbindTextures(partComp.part);
+            }
         }
     }
 

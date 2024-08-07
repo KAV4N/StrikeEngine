@@ -5,14 +5,15 @@
 #include <unordered_map>
 #include <entt/entt.hpp>
 #include "StrikeEngine/Scene/Camera.h"
-#include "StrikeEngine/Renderer/Shader.h"
-#include "StrikeEngine/Renderer/Model.h"
-#include "StrikeEngine/Renderer/Texture.h"
+#include "StrikeEngine/Renderer/Core/Shader.h"
+#include "StrikeEngine/Renderer/Core/Model.h"
+#include "StrikeEngine/Renderer/Core/Texture.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
-#include "Skybox.h"
 #include <StrikeEngine/Scene/Components/ModelComponent.h>
+#include "StrikeEngine/Renderer/Core/Skybox.h"
+
 
 namespace StrikeEngine {
 

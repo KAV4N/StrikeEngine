@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Core/Model.h"
 #include <unordered_map>
 #include <string>
 #include <vector>

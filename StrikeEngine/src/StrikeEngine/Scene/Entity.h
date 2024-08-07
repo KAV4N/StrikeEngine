@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
-#include "StrikeEngine/Renderer/Model.h"
+#include "StrikeEngine/Renderer/Core/Model.h"
 
 namespace StrikeEngine {
 
