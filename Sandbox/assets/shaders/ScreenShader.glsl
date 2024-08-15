@@ -2,7 +2,7 @@
 #RootSignature
 {
     "RootSignature": [
-        {"name": "ourTexture", "type": "sampler2D"}
+        {"name": "screenTexture", "type": "sampler2D"}
     ]
 }
 #end

@@ -22,6 +22,8 @@ namespace StrikeEngine {
         int GetUsedTileCount() const { return m_UsedTileCount; }
         int GetFreeTileCount() const { return m_TotalTiles - m_UsedTileCount; }
         int GetTotalTileCount() const { return m_TotalTiles; }
+        int GetAtlasSize() const { return m_AtlasSize; }
+        int GetTileSize() const { return m_TileSize; }
 
     private:
         int GetTileIndex(const glm::vec4& tile) const;

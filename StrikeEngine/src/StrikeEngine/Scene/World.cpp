@@ -3,6 +3,21 @@
 #include "StrikeEngine/Renderer/Managers/LightManager.h"
 
 namespace StrikeEngine {
+
+    World* World::s_Instance = nullptr;
+
+    void World::Create() {
+        if (s_Instance == nullptr) {
+            s_Instance = new World();
+        }
+    }
+
+
+    World* World::Get() {
+    
+        return s_Instance;
+    }
+
     World::World() : m_ActiveScene(nullptr) {}
 
     World::~World() {
@@ -15,14 +30,12 @@ namespace StrikeEngine {
         m_Scenes.push_back(scene);
         if (m_ActiveScene == nullptr) {
             m_ActiveScene = scene;
-            LightManager::Get()->SetActiveScene(m_ActiveScene);
         }
     }
 
     void World::SetActiveScene(int index) {
         if (index >= 0 && index < m_Scenes.size()) {
             m_ActiveScene = m_Scenes[index];
-            LightManager::Get()->SetActiveScene(m_ActiveScene);
         }
     }
 
@@ -41,4 +54,5 @@ namespace StrikeEngine {
     Scene* World::GetActiveScene() {
         return m_ActiveScene;
     }
+
 }

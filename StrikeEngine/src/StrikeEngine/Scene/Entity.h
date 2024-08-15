@@ -10,8 +10,11 @@ namespace StrikeEngine {
 
     class Entity {
     public:
+
         Entity(entt::entity handle, Scene* scene)
             : m_EntityHandle(handle), m_Scene(scene) {}
+
+
 
         template<typename T, typename... Args>
         T& AddComponent(Args&&... args) {

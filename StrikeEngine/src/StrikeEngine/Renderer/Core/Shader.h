@@ -12,7 +12,7 @@ namespace StrikeEngine {
 
     class Shader {
     public:
-        Shader(const std::string& filepath);
+        Shader(const std::string& filepath, std::string name);
         ~Shader();
 
         void Bind();
@@ -26,6 +26,8 @@ namespace StrikeEngine {
         void LoadUniform(const std::string& name, float value);
         void LoadUniform(const std::string& name, int value);
 
+        inline std::string& GetName() { return m_Name; }
+        inline std::string& GetFilePath() { return m_FilePath; }
     private:
         std::string ReadFile(const std::string& filepath);
         void ParseUniforms(const std::string& source);
@@ -34,6 +36,9 @@ namespace StrikeEngine {
 
         GLenum ShaderTypeFromString(const std::string& type);
         std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+
+        std::string m_Name;
+        std::string m_FilePath;
 
         GLuint m_ProgramID;
         std::unordered_map<std::string, GLint> m_UniformLocations;

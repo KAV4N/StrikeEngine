@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEFAULT_SHADER "DefaultShader"
+#define DEFAULT_SHADER "ShinyShader"
 #define SHADER_DIRECTORY "assets/shaders"
 
 #include <string>
@@ -25,6 +25,7 @@ namespace StrikeEngine {
     private:
         ShaderManager()
         {
+            m_DefaultShader = "ShinyShader";
             LoadAllShaders();
         }
 

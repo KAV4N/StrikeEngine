@@ -24,26 +24,17 @@ namespace StrikeEngine {
         Entity CreateShadowCaster(Entity light);
 
 
-        void BindLightsToShader();
-        void SetActiveScene(Scene* activeScene);
-
-        void UpdateShadowMaps(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
-        void Render(std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue, const glm::mat4& viewProjectionMatrix);
-        bool IsVisible(const ModelPart::AABB& aabb, const glm::mat4& modelMatrix, const glm::mat4& lightSpaceMatrix);
-        void UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
-        void UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
-        void UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue);
-
+        void BindLights();
 
         inline Scene* GetActiveScene() { return m_ActiveScene; }
         inline std::unique_ptr<ShadowAtlas>& LightManager::GetShadowAtlas() { return m_ShadowAtlas; }
-
+        void UpdateSSBOs();
     private:
         LightManager();
         ~LightManager();
         void CreateSSBOs();
 
-        void UpdateSSBOs();
+        
 
         void UpdateSSBOPoint(const entt::registry& registry);
         void UpdateSSBODirect(const entt::registry& registry);
@@ -66,7 +57,6 @@ namespace StrikeEngine {
         const unsigned int DIRECTIONAL_LIGHT_BUFFER_BINDING = 0;
         const unsigned int POINT_LIGHT_BUFFER_BINDING = 1;
         const unsigned int SPOT_LIGHT_BUFFER_BINDING = 2;
-       
-
+     
     };
 }

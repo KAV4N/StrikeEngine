@@ -14,13 +14,18 @@
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
 #include "StrikeEngine/Scene/Components/LightComponents.h"
+#include "StrikeEngine/Scene/RenderCommand.h"
+
 
 namespace StrikeEngine {
 
     class Scene {
     public:
+
         Scene();
         ~Scene();
+        
+        RenderCommand BuildRenderCommand() const;
 
         std::vector<Entity> GetDirectionalLights() const;
 
@@ -32,6 +37,7 @@ namespace StrikeEngine {
 
 
         Entity CreateEntity(Model* model, const std::string& name = std::string());
+        std::vector<Entity> GetAllEntitiesWithModelComponent() const;
         Entity CreateShadowCaster(Entity lightEntity);
 
 
@@ -60,7 +66,9 @@ namespace StrikeEngine {
 
     private:
         entt::registry m_Registry;
-        entt::entity m_CameraEntity{ entt::null };
+
+        Entity m_CameraEntity;
+
         std::unique_ptr<Skybox> m_Skybox;
     };
 

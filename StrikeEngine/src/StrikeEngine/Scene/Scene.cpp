@@ -6,16 +6,32 @@
 #include "Components/ShadowCasterComponent.h"
 #include "Components/LightComponents.h"
 #include "Systems/CameraSystem.h"
+#include "StrikeEngine/Scene/RenderCommand.h"
 
 namespace StrikeEngine {
 
-    Scene::Scene() {
-        m_Skybox = std::make_unique<Skybox>();
 
-        m_CameraEntity = m_Registry.create();
-        auto& camera = m_Registry.emplace<CameraComponent>(m_CameraEntity, 70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+
+
+    RenderCommand Scene::BuildRenderCommand() const {
+        RenderCommand command(m_CameraEntity.GetHandle(), const_cast<Scene*>(this));
+
+        auto view = m_Registry.view<ModelComponent>();
+        for (auto entityView : view) {
+            Entity entity(entityView, const_cast<Scene*>(this));
+            const auto& shaderComponent = entity.GetComponent<ShaderComponent>();
+            command.shaderEntityMap[shaderComponent.shader].push_back(entity);
+        }
+
+        return command;
+    }
+
+    Scene::Scene() : m_CameraEntity(m_Registry.create(), this) {
+        m_Skybox = std::make_unique<Skybox>();
+        auto& camera = m_CameraEntity.AddComponent<CameraComponent>(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
         camera.Position = glm::vec3(0.0f, 6.0f, 4.0f);
-        CameraSystem::RotatePitch(m_Registry, m_CameraEntity, -60.f);
+
+        CameraSystem::RotatePitch(m_Registry, m_CameraEntity.GetHandle(), -60.f);
         camera.UpdateViewMatrix();
     }
 
@@ -64,15 +80,58 @@ namespace StrikeEngine {
 
 
     Entity Scene::CreateEntity(Model* model, const std::string& name) {
-        Entity entity(m_Registry.create(), this);
-        entity.AddComponent<TransformComponent>();
-        entity.AddComponent<ModelComponent>(model);
-        entity.AddComponent<PositionComponent>();
-        entity.AddComponent<RotationComponent>();
-        entity.AddComponent<ScaleComponent>();
+        Entity modelEntity(m_Registry.create(), this);
+        modelEntity.AddComponent<TransformComponent>();
+        modelEntity.AddComponent<PositionComponent>();
+        modelEntity.AddComponent<RotationComponent>();
+        modelEntity.AddComponent<ScaleComponent>();
+        modelEntity.AddComponent<ShaderComponent>();
 
-        return entity;
+        auto& modelComponent = modelEntity.AddComponent<ModelComponent>();
+        for (const auto& partData : model->GetParts()) {
+            Entity partEntity(m_Registry.create(), this);
+
+            partEntity.AddComponent<TransformComponent>();
+            partEntity.AddComponent<PositionComponent>();
+            partEntity.AddComponent<RotationComponent>();
+            partEntity.AddComponent<ScaleComponent>();
+            // Adding model part data
+            auto& modelPartComponent = partEntity.AddComponent<ModelPartComponent>();
+            modelPartComponent.vaoID = partData->GetVaoID();
+            modelPartComponent.vertexCount = partData->GetVertexCount();
+            modelPartComponent.vboID = partData->GetVboID();
+            modelPartComponent.eboID = partData->GetEboID();
+
+            // Adding material data
+            auto& materialComponent = partEntity.AddComponent<MaterialComponent>();
+            Material material = partData->GetMaterial();
+            materialComponent.ambient = material.ambient;
+            materialComponent.diffuse = material.diffuse;
+            materialComponent.specular = material.specular;
+            materialComponent.shininess = material.shininess;
+
+
+            
+
+            // Adding texture data
+            auto& textureComponent = partEntity.AddComponent<TextureComponent>();
+            textureComponent.textures = partData->GetTextures();
+
+            modelComponent.parts.push_back(partEntity);
+        }
+        return modelEntity;
     }
+
+    std::vector<Entity> Scene::GetAllEntitiesWithModelComponent() const {
+        std::vector<Entity> entities;
+        auto view = m_Registry.view<ModelComponent>();
+        for (auto entity : view) {
+            entities.emplace_back(entity, const_cast<Scene*>(this));
+        }
+        return entities;
+    }
+
+
 
     void Scene::RemoveEntity(entt::entity entity) {
         m_Registry.destroy(entity);
@@ -115,28 +174,24 @@ namespace StrikeEngine {
 
     void Scene::Update() {
         TransformSystem::Update(this);
+        
     }
 
-    void Scene::SetCamera(entt::entity cameraEntity) {
-        m_CameraEntity = cameraEntity;
-    }
+
 
     void Scene::Render() {
         Update();
 
         Renderer* renderer = Renderer::Get();
-        auto& camera = m_Registry.get<CameraComponent>(m_CameraEntity);
-
-        renderer->BeginScene(&camera);
-
+        auto renderCommand = BuildRenderCommand();
         renderer->SubmitSkybox(m_Skybox.get());
-        renderer->SubmitScene(this);
-
-        renderer->EndScene();
+        renderer->SubmitCommand(renderCommand);
+        //m_CameraEntity.GetComponent<CameraComponent>().Position = glm::vec3(0.0f, 4.0f, 4.0f);
+        //renderer->SubmitCommand(renderCommand);
     }
 
     Entity Scene::GetCameraEntity() const {
-        return Entity{ m_CameraEntity, const_cast<Scene*>(this) };
+        return m_CameraEntity;
     }
 
 }

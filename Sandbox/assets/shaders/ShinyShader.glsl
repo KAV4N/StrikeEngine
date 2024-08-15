@@ -13,6 +13,12 @@
       "name": "viewPosition",
       "type": "vec3"
     },
+
+     {
+      "name": "ourTexture",
+      "type": "sampler2D"
+    },
+    
     {
       "name": "lights",
       "type": "ssbo",
@@ -128,8 +134,8 @@ vec3 calculateAmbient(vec3 texColor) {
 vec3 processPointLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-
-    for (int i = 0; i < pointLights.length(); i++) {
+    int lenBuff = pointLights.length();
+    for (int i = 0; i < lenBuff; i++) {
         vec3 lightDir = normalize(pointLights[i].position - FragPos);
         float distance = length(pointLights[i].position - FragPos);
         float attenuation = 1.0 / (distance * distance * pointLights[i].radius + 1.0);
@@ -150,8 +156,8 @@ vec3 processPointLights(vec3 norm) {
 vec3 processSpotLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-
-    for (int i = 0; i < spotLights.length(); i++) {
+    int lenBuff = spotLights.length();
+    for (int i = 0; i < lenBuff; i++) {
         vec3 lightDir = normalize(spotLights[i].position - FragPos);
         float theta = dot(lightDir, normalize(-spotLights[i].direction));
 
@@ -176,8 +182,8 @@ vec3 processSpotLights(vec3 norm) {
 vec3 processDirectionalLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-
-    for (int i = 0; i < directionalLights.length(); i++) {
+    int lenBuff = directionalLights.length();
+    for (int i = 0; i < lenBuff; i++) {
         vec3 lightDir = normalize(-directionalLights[i].direction);
 
         float diff = max(dot(norm, lightDir), 0.0);

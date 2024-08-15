@@ -8,7 +8,9 @@
 
 namespace StrikeEngine {
 
-    Shader::Shader(const std::string& filepath) {
+    Shader::Shader(const std::string& filepath, std::string name)
+        : m_Name(name), m_FilePath(filepath)
+    {
         std::string source = ReadFile(filepath);
 
         size_t end = source.find("#type");

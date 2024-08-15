@@ -1,7 +1,7 @@
 #pragma once
 
 #include "strikepch.h"
-#include "StrikeEngine/Renderer/Shader.h"
+#include "StrikeEngine/Renderer/Core/Shader.h"
 #include <filesystem>
 #include "ShaderManager.h"
 
@@ -19,7 +19,7 @@ namespace StrikeEngine {
         }
     }
     Shader* ShaderManager::LoadShader(const std::string& name, const std::string& filepath) {
-        Shader* shader = new Shader(filepath);
+        Shader* shader = new Shader(filepath, name);
         m_Shaders[name] = shader;
         return shader;
     }

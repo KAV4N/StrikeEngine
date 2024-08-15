@@ -8,6 +8,8 @@
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "StrikeEngine/Renderer/Core/VisibilityCuller.h"
 
+
+#include "StrikeEngine/Renderer/Renderer3D/ShadowRenderer.h"
 // TODO: REMOVE AFTER TESTING
 #include <StrikeEngine/Scene/Systems/TransformSystem.h>
 // ---------------------------------------------
@@ -61,6 +63,9 @@ namespace StrikeEngine {
         ModelManager::Create();
         ShaderManager::Create();
         LightManager::Create();
+        ShadowRenderer::Create();
+
+        LightManager::Get()->BindLights();
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
@@ -102,65 +107,8 @@ namespace StrikeEngine {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-
-    void Renderer::BeginScene(CameraComponent* camera) {
-        LightManager::Get()->BindLightsToShader();
-
-
-        m_CameraViewProjectionMatrix = camera->ProjectionMatrix * camera->ViewMatrix;
-        m_CameraViewMatrix = camera->ViewMatrix;
-        m_CameraProjectionMatrix = camera->ProjectionMatrix;
-        m_CameraPosition = camera->Position;
-    }
-
-    void Renderer::EndScene() 
-    {
-        
-        RenderShadowMaps();
-        
-        glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
-        glViewport(0, 0, m_Width, m_Height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        Render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        m_FullScreenQuadShader->Bind();
-        glBindTexture(GL_TEXTURE_2D, m_ColorAttachment);
-        RenderFullScreenQuad();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        m_FullScreenQuadShader->Unbind();
-        
-        /*
-        //TEST AREA
-        RenderShadowMaps();
-        m_RenderQueue.clear();
-        RenderShadowMapTexture();
-        */
-        
-    }
-
-    void Renderer::SubmitScene(Scene* scene) {
-        const auto view = scene->GetRegistry().view<ModelComponent, TransformComponent>();
-        for (auto entityHandle : view) {
-            Entity entity{ entityHandle, scene };
-            
-            // TODO: REMOVE AFTER TESTING-----------------------------------------
-            TransformSystem::IncreaseRotation(entity, glm::uvec3(0.f, 0.f, 1.f));
-            auto& modelComp = entity.GetComponent<ModelComponent>();
-            modelComp.parts[0].rotation += glm::vec3(0.0f, 0.0f, 5.0f);
-            //---------------------------------------------------------------------
-            
-            auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
-            SubmitEntity(entity, transform);
-        }
-    }
-
-    void Renderer::SubmitEntity(Entity entity, const glm::mat4& transformationMatrix) {
-        auto& modelComp = entity.GetComponent<ModelComponent>();
-        Shader* shader = modelComp.model->GetShader();
-        m_RenderQueue[shader].push_back({ transformationMatrix, entity, m_CameraPosition });
+    void Renderer::SubmitCommand(RenderCommand renderCommand) {
+        m_RenderQueue.push(renderCommand);
     }
 
     void Renderer::SubmitSkybox(Skybox* skybox) {
@@ -169,31 +117,99 @@ namespace StrikeEngine {
     }
     
     void Renderer::RenderShadowMaps() {
-        LightManager::Get()->UpdateShadowMaps(m_RenderQueue);
+        //ShadowRenderer::Get()->UpdateShadowMaps(m_RenderQueue);
     }
 
 
     void Renderer::Render() {
+        RenderShadowMaps();
+        
 
-        RenderSkybox();
 
-        for (auto& pair : m_RenderQueue) {
-            Shader* shader = pair.first;
-            shader->Bind();
+        while (!m_RenderQueue.empty())
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
+            glViewport(0, 0, m_Width, m_Height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            for (const auto& command : pair.second) {
-                BindShaderMVP(shader, command);
-                RenderModelParts(shader, command);
+            LightManager::Get()->UpdateSSBOs();
+
+            RenderCommand renderCommand = m_RenderQueue.front();
+            CameraComponent camera = renderCommand.cameraEntity.GetComponent<CameraComponent>();
+            
+            glm::mat4 cameraProjection = camera.ProjectionMatrix;
+            glm::mat4 cameraView = camera.ViewMatrix;
+            glm::vec3 cameraPosition = camera.Position;
+
+            RenderSkybox(cameraView, cameraProjection);
+
+            for (auto it = renderCommand.shaderEntityMap.begin(); it != renderCommand.shaderEntityMap.end(); ++it) {
+                Shader* shader = it->first;
+                shader->Bind();
+                shader->LoadUniform("MVP", cameraProjection * cameraView);
+                shader->LoadUniform("viewPosition", cameraPosition);
+
+                for (Entity modelEntity : it->second) {
+                    auto& modelComp = modelEntity.GetComponent<ModelComponent>();
+                    glm::mat4 modelTransform = modelEntity.GetComponent<TransformComponent>().transformationMatrix;
+                    
+                    for (auto& partEntity : modelComp.parts) {
+                        auto& modelPartComp = partEntity.GetComponent<ModelPartComponent>();
+                        auto& partTransform = partEntity.GetComponent<TransformComponent>().transformationMatrix;
+                        auto& materialComp = partEntity.GetComponent<MaterialComponent>();
+
+                        shader->LoadUniform("material.baseColor", materialComp.baseColor);
+                        shader->LoadUniform("material.ambient", materialComp.ambient);
+                        shader->LoadUniform("material.diffuse", materialComp.diffuse);
+                        shader->LoadUniform("material.shininess", materialComp.shininess);
+                        shader->LoadUniform("material.specular", materialComp.specular);
+
+                        glm::mat4 modelMatrix = modelTransform * partTransform;
+                        shader->LoadUniform("transform", modelMatrix);
+
+                        auto& textures = partEntity.GetComponent<TextureComponent>().textures;
+                        if (!textures.empty()) {
+                            textures[0]->Bind(0);
+                        }
+                        else {
+                            m_DefaultTexture->Bind();
+                        }
+
+                        shader->LoadUniform("ourTexture", 0);
+
+                        glBindVertexArray(modelPartComp.vaoID);
+                        glDrawElements(GL_TRIANGLES, modelPartComp.vertexCount, GL_UNSIGNED_INT, 0);
+                        glBindVertexArray(0);
+                    }
+
+                
+                }
+
+
+                shader->Unbind();
             }
+            
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, m_Width, m_Height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            shader->Unbind();
+
+            m_FullScreenQuadShader->Bind();
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, m_ColorAttachment);
+            m_FullScreenQuadShader->LoadUniform("screenTexture", 0);
+            RenderFullScreenQuad();
+            glBindTexture(GL_TEXTURE_2D, 0);
+            m_FullScreenQuadShader->Unbind();
+
+            m_RenderQueue.pop();
         }
+        
 
-        m_RenderQueue.clear();
-
+        
     }
 
-    void Renderer::RenderSkybox() {
+    void Renderer::RenderSkybox(glm::mat4 cameraView, glm::mat4 cameraProjection) {
         if (m_Skybox) {
             glDepthFunc(GL_LEQUAL);
             glDisable(GL_DEPTH_TEST);
@@ -201,8 +217,8 @@ namespace StrikeEngine {
             Shader* skyboxShader = m_Skybox->GetShader();
             skyboxShader->Bind();
 
-            glm::mat4 view = glm::mat4(glm::mat3(m_CameraViewMatrix));
-            skyboxShader->LoadUniform("MVP", m_CameraProjectionMatrix * view);
+            glm::mat4 view = glm::mat4(glm::mat3(cameraView));
+            skyboxShader->LoadUniform("MVP", cameraProjection * view);
 
             m_Skybox->Draw();
 
@@ -212,61 +228,6 @@ namespace StrikeEngine {
         }
     }
 
-    void Renderer::BindShaderMVP(Shader* shader, const RenderCommand& command) {
-        shader->LoadUniform("MVP", m_CameraProjectionMatrix * m_CameraViewMatrix);
-        shader->LoadUniform("viewPosition", m_CameraPosition);
-    }
-
-    void Renderer::BindShaderMaterials(Shader* shader, ModelPart* part) {
-        const Material& material = part->GetMaterial();
-        shader->LoadUniform("material.ambient", material.ambient);
-        shader->LoadUniform("material.diffuse", material.diffuse);
-        shader->LoadUniform("material.specular", material.specular);
-        shader->LoadUniform("material.shininess", material.shininess);
-    }
-
-    void Renderer::RenderModelParts(Shader* shader, const RenderCommand& command) {
-        const auto& modelComp = command.entity.GetComponent<ModelComponent>();
-        for (const auto& partComp : modelComp.parts) {
-            glm::mat4 partTransform = command.transformationMatrix * partComp.localTransform;
-
-            if (VisibilityCuller::IsVisible(partComp.part->GetAABB(), partTransform, m_CameraViewProjectionMatrix)) {
-                BindShaderMaterials(shader, partComp.part);
-                BindTextures(partComp.part);
-
-                shader->LoadUniform("transform", partTransform);
-
-                partComp.part->Draw();
-
-                UnbindTextures(partComp.part);
-            }
-        }
-    }
-
-    void Renderer::BindTextures(ModelPart* part) {
-        int textureUnit = 0;
-
-        if (part->GetTextures().empty() && m_DefaultTexture) {
-            m_DefaultTexture->Bind(textureUnit);
-        }
-        else {
-            for (const auto& texture : part->GetTextures()) {
-                texture->Bind(textureUnit);
-                textureUnit++;
-            }
-        }
-    }
-
-    void Renderer::UnbindTextures(ModelPart* part) {
-        if (part->GetTextures().empty() && m_DefaultTexture) {
-            m_DefaultTexture->Unbind();
-        }
-        else {
-            for (const auto& texture : part->GetTextures()) {
-                texture->Unbind();
-            }
-        }
-    }
 
     void Renderer::SetDefaultTexture(const std::string& path) {
         if (m_DefaultTexture) {
@@ -314,7 +275,7 @@ namespace StrikeEngine {
 
         glDisable(GL_DEPTH_TEST);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, LightManager::Get()->GetShadowAtlas()->GetTextureID());
+        glBindTexture(GL_TEXTURE_2D, ShadowRenderer::Get()->GetTextureID());
         shadowMapShader->LoadUniform("shadowAtlas", 0);
 
 

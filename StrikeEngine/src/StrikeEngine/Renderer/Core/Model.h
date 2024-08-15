@@ -150,20 +150,16 @@ namespace StrikeEngine {
 
     class Model {
     public:
-        Model(Shader* shader = nullptr)
-            : m_Shader(shader ? shader : ShaderManager::Get()->GetShader(DEFAULT_SHADER)) {}
+        Model(){}
 
         void AddPart(ModelPart* part) {
             m_Parts.push_back(part);
         }
 
         inline const std::vector<ModelPart*>& GetParts() const { return m_Parts; }
-        inline Shader* GetShader() const { return m_Shader; }
-        inline void SetShader(Shader* shader) { m_Shader = shader; }
 
     private:
         std::vector<ModelPart*> m_Parts;
-        Shader* m_Shader;
     };
 
 }

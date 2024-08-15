@@ -1,38 +1,53 @@
 #pragma once
 
 #include "StrikeEngine/Renderer/Core/Model.h"
+#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace StrikeEngine {
 
-    struct ModelPartComponent {
-        ModelPart* part;
-        glm::vec3 position;
-        glm::vec3 rotation;
-        glm::vec3 scale;
-        glm::mat4 localTransform;
+    struct MaterialComponent {
+        glm::vec3 baseColor;
+        glm::vec3 ambient;
+        glm::vec3 diffuse;
+        glm::vec3 specular;
+        float shininess;
 
-        ModelPartComponent(ModelPart* p)
-            : part(p), position(0.0f), rotation(0.0f), scale(1.0f), localTransform(1.0f) {}
-
-        void UpdateLocalTransform() {
-            localTransform = glm::translate(glm::mat4(1.0f), position)
-                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0))
-                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0, 1, 0))
-                * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1))
-                * glm::scale(glm::mat4(1.0f), scale);
-        }
+        MaterialComponent(
+            glm::vec3 amb = glm::vec3(0.2f, 0.2f, 0.2f),
+            glm::vec3 dif = glm::vec3(0.8f, 0.8f, 0.8f),
+            glm::vec3 spec = glm::vec3(1.0f, 1.0f, 1.0f),
+            float shi = 32.0f
+        ) :
+            baseColor(glm::vec3(1.f)),
+            ambient(amb),
+            diffuse(dif),
+            specular(spec),
+            shininess(shi)
+        {
+        };
     };
 
-    struct ModelComponent {
-        Model* model;
-        std::vector<ModelPartComponent> parts;
+    struct ShaderComponent {
+        Shader* shader;
+        ShaderComponent(Shader* shad = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader())) : shader(shad)
+        {};
+    };
 
-        ModelComponent(Model* m) : model(m) {
-            for (auto* part : m->GetParts()) {
-                parts.emplace_back(part);
-            }
-        }
+    struct TextureComponent {
+        std::vector<Texture*> textures;
+    };
+
+    struct ModelPartComponent {
+        unsigned int vaoID;
+        unsigned int vertexCount;
+        unsigned int vboID;
+        unsigned int eboID;
+    };
+
+
+    struct ModelComponent {
+        std::vector<Entity> parts;
     };
 }
