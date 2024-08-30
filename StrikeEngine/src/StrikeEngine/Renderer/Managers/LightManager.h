@@ -27,6 +27,11 @@ namespace StrikeEngine {
         void BindLights();
 
         inline Scene* GetActiveScene() { return m_ActiveScene; }
+
+        inline int GetPointCount() { return m_PointCount; }
+        inline int GetDirectionalCount() { return m_DirectionalCount; }
+        inline int GetSpotCount() { return m_SpotCount; }
+
         inline std::unique_ptr<ShadowAtlas>& LightManager::GetShadowAtlas() { return m_ShadowAtlas; }
         void UpdateSSBOs();
     private:
@@ -53,6 +58,8 @@ namespace StrikeEngine {
         unsigned int m_PointSSBO;
         unsigned int m_SpotSSBO;
         bool m_PointDirty, m_DirectionalDirty, m_SpotDirty;
+
+        int m_SpotCount, m_DirectionalCount, m_PointCount;
 
         const unsigned int DIRECTIONAL_LIGHT_BUFFER_BINDING = 0;
         const unsigned int POINT_LIGHT_BUFFER_BINDING = 1;

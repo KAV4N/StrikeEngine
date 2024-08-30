@@ -17,7 +17,7 @@ namespace StrikeEngine {
             const std::vector<std::string>& faces = {
                 SKYBOX_TEXTURES_PATH "right.png", SKYBOX_TEXTURES_PATH "left.png",
                 SKYBOX_TEXTURES_PATH "top.png", SKYBOX_TEXTURES_PATH "bottom.png",
-                SKYBOX_TEXTURES_PATH "front.png", SKYBOX_TEXTURES_PATH "back.png"
+                SKYBOX_TEXTURES_PATH "back.png", SKYBOX_TEXTURES_PATH "front.png"
             }
         );
         ~Skybox();

@@ -69,6 +69,12 @@ namespace StrikeEngine {
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
+        
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);   
+        glFrontFace(GL_CCW);  
+
+       
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         m_FullScreenQuadShader = ShaderManager::Get()->GetShader("ScreenShader");
         CreateFramebuffer();
@@ -136,10 +142,14 @@ namespace StrikeEngine {
 
             RenderCommand renderCommand = m_RenderQueue.front();
             CameraComponent camera = renderCommand.cameraEntity.GetComponent<CameraComponent>();
-            
+ 
             glm::mat4 cameraProjection = camera.ProjectionMatrix;
             glm::mat4 cameraView = camera.ViewMatrix;
-            glm::vec3 cameraPosition = camera.Position;
+            glm::vec3 cameraPosition = renderCommand.cameraEntity.GetComponent<PositionComponent>().position;
+
+            int spotCount = LightManager::Get()->GetSpotCount();
+            int pointCount = LightManager::Get()->GetPointCount();
+            int directionalCount = LightManager::Get()->GetDirectionalCount();
 
             RenderSkybox(cameraView, cameraProjection);
 
@@ -148,6 +158,10 @@ namespace StrikeEngine {
                 shader->Bind();
                 shader->LoadUniform("MVP", cameraProjection * cameraView);
                 shader->LoadUniform("viewPosition", cameraPosition);
+
+                shader->LoadUniform("spotLightsCount", spotCount);
+                shader->LoadUniform("dirLightsCount", directionalCount);
+                shader->LoadUniform("pointLightsCount", pointCount);
 
                 for (Entity modelEntity : it->second) {
                     auto& modelComp = modelEntity.GetComponent<ModelComponent>();

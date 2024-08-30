@@ -57,6 +57,9 @@ namespace StrikeEngine {
             UpdateTransformComponent(entity);
         }
 
+
+
+
     private:
 
         static glm::mat4 CalculateTransformMatrix(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) {

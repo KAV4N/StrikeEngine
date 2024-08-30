@@ -6,6 +6,13 @@
 
 namespace StrikeEngine 
 {
+	enum class CursorMode {
+		Normal,
+		Locked,
+		Hidden  
+	};
+
+
 
 	enum class EventType {
 		None = 0,
@@ -33,14 +40,19 @@ namespace StrikeEngine
 	class STRIKE_API Event {
 		friend class EventDispatcher;
 	public:
+		virtual ~Event() = default; 
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return GetName(); }
+		virtual Event* Clone() const = 0;
+
 
 		inline bool IsInCategory(EventCategory category) {
 			return GetCategoryFlags() & category;
 		}
+
+
 
 	public:
 		bool Handled = false;

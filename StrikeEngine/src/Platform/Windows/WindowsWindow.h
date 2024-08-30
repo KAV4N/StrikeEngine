@@ -24,6 +24,11 @@ namespace StrikeEngine {
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
+		inline double GetTime() const override { return glfwGetTime(); };
+		
+		void SetWindowTitle(std::string title) override;
+
+
 		inline virtual void* GetNativeWindow() const { return m_Window; };
 
 	private:
@@ -42,5 +47,7 @@ namespace StrikeEngine {
 		};
 		WindowData m_Data;
 	};
+
+	
 
 }

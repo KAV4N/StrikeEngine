@@ -171,6 +171,9 @@
     <ClInclude Include="src\StrikeEngine\Events\Event.h">
       <Filter>src\StrikeEngine\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Events\EventBus.h">
+      <Filter>src\StrikeEngine\Events</Filter>
+    </ClInclude>
     <ClInclude Include="src\StrikeEngine\Events\KeyCodes.h">
       <Filter>src\StrikeEngine\Events</Filter>
     </ClInclude>
@@ -238,6 +241,9 @@
       <Filter>src\StrikeEngine\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">
+      <Filter>src\StrikeEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Scene\RenderCommand.h">
       <Filter>src\StrikeEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h">
@@ -1760,6 +1766,9 @@
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp">
       <Filter>src\StrikeEngine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Events\EventBus.cpp">
+      <Filter>src\StrikeEngine\Events</Filter>
+    </ClCompile>
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp">
       <Filter>src\StrikeEngine\ImGui</Filter>
     </ClCompile>
@@ -1798,6 +1807,9 @@
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp">
       <Filter>src\StrikeEngine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Scene\Systems\CameraSystem.cpp">
+      <Filter>src\StrikeEngine\Scene\Systems</Filter>
     </ClCompile>
     <ClCompile Include="src\StrikeEngine\Scene\World.cpp">
       <Filter>src\StrikeEngine\Scene</Filter>

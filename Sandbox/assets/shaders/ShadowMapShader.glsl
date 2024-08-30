@@ -1,18 +1,3 @@
-#RootSignature
-{
-  "RootSignature": [
-    {
-      "name": "lightSpaceMatrix",
-      "type": "matrix4"
-    },
-    {
-      "name": "transform",
-      "type": "matrix4"
-    }
-
-  ]
-}
-#end
 
 #type vertex
 #version 430 core

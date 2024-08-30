@@ -36,6 +36,8 @@ namespace StrikeEngine {
 		}
 
 		EVENT_CLASS_TYPE(KeyPressed)
+		virtual Event* Clone() const override { return new KeyPressedEvent(m_KeyCode, m_RepeatCount); }
+
 	private:
 		int m_RepeatCount;
 	};
@@ -53,6 +55,7 @@ namespace StrikeEngine {
 		}
 
 		EVENT_CLASS_TYPE(KeyReleased)
+		virtual Event* Clone() const override { return new KeyReleasedEvent(m_KeyCode); }
 	};
 
 	class STRIKE_API KeyTypedEvent : public KeyEvent
@@ -69,5 +72,6 @@ namespace StrikeEngine {
 		}
 
 		EVENT_CLASS_TYPE(KeyTyped)
+		virtual Event* Clone() const override { return new KeyTypedEvent(m_KeyCode); }
 	};
 }

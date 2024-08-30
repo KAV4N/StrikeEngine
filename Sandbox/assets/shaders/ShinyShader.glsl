@@ -1,33 +1,3 @@
-#RootSignature
-{
-  "RootSignature": [
-    {
-      "name": "transform",
-      "type": "matrix4"
-    },
-    {
-      "name": "MVP",
-      "type": "matrix4"
-    },
-    {
-      "name": "viewPosition",
-      "type": "vec3"
-    },
-
-     {
-      "name": "ourTexture",
-      "type": "sampler2D"
-    },
-    
-    {
-      "name": "lights",
-      "type": "ssbo",
-      "binding": 0
-    }
-  ]
-}
-
-#end
 
 #type vertex
 #version 430 core
@@ -59,6 +29,10 @@ in vec3 FragPos;
 in vec3 Normal;
 
 out vec4 FragColor;
+
+uniform int spotLightsCount;
+uniform int dirLightsCount;
+uniform int pointLightsCount;
 
 uniform sampler2D ourTexture;
 
@@ -108,14 +82,13 @@ layout (std430, binding = 2) buffer SpotLightBuffer {
 };
 
 // Function prototypes
-vec3 calculateAmbient(vec3 texColor);
 vec3 processPointLights(vec3 norm);
 vec3 processSpotLights(vec3 norm);
 vec3 processDirectionalLights(vec3 norm);
 
 void main() {
     vec3 texColor = texture(ourTexture, TexCoord).rgb;
-    vec3 ambient = calculateAmbient(texColor);
+    vec3 ambient = vec3(0.1) * texColor; // to do load this as uniform
     vec3 norm = normalize(Normal);
 
     vec3 result = ambient;
@@ -126,16 +99,11 @@ void main() {
     FragColor = vec4(result, 1.0);
 }
 
-vec3 calculateAmbient(vec3 texColor) {
-    vec3 ambientColor = vec3(0.1); // Ambient color
-    return ambientColor * texColor;
-}
 
 vec3 processPointLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-    int lenBuff = pointLights.length();
-    for (int i = 0; i < lenBuff; i++) {
+    for (int i = 0; i < pointLightsCount; i++) {
         vec3 lightDir = normalize(pointLights[i].position - FragPos);
         float distance = length(pointLights[i].position - FragPos);
         float attenuation = 1.0 / (distance * distance * pointLights[i].radius + 1.0);
@@ -156,8 +124,7 @@ vec3 processPointLights(vec3 norm) {
 vec3 processSpotLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-    int lenBuff = spotLights.length();
-    for (int i = 0; i < lenBuff; i++) {
+    for (int i = 0; i < spotLightsCount; i++) {
         vec3 lightDir = normalize(spotLights[i].position - FragPos);
         float theta = dot(lightDir, normalize(-spotLights[i].direction));
 
@@ -182,8 +149,7 @@ vec3 processSpotLights(vec3 norm) {
 vec3 processDirectionalLights(vec3 norm) {
     vec3 result = vec3(0.0);
     vec3 viewDir = normalize(viewPosition - FragPos);
-    int lenBuff = directionalLights.length();
-    for (int i = 0; i < lenBuff; i++) {
+    for (int i = 0; i < dirLightsCount; i++) {
         vec3 lightDir = normalize(-directionalLights[i].direction);
 
         float diff = max(dot(norm, lightDir), 0.0);

@@ -13,6 +13,7 @@ namespace StrikeEngine {
 
     LightManager::LightManager()
         : m_DirectionalSSBO(0), m_PointSSBO(0), m_SpotSSBO(0),
+        m_DirectionalCount(0), m_SpotCount(0), m_PointCount(0),
         m_DirectionalDirty(false), m_PointDirty(false), m_SpotDirty(false)   
     {
         CreateSSBOs();
@@ -38,18 +39,21 @@ namespace StrikeEngine {
     Entity LightManager::CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity)
     {
         m_DirectionalDirty = true;
+        m_DirectionalCount++;
         return World::Get()->GetActiveScene()->CreateDirectionalLight(direction, color, intensity);
     }
 
     Entity LightManager::CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius)
     {
         m_PointDirty = true; 
+        m_PointCount++;
         return World::Get()->GetActiveScene()->CreatePointLight(position, color, intensity, radius);
     }
 
     Entity LightManager::CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity)
     {
-        m_SpotDirty = true; 
+        m_SpotDirty = true;
+        m_SpotCount++;
         return World::Get()->GetActiveScene()->CreateSpotLight(position, direction, cutoff, color, intensity);
     }
 
@@ -75,26 +79,30 @@ namespace StrikeEngine {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_DirectionalSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(DirectionalLightComponent), nullptr, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DIRECTIONAL_LIGHT_BUFFER_BINDING, m_DirectionalSSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         glGenBuffers(1, &m_PointSSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_PointSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(PointLightComponent), nullptr, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POINT_LIGHT_BUFFER_BINDING, m_PointSSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         glGenBuffers(1, &m_SpotSSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SpotSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(SpotLightComponent), nullptr, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPOT_LIGHT_BUFFER_BINDING, m_SpotSSBO);
+
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
     void LightManager::UpdateSSBOs() {
         auto& registry = World::Get()->GetActiveScene()->GetRegistry();
-        UpdateSSBODirect(registry);
-        UpdateSSBOSpot(registry);
-        UpdateSSBOPoint(registry);
+        if (m_PointDirty || m_SpotDirty || m_DirectionalDirty) {
+            UpdateSSBODirect(registry);
+            UpdateSSBOSpot(registry);
+            UpdateSSBOPoint(registry);
+
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        }
+
     }
 
     void LightManager::UpdateSSBOPoint(const entt::registry& registry)
@@ -106,11 +114,11 @@ namespace StrikeEngine {
                 pointLights.push_back(registry.get<PointLightComponent>(entity));
             }
 
-            size_t bufferSize = std::max(sizeof(PointLightComponent), pointLights.size() * sizeof(PointLightComponent));
+            size_t bufferSize = m_PointCount * sizeof(PointLightComponent);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_PointSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, pointLights.data(), GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POINT_LIGHT_BUFFER_BINDING, m_PointSSBO);
             m_PointDirty = false;
         }
     }
@@ -123,11 +131,11 @@ namespace StrikeEngine {
             for (auto entity : directionalView) {
                 directionalLights.push_back(registry.get<DirectionalLightComponent>(entity));
             }
-            size_t bufferSize = std::max(sizeof(DirectionalLightComponent), directionalLights.size() * sizeof(DirectionalLightComponent));
+            size_t bufferSize = m_DirectionalCount * sizeof(DirectionalLightComponent);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_DirectionalSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, directionalLights.data(), GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DIRECTIONAL_LIGHT_BUFFER_BINDING, m_DirectionalSSBO);
             m_DirectionalDirty = false;
         }
     }
@@ -141,18 +149,20 @@ namespace StrikeEngine {
                 spotLights.push_back(registry.get<SpotLightComponent>(entity));
             }
 
-            size_t bufferSize = std::max(sizeof(SpotLightComponent), spotLights.size() * sizeof(SpotLightComponent));
+            size_t bufferSize = m_SpotCount * sizeof(SpotLightComponent);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SpotSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, spotLights.data(), GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPOT_LIGHT_BUFFER_BINDING, m_SpotSSBO);
             m_SpotDirty = false;
         }
     }
 
+
+
     void LightManager::BindLights() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, DIRECTIONAL_LIGHT_BUFFER_BINDING, m_DirectionalSSBO);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POINT_LIGHT_BUFFER_BINDING, m_PointSSBO);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPOT_LIGHT_BUFFER_BINDING, m_SpotSSBO);
+      
+        
+     
     }
 }

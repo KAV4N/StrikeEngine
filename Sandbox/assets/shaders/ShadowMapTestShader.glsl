@@ -1,14 +1,3 @@
-#RootSignature
-{
-  "RootSignature": [
-    {
-      "name": "shadowMap",
-      "type": "sampler2D"
-    }
-
-  ]
-}
-#end
 
 #type vertex
 #version 430 core

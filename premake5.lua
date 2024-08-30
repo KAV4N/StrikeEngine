@@ -125,7 +125,9 @@ project "Sandbox"
         "StrikeEngine/src",
         "%{includeDir.glm}",
         "%{includeDir.ImGui}",
-        "%{includeDir.entt}"
+        "%{includeDir.entt}",
+        "%{includeDir.Glad}",
+        "%{includeDir.json}"
    
     }
 

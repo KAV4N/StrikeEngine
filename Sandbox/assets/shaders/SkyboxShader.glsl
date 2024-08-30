@@ -1,12 +1,4 @@
 
-#RootSignature
-{
-    "RootSignature": [
-        {"name": "MVP", "type": "matrix4"},
-        {"name": "skybox", "type": "textureCube"}
-    ]
-}
-#end
 
 #type vertex
 #version 430 core
@@ -34,5 +26,6 @@ out vec4 FragColor;
 uniform samplerCube skybox;
 
 void main() {
+   // vec3 flippedTexCoords = vec3(-TexCoords.x, TexCoords.y, TexCoords.z);
     FragColor = texture(skybox, TexCoords);
 }

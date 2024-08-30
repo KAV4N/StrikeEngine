@@ -156,6 +156,7 @@
     <ClInclude Include="src\StrikeEngine\Core\Window.h" />
     <ClInclude Include="src\StrikeEngine\Events\ApplicationEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\Event.h" />
+    <ClInclude Include="src\StrikeEngine\Events\EventBus.h" />
     <ClInclude Include="src\StrikeEngine\Events\KeyCodes.h" />
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
@@ -688,6 +689,7 @@
     <ClCompile Include="src\StrikeEngine\Core\Layer.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\StrikeEngine\Core\Log.cpp" />
+    <ClCompile Include="src\StrikeEngine\Events\EventBus.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Core\Shader.cpp" />
@@ -701,6 +703,7 @@
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer3D\Renderer.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Renderer3D\ShadowRenderer.cpp" />
     <ClCompile Include="src\StrikeEngine\Scene\Scene.cpp" />
+    <ClCompile Include="src\StrikeEngine\Scene\Systems\CameraSystem.cpp" />
     <ClCompile Include="src\StrikeEngine\Scene\World.cpp" />
     <ClCompile Include="src\strikepch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

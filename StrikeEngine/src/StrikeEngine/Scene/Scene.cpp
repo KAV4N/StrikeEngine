@@ -10,11 +10,9 @@
 
 namespace StrikeEngine {
 
-
-
-
     RenderCommand Scene::BuildRenderCommand() const {
         RenderCommand command(m_CameraEntity.GetHandle(), const_cast<Scene*>(this));
+
 
         auto view = m_Registry.view<ModelComponent>();
         for (auto entityView : view) {
@@ -28,12 +26,16 @@ namespace StrikeEngine {
 
     Scene::Scene() : m_CameraEntity(m_Registry.create(), this) {
         m_Skybox = std::make_unique<Skybox>();
-        auto& camera = m_CameraEntity.AddComponent<CameraComponent>(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-        camera.Position = glm::vec3(0.0f, 6.0f, 4.0f);
 
-        CameraSystem::RotatePitch(m_Registry, m_CameraEntity.GetHandle(), -60.f);
-        camera.UpdateViewMatrix();
+        // Add components to the camera entity
+        m_CameraEntity.AddComponent<TransformComponent>();
+        m_CameraEntity.AddComponent<PositionComponent>(glm::vec3(0.0f, 6.0f, 4.0f)); // Initial position
+        m_CameraEntity.AddComponent<RotationComponent>(glm::vec3(0.0f, 0.0f, 0.0f)); // Initial rotation (pitch)
+
+        // Add and initialize the CameraComponent
+        auto& camera = m_CameraEntity.AddComponent<CameraComponent>(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     }
+
 
     Scene::~Scene() {
         // Cleanup resources if needed
@@ -174,14 +176,12 @@ namespace StrikeEngine {
 
     void Scene::Update() {
         TransformSystem::Update(this);
-        
+        //CameraSystem::UpdateCamera(m_CameraEntity);
     }
 
 
 
     void Scene::Render() {
-        Update();
-
         Renderer* renderer = Renderer::Get();
         auto renderCommand = BuildRenderCommand();
         renderer->SubmitSkybox(m_Skybox.get());

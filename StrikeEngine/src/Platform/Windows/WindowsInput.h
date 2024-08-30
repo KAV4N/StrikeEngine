@@ -11,6 +11,8 @@ namespace StrikeEngine {
 		virtual float GetMouseXImpl() override;
 		virtual float GetMouseYImpl() override;
 		virtual std::pair<float, float> GetMouseXYImpl() override;
+
+		virtual void SetCursorModeImpl(CursorMode mode) override;
 		
 	};
 }

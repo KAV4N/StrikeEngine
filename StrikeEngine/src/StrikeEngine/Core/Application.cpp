@@ -10,7 +10,6 @@
 
 #include "Input.h"
 #include <glad/glad.h>
-#include <StrikeEngine/Scene/Scene.h>
 #include <StrikeEngine/Scene/World.h>
 
 //TODO: REMOVE AFTER TESTING
@@ -136,6 +135,7 @@ namespace StrikeEngine
     {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+        dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
         for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
         {
@@ -150,44 +150,53 @@ namespace StrikeEngine
         std::chrono::time_point<std::chrono::steady_clock> lastTime = std::chrono::steady_clock::now();
         float fps = 0;
 
+        double prevTime = 0.0;
+        double crntTime = 0.0;
+        double timeDiff;
+        unsigned int counter = 0;
+        
+
         while (m_Running) {
+
+            crntTime = m_Window->GetTime();
+            timeDiff = crntTime - prevTime;
+            counter++;
+
+            if (timeDiff >= 1.0 / 30.0)
+            {
+                // Creates new title
+                std::string FPS = std::to_string((1.0 / timeDiff) * counter);
+                std::string ms = std::to_string((timeDiff / counter) * 1000);
+                std::string newTitle = "StrikeEngine - " + FPS + "FPS / " + ms + "ms";
+                m_Window->SetWindowTitle(newTitle.c_str());
+
+                // Resets times and counter
+                prevTime = crntTime;
+                counter = 0;
+
+            }
+
             glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-            World::Get()->Update();
-            World::Get()->Render();
-            Renderer::Get()->Render();
 
-
+            
             for (Layer* layer : m_LayerStack)
                 layer->OnUpdate();
-
+            /*
             m_ImGuiLayer->Begin();
+            
             for (Layer* layer : m_LayerStack)
                 layer->OnImGuiRender();
-
-            // TEST-----------------------------------------------------------------------------------------------------
-            static int frameCount = 0;
-            static auto lastTime = std::chrono::steady_clock::now();
-
-            frameCount++;
-            auto currentTime = std::chrono::steady_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count();
-
-            if (duration > 1000) {
-                fps = frameCount * 1000.0f / duration;
-                frameCount = 0;
-                lastTime = currentTime;
-            }
-
-            // Display FPS
-            ImGui::Begin("FPS Counter");
-            ImGui::Text("FPS: %.2f", fps);
-            ImGui::End();
-            // TEST-----------------------------------------------------------------------------------------------------
+            
 
             m_ImGuiLayer->End();
+            */
+
+
+            World::Get()->Render();
+            Renderer::Get()->Render();
 
             m_Window->OnUpdate();
         }
@@ -197,6 +206,11 @@ namespace StrikeEngine
     bool Application::OnWindowClose(WindowCloseEvent& e)
     {
         m_Running = false;
+        return true;
+    }
+
+    bool Application::OnWindowResize(WindowResizeEvent& e)
+    {
         return true;
     }
 }

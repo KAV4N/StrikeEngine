@@ -40,4 +40,19 @@ namespace StrikeEngine {
 		glfwGetCursorPos(window, &xpos, &ypos);
 		return std::make_pair(static_cast<float>(xpos), static_cast<float>(ypos));
 	}
+
+	void WindowsInput::SetCursorModeImpl(CursorMode mode) {
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		switch (mode) {
+			case CursorMode::Normal:
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				break;
+			case CursorMode::Locked:
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				break;
+			case CursorMode::Hidden:
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				break;
+		}
+	}
 }

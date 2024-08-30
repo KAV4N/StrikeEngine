@@ -31,6 +31,7 @@ namespace StrikeEngine {
         glGenTextures(1, &m_TextureID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 
+        //stbi_set_flip_vertically_on_load(true);
         int width, height, channels;
         for (GLuint i = 0; i < m_Faces.size(); i++) {
             stbi_uc* data = stbi_load(m_Faces[i].c_str(), &width, &height, &channels, 0);
@@ -55,36 +56,36 @@ namespace StrikeEngine {
         float skyboxVertices[] =
         {
             //   Coordinates
-            -1.0f, -1.0f,  1.0f,//        7--------6
-             1.0f, -1.0f,  1.0f,//       /|       /|
-             1.0f, -1.0f, -1.0f,//      4--------5 |
-            -1.0f, -1.0f, -1.0f,//      | |      | |
-            -1.0f,  1.0f,  1.0f,//      | 3------|-2
-             1.0f,  1.0f,  1.0f,//      |/       |/
-             1.0f,  1.0f, -1.0f,//      0--------1
-            -1.0f,  1.0f, -1.0f
+            -1.0f, -1.0f,  1.0f, // 0
+             1.0f, -1.0f,  1.0f, // 1
+             1.0f, -1.0f, -1.0f, // 2
+            -1.0f, -1.0f, -1.0f, // 3
+            -1.0f,  1.0f,  1.0f, // 4
+             1.0f,  1.0f,  1.0f, // 5
+             1.0f,  1.0f, -1.0f, // 6
+            -1.0f,  1.0f, -1.0f  // 7
         };
 
         unsigned int indices[] =
         {
-            // Right
-            1, 2, 6,
-            6, 5, 1,
-            // Left
-            0, 4, 7,
-            7, 3, 0,
-            // Top
-            4, 5, 6,
-            6, 7, 4,
-            // Bottom
-            0, 3, 2,
-            2, 1, 0,
-            // Back
-            0, 1, 5,
-            5, 4, 0,
-            // Front
-            3, 7, 6,
-            6, 2, 3
+            // Front face (towards the inside of the cube)
+            3, 2, 6,
+            6, 7, 3,
+            // Back face
+            0, 4, 5,
+            5, 1, 0,
+            // Left face
+            0, 3, 7,
+            7, 4, 0,
+            // Right face
+            1, 5, 6,
+            6, 2, 1,
+            // Top face
+            4, 7, 6,
+            6, 5, 4,
+            // Bottom face
+            0, 1, 2,
+            2, 3, 0
         };
 
         m_NumIndices = sizeof(indices) / sizeof(indices[0]);
@@ -105,6 +106,7 @@ namespace StrikeEngine {
 
         glBindVertexArray(0);
     }
+
 
 
     void Skybox::Draw() {

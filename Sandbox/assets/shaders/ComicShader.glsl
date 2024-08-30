@@ -1,27 +1,3 @@
-#RootSignature
-{
-  "RootSignature": [
-    {
-      "name": "transform",
-      "type": "matrix4"
-    },
-    {
-      "name": "MVP",
-      "type": "matrix4"
-    },
-    {
-      "name": "viewPosition",
-      "type": "vec3"
-    },
-    {
-      "name": "lights",
-      "type": "ssbo",
-      "binding": 0
-    }
-  ]
-}
-
-#end
 
 #type vertex
 #version 430 core

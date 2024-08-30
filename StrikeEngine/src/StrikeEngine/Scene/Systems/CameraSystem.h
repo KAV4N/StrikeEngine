@@ -1,56 +1,51 @@
 #pragma once
-#include <entt/entt.hpp>
+#include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
+#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Core/Input.h"
+#include "StrikeEngine/Events/KeyCodes.h"
+#include "StrikeEngine/Events/Event.h"
+#include "StrikeEngine/Events/MouseEvent.h"
 
 namespace StrikeEngine {
     class CameraSystem {
     public:
-        static void SetPosition(entt::registry& registry, entt::entity entity, const glm::vec3& position) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Position = position;
-            camera.UpdateViewMatrix();
-        }
+        static void OnEvent(Entity entity, Event& e);
+        static void OnUpdate(Entity entity, float deltaTime);
+        static void UpdateCamera(Entity entity);
 
-        static void SetRotation(entt::registry& registry, entt::entity entity, const glm::vec3& rotation) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Rotation = rotation;
-            camera.UpdateViewMatrix();
-        }
+        // Movement methods
+        static void MoveForward(Entity entity, float distance);
+        static void MoveBackward(Entity entity, float distance);
+        static void MoveLeft(Entity entity, float distance);
+        static void MoveRight(Entity entity, float distance);
+        static void MoveUp(Entity entity, float distance);
+        static void MoveDown(Entity entity, float distance);
 
-        static void MoveForward(entt::registry& registry, entt::entity entity, float distance) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Position += camera.GetForwardDirection() * distance;
-            camera.UpdateViewMatrix();
-        }
 
-        static void MoveBackward(entt::registry& registry, entt::entity entity, float distance) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Position -= camera.GetForwardDirection() * distance;
-            camera.UpdateViewMatrix();
-        }
+        // Rotation methods
+        static void RotateYaw(Entity entity, float angle);
+        static void RotatePitch(Entity entity, float angle);
 
-        static void MoveLeft(entt::registry& registry, entt::entity entity, float distance) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Position -= camera.GetRightDirection() * distance;
-            camera.UpdateViewMatrix();
-        }
+       
+        static bool OnMouseScrolled(MouseScrolledEvent& e, Entity entity);
 
-        static void MoveRight(entt::registry& registry, entt::entity entity, float distance) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Position += camera.GetRightDirection() * distance;
-            camera.UpdateViewMatrix();
-        }
+        static glm::vec3 ScreenToWorldRay(Entity entity, float screenX, float screenY);
 
-        static void RotateYaw(entt::registry& registry, entt::entity entity, float angle) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Rotation.y += angle;
-            camera.UpdateViewMatrix();
-        }
+        static void ZoomTowardsCursor(Entity entity, float zoomAmount);
+        static void ZoomInCameraDirection(Entity entity, float zoomAmount);
+        static void PanCamera(Entity entity);
+    private:
+        static bool OnMouseMoved(MouseMovedEvent& e, Entity entity);
+        static bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+        static bool OnMouseButtonReleased(MouseButtonReleasedEvent& e);
 
-        static void RotatePitch(entt::registry& registry, entt::entity entity, float angle) {
-            auto& camera = registry.get<CameraComponent>(entity);
-            camera.Rotation.x += angle;
-            camera.UpdateViewMatrix();
-        }
+
+        static float s_MouseSensitivity;
+        static float s_MoveSpeed;
+        static float s_LastMouseX;
+        static float s_LastMouseY;
+        static float s_ZoomSpeed;
+        static bool s_IsRightMouseButtonPressed;
     };
 }

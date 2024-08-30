@@ -1,6 +1,5 @@
 #include "strikepch.h"
 #include "World.h"
-#include "StrikeEngine/Renderer/Managers/LightManager.h"
 
 namespace StrikeEngine {
 

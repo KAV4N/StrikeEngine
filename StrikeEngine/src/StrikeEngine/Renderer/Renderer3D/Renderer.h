@@ -37,6 +37,12 @@ namespace StrikeEngine {
 
         void SetDefaultTexture(const std::string& path);
         friend class LightManager;
+
+        static inline GLuint GetWidth() { return s_Instance->m_Width; }
+
+        static inline GLuint GetHeight() { return s_Instance->m_Height; }
+
+
     private:
         Renderer();
         ~Renderer();

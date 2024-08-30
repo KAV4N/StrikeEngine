@@ -4,7 +4,6 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
-#include <nlohmann/json.hpp> 
 
 namespace StrikeEngine {
 
@@ -18,7 +17,6 @@ namespace StrikeEngine {
             std::string newSource = source.substr(end);
             auto shaderSources = PreProcess(newSource);
             Compile(shaderSources);
-            ParseUniforms(source);
         }
     }
 
@@ -41,78 +39,29 @@ namespace StrikeEngine {
         return buffer.str();
     }
 
-    void Shader::ParseUniforms(const std::string& source) {
-        std::string jsonStr;
-        size_t pos = source.find("#RootSignature");
-        if (pos != std::string::npos) {
-            pos = source.find("{", pos);
-            size_t endPos = source.find("#end", pos);
-            if (pos != std::string::npos && endPos != std::string::npos) {
-                jsonStr = source.substr(pos, endPos - pos);
-            }
-        }
-
-        if (!jsonStr.empty()) {
-            try {
-                auto json = nlohmann::json::parse(jsonStr);
-                SetUniformsFromJSON(json["RootSignature"]);
-            }
-            catch (const nlohmann::json::exception& e) {
-                std::cerr << "JSON parsing error: " << e.what() << std::endl;
-                return;
-            }
-        }
-    }
-
-    void Shader::SetUniformsFromJSON(const nlohmann::json& json) {
-        for (const auto& item : json) {
-            std::string name = item["name"];
-            std::string type = item["type"];
-            m_UniformTypes[name] = type;
-            m_UniformLocations[name] = glGetUniformLocation(m_ProgramID, name.c_str());
-        }
-    }
-
     void Shader::LoadUniform(const std::string& name, const std::vector<glm::vec3>& values) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniform3fv(it->second, values.size(), glm::value_ptr(values[0]));
-        }
+        glUniform3fv(glGetUniformLocation(m_ProgramID, name.c_str()), values.size(), glm::value_ptr(values[0]));
     }
 
     void Shader::LoadUniform(const std::string& name, const std::vector<glm::mat4>& values) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniformMatrix4fv(it->second, values.size(), GL_FALSE, glm::value_ptr(values[0]));
-        }
+        glUniformMatrix4fv(glGetUniformLocation(m_ProgramID, name.c_str()), values.size(), GL_FALSE, glm::value_ptr(values[0]));
     }
 
     void Shader::LoadUniform(const std::string& name, const glm::vec3& value) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniform3f(it->second, value.x, value.y, value.z);
-        }
+        glUniform3f(glGetUniformLocation(m_ProgramID, name.c_str()), value.x, value.y, value.z);
     }
 
     void Shader::LoadUniform(const std::string& name, const glm::mat4& value) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniformMatrix4fv(it->second, 1, GL_FALSE, glm::value_ptr(value));
-        }
+        glUniformMatrix4fv(glGetUniformLocation(m_ProgramID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        
     }
 
     void Shader::LoadUniform(const std::string& name, float value) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniform1f(it->second, value);
-        }
+        glUniform1f(glGetUniformLocation(m_ProgramID, name.c_str()), value);
     }
 
     void Shader::LoadUniform(const std::string& name, int value) {
-        auto it = m_UniformLocations.find(name);
-        if (it != m_UniformLocations.end()) {
-            glUniform1i(it->second, value);
-        }
+        glUniform1i(glGetUniformLocation(m_ProgramID, name.c_str()), value);
     }
 
     GLenum Shader::ShaderTypeFromString(const std::string& type) {
@@ -120,6 +69,8 @@ namespace StrikeEngine {
             return GL_VERTEX_SHADER;
         else if (type == "fragment")
             return GL_FRAGMENT_SHADER;
+        else if (type == "geometry")
+            return GL_GEOMETRY_SHADER;
 
         assert(false && "Unknown shader type!");
         return 0;
@@ -138,7 +89,9 @@ namespace StrikeEngine {
             size_t nextLinePos = source.find_first_not_of("\r\n", eol);
             pos = source.find(typeToken, nextLinePos);
 
-            shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - nextLinePos);
+            shaderSources[ShaderTypeFromString(type)] = (pos == std::string::npos)
+                ? source.substr(nextLinePos)
+                : source.substr(nextLinePos, pos - nextLinePos);
         }
 
         return shaderSources;
@@ -168,7 +121,10 @@ namespace StrikeEngine {
 
                 glDeleteShader(shader);
 
-                std::cerr << "Shader compilation error: " << infoLog.data() << std::endl;
+                std::cerr << "Shader compilation error for "
+                    << (type == GL_VERTEX_SHADER ? "vertex" :
+                        type == GL_FRAGMENT_SHADER ? "fragment" : "geometry")
+                    << " shader: " << infoLog.data() << std::endl;
                 return;
             }
 

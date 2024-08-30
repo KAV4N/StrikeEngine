@@ -1,11 +1,4 @@
 
-#RootSignature
-{
-    "RootSignature": [
-        {"name": "screenTexture", "type": "sampler2D"}
-    ]
-}
-#end
 
 #type vertex
 #version 330 core

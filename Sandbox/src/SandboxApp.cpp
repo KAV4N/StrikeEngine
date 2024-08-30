@@ -1,6 +1,11 @@
 #include "strikepch.h"
 #include <StrikeEngine.h>
 
+// ENTRY POINT ---------------------
+#include "StrikeEngine/Core/EntryPoint.h"
+//----------------------------------
+
+#include "Sandbox3D.h"
 #include "imgui.h"
 
 class TestLayer : public StrikeEngine::Layer
@@ -40,13 +45,18 @@ public:
 	}
 };
 
+
+
+
+
+
 class Sandbox : public StrikeEngine::Application 
 {
 
 public:
 	Sandbox() 
 	{
-		PushLayer(new TestLayer());
+		PushLayer(new Sandbox3D());
 		//PushOverlay(new StrikeEngine::ImGuiLayer());
 	}
 	~Sandbox() 

@@ -59,7 +59,8 @@ namespace StrikeEngine {
 
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
+		SetVSync(false);
+
 
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height) 
 			{
@@ -188,9 +189,19 @@ namespace StrikeEngine {
 		m_Data.VSync = enabled;
 	}
 
+
 	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;
 	}
+
+	void WindowsWindow::SetWindowTitle(std::string title)
+	{
+		glfwSetWindowTitle(m_Window, title.c_str());
+		m_Data.Title = title;
+
+	}
+
+
 
 }
