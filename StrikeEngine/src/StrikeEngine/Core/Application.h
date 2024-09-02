@@ -24,6 +24,8 @@ namespace StrikeEngine
         void Run();
         void OnEvent(Event& e);
 
+        void OnUpdate();
+
         void PushLayer(Layer* layer);
         void PushOverlay(Layer* overlay);
 
@@ -40,6 +42,7 @@ namespace StrikeEngine
         ImGuiLayer* m_ImGuiLayer;
         bool m_Running = true;
         LayerStack m_LayerStack;
+        std::chrono::high_resolution_clock::time_point m_LastFrameTime;
 
     private:
         static Application* s_Instance;

@@ -11,18 +11,13 @@ namespace StrikeEngine {
     public:
 
         static void Update(Scene* scene) {
-            auto view = scene->GetRegistry().view<PositionComponent, RotationComponent, ScaleComponent, TransformComponent, ModelComponent>();
-
+            
+            auto view = scene->GetRegistry().view<PositionComponent, RotationComponent, ScaleComponent, TransformComponent>();
+           
             for (auto entityHandle : view) {
                 Entity entity(entityHandle, scene);
+                //IncreaseRotation(entity, glm::vec3(1.f));
                 UpdateTransformComponent(entity);
-
-                auto& modelComp = entity.GetComponent<ModelComponent>();
-
-
-                for (auto& part : modelComp.parts) {
-                    UpdateTransformComponent(part);
-                }
             }
         }
 
@@ -73,6 +68,7 @@ namespace StrikeEngine {
 
 
         static void UpdateTransformComponent(Entity entity) {
+            
             const auto& position = entity.GetComponent<PositionComponent>().position;
             const auto& rotation = entity.GetComponent<RotationComponent>().rotation;
             const auto& scale = entity.GetComponent<ScaleComponent>().scale;

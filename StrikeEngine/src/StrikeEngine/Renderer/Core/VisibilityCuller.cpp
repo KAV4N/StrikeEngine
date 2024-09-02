@@ -3,6 +3,7 @@
 
 namespace StrikeEngine {
 
+    /*
     bool VisibilityCuller::IsVisible(const ModelPart::AABB& aabb, const glm::mat4& modelMatrix, const glm::mat4& viewProjectionMatrix) {
         std::array<glm::vec4, 8> corners = {
             glm::vec4(aabb.min.x, aabb.min.y, aabb.min.z, 1.0f),
@@ -32,5 +33,5 @@ namespace StrikeEngine {
 
         return visible;
     }
-
+    */
 }

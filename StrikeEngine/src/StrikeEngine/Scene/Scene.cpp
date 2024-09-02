@@ -13,22 +13,23 @@ namespace StrikeEngine {
     RenderCommand Scene::BuildRenderCommand() const {
         RenderCommand command(m_CameraEntity.GetHandle(), const_cast<Scene*>(this));
 
-
-        auto view = m_Registry.view<ModelComponent>();
+        auto view = m_Registry.view<MeshComponent>();
         for (auto entityView : view) {
             Entity entity(entityView, const_cast<Scene*>(this));
-            const auto& shaderComponent = entity.GetComponent<ShaderComponent>();
-            command.shaderEntityMap[shaderComponent.shader].push_back(entity);
+            const auto& meshComponent = entity.GetComponent<MeshComponent>();
+
+
+            command.shaderEntityMap[meshComponent.shader].push_back(entity);
         }
 
         return command;
     }
 
+
     Scene::Scene() : m_CameraEntity(m_Registry.create(), this) {
         m_Skybox = std::make_unique<Skybox>();
 
         // Add components to the camera entity
-        m_CameraEntity.AddComponent<TransformComponent>();
         m_CameraEntity.AddComponent<PositionComponent>(glm::vec3(0.0f, 6.0f, 4.0f)); // Initial position
         m_CameraEntity.AddComponent<RotationComponent>(glm::vec3(0.0f, 0.0f, 0.0f)); // Initial rotation (pitch)
 
@@ -79,58 +80,57 @@ namespace StrikeEngine {
         }
         return shadowCasters;
     }
-
-
     Entity Scene::CreateEntity(Model* model, const std::string& name) {
-        Entity modelEntity(m_Registry.create(), this);
-        modelEntity.AddComponent<TransformComponent>();
-        modelEntity.AddComponent<PositionComponent>();
-        modelEntity.AddComponent<RotationComponent>();
-        modelEntity.AddComponent<ScaleComponent>();
-        modelEntity.AddComponent<ShaderComponent>();
+        // Create the parent entity
 
-        auto& modelComponent = modelEntity.AddComponent<ModelComponent>();
-        for (const auto& partData : model->GetParts()) {
-            Entity partEntity(m_Registry.create(), this);
+        Entity parentEntity(m_Registry.create(), this);
 
-            partEntity.AddComponent<TransformComponent>();
-            partEntity.AddComponent<PositionComponent>();
-            partEntity.AddComponent<RotationComponent>();
-            partEntity.AddComponent<ScaleComponent>();
-            // Adding model part data
-            auto& modelPartComponent = partEntity.AddComponent<ModelPartComponent>();
-            modelPartComponent.vaoID = partData->GetVaoID();
-            modelPartComponent.vertexCount = partData->GetVertexCount();
-            modelPartComponent.vboID = partData->GetVboID();
-            modelPartComponent.eboID = partData->GetEboID();
+        // Add TransformComponent and ParentComponent to parent entity
+        parentEntity.AddComponent<PositionComponent>();
+        parentEntity.AddComponent<RotationComponent>();
+        parentEntity.AddComponent<ScaleComponent>();
+        parentEntity.AddComponent<TransformComponent>();
 
-            // Adding material data
-            auto& materialComponent = partEntity.AddComponent<MaterialComponent>();
-            Material material = partData->GetMaterial();
-            materialComponent.ambient = material.ambient;
-            materialComponent.diffuse = material.diffuse;
-            materialComponent.specular = material.specular;
-            materialComponent.shininess = material.shininess;
+        parentEntity.AddComponent<ParentComponent>(Entity(entt::null, this));
+        parentEntity.AddComponent<ChildrenComponent>();
 
 
-            
+        Shader* defaultShader = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader());
+        // Add children entities based on the model
+        for (Mesh* mesh : model->GetMeshes()) {
+            Entity childEntity(m_Registry.create(), this);
 
-            // Adding texture data
-            auto& textureComponent = partEntity.AddComponent<TextureComponent>();
-            textureComponent.textures = partData->GetTextures();
+            childEntity.AddComponent<PositionComponent>();
+            childEntity.AddComponent<RotationComponent>();
+            childEntity.AddComponent<ScaleComponent>();
+            childEntity.AddComponent<TransformComponent>();
 
-            modelComponent.parts.push_back(partEntity);
+            childEntity.AddComponent<MeshComponent>(mesh, defaultShader);
+
+            // Add ParentComponent to child entity
+            childEntity.AddComponent<ParentComponent>(parentEntity);
+            childEntity.AddComponent<ChildrenComponent>();
+
+            // Add child to parent's ChildrenComponent list
+            auto& children = parentEntity.GetComponent<ChildrenComponent>().children;
+            children.push_back(childEntity);
         }
-        return modelEntity;
+
+        return parentEntity;
     }
 
+
     std::vector<Entity> Scene::GetAllEntitiesWithModelComponent() const {
+        /*
         std::vector<Entity> entities;
         auto view = m_Registry.view<ModelComponent>();
         for (auto entity : view) {
             entities.emplace_back(entity, const_cast<Scene*>(this));
         }
         return entities;
+        */
+        std::vector<Entity> test;
+        return test;
     }
 
 
@@ -174,7 +174,7 @@ namespace StrikeEngine {
         // Scene setup code
     }
 
-    void Scene::Update() {
+    void Scene::OnUpdate(float deltaTime) {
         TransformSystem::Update(this);
         //CameraSystem::UpdateCamera(m_CameraEntity);
     }

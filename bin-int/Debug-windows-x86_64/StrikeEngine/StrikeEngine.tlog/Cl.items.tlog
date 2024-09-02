@@ -7,6 +7,7 @@ D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Core\Log.cpp;D:\CppPro
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Events\EventBus.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\EventBus.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiBuild.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiBuild.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\ImGui\ImGuiLayer.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ImGuiLayer.obj
+D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Core\Model.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Model.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Core\Shader.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Shader.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Core\ShadowAtlas.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\ShadowAtlas.obj
 D:\CppProjekty\StrikeEngine\StrikeEngine\src\StrikeEngine\Renderer\Core\Skybox.cpp;D:\CppProjekty\StrikeEngine\bin-int\Debug-windows-x86_64\StrikeEngine\Skybox.obj

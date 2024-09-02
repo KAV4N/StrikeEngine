@@ -7,47 +7,33 @@
 
 namespace StrikeEngine {
 
-    struct MaterialComponent {
-        glm::vec3 baseColor;
-        glm::vec3 ambient;
-        glm::vec3 diffuse;
-        glm::vec3 specular;
-        float shininess;
-
-        MaterialComponent(
-            glm::vec3 amb = glm::vec3(0.2f, 0.2f, 0.2f),
-            glm::vec3 dif = glm::vec3(0.8f, 0.8f, 0.8f),
-            glm::vec3 spec = glm::vec3(1.0f, 1.0f, 1.0f),
-            float shi = 32.0f
-        ) :
-            baseColor(glm::vec3(1.f)),
-            ambient(amb),
-            diffuse(dif),
-            specular(spec),
-            shininess(shi)
-        {
-        };
-    };
-
-    struct ShaderComponent {
+    struct MeshComponent {
         Shader* shader;
-        ShaderComponent(Shader* shad = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader())) : shader(shad)
-        {};
+        Mesh* mesh;
+        bool visible;
+
+        MeshComponent(Mesh* m,  Shader* shad = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader()), bool v = true)
+            : mesh(m), visible(v), shader(shad)
+        {
+
+        }
+
     };
 
-    struct TextureComponent {
-        std::vector<Texture*> textures;
+    struct ParentComponent {
+        bool visible;
+        Entity parent;
+
+        ParentComponent(Entity par) 
+            : parent(par), visible(true)
+
+        {
+
+        }
+
     };
 
-    struct ModelPartComponent {
-        unsigned int vaoID;
-        unsigned int vertexCount;
-        unsigned int vboID;
-        unsigned int eboID;
-    };
-
-
-    struct ModelComponent {
-        std::vector<Entity> parts;
+    struct ChildrenComponent {
+        std::vector<Entity> children;
     };
 }

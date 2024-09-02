@@ -161,11 +161,13 @@
     <ClInclude Include="src\StrikeEngine\Events\KeyEvent.h" />
     <ClInclude Include="src\StrikeEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\StrikeEngine\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\IndexBuffer.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\Model.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\Shader.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\ShadowAtlas.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\Skybox.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\Texture.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\VertexArray.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Core\VisibilityCuller.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Managers\LightManager.h" />
     <ClInclude Include="src\StrikeEngine\Renderer\Managers\ModelManager.h" />
@@ -692,6 +694,7 @@
     <ClCompile Include="src\StrikeEngine\Events\EventBus.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\StrikeEngine\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\Model.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Core\Shader.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Core\ShadowAtlas.cpp" />
     <ClCompile Include="src\StrikeEngine\Renderer\Core\Skybox.cpp" />

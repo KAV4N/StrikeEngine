@@ -7,11 +7,18 @@
 
 namespace StrikeEngine {
 
+
+
     class Texture
     {
     public:
         Texture(const std::string& path);
         ~Texture();
+
+        enum TextureType {
+            DIFFUSE,
+            SPECULAR,
+        };
 
         void Bind(unsigned int slot = 0);
         void Unbind();

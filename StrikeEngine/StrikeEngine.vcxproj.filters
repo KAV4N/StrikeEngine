@@ -1746,6 +1746,8 @@
     <ClInclude Include="vendor\stb\tests\prerelease\stb_lib.h">
       <Filter>vendor\stb\tests\prerelease</Filter>
     </ClInclude>
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\VertexArray.h" />
+    <ClInclude Include="src\StrikeEngine\Renderer\Core\IndexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1817,5 +1819,6 @@
     <ClCompile Include="src\strikepch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StrikeEngine\Renderer\Core\Model.cpp" />
   </ItemGroup>
 </Project>

@@ -18,21 +18,11 @@ void Sandbox3D::OnDetach()
 	m_World = nullptr;
 }
   
-void Sandbox3D::OnUpdate()
+void Sandbox3D::OnUpdate(float deltaTime)
 {
 	StrikeEngine::Entity sceneCamera = m_World->GetActiveScene()->GetCameraEntity();
-
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime.time_since_epoch()).count();
-
-
-	float deltaTime = time - m_LastFrameTime;
-
-	m_LastFrameTime = time;
-
-	//StrikeEngine::CameraSystem::OnUpdate(sceneCamera);
 	StrikeEngine::CameraSystem::OnUpdate(sceneCamera, deltaTime);
-	m_World->Update();
+	m_World->OnUpdate(deltaTime);
 }
 
 void Sandbox3D::OnImGuiRender()

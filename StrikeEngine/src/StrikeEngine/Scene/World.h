@@ -17,7 +17,7 @@ namespace StrikeEngine {
         void AddScene(Scene* scene);
         void SetActiveScene(int index);
 
-        void Update();
+        void OnUpdate(float deltaTime);
         void Render();
 
         Scene* GetActiveScene();

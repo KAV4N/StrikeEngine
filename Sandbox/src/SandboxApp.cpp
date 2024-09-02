@@ -16,7 +16,7 @@ public:
 	{
 
 	}
-	void OnUpdate() override
+	void OnUpdate(float deltaTime) override
 	{
 		if (StrikeEngine::Input::IsKeyPressed(STRIKE_KEY_TAB))
 			STRIKE_TRACE("Tab key is pressed (poll)!");

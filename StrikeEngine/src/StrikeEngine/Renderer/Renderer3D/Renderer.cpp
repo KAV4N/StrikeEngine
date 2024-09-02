@@ -74,7 +74,7 @@ namespace StrikeEngine {
         glCullFace(GL_BACK);   
         glFrontFace(GL_CCW);  
 
-       
+      
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         m_FullScreenQuadShader = ShaderManager::Get()->GetShader("ScreenShader");
         CreateFramebuffer();
@@ -129,11 +129,8 @@ namespace StrikeEngine {
 
     void Renderer::Render() {
         RenderShadowMaps();
-        
 
-
-        while (!m_RenderQueue.empty())
-        {
+        while (!m_RenderQueue.empty()) {
             glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
             glViewport(0, 0, m_Width, m_Height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -142,7 +139,7 @@ namespace StrikeEngine {
 
             RenderCommand renderCommand = m_RenderQueue.front();
             CameraComponent camera = renderCommand.cameraEntity.GetComponent<CameraComponent>();
- 
+
             glm::mat4 cameraProjection = camera.ProjectionMatrix;
             glm::mat4 cameraView = camera.ViewMatrix;
             glm::vec3 cameraPosition = renderCommand.cameraEntity.GetComponent<PositionComponent>().position;
@@ -153,9 +150,9 @@ namespace StrikeEngine {
 
             RenderSkybox(cameraView, cameraProjection);
 
-            for (auto it = renderCommand.shaderEntityMap.begin(); it != renderCommand.shaderEntityMap.end(); ++it) {
-                Shader* shader = it->first;
+            for (auto& [shader, entities] : renderCommand.shaderEntityMap) {
                 shader->Bind();
+
                 shader->LoadUniform("MVP", cameraProjection * cameraView);
                 shader->LoadUniform("viewPosition", cameraPosition);
 
@@ -163,50 +160,37 @@ namespace StrikeEngine {
                 shader->LoadUniform("dirLightsCount", directionalCount);
                 shader->LoadUniform("pointLightsCount", pointCount);
 
-                for (Entity modelEntity : it->second) {
-                    auto& modelComp = modelEntity.GetComponent<ModelComponent>();
-                    glm::mat4 modelTransform = modelEntity.GetComponent<TransformComponent>().transformationMatrix;
-                    
-                    for (auto& partEntity : modelComp.parts) {
-                        auto& modelPartComp = partEntity.GetComponent<ModelPartComponent>();
-                        auto& partTransform = partEntity.GetComponent<TransformComponent>().transformationMatrix;
-                        auto& materialComp = partEntity.GetComponent<MaterialComponent>();
 
-                        shader->LoadUniform("material.baseColor", materialComp.baseColor);
-                        shader->LoadUniform("material.ambient", materialComp.ambient);
-                        shader->LoadUniform("material.diffuse", materialComp.diffuse);
-                        shader->LoadUniform("material.shininess", materialComp.shininess);
-                        shader->LoadUniform("material.specular", materialComp.specular);
+                for (Entity entity : entities) {
+                    auto& meshComponent = entity.GetComponent<MeshComponent>();
+                    auto& meshTransformComponent = entity.GetComponent<TransformComponent>();
+                    auto& parentTransformComponent = entity.GetComponent<ParentComponent>().parent.GetComponent<TransformComponent>();
 
-                        glm::mat4 modelMatrix = modelTransform * partTransform;
-                        shader->LoadUniform("transform", modelMatrix);
+                    glm::mat4 meshMatrix = meshTransformComponent.transformationMatrix;
+                    glm::mat4 worldMatrix = parentTransformComponent.transformationMatrix;
 
-                        auto& textures = partEntity.GetComponent<TextureComponent>().textures;
-                        if (!textures.empty()) {
-                            textures[0]->Bind(0);
+                    shader->LoadUniform("transform", worldMatrix * meshMatrix);
+
+                    auto& textures = meshComponent.mesh->textures;
+                    if (!textures.empty()) {
+                        for (unsigned int i = 0; i < textures.size(); i++) {
+                            textures[i]->Bind(i);
                         }
-                        else {
-                            m_DefaultTexture->Bind();
-                        }
-
-                        shader->LoadUniform("ourTexture", 0);
-
-                        glBindVertexArray(modelPartComp.vaoID);
-                        glDrawElements(GL_TRIANGLES, modelPartComp.vertexCount, GL_UNSIGNED_INT, 0);
-                        glBindVertexArray(0);
                     }
+                    else {
+                        m_DefaultTexture->Bind(0);
+                    }
+                    shader->LoadUniform("ourTexture", 0);
 
-                
+                    meshComponent.mesh->Draw();
                 }
-
 
                 shader->Unbind();
             }
-            
+
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(0, 0, m_Width, m_Height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
             m_FullScreenQuadShader->Bind();
             glActiveTexture(GL_TEXTURE0);
@@ -218,10 +202,8 @@ namespace StrikeEngine {
 
             m_RenderQueue.pop();
         }
-        
-
-        
     }
+
 
     void Renderer::RenderSkybox(glm::mat4 cameraView, glm::mat4 cameraProjection) {
         if (m_Skybox) {

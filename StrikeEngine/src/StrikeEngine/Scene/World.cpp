@@ -38,9 +38,9 @@ namespace StrikeEngine {
         }
     }
 
-    void World::Update() {
+    void World::OnUpdate(float deltaTime) {
         if (m_ActiveScene) {
-            m_ActiveScene->Update();
+            m_ActiveScene->OnUpdate(deltaTime);
         }
     }
 

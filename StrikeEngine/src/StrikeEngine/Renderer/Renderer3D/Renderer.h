@@ -26,9 +26,6 @@ namespace StrikeEngine {
         static void Destroy();
         void Init();
 
-        void BeginScene(CameraComponent* camera);
-        void EndScene();
-        void SubmitScene(Scene* scene);
         void SubmitSkybox(Skybox* skybox);
         void Render();
         void RenderShadowMaps();
@@ -48,12 +45,6 @@ namespace StrikeEngine {
         ~Renderer();
 
         void RenderSkybox(glm::mat4 cameraView, glm::mat4 cameraProjection);
-        void SubmitEntity(Entity entity, const glm::mat4& transformationMatrix);
-        void BindShaderMVP(Shader* shader, const RenderCommand& command);
-        void BindShaderMaterials(Shader* shader, ModelPart* part);
-        void RenderModelParts(Shader* shader, const RenderCommand& command);
-        void BindTextures(ModelPart* part);
-        void UnbindTextures(ModelPart* part);
 
         void CreateFramebuffer();
         // Full-screen quad setup
@@ -76,10 +67,5 @@ namespace StrikeEngine {
 
         GLuint m_QuadVAO, m_QuadVBO;
         Shader* m_FullScreenQuadShader;
-
-        glm::mat4 m_CameraViewProjectionMatrix;
-        glm::mat4 m_CameraViewMatrix;
-        glm::mat4 m_CameraProjectionMatrix;
-        glm::vec3 m_CameraPosition;
     };
 }

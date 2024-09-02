@@ -22,6 +22,7 @@ namespace StrikeEngine {
             return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
+
         template<typename T>
         void RemoveComponent() {
             m_Scene->m_Registry.remove<T>(m_EntityHandle);

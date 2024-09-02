@@ -46,7 +46,7 @@ namespace StrikeEngine {
         void Setup();
         void SetCamera(entt::entity cameraEntity);
 
-        void Update();
+        void OnUpdate(float deltaTime);
         void Render();
 
         Entity GetCameraEntity() const;
