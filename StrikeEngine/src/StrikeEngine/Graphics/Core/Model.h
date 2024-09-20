@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "StrikeEngine/Renderer/Core/Texture.h"
-#include "StrikeEngine/Renderer/Core/Shader.h"
-#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
+#include "StrikeEngine/Graphics/Core/Texture.h"
+#include "StrikeEngine/Graphics/Core/Shader.h"
+#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 #include <vector>
 #include <string>
 
@@ -17,13 +17,15 @@ namespace StrikeEngine {
             glm::vec2 TexCoords;
         };
 
-        std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
-        std::vector<Texture*> textures;
+
 
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture*> textures);
-        void Draw();
+        void Draw(Shader* shader);
     private:
+        std::vector<Vertex> Vertices;
+        std::vector<unsigned int> Indices;
+        std::vector<Texture*> Textures;
+
         unsigned int VAO, VBO, EBO;
         void SetupMesh();
     };
@@ -34,6 +36,6 @@ namespace StrikeEngine {
         void AddMesh(Mesh* mesh);
         const std::vector<Mesh*>& GetMeshes() const;
     private:
-        std::vector<Mesh*> meshes;
+        std::vector<Mesh*> MeshStorage;
     };
 }

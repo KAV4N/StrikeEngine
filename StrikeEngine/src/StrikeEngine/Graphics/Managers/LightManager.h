@@ -4,8 +4,8 @@
 #include "StrikeEngine/Scene/Components/LightComponents.h"
 #include "StrikeEngine/Scene/Components/ShadowCasterComponent.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
-#include "StrikeEngine/Renderer/Renderer3D/Renderer.h" 
-#include <StrikeEngine/Renderer/Core/ShadowAtlas.h>
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
+#include <StrikeEngine/Graphics/Core/ShadowAtlas.h>
 
 
 namespace StrikeEngine {

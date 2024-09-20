@@ -21,6 +21,8 @@ namespace StrikeEngine {
         void LoadUniform(const std::string& name, const std::vector<glm::vec3>& values);
         void LoadUniform(const std::string& name, const std::vector<glm::mat4>& values);
 
+        void LoadUniform(const std::string& name, const glm::vec2& value);
+
         void LoadUniform(const std::string& name, const glm::vec3& value);
         void LoadUniform(const std::string& name, const glm::mat4& value);
         void LoadUniform(const std::string& name, float value);

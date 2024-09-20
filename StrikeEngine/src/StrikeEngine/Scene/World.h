@@ -3,33 +3,34 @@
 #include <vector>
 #include <memory>
 #include "Scene.h"
+#include <StrikeEngine/Events/Event.h>
+#include "StrikeEngine/Core/Layer.h"
 
 namespace StrikeEngine {
 
-    class World {
+    class World : Layer{
     public:
         static void Create();
         static World* Get();
 
-        World(const World&) = delete;
-        World& operator=(const World&) = delete;
+        void OnUpdate(float deltaTime) override;
+        void OnRender() override;
+        void OnEvent(Event& event) override;
 
-        void AddScene(Scene* scene);
+
+        void AddScene();
         void SetActiveScene(int index);
-
-        void OnUpdate(float deltaTime);
-        void Render();
-
         Scene* GetActiveScene();
 
     private:
-        World();
+        World(GLuint resX=1280, GLuint resY=720);
         ~World();
 
         static World* s_Instance;
 
         std::vector<Scene*> m_Scenes;
         Scene* m_ActiveScene;
+        FrameBuffer* m_FrameBuffer;
     };
 
 }

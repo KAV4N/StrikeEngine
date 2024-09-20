@@ -3,7 +3,7 @@
 
 #include <stb_image.h>
 #include <iostream>
-#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
+#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 
 namespace StrikeEngine {
 

@@ -4,9 +4,9 @@
 #include <vector>
 #include <memory>
 #include "StrikeEngine/Scene/Entity.h"
-#include "StrikeEngine/Renderer/Core/Shader.h"
-#include "StrikeEngine/Renderer/Core/ShadowAtlas.h"
-#include "StrikeEngine/Renderer/Renderer3D/Renderer.h"
+#include "StrikeEngine/Graphics/Core/Shader.h"
+#include "StrikeEngine/Graphics/Core/ShadowAtlas.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
 
 namespace StrikeEngine {
 

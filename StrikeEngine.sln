@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "StrikeEngine\vendo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StrikeEditor", "StrikeEditor\StrikeEditor.vcxproj", "{7E2ECAFF-6A91-59A4-1317-925AFF582527}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StrikeEngine", "StrikeEngine\StrikeEngine.vcxproj", "{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assimp", "StrikeEngine\vendor\assimp\assimp.vcxproj", "{724885F2-5EEA-AFC8-47A5-C31C33E63619}"
@@ -44,6 +46,12 @@ Global
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Dist|x64.Build.0 = Dist|x64
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Release|x64.ActiveCfg = Release|x64
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Release|x64.Build.0 = Release|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Debug|x64.ActiveCfg = Debug|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Debug|x64.Build.0 = Debug|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Dist|x64.ActiveCfg = Dist|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Dist|x64.Build.0 = Dist|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Release|x64.ActiveCfg = Release|x64
+		{7E2ECAFF-6A91-59A4-1317-925AFF582527}.Release|x64.Build.0 = Release|x64
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Debug|x64.ActiveCfg = Debug|x64
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Debug|x64.Build.0 = Debug|x64
 		{CDDB7D00-B93E-0DA5-62C4-455B4E06D927}.Dist|x64.ActiveCfg = Dist|x64

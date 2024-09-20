@@ -4,13 +4,13 @@
 #version 430 core
 layout(location = 0) in vec3 aPos;
 
-uniform mat4 MVP;
+uniform mat4 u_ViewProjection;
 
 
 out vec3 TexCoords;
 
 void main() {
-    gl_Position = MVP * vec4(aPos, 1.0);
+    gl_Position = u_ViewProjection * vec4(aPos, 1.0);
     TexCoords = aPos;
 }
 
@@ -23,9 +23,8 @@ in vec3 TexCoords;
 
 out vec4 FragColor;
 
-uniform samplerCube skybox;
+uniform samplerCube u_DiffuseTexture;
 
 void main() {
-   // vec3 flippedTexCoords = vec3(-TexCoords.x, TexCoords.y, TexCoords.z);
-    FragColor = texture(skybox, TexCoords);
+    FragColor = texture(u_DiffuseTexture, TexCoords);
 }

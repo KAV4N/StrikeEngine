@@ -1,8 +1,8 @@
 
 #include "strikepch.h"
 #include "ModelManager.h"
-#include "StrikeEngine/Renderer/Core/Texture.h"
-#include "StrikeEngine/Renderer/Core/Model.h"
+#include "StrikeEngine/Graphics/Core/Texture.h"
+#include "StrikeEngine/Graphics/Core/Model.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>

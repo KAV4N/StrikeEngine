@@ -1,9 +1,28 @@
 #include "strikepch.h"
 #include "World.h"
+#include "StrikeEngine/Scene/Systems/TransformSystem.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
 
 namespace StrikeEngine {
 
     World* World::s_Instance = nullptr;
+
+    World::World(GLuint resX, GLuint resY) 
+        : m_ActiveScene(nullptr),
+        m_FrameBuffer(new FrameBuffer(resX, resY))
+    
+    {
+        Renderer::Create();
+        Renderer::Get()->Init();
+        
+    }
+
+    World::~World() {
+        for (auto scene : m_Scenes) {
+            delete scene;
+        }
+        delete m_FrameBuffer;
+    }
 
     void World::Create() {
         if (s_Instance == nullptr) {
@@ -17,15 +36,10 @@ namespace StrikeEngine {
         return s_Instance;
     }
 
-    World::World() : m_ActiveScene(nullptr) {}
 
-    World::~World() {
-        for (auto scene : m_Scenes) {
-            delete scene;
-        }
-    }
 
-    void World::AddScene(Scene* scene) {
+    void World::AddScene() {
+        Scene* scene = new Scene();
         m_Scenes.push_back(scene);
         if (m_ActiveScene == nullptr) {
             m_ActiveScene = scene;
@@ -38,16 +52,24 @@ namespace StrikeEngine {
         }
     }
 
+
+
     void World::OnUpdate(float deltaTime) {
-        if (m_ActiveScene) {
-            m_ActiveScene->OnUpdate(deltaTime);
-        }
+        m_ActiveScene->OnUpdate(deltaTime);
     }
 
-    void World::Render() {
+
+    void World::OnRender() {
         if (m_ActiveScene) {
-            m_ActiveScene->Render();
+            m_ActiveScene->RenderScene(m_FrameBuffer);
+            Renderer::BindDefaultFrameBuffer();
+            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f,0.0f), glm::vec2(1280.f, 720.f), m_FrameBuffer->GetColorAttachment());
         }
+
+    }
+
+    void World::OnEvent(Event& event)
+    {
     }
 
     Scene* World::GetActiveScene() {

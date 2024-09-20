@@ -4,7 +4,7 @@
 #include <string>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <StrikeEngine/Renderer/Core/Shader.h>
+#include <StrikeEngine/Graphics/Core/Shader.h>
 
 #define SKYBOX_SHADER "SkyboxShader"
 #define SKYBOX_TEXTURES_PATH "assets/textures/skybox/"

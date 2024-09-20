@@ -1,10 +1,10 @@
 #include "strikepch.h"
 #include "LightManager.h"
-#include "StrikeEngine/Renderer/Core/Shader.h" 
+#include "StrikeEngine/Graphics/Core/Shader.h" 
 #include <glad/glad.h>
 #include <StrikeEngine/Scene/Components/ShadowCasterComponent.h>
-#include "StrikeEngine/Renderer/Renderer3D/Renderer.h" 
-#include "StrikeEngine/Renderer/Core/VisibilityCuller.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h" 
+#include "StrikeEngine/Graphics/Core/VisibilityCuller.h"
 #include "StrikeEngine/Scene/World.h"
 
 namespace StrikeEngine {

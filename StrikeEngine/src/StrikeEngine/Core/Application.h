@@ -18,6 +18,7 @@ namespace StrikeEngine
     class STRIKE_API Application
     {
     public:
+        friend class Renderer;
         Application();
         virtual ~Application();
 
@@ -41,7 +42,7 @@ namespace StrikeEngine
         std::unique_ptr<Window> m_Window;
         ImGuiLayer* m_ImGuiLayer;
         bool m_Running = true;
-        LayerStack m_LayerStack;
+        LayerStack<Layer*> m_LayerStack;
         std::chrono::high_resolution_clock::time_point m_LastFrameTime;
 
     private:

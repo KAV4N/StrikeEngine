@@ -127,7 +127,8 @@ project "Sandbox"
         "%{includeDir.ImGui}",
         "%{includeDir.entt}",
         "%{includeDir.Glad}",
-        "%{includeDir.json}"
+        "%{includeDir.json}",
+        "%{includeDir.assimp}"
    
     }
 
@@ -136,6 +137,65 @@ project "Sandbox"
     }
 
     filter "system:windows"
+        cppdialect "C++17"
+        staticruntime "on"
+        systemversion "latest"
+
+        defines {
+            "PLATFORM_WINDOWS"
+        }
+
+    filter "configurations:Debug"
+        defines "STRIKE_DEBUG"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines "STRIKE_RELEASE"
+        runtime "Release"
+        optimize "on"
+
+    filter "configurations:Dist"
+        defines "STRIKE_DIST"
+        runtime "Release"
+        optimize "on"
+
+
+
+project "StrikeEditor"
+	location "StrikeEditor"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
+
+    files {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/src/**.glsl",
+        "%{prj.name}/src/**.png"
+    }
+
+    includedirs {
+        "StrikeEngine/vendor/spdlog/include",
+        "StrikeEngine/src",
+        "%{includeDir.glm}",
+        "%{includeDir.ImGui}",
+        "%{includeDir.entt}",
+        "%{includeDir.Glad}",
+        "%{includeDir.json}",
+        "%{includeDir.assimp}"
+   
+    }
+
+	links {
+        "StrikeEngine"
+    }
+
+	  filter "system:windows"
         cppdialect "C++17"
         staticruntime "on"
         systemversion "latest"

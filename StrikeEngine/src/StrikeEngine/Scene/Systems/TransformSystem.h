@@ -9,72 +9,19 @@
 namespace StrikeEngine {
     class TransformSystem {
     public:
+        static glm::mat4 CalculateTransformMatrix(const Entity& entity) {
+            const auto& transformComponent = entity.GetComponent<TransformComponent>();
 
-        static void Update(Scene* scene) {
-            
-            auto view = scene->GetRegistry().view<PositionComponent, RotationComponent, ScaleComponent, TransformComponent>();
-           
-            for (auto entityHandle : view) {
-                Entity entity(entityHandle, scene);
-                //IncreaseRotation(entity, glm::vec3(1.f));
-                UpdateTransformComponent(entity);
-            }
-        }
+            const auto& position = transformComponent.Position;
+            const auto& rotation = transformComponent.Rotation;
+            const auto& scale = transformComponent.Scale;
 
-        // Setters for components
-        static void SetPosition(Entity entity, const glm::vec3& position) {
-            entity.GetComponent<PositionComponent>().position = position;
-            UpdateTransformComponent(entity);
-        }
-
-        static void SetRotation(Entity entity, const glm::vec3& rotation) {
-            entity.GetComponent<RotationComponent>().rotation = rotation;
-            UpdateTransformComponent(entity);
-        }
-
-        static void SetScale(Entity entity, const glm::vec3& scale) {
-            entity.GetComponent<ScaleComponent>().scale = scale;
-            UpdateTransformComponent(entity);
-        }
-
-        static void IncreasePosition(Entity entity, const glm::vec3& delta) {
-            entity.GetComponent<PositionComponent>().position += delta;
-            UpdateTransformComponent(entity);
-        }
-
-        static void IncreaseRotation(Entity entity, const glm::vec3& delta) {
-            entity.GetComponent<RotationComponent>().rotation += delta;
-            UpdateTransformComponent(entity);
-        }
-
-        static void IncreaseScale(Entity entity, const glm::vec3& delta) {
-            entity.GetComponent<ScaleComponent>().scale += delta;
-            UpdateTransformComponent(entity);
-        }
-
-
-
-
-    private:
-
-        static glm::mat4 CalculateTransformMatrix(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale) {
             glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
                 * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0))
                 * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0, 1, 0))
                 * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1))
                 * glm::scale(glm::mat4(1.0f), scale);
             return transform;
-        }
-
-
-        static void UpdateTransformComponent(Entity entity) {
-            
-            const auto& position = entity.GetComponent<PositionComponent>().position;
-            const auto& rotation = entity.GetComponent<RotationComponent>().rotation;
-            const auto& scale = entity.GetComponent<ScaleComponent>().scale;
-            auto& transform = entity.GetComponent<TransformComponent>().transformationMatrix;
-
-            transform = CalculateTransformMatrix(position, rotation, scale);
         }
     };
 }

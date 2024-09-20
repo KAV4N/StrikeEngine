@@ -1,45 +1,28 @@
 #include "strikepch.h"
 #include "Scene.h"
-#include "StrikeEngine/Renderer/Renderer3D/Renderer.h" 
-#include "StrikeEngine/Scene/Systems/TransformSystem.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h" 
+
 #include "Components/ModelComponent.h"
 #include "Components/ShadowCasterComponent.h"
 #include "Components/LightComponents.h"
-#include "Systems/CameraSystem.h"
 #include "StrikeEngine/Scene/RenderCommand.h"
+
+#include "StrikeEngine/Scene/Systems/TransformSystem.h"
 
 namespace StrikeEngine {
 
-    RenderCommand Scene::BuildRenderCommand() const {
-        RenderCommand command(m_CameraEntity.GetHandle(), const_cast<Scene*>(this));
 
-        auto view = m_Registry.view<MeshComponent>();
-        for (auto entityView : view) {
-            Entity entity(entityView, const_cast<Scene*>(this));
-            const auto& meshComponent = entity.GetComponent<MeshComponent>();
-
-
-            command.shaderEntityMap[meshComponent.shader].push_back(entity);
-        }
-
-        return command;
-    }
-
-
-    Scene::Scene() : m_CameraEntity(m_Registry.create(), this) {
+    Scene::Scene() {
+        m_ActiveView = new ScreenPanel();
+        m_ViewList.push_back(m_ActiveView);
         m_Skybox = std::make_unique<Skybox>();
-
-        // Add components to the camera entity
-        m_CameraEntity.AddComponent<PositionComponent>(glm::vec3(0.0f, 6.0f, 4.0f)); // Initial position
-        m_CameraEntity.AddComponent<RotationComponent>(glm::vec3(0.0f, 0.0f, 0.0f)); // Initial rotation (pitch)
-
-        // Add and initialize the CameraComponent
-        auto& camera = m_CameraEntity.AddComponent<CameraComponent>(70.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     }
 
 
     Scene::~Scene() {
-        // Cleanup resources if needed
+        m_ActiveView = nullptr;
+        for (ScreenPanel* view : m_ViewList)
+            delete view; 
     }
 
 
@@ -86,33 +69,27 @@ namespace StrikeEngine {
         Entity parentEntity(m_Registry.create(), this);
 
         // Add TransformComponent and ParentComponent to parent entity
-        parentEntity.AddComponent<PositionComponent>();
-        parentEntity.AddComponent<RotationComponent>();
-        parentEntity.AddComponent<ScaleComponent>();
         parentEntity.AddComponent<TransformComponent>();
+        parentEntity.AddComponent<VisibleTag>();
 
         parentEntity.AddComponent<ParentComponent>(Entity(entt::null, this));
         parentEntity.AddComponent<ChildrenComponent>();
-
 
         Shader* defaultShader = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader());
         // Add children entities based on the model
         for (Mesh* mesh : model->GetMeshes()) {
             Entity childEntity(m_Registry.create(), this);
 
-            childEntity.AddComponent<PositionComponent>();
-            childEntity.AddComponent<RotationComponent>();
-            childEntity.AddComponent<ScaleComponent>();
             childEntity.AddComponent<TransformComponent>();
-
             childEntity.AddComponent<MeshComponent>(mesh, defaultShader);
+            childEntity.AddComponent<VisibleTag>();
 
             // Add ParentComponent to child entity
             childEntity.AddComponent<ParentComponent>(parentEntity);
             childEntity.AddComponent<ChildrenComponent>();
 
             // Add child to parent's ChildrenComponent list
-            auto& children = parentEntity.GetComponent<ChildrenComponent>().children;
+            auto& children = parentEntity.GetComponent<ChildrenComponent>().Children;
             children.push_back(childEntity);
         }
 
@@ -169,29 +146,51 @@ namespace StrikeEngine {
         return lightEntity;
     }
 
+    void Scene::SubmitMesh() {
+        auto viewMesh = m_Registry.view<MeshComponent, TransformComponent, ParentComponent, VisibleTag>();
 
-    void Scene::Setup() {
-        // Scene setup code
+        for (auto meshEntity : viewMesh) {
+            auto& meshComp = viewMesh.get<MeshComponent>(meshEntity);
+
+            Mesh* mesh = meshComp.MeshObj;
+            Shader* shader = meshComp.ShaderObj;
+
+            Entity entity(meshEntity, static_cast<Scene*>(this));
+
+            glm::mat4 transMesh = TransformSystem::CalculateTransformMatrix(entity);
+            glm::mat4 transWorld = TransformSystem::CalculateTransformMatrix(viewMesh.get<ParentComponent>(meshEntity).Parent);
+
+            glm::mat4 transMeshWorld = transWorld * transMesh;
+            Renderer::SubmitMesh(shader, {mesh, transMeshWorld });
+        }
+       
     }
+
+    void Scene::SubmitSkybox() {
+        Renderer::SubmitSkybox(m_Skybox.get());
+    }
+
 
     void Scene::OnUpdate(float deltaTime) {
-        TransformSystem::Update(this);
-        //CameraSystem::UpdateCamera(m_CameraEntity);
+        
+        SubmitSkybox();
+        SubmitMesh();
+
     }
 
 
+    void Scene::OnEvent(Event& event) {
+        m_ActiveView->OnEvent(event);
 
-    void Scene::Render() {
-        Renderer* renderer = Renderer::Get();
-        auto renderCommand = BuildRenderCommand();
-        renderer->SubmitSkybox(m_Skybox.get());
-        renderer->SubmitCommand(renderCommand);
-        //m_CameraEntity.GetComponent<CameraComponent>().Position = glm::vec3(0.0f, 4.0f, 4.0f);
-        //renderer->SubmitCommand(renderCommand);
     }
 
-    Entity Scene::GetCameraEntity() const {
-        return m_CameraEntity;
+    void Scene::RenderScene(FrameBuffer* frameBuffer) {
+        m_ActiveView->OnRender();
+
+        frameBuffer->Bind();
+        m_ActiveView->CompositeView();
+        frameBuffer->Unbind();
+
     }
 
 }

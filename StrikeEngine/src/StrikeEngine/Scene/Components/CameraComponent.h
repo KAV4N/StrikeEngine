@@ -3,18 +3,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Graphics/Core/FrameBuffer.h"
 
 namespace StrikeEngine {
-    struct FrustumCluster {
-        float nearDepth;
-        float farDepth;
-        glm::vec3 minBounds;
-        glm::vec3 maxBounds;
-    };
-
+  
     struct CameraComponent {
-
-
+    public:
+        GLuint resX, resY;
 
         glm::vec3 Right;
         glm::vec3 Up;
@@ -25,33 +20,23 @@ namespace StrikeEngine {
 
         const glm::vec3 WorldUp = glm::vec3(0, 1, 0);
 
-
-
-
         float fov;
-        float aspectRatio;
         float nearPlane;
         float farPlane;
-        std::vector<FrustumCluster> clusters;
 
-        CameraComponent(float fov, float aspectRatio, float nearPlane, float farPlane, int numClusters = 4)
-            : fov(fov), aspectRatio(aspectRatio), nearPlane(nearPlane), farPlane(farPlane)
+        CameraComponent(GLuint resX, GLuint resY, float fov, float nearPlane, float farPlane, int numClusters = 4)
+            : resX(resX), resY(resY), fov(fov), nearPlane(nearPlane), farPlane(farPlane)
         {
-            ProjectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+
+            ProjectionMatrix = glm::perspective(glm::radians(fov), (static_cast<float>(resX) / resY) , nearPlane, farPlane);
             UpdateViewMatrix(glm::vec3(0.0f), glm::vec3(0.0f));
-            CreateClusters(numClusters);
+        }
+
+        ~CameraComponent() {
+
         }
 
         void UpdateViewMatrix(const glm::vec3& position, const glm::vec3& rotation) {
-            /*
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
-            transform = glm::rotate(transform, glm::radians(rotation.x), glm::vec3(1, 0, 0));
-            transform = glm::rotate(transform, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-            transform = glm::rotate(transform, glm::radians(rotation.z), glm::vec3(0, 0, 1));
-            ViewMatrix = glm::inverse(transform);
-            */
-
-
             Forward = glm::normalize(glm::vec3(
                 cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x)),
                 sin(glm::radians(rotation.x)),
@@ -75,44 +60,9 @@ namespace StrikeEngine {
             return Up;
         }
 
-        void CreateClusters(int numClusters) {
-            clusters.clear();
-            clusters.reserve(numClusters);
-
-            float ratio = std::pow(farPlane / nearPlane, 1.0f / numClusters);
-            float nearDepth = nearPlane;
-
-            for (int i = 0; i < numClusters; ++i) {
-                float farDepth = nearDepth * ratio;
-                clusters.push_back({ nearDepth, farDepth });
-                nearDepth = farDepth;
-            }
+        float GetAspectRatio() const {
+            return (static_cast<float>(resX) / resY);
         }
 
-        void CalculateClusterBounds(FrustumCluster& cluster, const glm::vec3& position) {
-            float nearHeight = 2 * std::tan(glm::radians(fov * 0.5f)) * cluster.nearDepth;
-            float nearWidth = nearHeight * aspectRatio;
-            float farHeight = 2 * std::tan(glm::radians(fov * 0.5f)) * cluster.farDepth;
-            float farWidth = farHeight * aspectRatio;
-
-            glm::vec3 nearCenter = position + Forward * cluster.nearDepth;
-            glm::vec3 farCenter = position + Forward * cluster.farDepth;
-
-            cluster.minBounds = glm::min(
-                nearCenter - Right * (nearWidth * 0.5f) - Up * (nearHeight * 0.5f),
-                farCenter - Right * (farWidth * 0.5f) - Up * (farHeight * 0.5f)
-            );
-
-            cluster.maxBounds = glm::max(
-                nearCenter + Right * (nearWidth * 0.5f) + Up * (nearHeight * 0.5f),
-                farCenter + Right * (farWidth * 0.5f) + Up * (farHeight * 0.5f)
-            );
-        }
-
-        void UpdateClusters(const glm::vec3& position) {
-            for (auto& cluster : clusters) {
-                CalculateClusterBounds(cluster, position);
-            }
-        }
     };
 }

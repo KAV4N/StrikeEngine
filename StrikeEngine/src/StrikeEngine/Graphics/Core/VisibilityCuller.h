@@ -1,5 +1,5 @@
 #pragma once
-#include "StrikeEngine/Renderer/Core/Model.h"
+#include "StrikeEngine/Graphics/Core/Model.h"
 
 namespace StrikeEngine {
     /*

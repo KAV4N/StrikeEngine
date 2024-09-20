@@ -1,19 +1,28 @@
 #pragma once
 
-#include "StrikeEngine/Renderer/Core/Model.h"
-#include "StrikeEngine/Renderer/Managers/ShaderManager.h"
+#include "StrikeEngine/Graphics/Core/Model.h"
+#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace StrikeEngine {
 
+    struct RenderItem {
+        Mesh* MeshObj;
+        glm::mat4 Transform;
+    };
+
+
+    struct VisibleTag {
+        bool IsVisible = true;
+    };
+
     struct MeshComponent {
-        Shader* shader;
-        Mesh* mesh;
-        bool visible;
+        Shader* ShaderObj;
+        Mesh* MeshObj;
 
         MeshComponent(Mesh* m,  Shader* shad = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader()), bool v = true)
-            : mesh(m), visible(v), shader(shad)
+            : MeshObj(m), ShaderObj(shad)
         {
 
         }
@@ -21,19 +30,16 @@ namespace StrikeEngine {
     };
 
     struct ParentComponent {
-        bool visible;
-        Entity parent;
+        Entity Parent;
 
         ParentComponent(Entity par) 
-            : parent(par), visible(true)
-
+            : Parent(par)
         {
-
         }
 
     };
 
     struct ChildrenComponent {
-        std::vector<Entity> children;
+        std::vector<Entity> Children;
     };
 }

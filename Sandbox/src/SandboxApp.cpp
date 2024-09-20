@@ -57,7 +57,7 @@ public:
 	Sandbox() 
 	{
 		PushLayer(new Sandbox3D());
-		//PushOverlay(new StrikeEngine::ImGuiLayer());
+		PushOverlay(new TestLayer());
 	}
 	~Sandbox() 
 	{

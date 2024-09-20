@@ -46,10 +46,15 @@ namespace StrikeEngine {
     void Shader::LoadUniform(const std::string& name, const std::vector<glm::mat4>& values) {
         glUniformMatrix4fv(glGetUniformLocation(m_ProgramID, name.c_str()), values.size(), GL_FALSE, glm::value_ptr(values[0]));
     }
+    
+    void Shader::LoadUniform(const std::string& name, const glm::vec2& value) {
+        glUniform2f(glGetUniformLocation(m_ProgramID, name.c_str()), value.x, value.y);
+    }
 
     void Shader::LoadUniform(const std::string& name, const glm::vec3& value) {
         glUniform3f(glGetUniformLocation(m_ProgramID, name.c_str()), value.x, value.y, value.z);
     }
+
 
     void Shader::LoadUniform(const std::string& name, const glm::mat4& value) {
         glUniformMatrix4fv(glGetUniformLocation(m_ProgramID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));

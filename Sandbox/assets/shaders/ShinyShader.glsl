@@ -1,4 +1,3 @@
-
 #type vertex
 #version 430 core
 
@@ -6,19 +5,19 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal; 
 layout (location = 2) in vec2 aTexCoord; 
 
-uniform mat4 transform;
-uniform mat4 MVP;
+uniform mat4 u_Model;
+uniform mat4 u_ViewProjection;
 
 out vec2 TexCoord;
 out vec3 FragPos;
 out vec3 Normal;
 
 void main() {
-    FragPos = vec3(transform * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(transform))) * aNormal;
+    FragPos = vec3(u_Model * vec4(aPos, 1.0));
+    Normal = mat3(transpose(inverse(u_Model))) * aNormal;
     TexCoord = aTexCoord;
 
-    gl_Position = MVP * vec4(FragPos, 1.0);
+    gl_Position = u_ViewProjection * vec4(FragPos, 1.0);
 }
 
 #type fragment
@@ -30,13 +29,13 @@ in vec3 Normal;
 
 out vec4 FragColor;
 
-uniform int spotLightsCount;
-uniform int dirLightsCount;
-uniform int pointLightsCount;
+uniform int u_NumSpotLights;
+uniform int u_NumDirLights;
+uniform int u_NumPointLights;
 
-uniform sampler2D ourTexture;
+uniform sampler2D u_DiffuseTexture;
 
-uniform vec3 viewPosition;
+uniform vec3 u_CameraPosition;
 
 // Define the PointLight struct
 struct PointLight {
@@ -87,7 +86,7 @@ vec3 processSpotLights(vec3 norm);
 vec3 processDirectionalLights(vec3 norm);
 
 void main() {
-    vec3 texColor = texture(ourTexture, TexCoord).rgb;
+    vec3 texColor = texture(u_DiffuseTexture, TexCoord).rgb;
     vec3 ambient = vec3(0.1) * texColor; // to do load this as uniform
     vec3 norm = normalize(Normal);
 
@@ -102,14 +101,14 @@ void main() {
 
 vec3 processPointLights(vec3 norm) {
     vec3 result = vec3(0.0);
-    vec3 viewDir = normalize(viewPosition - FragPos);
-    for (int i = 0; i < pointLightsCount; i++) {
+    vec3 viewDir = normalize(u_CameraPosition - FragPos);
+    for (int i = 0; i < u_NumPointLights; i++) {
         vec3 lightDir = normalize(pointLights[i].position - FragPos);
         float distance = length(pointLights[i].position - FragPos);
         float attenuation = 1.0 / (distance * distance * pointLights[i].radius + 1.0);
 
         float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * pointLights[i].color * pointLights[i].intensity * texture(ourTexture, TexCoord).rgb;
+        vec3 diffuse = diff * pointLights[i].color * pointLights[i].intensity * texture(u_DiffuseTexture, TexCoord).rgb;
 
         vec3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
@@ -123,8 +122,8 @@ vec3 processPointLights(vec3 norm) {
 
 vec3 processSpotLights(vec3 norm) {
     vec3 result = vec3(0.0);
-    vec3 viewDir = normalize(viewPosition - FragPos);
-    for (int i = 0; i < spotLightsCount; i++) {
+    vec3 viewDir = normalize(u_CameraPosition - FragPos);
+    for (int i = 0; i < u_NumSpotLights; i++) {
         vec3 lightDir = normalize(spotLights[i].position - FragPos);
         float theta = dot(lightDir, normalize(-spotLights[i].direction));
 
@@ -133,7 +132,7 @@ vec3 processSpotLights(vec3 norm) {
             float attenuation = 1.0 / (distance * distance * spotLights[i].intensity + 1.0);
 
             float diff = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = diff * spotLights[i].color * spotLights[i].intensity * texture(ourTexture, TexCoord).rgb;
+            vec3 diffuse = diff * spotLights[i].color * spotLights[i].intensity * texture(u_DiffuseTexture, TexCoord).rgb;
 
             vec3 reflectDir = reflect(-lightDir, norm);
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
@@ -148,12 +147,12 @@ vec3 processSpotLights(vec3 norm) {
 
 vec3 processDirectionalLights(vec3 norm) {
     vec3 result = vec3(0.0);
-    vec3 viewDir = normalize(viewPosition - FragPos);
-    for (int i = 0; i < dirLightsCount; i++) {
+    vec3 viewDir = normalize(u_CameraPosition - FragPos);
+    for (int i = 0; i < u_NumDirLights; i++) {
         vec3 lightDir = normalize(-directionalLights[i].direction);
 
         float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * directionalLights[i].color * directionalLights[i].intensity * texture(ourTexture, TexCoord).rgb;
+        vec3 diffuse = diff * directionalLights[i].color * directionalLights[i].intensity * texture(u_DiffuseTexture, TexCoord).rgb;
 
         vec3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);

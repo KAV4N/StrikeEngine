@@ -5,7 +5,7 @@
 #include "StrikeEngine/Scene/Components/LightComponents.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 
-#include "StrikeEngine/Renderer/Core/VisibilityCuller.h"
+#include "StrikeEngine/Graphics/Core/VisibilityCuller.h"
 #include "StrikeEngine/Scene/World.h"
 
 namespace StrikeEngine {
