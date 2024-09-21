@@ -3,11 +3,11 @@
 #include "StrikeEngine/Graphics/Renderer/Renderer.h"
 
 namespace StrikeEngine {
-	ScreenPanel::ScreenPanel()
+	ScreenPanel::ScreenPanel(glm::vec2 position, glm::vec2 size)
 		: m_Camera(new Camera(16.f / 9.f, 70.f, 0.1f, 1000.f)),
 		m_FrameBuffer(new FrameBuffer(1280, 720)),
-		m_Size(glm::vec2(100.f, 100.f)),
-		m_Position(glm::vec2(0.f,0.f))
+		m_Size(size),
+		m_Position(position)
 	{
 	}
 	ScreenPanel::~ScreenPanel()
@@ -27,8 +27,15 @@ namespace StrikeEngine {
 	{
 	}
 
+	ScreenPanel* ScreenPanel::AddScreen(glm::vec2 position, glm::vec2 size) {
+		ScreenPanel* screenPanel = new ScreenPanel(position, size);
+		m_ScreenViewStack.PushLayer(screenPanel);
+		return screenPanel;
+	}
+
 	void ScreenPanel::OnUpdate(float deltaTime)
 	{
+
 	}
 
 

@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
-#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include "StrikeEngine/Graphics/Core/FrameBuffer.h"
 
 namespace StrikeEngine {

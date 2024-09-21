@@ -58,7 +58,7 @@ namespace StrikeEngine {
         m_QuadShader = ShaderManager::Get()->GetShader("ScreenShader");
         InitQuad();
 
-        glViewport(0, 0, 1280, 720);
+        //glViewport(0, 0, 1280, 720);
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
@@ -70,36 +70,25 @@ namespace StrikeEngine {
 
 
     void Renderer::InitQuad() {
-        float quadVertices[] = {
-            // positions   // texture coords
-            -0.5f,  0.5f,  0.0f, 1.0f,
-             0.5f,  0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.0f, 0.0f
-        };
-
-        unsigned int quadIndices[] = {
-            0, 1, 2,
-            2, 3, 0
+        float vertices[] = {
+            // positions   // texture Coords
+            -1.0f,  1.0f,  0.0f, 1.0f,
+            -1.0f, -1.0f,  0.0f, 0.0f,
+             1.0f, -1.0f,  1.0f, 0.0f,
+            -1.0f,  1.0f,  0.0f, 1.0f,
+             1.0f, -1.0f,  1.0f, 0.0f,
+             1.0f,  1.0f,  1.0f, 1.0f
         };
 
         glGenVertexArrays(1, &m_QuadVAO);
         glGenBuffers(1, &m_QuadVBO);
-        glGenBuffers(1, &m_QuadIBO);
-
         glBindVertexArray(m_QuadVAO);
-
         glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
         glBindVertexArray(0);
     
     }
@@ -133,6 +122,8 @@ namespace StrikeEngine {
 
 
     void Renderer::RenderScene(const glm::mat4& viewProjection, const glm::vec3& cameraPosition) {
+        glDepthFunc(GL_LESS);
+        glEnable(GL_DEPTH_TEST);
         for (const auto& [shader, renderItems] : m_ShaderBatch) {
             shader->Bind();
             shader->LoadUniform("u_ViewProjection", viewProjection);
@@ -163,16 +154,15 @@ namespace StrikeEngine {
         m_Skybox->Draw();
         skyboxShader->Unbind();
 
-        glDepthFunc(GL_LESS);
-        glEnable(GL_DEPTH_TEST);
     }
 
     void Renderer::DrawTexturedQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture) {
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(position, 0.0f));
-        model = glm::scale(model, glm::vec3(size, 1.0f));
-
+        glDisable(GL_DEPTH_TEST);
+        glm::mat4 model = glm::mat4(1.0f);        
+        model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+        model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
+        
         m_QuadShader->Bind();
       
         m_QuadShader->LoadUniform("u_Model", model);
@@ -182,7 +172,7 @@ namespace StrikeEngine {
         m_QuadShader->LoadUniform("u_DiffuseTexture", 0);
 
         glBindVertexArray(m_QuadVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
         m_QuadShader->Unbind();
@@ -199,7 +189,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::Resize(GLuint width, GLuint height) {
-        glViewport(0, 0, width, height);
+       // glViewport(0, 0, width, height);
     }
 
 

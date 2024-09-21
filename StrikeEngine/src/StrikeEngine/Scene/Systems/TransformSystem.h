@@ -1,7 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "StrikeEngine/Scene/Entity.h"

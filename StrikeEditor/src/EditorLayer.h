@@ -2,6 +2,7 @@
 
 #include "StrikeEngine.h"
 #include <entt/entt.hpp>
+#include <StrikeEngine/Graphics/Core/CameraController.h>
 
 namespace StrikeEngine {
 

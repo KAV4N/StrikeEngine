@@ -114,7 +114,7 @@ namespace StrikeEngine
     bool Application::OnWindowResize(WindowResizeEvent& e)
     {
 
-        //Renderer::Get()->Resize(e.GetWidth(), e.GetHeight());
+        Renderer::Get()->Resize(e.GetWidth(), e.GetHeight());
         return true;
     }
 

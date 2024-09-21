@@ -180,7 +180,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Components\LightComponents.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\ModelComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h" />
-    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h" />
+    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponent.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h" />
     <ClInclude Include="src\StrikeEngine\Scene\RenderCommand.h" />
     <ClInclude Include="src\StrikeEngine\Scene\Scene.h" />

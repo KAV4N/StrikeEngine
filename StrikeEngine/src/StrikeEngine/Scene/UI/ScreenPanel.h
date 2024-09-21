@@ -14,14 +14,14 @@ namespace StrikeEngine {
 	public:
 		friend class Scene;
 
-		ScreenPanel();
+		ScreenPanel(glm::vec2 position = glm::vec2(0.0f), glm::vec2 size = glm::vec2(1.f));
 		~ScreenPanel();
 
 		void OnEvent(Event& e) override;
 		void OnUpdate(float deltaTime) override;
 		void OnRender() override;
 
-		void AddScreen(glm::vec2 pos) { m_ScreenViewStack.PushLayer(new ScreenPanel()); }
+		ScreenPanel* AddScreen(glm::vec2 position = glm::vec2(0.0f), glm::vec2 size = glm::vec2(1.f));
 
 
 		Camera* GetCamera() const { return m_Camera; }

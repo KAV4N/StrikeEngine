@@ -1,29 +1,22 @@
-
-
 #type vertex
-#version 430 core
+#version 330 core
 layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 aTexCoord;
-
-out vec2 TexCoord;
-
+layout (location = 1) in vec2 aTexCoords;
+out vec2 TexCoords;
 uniform mat4 u_Model;
-
 void main()
 {
     gl_Position = u_Model * vec4(aPos.x, aPos.y, 0.0, 1.0);
-    TexCoord = aTexCoord;
+    TexCoords = aTexCoords;
 }
 
 #type fragment
-#version 430 core
+#version 330 core
 out vec4 FragColor;
-
-in vec2 TexCoord;
-
+in vec2 TexCoords;
 uniform sampler2D u_DiffuseTexture;
 
 void main()
 {
-    FragColor = texture(u_DiffuseTexture, TexCoord);
+    FragColor = texture(u_DiffuseTexture, TexCoords);
 }

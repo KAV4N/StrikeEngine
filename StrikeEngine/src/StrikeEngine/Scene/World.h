@@ -12,6 +12,8 @@ namespace StrikeEngine {
     public:
         static void Create();
         static World* Get();
+        static Scene* GetActiveScene();
+
 
         void OnUpdate(float deltaTime) override;
         void OnRender() override;
@@ -20,7 +22,6 @@ namespace StrikeEngine {
 
         void AddScene();
         void SetActiveScene(int index);
-        Scene* GetActiveScene();
 
     private:
         World(GLuint resX=1280, GLuint resY=720);

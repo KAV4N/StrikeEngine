@@ -13,7 +13,7 @@
 
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include "StrikeEngine/Scene/Components/LightComponents.h"
 #include "StrikeEngine/Scene/RenderCommand.h"
 #include <StrikeEngine/Core/LayerStack.h>
@@ -49,7 +49,7 @@ namespace StrikeEngine {
         void OnUpdate(float deltaTime);
 
         inline const entt::registry& GetRegistry() const { return m_Registry; }
-
+        inline ScreenPanel* GetActiveView() { return m_ActiveView; }
         
     private:
         Entity CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity);

@@ -63,17 +63,18 @@ namespace StrikeEngine {
         if (m_ActiveScene) {
             m_ActiveScene->RenderScene(m_FrameBuffer);
             Renderer::BindDefaultFrameBuffer();
-            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f,0.0f), glm::vec2(1280.f, 720.f), m_FrameBuffer->GetColorAttachment());
+            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f,0.0f), glm::vec2(1.f, 1.f), m_FrameBuffer->GetColorAttachment());
         }
 
     }
 
     void World::OnEvent(Event& event)
     {
+        m_ActiveScene->OnEvent(event);
     }
 
     Scene* World::GetActiveScene() {
-        return m_ActiveScene;
+        return s_Instance->m_ActiveScene;
     }
 
 }

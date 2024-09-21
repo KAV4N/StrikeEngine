@@ -23,5 +23,7 @@
 #include "StrikeEngine/Graphics/Managers/LightManager.h"
 #include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
+
 
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"

@@ -240,7 +240,7 @@
     <ClInclude Include="src\StrikeEngine\Scene\Components\ShadowCasterComponent.h">
       <Filter>src\StrikeEngine\Scene\Components</Filter>
     </ClInclude>
-    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponents.h">
+    <ClInclude Include="src\StrikeEngine\Scene\Components\TransformComponent.h">
       <Filter>src\StrikeEngine\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="src\StrikeEngine\Scene\Entity.h">

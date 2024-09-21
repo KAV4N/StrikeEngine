@@ -146,6 +146,8 @@ namespace StrikeEngine {
         return lightEntity;
     }
 
+    
+
     void Scene::SubmitMesh() {
         auto viewMesh = m_Registry.view<MeshComponent, TransformComponent, ParentComponent, VisibleTag>();
 

@@ -12,10 +12,13 @@ namespace StrikeEngine {
     class Entity {
     public:
 
-        Entity(entt::entity handle, Scene* scene)
+        Entity(entt::entity handle = entt::null, Scene* scene = nullptr)
             : m_EntityHandle(handle), m_Scene(scene) {}
 
-
+        void Set(Entity entity) {
+            m_EntityHandle = entity.GetHandle();
+            m_Scene = entity.GetScene();
+        }
 
         template<typename T, typename... Args>
         T& AddComponent(Args&&... args) {
@@ -44,6 +47,7 @@ namespace StrikeEngine {
         }
 
         inline entt::entity GetHandle() const { return m_EntityHandle; }
+        inline Scene* GetScene() const { return m_Scene; }
 
     private:
         entt::entity m_EntityHandle;

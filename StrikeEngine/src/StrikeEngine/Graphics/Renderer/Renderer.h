@@ -10,7 +10,7 @@
 #include "StrikeEngine/Graphics/Core/Texture.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponents.h"
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include <StrikeEngine/Scene/Components/ModelComponent.h>
 #include "StrikeEngine/Graphics/Core/Skybox.h"
 #include "StrikeEngine/Scene/RenderCommand.h"
