@@ -41,6 +41,9 @@ namespace StrikeEngine {
 
 		glm::vec2 m_Position;
 		glm::vec2 m_Size;
+
+
+
 	};
 }
 

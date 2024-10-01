@@ -88,7 +88,7 @@ namespace StrikeEngine {
     }
 
     void ShadowRenderer::UpdateDirectionalLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
-        
+        /*
         auto& light = entity.GetComponent<DirectionalLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
 
@@ -114,10 +114,12 @@ namespace StrikeEngine {
         glClear(GL_DEPTH_BUFFER_BIT);
         Render(renderQueue, shadowCaster.lightSpaceMatrix);
         glDisable(GL_SCISSOR_TEST);
+        */
         
     }
 
     void ShadowRenderer::UpdateSpotLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue) {
+      /*
         auto& light = entity.GetComponent<SpotLightComponent>();
         auto& shadowCaster = entity.GetComponent<ShadowCasterComponent>();
 
@@ -143,6 +145,7 @@ namespace StrikeEngine {
         glClear(GL_DEPTH_BUFFER_BIT);
         Render(renderQueue, shadowCaster.lightSpaceMatrix);
         glDisable(GL_SCISSOR_TEST);
+        */
     }
 
     void ShadowRenderer::UpdatePointLightShadowMap(const Entity& entity, std::unordered_map<Shader*, std::vector<RenderCommand>>& renderQueue)

@@ -12,8 +12,11 @@ namespace StrikeEngine {
         glm::mat4 Transform;
     };
 
+    struct LabelComponent {
+        std::string Label = "default";
+    };
 
-    struct VisibleTag {
+    struct VisibleComponent {
         bool IsVisible = true;
     };
 
@@ -29,17 +32,15 @@ namespace StrikeEngine {
 
     };
 
-    struct ParentComponent {
-        Entity Parent;
-
-        ParentComponent(Entity par) 
-            : Parent(par)
-        {
-        }
-
+    struct RootModelComponent {
+        std::vector<Entity> Children;
     };
 
-    struct ChildrenComponent {
+    struct ModelComponent {
         std::vector<Entity> Children;
+    };
+
+    struct ParentComponent {
+        Entity Parent;
     };
 }

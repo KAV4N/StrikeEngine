@@ -7,18 +7,18 @@ namespace StrikeEngine {
     public:
         Camera(float aspectRatio, float fov, float nearPlane, float farPlane);
 
-        // Existing setters
+
         void SetAspectRatio(float aspectRatio);
         void SetFOV(float fov);
         void SetClipPlanes(float nearPlane, float farPlane);
         void SetPosition(const glm::vec3& position);
         void SetRotation(const glm::vec3& rotation);
 
-        // New setters
+
         void SetNearPlane(float nearPlane);
         void SetFarPlane(float farPlane);
 
-        // Existing getters
+
         const glm::mat4& GetProjectionMatrix() const;
         const glm::mat4& GetViewMatrix() const;
         glm::vec3 GetForwardDirection() const;
@@ -26,7 +26,7 @@ namespace StrikeEngine {
         glm::vec3 GetUpDirection() const;
         float GetAspectRatio() const;
 
-        // New getters
+
         float GetFOV() const;
         float GetNearPlane() const;
         float GetFarPlane() const;

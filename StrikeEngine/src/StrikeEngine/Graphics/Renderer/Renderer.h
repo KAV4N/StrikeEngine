@@ -36,14 +36,16 @@ namespace StrikeEngine {
 
     public:
         void Init();
-        void Resize(GLuint width, GLuint height);
+        static void Resize(GLuint width, GLuint height);
         void Present(Camera* camera);
         void DrawTexturedQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture);
+        void DrawScreenQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture);
     private:
         Renderer();
         ~Renderer();
 
         void InitQuad();
+        void InitScreenQuad();
 
         void RenderSkybox(const glm::mat4& cameraView, const glm::mat4& cameraProjection);
         void RenderScene(const glm::mat4& viewProjection, const glm::vec3& cameraPosition);
@@ -55,5 +57,13 @@ namespace StrikeEngine {
 
         GLuint m_QuadVAO, m_QuadVBO, m_QuadIBO;
         Shader* m_QuadShader;
+
+
+        GLuint VAO, VBO, EBO;
+        Shader* m_QuadScreenShader;
+
+
+        GLuint m_Width = 1280;
+        GLuint m_Height = 720;
     };
 }

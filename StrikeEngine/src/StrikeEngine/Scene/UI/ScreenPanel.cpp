@@ -42,6 +42,7 @@ namespace StrikeEngine {
 
 	void ScreenPanel::OnRender()
 	{
+		Renderer::Resize(m_FrameBuffer->GetWidth(), m_FrameBuffer->GetHeight());
 		m_FrameBuffer->Bind();
 		Renderer::Get()->Present(m_Camera);
 		for (Layer* widget : m_WidgetStack)

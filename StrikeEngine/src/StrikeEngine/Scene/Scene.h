@@ -39,9 +39,7 @@ namespace StrikeEngine {
 
 
         Entity CreateEntity(Model* model, const std::string& name = std::string());
-        std::vector<Entity> GetAllEntitiesWithModelComponent() const;
         Entity CreateShadowCaster(Entity lightEntity);
-
 
         void RemoveEntity(entt::entity entity);
 
@@ -50,7 +48,8 @@ namespace StrikeEngine {
 
         inline const entt::registry& GetRegistry() const { return m_Registry; }
         inline ScreenPanel* GetActiveView() { return m_ActiveView; }
-        
+    protected:
+
     private:
         Entity CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity);
         Entity CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius);
@@ -59,6 +58,10 @@ namespace StrikeEngine {
         void RenderScene(FrameBuffer* frameBuffer);
         void SubmitMesh();
         void SubmitSkybox();
+
+        void SubmitModelMesh(const std::vector<Entity>& modelChildren, const glm::mat4& rootTransform);
+        void SubmitLight(const Entity& entity, const glm::mat4& worldTransform);
+
 
 
     private:

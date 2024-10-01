@@ -1,4 +1,5 @@
 #include "strikepch.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "LightManager.h"
 #include "StrikeEngine/Graphics/Core/Shader.h" 
 #include <glad/glad.h>
@@ -6,6 +7,7 @@
 #include "StrikeEngine/Graphics/Renderer/Renderer.h" 
 #include "StrikeEngine/Graphics/Core/VisibilityCuller.h"
 #include "StrikeEngine/Scene/World.h"
+#include <glm/gtx/euler_angles.hpp>
 
 namespace StrikeEngine {
 
@@ -34,6 +36,16 @@ namespace StrikeEngine {
             delete s_Instance;
             s_Instance = nullptr;
         }
+    }
+
+    void LightManager::SetPointLightsDirty() {
+        s_Instance->m_PointDirty = true;
+    }
+    void LightManager::SetSpotLightsDirty() {
+        s_Instance->m_SpotDirty = true;
+    }
+    void LightManager::SetDirectionalLightsDirty() {
+        s_Instance->m_DirectionalDirty = true;
     }
 
     Entity LightManager::CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity)
@@ -87,7 +99,7 @@ namespace StrikeEngine {
 
         glGenBuffers(1, &m_SpotSSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SpotSSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(SpotLightComponent), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(SpotLightData), nullptr, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SPOT_LIGHT_BUFFER_BINDING, m_SpotSSBO);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -109,12 +121,22 @@ namespace StrikeEngine {
     {
         if (m_PointDirty) {
             auto pointView = registry.view<PointLightComponent>();
-            std::vector<PointLightComponent> pointLights;
+            std::vector<PointLightData> pointLights;
             for (auto entity : pointView) {
-                pointLights.push_back(registry.get<PointLightComponent>(entity));
+                PointLightData pointData;
+                auto& lightComp = registry.get<PointLightComponent>(entity);
+                auto& transformComp = registry.get<TransformComponent>(entity);
+
+                pointData.color = lightComp.color;
+                pointData.intensity = lightComp.intensity;
+                pointData.radius = lightComp.radius;
+                pointData.position = transformComp.Position;
+ 
+
+                pointLights.push_back(pointData);
             }
 
-            size_t bufferSize = m_PointCount * sizeof(PointLightComponent);
+            size_t bufferSize = m_PointCount * sizeof(PointLightData);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_PointSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, pointLights.data(), GL_DYNAMIC_DRAW);
@@ -127,11 +149,25 @@ namespace StrikeEngine {
     {
         if (m_DirectionalDirty) {
             auto directionalView = registry.view<DirectionalLightComponent>();
-            std::vector<DirectionalLightComponent> directionalLights;
+            std::vector<DirectionalLightData> directionalLights;
             for (auto entity : directionalView) {
-                directionalLights.push_back(registry.get<DirectionalLightComponent>(entity));
+                DirectionalLightData dirData;
+                auto& lightComp = registry.get<DirectionalLightComponent>(entity);
+                auto& transformComp = registry.get<TransformComponent>(entity);
+
+                glm::mat4 rotationMatrix = glm::eulerAngleYXZ(
+                    glm::radians(transformComp.Rotation.y),
+                    glm::radians(transformComp.Rotation.x),
+                    glm::radians(transformComp.Rotation.z)
+                );
+
+                dirData.color = lightComp.color;
+                dirData.intensity = lightComp.intensity;
+                dirData.direction = glm::vec3(rotationMatrix * glm::vec4(0, 0, -1, 0));
+
+                directionalLights.push_back(dirData);
             }
-            size_t bufferSize = m_DirectionalCount * sizeof(DirectionalLightComponent);
+            size_t bufferSize = m_DirectionalCount * sizeof(DirectionalLightData);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_DirectionalSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, directionalLights.data(), GL_DYNAMIC_DRAW);
@@ -143,13 +179,32 @@ namespace StrikeEngine {
     void LightManager::UpdateSSBOSpot(const entt::registry& registry)
     {
         if (m_SpotDirty) {
-            auto spotView = registry.view<SpotLightComponent>();
-            std::vector<SpotLightComponent> spotLights;
+            auto spotView = registry.view<SpotLightComponent, TransformComponent>();
+            std::vector<SpotLightData> spotLights;
             for (auto entity : spotView) {
-                spotLights.push_back(registry.get<SpotLightComponent>(entity));
+                SpotLightData spotData;
+                auto& lightComp = registry.get<SpotLightComponent>(entity);
+                auto& transformComp = registry.get<TransformComponent>(entity);
+                
+                glm::mat4 rotationMatrix = glm::eulerAngleYXZ(
+                    glm::radians(transformComp.Rotation.y), 
+                    glm::radians(transformComp.Rotation.x), 
+                    glm::radians(transformComp.Rotation.z)
+                );
+
+                spotData.color = lightComp.color;
+                spotData.intensity = lightComp.intensity;
+                spotData.cutoff = lightComp.cutoff;
+
+                spotData.position = transformComp.Position;
+                spotData.direction = glm::vec3(rotationMatrix * glm::vec4(0, 0, -1, 0));
+
+
+                spotLights.push_back(spotData);
+
             }
 
-            size_t bufferSize = m_SpotCount * sizeof(SpotLightComponent);
+            size_t bufferSize = m_SpotCount * sizeof(SpotLightData);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SpotSSBO);
             glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSize, spotLights.data(), GL_DYNAMIC_DRAW);

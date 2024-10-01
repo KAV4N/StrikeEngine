@@ -17,6 +17,7 @@ public:
 
 private:
 	StrikeEngine::Entity m_TestEntity1;
+	StrikeEngine::Entity m_TestEntity2;
 	StrikeEngine::World* m_World;
 	float m_LastFrameTime;
 };

@@ -36,7 +36,12 @@ namespace StrikeEngine {
         return s_Instance;
     }
 
-
+    void World::AddScene(Scene* scene) {
+        m_Scenes.push_back(scene);
+        if (m_ActiveScene == nullptr) {
+            m_ActiveScene = scene;
+        }
+    }
 
     void World::AddScene() {
         Scene* scene = new Scene();
@@ -61,9 +66,11 @@ namespace StrikeEngine {
 
     void World::OnRender() {
         if (m_ActiveScene) {
+            
             m_ActiveScene->RenderScene(m_FrameBuffer);
+            Renderer::Resize(m_Width, m_Height);
             Renderer::BindDefaultFrameBuffer();
-            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f,0.0f), glm::vec2(1.f, 1.f), m_FrameBuffer->GetColorAttachment());
+            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f, 0.0f), glm::vec2(1.f, 1.f), m_FrameBuffer->GetColorAttachment());
         }
 
     }

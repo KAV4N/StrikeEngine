@@ -10,7 +10,7 @@ namespace StrikeEngine {
         UpdateViewMatrix();
     }
 
-    // Existing setters
+
     void Camera::SetAspectRatio(float aspectRatio) {
         m_AspectRatio = aspectRatio;
         UpdateProjectionMatrix();
@@ -37,7 +37,7 @@ namespace StrikeEngine {
         UpdateViewMatrix();
     }
 
-    // New setters
+ 
     void Camera::SetNearPlane(float nearPlane) {
         m_NearPlane = nearPlane;
         UpdateProjectionMatrix();
@@ -48,7 +48,7 @@ namespace StrikeEngine {
         UpdateProjectionMatrix();
     }
 
-    // Existing getters
+
     const glm::mat4& Camera::GetProjectionMatrix() const {
         return m_ProjectionMatrix;
     }
@@ -73,7 +73,7 @@ namespace StrikeEngine {
         return m_AspectRatio;
     }
 
-    // New getters
+
     float Camera::GetFOV() const {
         return m_Fov;
     }
@@ -98,7 +98,7 @@ namespace StrikeEngine {
         return m_WorldUp;
     }
 
-    // Existing private methods
+
     void Camera::UpdateProjectionMatrix() {
         m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), GetAspectRatio(), m_NearPlane, m_FarPlane);
     }

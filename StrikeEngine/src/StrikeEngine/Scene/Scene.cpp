@@ -1,4 +1,5 @@
 #include "strikepch.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "Scene.h"
 #include "StrikeEngine/Graphics/Renderer/Renderer.h" 
 
@@ -8,6 +9,7 @@
 #include "StrikeEngine/Scene/RenderCommand.h"
 
 #include "StrikeEngine/Scene/Systems/TransformSystem.h"
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace StrikeEngine {
 
@@ -63,54 +65,30 @@ namespace StrikeEngine {
         }
         return shadowCasters;
     }
-    Entity Scene::CreateEntity(Model* model, const std::string& name) {
-        // Create the parent entity
 
+    Entity Scene::CreateEntity(Model* model, const std::string& name) {
         Entity parentEntity(m_Registry.create(), this);
 
-        // Add TransformComponent and ParentComponent to parent entity
         parentEntity.AddComponent<TransformComponent>();
-        parentEntity.AddComponent<VisibleTag>();
-
-        parentEntity.AddComponent<ParentComponent>(Entity(entt::null, this));
-        parentEntity.AddComponent<ChildrenComponent>();
+        parentEntity.AddComponent<VisibleComponent>();
+        parentEntity.AddComponent<RootModelComponent>();
 
         Shader* defaultShader = ShaderManager::Get()->GetShader(ShaderManager::Get()->GetDefaultShader());
-        // Add children entities based on the model
+
         for (Mesh* mesh : model->GetMeshes()) {
             Entity childEntity(m_Registry.create(), this);
 
             childEntity.AddComponent<TransformComponent>();
             childEntity.AddComponent<MeshComponent>(mesh, defaultShader);
-            childEntity.AddComponent<VisibleTag>();
-
-            // Add ParentComponent to child entity
+            childEntity.AddComponent<VisibleComponent>();
             childEntity.AddComponent<ParentComponent>(parentEntity);
-            childEntity.AddComponent<ChildrenComponent>();
 
-            // Add child to parent's ChildrenComponent list
-            auto& children = parentEntity.GetComponent<ChildrenComponent>().Children;
+            auto& children = parentEntity.GetComponent<RootModelComponent>().Children;
             children.push_back(childEntity);
         }
 
         return parentEntity;
     }
-
-
-    std::vector<Entity> Scene::GetAllEntitiesWithModelComponent() const {
-        /*
-        std::vector<Entity> entities;
-        auto view = m_Registry.view<ModelComponent>();
-        for (auto entity : view) {
-            entities.emplace_back(entity, const_cast<Scene*>(this));
-        }
-        return entities;
-        */
-        std::vector<Entity> test;
-        return test;
-    }
-
-
 
     void Scene::RemoveEntity(entt::entity entity) {
         m_Registry.destroy(entity);
@@ -118,19 +96,28 @@ namespace StrikeEngine {
 
     Entity Scene::CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity) {
         Entity entity(m_Registry.create(), this);
-        entity.AddComponent<DirectionalLightComponent>(direction, color, intensity);
+        entity.AddComponent<DirectionalLightComponent>(color, intensity);
+        entity.AddComponent<VisibleComponent>();
+        entity.AddComponent<ParentComponent>();
+        entity.AddComponent<TransformComponent>(glm::vec3(0.f), direction);
         return entity;
     }
 
     Entity Scene::CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius) {
         Entity entity(m_Registry.create(), this);
-        entity.AddComponent<PointLightComponent>(position, color, intensity, radius);
+        entity.AddComponent<PointLightComponent>(color, intensity, radius);
+        entity.AddComponent<VisibleComponent>();
+        entity.AddComponent<ParentComponent>();
+        entity.AddComponent<TransformComponent>(position);
         return entity;
     }
 
     Entity Scene::CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity) {
         Entity entity(m_Registry.create(), this);
-        entity.AddComponent<SpotLightComponent>(position, direction, cutoff, color, intensity);
+        entity.AddComponent<SpotLightComponent>(color, intensity, cutoff);
+        entity.AddComponent<VisibleComponent>();
+        entity.AddComponent<ParentComponent>();
+        entity.AddComponent<TransformComponent>(position, direction);
         return entity;
     }
 
@@ -146,26 +133,53 @@ namespace StrikeEngine {
         return lightEntity;
     }
 
-    
+    void Scene::SubmitModelMesh(const std::vector<Entity>& modelChildren, const glm::mat4& rootTransform) {
+        for (const Entity& entity : modelChildren) {
+            const auto& entityTransformComp = entity.GetComponent<TransformComponent>();
+            glm::mat4 entityTransformMatrix = TransformSystem::CalculateTransformMatrix(entityTransformComp);
+            glm::mat4 worldTransform = rootTransform * entityTransformMatrix;
+
+            if (entity.HasComponent<ModelComponent>()) {
+                SubmitModelMesh(entity.GetComponent<ModelComponent>().Children, worldTransform);
+            }
+            
+            if (entity.HasComponent<MeshComponent>()) {
+                const auto& meshComp = entity.GetComponent<MeshComponent>();
+                Mesh* mesh = meshComp.MeshObj;
+                Shader* shader = meshComp.ShaderObj;
+
+                Renderer::SubmitMesh(shader, { mesh, worldTransform });
+            }
+
+            if (entity.HasComponent<SpotLightComponent>()) {
+                
+                auto& light = entity.GetComponent<SpotLightComponent>();
+                auto& lightTransf = entity.GetComponent<TransformComponent>(); 
+
+                glm::mat4 lightModelTransform = TransformSystem::CalculateTransformMatrix(lightTransf);
+                glm::mat4 test = rootTransform * lightModelTransform;
+
+                lightTransf.Position = glm::vec3(rootTransform[3]) * lightTransf.Position;
+
+
+                //ightTransf.Rotation = glm::eulerAngles(glm::quat_cast(rotationMatrix * glm::mat3(TransformSystem::CalculateRotationMatrix(lightTransf))));
+
+                //StrikeEngine::LightManager::SetSpotLightsDirty();
+
+            }
+        }
+    }
+
 
     void Scene::SubmitMesh() {
-        auto viewMesh = m_Registry.view<MeshComponent, TransformComponent, ParentComponent, VisibleTag>();
+        auto rootView = m_Registry.view<TransformComponent, RootModelComponent, VisibleComponent>();
+        for (auto entity : rootView) {
+            const auto& rootTransform = rootView.get<TransformComponent>(entity);
+            const auto& rootModelComp = rootView.get<RootModelComponent>(entity);
 
-        for (auto meshEntity : viewMesh) {
-            auto& meshComp = viewMesh.get<MeshComponent>(meshEntity);
-
-            Mesh* mesh = meshComp.MeshObj;
-            Shader* shader = meshComp.ShaderObj;
-
-            Entity entity(meshEntity, static_cast<Scene*>(this));
-
-            glm::mat4 transMesh = TransformSystem::CalculateTransformMatrix(entity);
-            glm::mat4 transWorld = TransformSystem::CalculateTransformMatrix(viewMesh.get<ParentComponent>(meshEntity).Parent);
-
-            glm::mat4 transMeshWorld = transWorld * transMesh;
-            Renderer::SubmitMesh(shader, {mesh, transMeshWorld });
+            SubmitModelMesh(rootModelComp.Children,
+                TransformSystem::CalculateTransformMatrix(rootTransform));
         }
-       
     }
 
     void Scene::SubmitSkybox() {
@@ -187,8 +201,10 @@ namespace StrikeEngine {
     }
 
     void Scene::RenderScene(FrameBuffer* frameBuffer) {
+        Renderer::Get()->Resize(m_ActiveView->GetFrameBuffer()->GetWidth(), m_ActiveView->GetFrameBuffer()->GetHeight());
         m_ActiveView->OnRender();
-
+        
+        Renderer::Resize(frameBuffer->GetWidth(), frameBuffer->GetHeight());
         frameBuffer->Bind();
         m_ActiveView->CompositeView();
         frameBuffer->Unbind();

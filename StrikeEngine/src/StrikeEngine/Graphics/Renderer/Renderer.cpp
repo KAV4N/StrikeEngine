@@ -21,7 +21,8 @@ namespace StrikeEngine {
 
     Renderer::Renderer()
         : m_Skybox(nullptr),
-        m_QuadShader(nullptr)
+        m_QuadShader(nullptr),
+        m_QuadScreenShader(nullptr)
     {
     }
 
@@ -56,8 +57,9 @@ namespace StrikeEngine {
         LightManager::Get()->BindLights();
 
         m_QuadShader = ShaderManager::Get()->GetShader("ScreenShader");
+        //m_QuadScreenShader = ShaderManager::Get()->GetShader("QuadScreen");
         InitQuad();
-
+        //InitScreenQuad();
         //glViewport(0, 0, 1280, 720);
 
         glEnable(GL_DEPTH_TEST);
@@ -91,6 +93,43 @@ namespace StrikeEngine {
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
         glBindVertexArray(0);
     
+    }
+
+    void Renderer::InitScreenQuad()
+    {
+        float aspect_ratio = 16.0f / 9.0f;
+        float quad_height = 1.0f;
+        float quad_width = quad_height * aspect_ratio;
+        float vertices[] = {
+            // positions        // texture coords
+            -quad_width / 2, -quad_height / 2, 0.0f,  0.0f, 0.0f,
+             quad_width / 2, -quad_height / 2, 0.0f,  1.0f, 0.0f,
+             quad_width / 2,  quad_height / 2, 0.0f,  1.0f, 1.0f,
+            -quad_width / 2,  quad_height / 2, 0.0f,  0.0f, 1.0f
+        };
+        unsigned int indices[] = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        // Set vertex attribute pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
     }
     
 
@@ -177,6 +216,33 @@ namespace StrikeEngine {
 
         m_QuadShader->Unbind();
     }
+    /*
+    void Renderer::DrawScreenQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture)
+    {
+
+        m_QuadScreenShader->Bind();
+        float aspect = (float)m_Width / (float)m_Height;
+        glm::mat4 projection = glm::ortho(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+        m_QuadScreenShader->LoadUniform("projection", projection);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        m_QuadScreenShader->LoadUniform("model", model);
+
+
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        m_QuadShader->LoadUniform("texture", 0);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
+
+
+        m_QuadScreenShader->Unbind();
+
+    }*/
 
     void Renderer::BindDefaultFrameBuffer() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -189,7 +255,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::Resize(GLuint width, GLuint height) {
-       // glViewport(0, 0, width, height);
+        glViewport(0, 0, width, height);
     }
 
 
