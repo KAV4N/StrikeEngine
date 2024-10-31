@@ -8,7 +8,7 @@
 
 namespace StrikeEngine {
 
-    class World : Layer{
+    class World : Layer {
     public:
         static void Create();
         static World* Get();
@@ -27,7 +27,7 @@ namespace StrikeEngine {
             s_Instance->m_Height = height;
         };
     private:
-        World(GLuint resX=1920, GLuint resY=1080);
+        World(GLuint resX = 1920, GLuint resY = 1080);
         ~World();
 
         static World* s_Instance;

@@ -7,7 +7,7 @@ namespace StrikeEngine {
 
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer"),
-		m_ViewportPanel(new ScreenPanel()),
+		m_ViewportPanel(new RenderLayer()),
 		m_CameraController(m_ViewportPanel->GetCamera())
 	{
 	}

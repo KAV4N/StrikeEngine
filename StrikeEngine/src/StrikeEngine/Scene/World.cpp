@@ -7,14 +7,14 @@ namespace StrikeEngine {
 
     World* World::s_Instance = nullptr;
 
-    World::World(GLuint resX, GLuint resY) 
+    World::World(GLuint resX, GLuint resY)
         : m_ActiveScene(nullptr),
         m_FrameBuffer(new FrameBuffer(resX, resY))
-    
+
     {
         Renderer::Create();
         Renderer::Get()->Init();
-        
+
     }
 
     World::~World() {
@@ -32,7 +32,7 @@ namespace StrikeEngine {
 
 
     World* World::Get() {
-    
+
         return s_Instance;
     }
 
@@ -66,7 +66,7 @@ namespace StrikeEngine {
 
     void World::OnRender() {
         if (m_ActiveScene) {
-            
+
             m_ActiveScene->RenderScene(m_FrameBuffer);
             Renderer::Resize(m_Width, m_Height);
             Renderer::BindDefaultFrameBuffer();

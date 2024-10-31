@@ -77,6 +77,7 @@ namespace StrikeEngine {
         }
 
         const std::vector<T>& GetAllLayers() const { return m_Layers; }
+        const std::vector<T>& GetAllActiveLayers() const { return m_ActiveLayers; }
 
         typename std::vector<T>::iterator begin() { return m_ActiveLayers.begin(); }
         typename std::vector<T>::iterator end() { return m_ActiveLayers.end(); }

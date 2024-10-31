@@ -7,7 +7,7 @@
 
 namespace StrikeEngine {
   
-    struct CameraComponent {
+    struct CameraComponentV2 {
     public:
         GLuint resX, resY;
 
@@ -24,7 +24,7 @@ namespace StrikeEngine {
         float nearPlane;
         float farPlane;
 
-        CameraComponent(GLuint resX, GLuint resY, float fov, float nearPlane, float farPlane, int numClusters = 4)
+        CameraComponentV2(GLuint resX, GLuint resY, float fov, float nearPlane, float farPlane, int numClusters = 4)
             : resX(resX), resY(resY), fov(fov), nearPlane(nearPlane), farPlane(farPlane)
         {
 
@@ -32,7 +32,7 @@ namespace StrikeEngine {
             UpdateViewMatrix(glm::vec3(0.0f), glm::vec3(0.0f));
         }
 
-        ~CameraComponent() {
+        ~CameraComponentV2() {
 
         }
 

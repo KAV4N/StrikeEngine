@@ -8,9 +8,11 @@
 
 namespace StrikeEngine {
     class TransformSystem {
+
+    /*
     public:
         static glm::mat4 CalculateTransformMatrix(const TransformComponent& transformComponent) {
-
+            
             const auto& position = transformComponent.Position;
             const auto& rotation = transformComponent.Rotation;
             const auto& scale = transformComponent.Scale;
@@ -32,6 +34,6 @@ namespace StrikeEngine {
 
             return rotationMatrix;
         }
-
+        */
     };
 }

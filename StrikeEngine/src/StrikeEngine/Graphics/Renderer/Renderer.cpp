@@ -8,7 +8,7 @@
 #include "StrikeEngine/Scene/Components/ModelComponent.h"
 #include "StrikeEngine/Graphics/Core/VisibilityCuller.h"
 
-#include "StrikeEngine/Graphics/Renderer/ShadowRenderer.h"
+//#include "StrikeEngine/Graphics/Renderer/ShadowRenderer.h"
 // TODO: REMOVE AFTER TESTING
 #include <StrikeEngine/Scene/Systems/TransformSystem.h>
 #include <imgui.h>
@@ -52,7 +52,7 @@ namespace StrikeEngine {
         ModelManager::Create();
         ShaderManager::Create();
         LightManager::Create();
-        ShadowRenderer::Create();
+        //ShadowRenderer::Create();
 
         LightManager::Get()->BindLights();
 

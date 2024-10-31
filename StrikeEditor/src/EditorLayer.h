@@ -21,7 +21,7 @@ namespace StrikeEngine {
 		void OnEvent(Event& e) override;
 	
 	private:
-		ScreenPanel* m_ViewportPanel;
+		RenderLayer* m_ViewportPanel;
 		CameraController m_CameraController;
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 

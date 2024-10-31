@@ -66,4 +66,3 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Release>:STRIKE_RELEASE>
     $<$<CONFIG:Dist>:STRIKE_DIST>
 )
-

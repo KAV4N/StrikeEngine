@@ -102,6 +102,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::BeginScene(CameraComponent* camera) {
+
         LightManager::Get()->BindLightsToShader();
         RenderShadowMaps();
 

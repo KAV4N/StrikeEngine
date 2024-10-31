@@ -16,6 +16,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/StrikeEngine/vendor/spdlog/include
     ${CMAKE_SOURCE_DIR}/StrikeEngine/src
+    ${CMAKE_SOURCE_DIR}/StrikeEngine/src/scripts
     ${CMAKE_SOURCE_DIR}/StrikeEngine/vendor
     ${CMAKE_SOURCE_DIR}/StrikeEngine/vendor/glm
     ${CMAKE_SOURCE_DIR}/StrikeEngine/vendor/imgui

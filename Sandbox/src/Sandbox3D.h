@@ -14,7 +14,7 @@ public:
 	void OnUpdate(float deltaTime) override;
 	virtual void OnImGuiRender() override;
 	void OnEvent(StrikeEngine::Event& event) override;
-
+	void  TestEntityMethods();
 private:
 	StrikeEngine::Entity m_TestEntity1;
 	StrikeEngine::Entity m_TestEntity2;

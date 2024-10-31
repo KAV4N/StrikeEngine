@@ -130,7 +130,7 @@ namespace StrikeEngine {
                 pointData.color = lightComp.color;
                 pointData.intensity = lightComp.intensity;
                 pointData.radius = lightComp.radius;
-                pointData.position = transformComp.Position;
+                pointData.position = transformComp.position;
  
 
                 pointLights.push_back(pointData);
@@ -156,9 +156,9 @@ namespace StrikeEngine {
                 auto& transformComp = registry.get<TransformComponent>(entity);
 
                 glm::mat4 rotationMatrix = glm::eulerAngleYXZ(
-                    glm::radians(transformComp.Rotation.y),
-                    glm::radians(transformComp.Rotation.x),
-                    glm::radians(transformComp.Rotation.z)
+                    glm::radians(transformComp.rotation.y),
+                    glm::radians(transformComp.rotation.x),
+                    glm::radians(transformComp.rotation.z)
                 );
 
                 dirData.color = lightComp.color;
@@ -187,16 +187,16 @@ namespace StrikeEngine {
                 auto& transformComp = registry.get<TransformComponent>(entity);
                 
                 glm::mat4 rotationMatrix = glm::eulerAngleYXZ(
-                    glm::radians(transformComp.Rotation.y), 
-                    glm::radians(transformComp.Rotation.x), 
-                    glm::radians(transformComp.Rotation.z)
+                    glm::radians(transformComp.rotation.y),
+                    glm::radians(transformComp.rotation.x),
+                    glm::radians(transformComp.rotation.z)
                 );
 
                 spotData.color = lightComp.color;
                 spotData.intensity = lightComp.intensity;
                 spotData.cutoff = lightComp.cutoff;
 
-                spotData.position = transformComp.Position;
+                spotData.position = transformComp.position;
                 spotData.direction = glm::vec3(rotationMatrix * glm::vec4(0, 0, -1, 0));
 
 
