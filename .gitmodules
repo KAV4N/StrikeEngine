@@ -1,0 +1,21 @@
+[submodule "StrikeEngine/vendor/spdlog"]
+	path = StrikeEngine/vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "StrikeEngine/vendor/GLFW"]
+	path = StrikeEngine/vendor/GLFW
+	url = https://github.com/glfw/glfw.git
+[submodule "StrikeEngine/vendor/imgui"]
+	path = StrikeEngine/vendor/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "StrikeEngine/vendor/glm"]
+	path = StrikeEngine/vendor/glm
+	url = https://github.com/g-truc/glm
+[submodule "StrikeEngine/vendor/stb"]
+	path = StrikeEngine/vendor/stb
+	url = https://github.com/nothings/stb.git
+[submodule "StrikeEngine/vendor/assimp"]
+	path = StrikeEngine/vendor/assimp
+	url = https://github.com/AminAliari/assimp.git
+[submodule "StrikeEngine/vendor/entt"]
+	path = StrikeEngine/vendor/entt
+	url = https://github.com/skypjack/entt.git
