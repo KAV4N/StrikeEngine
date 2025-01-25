@@ -1,76 +1,114 @@
 #include "strikepch.h"
 #include "Material.h"
-#include "Shader.h"
-#include "Texture.h"
+#include <glad/glad.h>
 
 namespace StrikeEngine {
+
     Material::Material(std::shared_ptr<Shader> shader)
-        : m_Shader(shader), m_NextTextureUnit(0), m_NextStorageBuffer(0) {
+        : m_Shader(std::move(shader)) {
     }
 
-    void Material::Bind() {
+    void Material::Apply() {
+        if (!m_Shader) return;
+
         m_Shader->Bind();
-        UploadUniforms();
-        BindTextures();
-        BindStorageBuffers();
-    }
 
-    void Material::Unbind() {
-        m_Shader->Unbind();
-    }
+        for (const auto& [name, value] : m_Uniforms) {
+            std::visit(UniformVisitor{ m_Shader.get(), name }, value);
+        }
 
-    void Material::SetTexture(const std::string& name, std::shared_ptr<Texture> texture) {
-        TextureValue textureValue;
-        textureValue.texture = std::move(texture);
-        textureValue.textureUnit = m_NextTextureUnit++;
-        m_Textures[name] = textureValue;
-    }
 
-    void Material::SetStorageBuffer(const std::string& name, GLuint bufferId) {
-        StorageBufferValue buffer;
-        buffer.bufferId = bufferId;
-        buffer.bindingPoint = m_NextStorageBuffer++;
-        m_StorageBuffers[name] = buffer;
-    }
+        for (const auto& [samplerName, texture] : m_Textures) {
+            if (texture) {
+                texture->Bind();
+                GLuint unitIndex = texture->GetUnit();
+                m_Shader->SetInt(samplerName, unitIndex);
+            }
+        }
 
-    void Material::UploadUniforms() {
-        const std::unordered_map<UniformType, std::function<void(const std::string&, const std::variant<float, glm::vec2, glm::vec3, glm::vec4,
-            glm::mat2, glm::mat3, glm::mat4,
-            int, glm::ivec2, glm::ivec3, glm::ivec4,
-            bool, glm::bvec2, glm::bvec3, glm::bvec4>&)>> uniformSetters = {
-                {UniformType::Float,   [this](const std::string& name, const auto& value) { m_Shader->SetFloat(name, std::get<float>(value)); }},
-                {UniformType::Vec2,    [this](const std::string& name, const auto& value) { m_Shader->SetVec2(name, std::get<glm::vec2>(value)); }},
-                {UniformType::Vec3,    [this](const std::string& name, const auto& value) { m_Shader->SetVec3(name, std::get<glm::vec3>(value)); }},
-                {UniformType::Vec4,    [this](const std::string& name, const auto& value) { m_Shader->SetVec4(name, std::get<glm::vec4>(value)); }},
-                {UniformType::Mat2,    [this](const std::string& name, const auto& value) { m_Shader->SetMat2(name, std::get<glm::mat2>(value)); }},
-                {UniformType::Mat3,    [this](const std::string& name, const auto& value) { m_Shader->SetMat3(name, std::get<glm::mat3>(value)); }},
-                {UniformType::Mat4,    [this](const std::string& name, const auto& value) { m_Shader->SetMat4(name, std::get<glm::mat4>(value)); }},
-                {UniformType::Int,     [this](const std::string& name, const auto& value) { m_Shader->SetInt(name, std::get<int>(value)); }},
-                {UniformType::IVec2,   [this](const std::string& name, const auto& value) { m_Shader->SetIVec2(name, std::get<glm::ivec2>(value)); }},
-                {UniformType::IVec3,   [this](const std::string& name, const auto& value) { m_Shader->SetIVec3(name, std::get<glm::ivec3>(value)); }},
-                {UniformType::IVec4,   [this](const std::string& name, const auto& value) { m_Shader->SetIVec4(name, std::get<glm::ivec4>(value)); }},
-                {UniformType::Bool,    [this](const std::string& name, const auto& value) { m_Shader->SetBool(name, std::get<bool>(value)); }},
-                {UniformType::BVec2,   [this](const std::string& name, const auto& value) { m_Shader->SetBVec2(name, std::get<glm::bvec2>(value)); }},
-                {UniformType::BVec3,   [this](const std::string& name, const auto& value) { m_Shader->SetBVec3(name, std::get<glm::bvec3>(value)); }},
-                {UniformType::BVec4,   [this](const std::string& name, const auto& value) { m_Shader->SetBVec4(name, std::get<glm::bvec4>(value)); }}
-        };
-
-        // Iterate through unique uniforms instead of m_UniformStorage
-        for (const auto& [name, uniform] : m_UniqueUniforms) {
-            uniformSetters.at(uniform.type)(uniform.name, uniform.value);
+        for (const auto& [name, binding] : m_StorageBuffers) {
+            m_Shader->SetStorageBuffer(name, binding.BufferId, binding.BindingPoint);
         }
     }
 
-    void Material::BindTextures() {
-        for (const auto& [name, textureValue] : m_Textures) {
-            textureValue.texture->Bind(textureValue.textureUnit);
-            m_Shader->SetTexture(name, textureValue.textureUnit);
-        }
+    void Material::AddTexture(const std::string& samplerName, std::shared_ptr<Texture> texture) {
+        m_Textures.emplace_back(samplerName, std::move(texture));
     }
 
-    void Material::BindStorageBuffers() {
-        for (const auto& [name, buffer] : m_StorageBuffers) {
-            m_Shader->SetStorageBuffer(name, buffer.bufferId, buffer.bindingPoint);
-        }
+    void Material::AddStorageBuffer(const std::string& name, GLuint bufferId, GLuint bindingPoint) {
+        m_StorageBuffers[name] = { bufferId, bindingPoint };
     }
+
+    std::shared_ptr<Shader> Material::GetShader() const {
+        return m_Shader;
+    }
+
+    void Material::UniformVisitor::operator()(int value) const {
+        ShaderPtr->SetInt(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(float value) const {
+        ShaderPtr->SetFloat(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(bool value) const {
+        ShaderPtr->SetBool(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::vec2& value) const {
+        ShaderPtr->SetVec2(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::vec3& value) const {
+        ShaderPtr->SetVec3(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::vec4& value) const {
+        ShaderPtr->SetVec4(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::ivec2& value) const {
+        ShaderPtr->SetIVec2(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::ivec3& value) const {
+        ShaderPtr->SetIVec3(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::ivec4& value) const {
+        ShaderPtr->SetIVec4(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::bvec2& value) const {
+        ShaderPtr->SetBVec2(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::bvec3& value) const {
+        ShaderPtr->SetBVec3(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::bvec4& value) const {
+        ShaderPtr->SetBVec4(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::mat2& value) const {
+        ShaderPtr->SetMat2(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::mat3& value) const {
+        ShaderPtr->SetMat3(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const glm::mat4& value) const {
+        ShaderPtr->SetMat4(Name, value);
+    }
+
+    void Material::UniformVisitor::operator()(const std::vector<glm::vec3>& values) const {
+        ShaderPtr->SetVec3Array(Name, values);
+    }
+
+    void Material::UniformVisitor::operator()(const std::vector<glm::mat4>& values) const {
+        ShaderPtr->SetMat4Array(Name, values);
+    }
+
 }
