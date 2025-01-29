@@ -24,11 +24,16 @@ namespace StrikeEngine {
         bool HasMaterial(const std::string& name) const;
         void Clear();
 
+        std::shared_ptr<Material> GetDefaultMaterial();
+        void SetDefaultMaterial(std::shared_ptr<Material> material);
+
     private:
         MaterialManager() = default;
         ~MaterialManager();
 
+    private:
         static MaterialManager* s_Instance;
         std::unordered_map<std::string, std::shared_ptr<Material>> m_Materials;
+        std::shared_ptr<Material> m_DefaultMaterial;
     };
 }

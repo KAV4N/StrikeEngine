@@ -2,18 +2,16 @@
 #include <glad/glad.h>
 
 namespace StrikeEngine {
-
     class VertexBuffer {
     public:
-        VertexBuffer(const void* data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
+        VertexBuffer(const void* data, uint32_t size);
         ~VertexBuffer();
 
         void Bind() const;
         void Unbind() const;
-        void UpdateData(const void* data, unsigned int size);
+        void SetData(const void* data, uint32_t size);
 
     private:
-        GLuint m_RendererID;
+        uint32_t m_RendererID;
     };
-
 }

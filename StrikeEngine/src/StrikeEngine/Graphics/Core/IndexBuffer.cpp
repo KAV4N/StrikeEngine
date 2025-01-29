@@ -1,12 +1,11 @@
 #include "IndexBuffer.h"
 
 namespace StrikeEngine {
-
-    IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count)
+    IndexBuffer::IndexBuffer(const uint32_t* indices, uint32_t count)
         : m_Count(count) {
         glGenBuffers(1, &m_RendererID);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
     }
 
     IndexBuffer::~IndexBuffer() {
@@ -20,5 +19,4 @@ namespace StrikeEngine {
     void IndexBuffer::Unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
-
 }

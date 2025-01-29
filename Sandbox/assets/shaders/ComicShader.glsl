@@ -1,81 +1,148 @@
+#type signature
+{
+    "vertex_attributes": [
+        {
+            "name": "aPos",
+            "type": "vec3",
+            "location": 0
+        }
+    ],
+    "struct_definitions": [
+        {
+            "name": "Material",
+            "members": [
+                {"name": "albedo", "type": "vec4"},
+                {"name": "emission", "type": "vec3"},
+                {"name": "metallic", "type": "float"},
+                {"name": "roughness", "type": "float"},
+                {"name": "occlusion", "type": "float"}
+            ]
+        }
+    ],
+    "uniform_blocks": [
+        {
+            "name": "Camera",
+            "type": "UBO",
+            "binding": 0,
+            "layout": "std140",
+            "members": [
+                {"name": "viewProjection", "type": "mat4"},
+                {"name": "cameraPosition", "type": "vec3"}
+            ]
+        },
+        {
+            "name": "MaterialBuffer",
+            "type": "SSBO",
+            "binding": 1,
+            "layout": "std430",
+            "members": [
+                {"name": "materials", "type": "Material[]"}
+            ]
+        }
+    ],
+    "uniforms": [
+        {"name": "lightSpaceMatrix", "type": "mat4"},
+        {"name": "transform", "type": "mat4"},
+        {"name": "lightDirection", "type": "vec3"},
+        {"name": "lightColor", "type": "vec3"},
+        {"name": "shadowMap", "type": "sampler2D"},
+        {"name": "albedoMap", "type": "sampler2D"},
+        {"name": "normalMap", "type": "sampler2D"}
+    ],
+    "default_material": {
+        "parameters": [
+            {
+                "name": "Base_Color",
+                "type": "VEC4",
+                "value": {
+                    "x": 0.8,
+                    "y": 0.8,
+                    "z": 0.8,
+                    "w": 1.0
+                }
+            },
+            {
+                "name": "roughness_bias",
+                "type": "FLOAT",
+                "value": 0.0
+            },
+            {
+                "name": "roughness_gain",
+                "type": "FLOAT",
+                "value": 1.0
+            },
+            {
+                "name": "Color",
+                "type": "TEXTURE",
+                "value": ""
+            },
+            {
+                "name": "Roughness",
+                "type": "TEXTURE",
+                "value": ""
+            },
+            {
+                "name": "Normal",
+                "type": "TEXTURE",
+                "value": ""
+            }
+        ]
+    }
+}
+#endtype
+
+
+
+
+
 
 #type vertex
 #version 430 core
 
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal; 
-layout (location = 2) in vec2 aTexCoord; 
 
+uniform mat4 lightSpaceMatrix;
 uniform mat4 transform;
-uniform mat4 MVP;
 
-out vec2 TexCoord;
-out vec3 FragPos;
-out vec3 Normal;
+layout(std140, binding = 0) uniform Camera {
+    mat4 viewProjection;
+    vec3 cameraPosition;
+};
 
-void main() {
-    FragPos = vec3(transform * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(transform))) * aNormal;
-    TexCoord = aTexCoord;
-
-    gl_Position = MVP * vec4(FragPos, 1.0);
+void main()
+{
+    gl_Position = lightSpaceMatrix * transform * vec4(aPos, 1.0);
 }
+#endtype
+
+
+
 
 
 
 #type fragment
 #version 430 core
 
-in vec2 TexCoord;
-in vec3 FragPos;
-in vec3 Normal;
+struct Material {
+    vec4  albedo;
+    vec3  emission;
+    float metallic;
+    float roughness;
+    float occlusion;
+};
 
-out vec4 FragColor;
+layout(std430, binding = 1) buffer MaterialBuffer {
+    Material materials[];
+};
 
-uniform sampler2D ourTexture;
-uniform vec3 viewPosition;
+uniform sampler2D shadowMap;
+uniform sampler2D albedoMap;
+uniform sampler2D normalMap;
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
 
-struct Light
+void main()
 {
-    vec3 position;
-    float padding; 
-    vec3 color;
-    float intensity;
-};
-
-layout (std430, binding = 0) buffer LightBuffer {
-    Light lights[];
-};
-
-uniform vec3 ambientLightColor;
-uniform float shininess;
-
-void main() {
-    vec3 texColor = texture(ourTexture, TexCoord).rgb;
-
-    // Ambient Lighting
-    vec3 ambient = ambientLightColor * texColor;
-
-    // Normalizing vectors
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPosition - FragPos);
-
-    // Lighting Accumulation
-    vec3 result = ambient;
-    int numLights = int(lights.length());
-
-    for (int i = 0; i < numLights; i++) {
-        vec3 lightDir = normalize(lights[i].position - FragPos);
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * lights[i].color * lights[i].intensity * texColor;
-
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-        vec3 specular = spec * lights[i].color * lights[i].intensity;
-
-        result += diffuse + specular;
-    }
-
-    // Final color output
-    FragColor = vec4(clamp(result, 0.0, 1.0), 1.0);
+    // Fragment shader implementation
 }
+#endtype

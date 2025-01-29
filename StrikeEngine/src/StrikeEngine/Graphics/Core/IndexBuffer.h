@@ -2,19 +2,17 @@
 #include <glad/glad.h>
 
 namespace StrikeEngine {
-
     class IndexBuffer {
     public:
-        IndexBuffer(const unsigned int* data, unsigned int count);
+        IndexBuffer(const uint32_t* indices, uint32_t count);
         ~IndexBuffer();
 
         void Bind() const;
         void Unbind() const;
-        unsigned int GetCount() const { return m_Count; }
+        uint32_t GetCount() const { return m_Count; }
 
     private:
-        GLuint m_RendererID;
-        unsigned int m_Count;
+        uint32_t m_RendererID;
+        uint32_t m_Count;
     };
-
 }

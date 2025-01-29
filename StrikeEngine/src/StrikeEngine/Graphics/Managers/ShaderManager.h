@@ -17,21 +17,29 @@ namespace StrikeEngine {
         static ShaderManager* Get();
 
         std::shared_ptr<Shader> LoadShader(const std::string& filepath, const std::string& name);
-        std::shared_ptr<Shader> GetShader(const std::string& name);
+        std::shared_ptr<Shader> GetShader(const std::string& name) const;
         void RemoveShader(const std::string& name);
         bool HasShader(const std::string& name) const;
+
         void Clear();
+
+        void SetDefaultShader(std::shared_ptr<Shader> shader);
+        std::shared_ptr<Shader> GetDefaultShader();
 
     private:
         ShaderManager() = default;
         ~ShaderManager();
+
+        void InitializeDefaultShader();
 
         std::string ReadFile(const std::string& filepath);
         GLenum ShaderTypeFromString(const std::string& type);
         std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
         GLuint CompileShaders(const std::unordered_map<GLenum, std::string>& shaderSources);
 
+    private:
         static ShaderManager* s_Instance;
         std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+        std::shared_ptr<Shader> m_DefaultShader;
     };
 }

@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(StrikeEngine)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -7,13 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 add_library(${PROJECT_NAME} STATIC)  # Define the library first
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/strikepch.h)
 
-
-
 file(GLOB_RECURSE PROJECT_SOURCES 
     "src/*.cpp" 
     "src/*.h" 
 )
-
 
 file(GLOB_RECURSE VENDOR_SOURCES 
     "${INCLUDE_DIR}/glm/glm/*.hpp"
@@ -38,9 +34,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIR}/ImGui
     ${INCLUDE_DIR}/glm
     ${INCLUDE_DIR}/stb_image
-    ${INCLUDE_DIR}/assimp/include
     ${INCLUDE_DIR}/json/include
     ${INCLUDE_DIR}/entt/single_include
+    ${INCLUDE_DIR}/assimp/include
 )
 
 # Link libraries
@@ -54,9 +50,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
 # Compile definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    _CRT_SECURE_NO_WARNINGS
+    CRT_SECURE_NO_WARNINGS
     PLATFORM_WINDOWS
-    BUILD_DLL  # TODO remove this not used
 	GLFW_INCLUDE_NONE
 )
 

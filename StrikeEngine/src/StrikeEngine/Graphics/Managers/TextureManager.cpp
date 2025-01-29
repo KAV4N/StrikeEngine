@@ -5,6 +5,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <stdexcept>
+#include <glm/ext/vector_float3.hpp>
+
 
 namespace StrikeEngine {
 
@@ -17,7 +19,7 @@ namespace StrikeEngine {
         return s_Instance;
     }
 
-    TextureManager* TextureManager::GetInstance() {
+    TextureManager* TextureManager::Get() {
         return s_Instance;
     }
 
@@ -160,5 +162,4 @@ namespace StrikeEngine {
         default: throw std::runtime_error("Unsupported number of texture channels");
         }
     }
-
 } 

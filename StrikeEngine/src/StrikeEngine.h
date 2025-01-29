@@ -15,7 +15,7 @@
 #include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 #include "StrikeEngine/Graphics/Managers/TextureManager.h"
 #include "StrikeEngine/Graphics/Managers/MaterialManager.h"
-#include "StrikeEngine/Graphics/Managers/ModelManager.h"
+#include "StrikeEngine/Graphics/Managers/MeshManager.h"
 
 #include "StrikeEngine/Graphics/Core/Shader.h"
 #include "StrikeEngine/Graphics/Core/Texture.h"

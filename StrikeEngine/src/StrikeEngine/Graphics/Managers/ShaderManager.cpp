@@ -5,8 +5,10 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 namespace StrikeEngine {
+
     ShaderManager* ShaderManager::s_Instance = nullptr;
 
     ShaderManager* ShaderManager::Create() {
@@ -25,9 +27,10 @@ namespace StrikeEngine {
         s_Instance = nullptr;
     }
 
+
     std::shared_ptr<Shader> ShaderManager::LoadShader(const std::string& filepath, const std::string& name) {
         if (HasShader(name)) {
-            std::cerr << "Shader with name '" << name << "' already exists. Returning existing shader." << std::endl;
+            std::cerr << "Shader with name '" << name << "' already exists. Returning existing shader.\n";
             return GetShader(name);
         }
 
@@ -40,18 +43,17 @@ namespace StrikeEngine {
             return shader;
         }
         catch (const std::exception& e) {
-            std::cerr << "Failed to load shader '" << name << "': " << e.what() << std::endl;
+            std::cerr << "Failed to load shader '" << name << "': " << e.what() << "\n";
             return nullptr;
         }
     }
 
-    std::shared_ptr<Shader> ShaderManager::GetShader(const std::string& name) {
+    std::shared_ptr<Shader> ShaderManager::GetShader(const std::string& name) const {
         auto it = m_Shaders.find(name);
         if (it != m_Shaders.end()) {
             return it->second;
         }
-
-        std::cerr << "Shader with name '" << name << "' not found." << std::endl;
+        std::cerr << "Shader with name '" << name << "' not found.\n";
         return nullptr;
     }
 
@@ -61,7 +63,7 @@ namespace StrikeEngine {
             m_Shaders.erase(it);
         }
         else {
-            std::cerr << "Shader with name '" << name << "' not found." << std::endl;
+            std::cerr << "Shader with name '" << name << "' not found.\n";
         }
     }
 
@@ -86,9 +88,9 @@ namespace StrikeEngine {
     GLenum ShaderManager::ShaderTypeFromString(const std::string& type) {
         if (type == "vertex")
             return GL_VERTEX_SHADER;
-        else if (type == "fragment")
+        if (type == "fragment" || type == "pixel")
             return GL_FRAGMENT_SHADER;
-        else if (type == "geometry")
+        if (type == "geometry")
             return GL_GEOMETRY_SHADER;
 
         throw std::runtime_error("Unknown shader type: " + type);
@@ -96,27 +98,31 @@ namespace StrikeEngine {
 
     std::unordered_map<GLenum, std::string> ShaderManager::PreProcess(const std::string& source) {
         std::unordered_map<GLenum, std::string> shaderSources;
-
         const char* typeToken = "#type";
+        size_t typeTokenLength = strlen(typeToken);
         size_t pos = source.find(typeToken, 0);
+
         while (pos != std::string::npos) {
             size_t eol = source.find_first_of("\r\n", pos);
-            size_t begin = pos + strlen(typeToken) + 1;
+            if (eol == std::string::npos)
+                throw std::runtime_error("Syntax error");
+
+            size_t begin = pos + typeTokenLength + 1;
             std::string type = source.substr(begin, eol - begin);
 
             size_t nextLinePos = source.find_first_not_of("\r\n", eol);
             pos = source.find(typeToken, nextLinePos);
-
-            shaderSources[ShaderTypeFromString(type)] = (pos == std::string::npos)
-                ? source.substr(nextLinePos)
-                : source.substr(nextLinePos, pos - nextLinePos);
+            shaderSources[ShaderTypeFromString(type)] = source.substr(
+                nextLinePos,
+                pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)
+            );
         }
 
         return shaderSources;
     }
 
     GLuint ShaderManager::CompileShaders(const std::unordered_map<GLenum, std::string>& shaderSources) {
-        GLuint programId = glCreateProgram();
+        GLuint program = glCreateProgram();
         std::vector<GLuint> shaderIDs;
 
         for (auto& kv : shaderSources) {
@@ -124,59 +130,59 @@ namespace StrikeEngine {
             const std::string& source = kv.second;
 
             GLuint shader = glCreateShader(type);
-            const char* src = source.c_str();
-            glShaderSource(shader, 1, &src, 0);
+            const char* sourceCStr = source.c_str();
+            glShaderSource(shader, 1, &sourceCStr, 0);
             glCompileShader(shader);
 
-            GLint isCompiled;
+            GLint isCompiled = 0;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
             if (isCompiled == GL_FALSE) {
-                GLint maxLength;
+                GLint maxLength = 0;
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
-                std::vector<char> infoLog(maxLength);
-                glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog.data());
-
+                std::vector<GLchar> infoLog(maxLength);
+                glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
                 glDeleteShader(shader);
 
-                std::string shaderTypeStr =
-                    type == GL_VERTEX_SHADER ? "vertex" :
-                    type == GL_FRAGMENT_SHADER ? "fragment" :
-                    type == GL_GEOMETRY_SHADER ? "geometry" : "unknown";
+                std::string typeStr;
+                switch (type) {
+                case GL_VERTEX_SHADER: typeStr = "vertex"; break;
+                case GL_FRAGMENT_SHADER: typeStr = "fragment"; break;
+                case GL_GEOMETRY_SHADER: typeStr = "geometry"; break;
+                default: typeStr = "unknown";
+                }
 
-                throw std::runtime_error("Shader compilation error for " +
-                    shaderTypeStr + " shader: " + std::string(infoLog.data()));
+                throw std::runtime_error("Shader compilation failed (" + typeStr + "):\n" + infoLog.data());
             }
 
-            glAttachShader(programId, shader);
+            glAttachShader(program, shader);
             shaderIDs.push_back(shader);
         }
 
+        glLinkProgram(program);
 
-        glLinkProgram(programId);
-
-        GLint isLinked;
-        glGetProgramiv(programId, GL_LINK_STATUS, &isLinked);
+        GLint isLinked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
         if (isLinked == GL_FALSE) {
-            GLint maxLength;
-            glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint maxLength = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-            std::vector<char> infoLog(maxLength);
-            glGetProgramInfoLog(programId, maxLength, &maxLength, infoLog.data());
+            std::vector<GLchar> infoLog(maxLength);
+            glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
 
-            glDeleteProgram(programId);
-            for (auto id : shaderIDs) {
+            for (auto id : shaderIDs)
                 glDeleteShader(id);
-            }
+            glDeleteProgram(program);
 
-            throw std::runtime_error("Shader linking error: " + std::string(infoLog.data()));
+            throw std::runtime_error("Shader linking failed:\n" + std::string(infoLog.data()));
         }
 
         for (auto id : shaderIDs) {
-            glDetachShader(programId, id);
+            glDetachShader(program, id);
             glDeleteShader(id);
         }
 
-        return programId;
+        return program;
     }
+
 }

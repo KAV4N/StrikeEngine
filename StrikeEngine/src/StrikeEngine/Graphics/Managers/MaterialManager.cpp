@@ -4,6 +4,8 @@
 #include "MaterialManager.h"
 #include "StrikeEngine/Graphics/Core/Shader.h"
 #include "StrikeEngine/Graphics/Core/Material.h"
+#include "StrikeEngine/Graphics/Managers/TextureManager.h"
+#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 
 
 namespace StrikeEngine {
@@ -14,6 +16,7 @@ namespace StrikeEngine {
     MaterialManager* MaterialManager::Create() {
         if (s_Instance == nullptr) {
             s_Instance = new MaterialManager();
+
         }
         return s_Instance;
     }
@@ -74,6 +77,16 @@ namespace StrikeEngine {
             std::cerr << "Material with name '" << name << "' not found." << std::endl;
         }
     }
+
+
+
+    std::shared_ptr<Material> MaterialManager::GetDefaultMaterial() {
+        if (!m_DefaultMaterial) {
+            auto shaderManager = ShaderManager::Get();
+        }
+        return m_DefaultMaterial;
+    }
+
 
     bool MaterialManager::HasMaterial(const std::string& name) const {
         return m_Materials.find(name) != m_Materials.end();

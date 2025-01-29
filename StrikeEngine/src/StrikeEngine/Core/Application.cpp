@@ -6,7 +6,7 @@
 #include "StrikeEngine/Graphics/Managers/ShaderManager.h"
 #include "StrikeEngine/Graphics/Managers/MaterialManager.h"
 #include "StrikeEngine/Graphics/Managers/TextureManager.h"
-#include "StrikeEngine/Graphics/Managers/ModelManager.h"
+#include "StrikeEngine/Graphics/Managers/MeshManager.h"
 
 #include "Input.h"
 #include <glad/glad.h>
@@ -43,7 +43,7 @@ namespace StrikeEngine
         ShaderManager::Create();
         TextureManager::Create();
         MaterialManager::Create();
-        ModelManager::Create();
+        MeshManager::Create();
     }
 
     void Application::PushLayer(Layer* layer)

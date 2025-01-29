@@ -3,13 +3,14 @@
 #include <string>
 #include <unordered_map>
 #include "StrikeEngine/Graphics/Core/Texture.h"
+#include <glm/ext/vector_float3.hpp>
 
 namespace StrikeEngine {
 
     class TextureManager {
     public:
         static TextureManager* Create();
-        static TextureManager* GetInstance();
+        static TextureManager* Get();
 
         std::shared_ptr<Texture> Load(const std::string& path, TextureType type,
             TextureUnit unit = TEX_0, bool flip = true);
@@ -22,7 +23,6 @@ namespace StrikeEngine {
             TextureUnit unit = TEX_0);
 
         void Unload(const std::string& key);
-
     private:
         TextureManager() = default;
         ~TextureManager() = default;

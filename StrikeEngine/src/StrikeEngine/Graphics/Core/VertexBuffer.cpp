@@ -1,11 +1,10 @@
 #include "VertexBuffer.h"
 
 namespace StrikeEngine {
-
-    VertexBuffer::VertexBuffer(const void* data, unsigned int size, GLenum usage) {
+    VertexBuffer::VertexBuffer(const void* data, uint32_t size) {
         glGenBuffers(1, &m_RendererID);
         glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-        glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     }
 
     VertexBuffer::~VertexBuffer() {
@@ -20,9 +19,8 @@ namespace StrikeEngine {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::UpdateData(const void* data, unsigned int size) {
-        Bind();
+    void VertexBuffer::SetData(const void* data, uint32_t size) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
         glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
     }
-
 }
