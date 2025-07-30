@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="cubeModel" source="assets/cubeModel.fbx">
+	<assets>
+		<mesh meshId="cubeModel.Cube" src="Cube.mesh" />
+		<material materialId="cubeModel.Material_001" src="Material_001.mat" />
+		<material materialId="cubeModel.Material" src="Material.mat" />
+	</assets>
+	<entities>
+		<entity id="RootNode" name="RootNode" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+					<components>
+						<renderer meshId="cubeModel.Cube">
+							<material slot="0" materialId="cubeModel.Material_001" />
+							<material slot="1" materialId="cubeModel.Material" />
+						</renderer>
+					</components>
+				</entity>
+			</children>
+		</entity>
+	</entities>
+</template>

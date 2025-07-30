@@ -3,10 +3,7 @@
 
 #include "StrikeEngine/Core/Log.h"
 
-#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
-#include "StrikeEngine/Graphics/Managers/MaterialManager.h"
-#include "StrikeEngine/Graphics/Managers/TextureManager.h"
-#include "StrikeEngine/Graphics/Managers/MeshManager.h"
+#include "StrikeEngine/Graphics/Core/AssetManager.h"
 
 #include "Input.h"
 #include <glad/glad.h>
@@ -40,10 +37,7 @@ namespace StrikeEngine
     }
 
     void Application::CreateManagers() {
-        ShaderManager::Create();
-        TextureManager::Create();
-        MaterialManager::Create();
-        MeshManager::Create();
+        //AssetManager::Init();
     }
 
     void Application::PushLayer(Layer* layer)
@@ -73,7 +67,7 @@ namespace StrikeEngine
     }
 
     void Application::OnUpdate() {
-        
+
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -81,6 +75,8 @@ namespace StrikeEngine
         std::chrono::duration<float> deltaTimeDuration = now - m_LastFrameTime;
         m_LastFrameTime = now;
         float deltaTime = deltaTimeDuration.count();
+
+        AssetManager::Get().Update();
 
         for (Layer* layer : m_LayerStack)
             layer->OnUpdate(deltaTime);

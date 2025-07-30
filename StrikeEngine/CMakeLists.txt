@@ -18,12 +18,14 @@ file(GLOB_RECURSE VENDOR_SOURCES
 	"${INCLUDE_DIR}/stb_image/*.cpp"
     "${INCLUDE_DIR}/stb_image/*.h"
 	
+    "${INCLUDE_DIR}/pugixml/src/*.hpp"
+
     "${INCLUDE_DIR}/json/include/nlohmann/*.hpp"
     "${INCLUDE_DIR}/entt/single_include/entt/*.hpp"
 )
 
 # Add sources to the library
-target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} ${VENDOR_SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} ${VENDOR_SOURCES} "src/StrikeEngine/Graphics/Renderer/Renderer.cpp" "src/StrikeEngine/Graphics/Renderer/FrameBuffer.h")
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC 
@@ -37,6 +39,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIR}/json/include
     ${INCLUDE_DIR}/entt/single_include
     ${INCLUDE_DIR}/assimp/include
+    ${INCLUDE_DIR}/pugixml/src
 )
 
 # Link libraries
@@ -45,6 +48,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Glad
     ImGui
     assimp
+    pugixml::pugixml 
     opengl32
 )
 

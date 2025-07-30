@@ -1,66 +1,42 @@
 #include "strikepch.h"
 #include <StrikeEngine.h>
 
+#include <pugixml.hpp>
+
 // ENTRY POINT ---------------------
 #include "StrikeEngine/Core/EntryPoint.h"
 //----------------------------------
 
 #include "imgui.h"
 
-
-class Sandbox : public StrikeEngine::Application 
+class Sandbox : public StrikeEngine::Application
 {
-
 public:
-	Sandbox() 
-	{
-		auto* shaderManager = StrikeEngine::ShaderManager::Get();
-		auto* materialManager = StrikeEngine::MaterialManager::Get();
-		auto* meshManager = StrikeEngine::MeshManager::Get();
-		/*
-		meshManager->LoadMesh("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", true);
-		meshManager->LoadMesh("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", true);
-		meshManager->LoadMesh("assets/objects/panzer/skeleton.fbx", true);
-		meshManager->LoadMesh("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", false);
-		meshManager->LoadMesh("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", false);
-		
+    Sandbox() {
+        std::string modelPath_ = "assets/objects/panzer/tank_low_poly.fbx";
+        std::string templateDir_ = "scenes/templates/tank";
 
+        StrikeEngine::ModelParser parser;
+        parser.parseModel("assets/objects/panzer/tank_low_poly.fbx", "scenes/templates/tank");
+        parser.parseModel("assets/cubeModel.fbx", "scenes/templates/cubeModel");
 
-		auto mesh = meshManager->RenameMesh("14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj","test");
-		*/
+        // Use Singleton instance of AssetManager
+        StrikeEngine::AssetManager& manager = StrikeEngine::AssetManager::Get();
 
-		
-		StrikeEngine::OBJSpec objSpec;
-		objSpec.CombineMeshes = true;
-		meshManager->LoadOBJ("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", objSpec);
-		meshManager->LoadOBJ("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", objSpec);
+        manager.LoadAsset<StrikeEngine::Mesh>("mesh1", "scenes/templates/tank/Cube.mesh");
+        auto mesh = manager.GetAsset<StrikeEngine::Mesh>("mesh1");
 
-		objSpec.CombineMeshes = false;
-		meshManager->LoadOBJ("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj", objSpec);
+        auto& sceneManager = StrikeEngine::SceneManager::Get();
+        sceneManager.SetScene("scenes/MainScene.xml");
 
+    }
 
-		StrikeEngine::FBXSpec fbxSpec;
-		fbxSpec.LoadSkeleton = true;
-		meshManager->LoadFBX("assets/objects/panzer/tank_low_poly.fbx",fbxSpec);
-
-		meshManager->LoadFBX("assets/objects/panzer/skeleton.fbx", fbxSpec);
-
-		std::shared_ptr<StrikeEngine::Shader> testShader = shaderManager->LoadShader("assets/shaders/DefaultShader.glsl", "DefaultShader");
-		std::shared_ptr<StrikeEngine::Material> testMaterial = materialManager->CreateMaterial(testShader, "DefaultMaterial");
-		
-		
-		testMaterial->SetUniform("u_Pos", 1);
-		testMaterial->SetUniform("u_Pos2", 1.f);
-		testMaterial->SetUniform("u_Pos2", 2.f);
-		testMaterial->Apply();
-	}
-	~Sandbox() 
-	{
-
-	}
+    ~Sandbox()
+    {
+    }
 };
 
-StrikeEngine::Application* StrikeEngine::CreateApplication() 
+StrikeEngine::Application* StrikeEngine::CreateApplication()
 {
-	return new Sandbox();
+    return new Sandbox();
 }

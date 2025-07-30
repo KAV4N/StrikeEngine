@@ -2,7 +2,6 @@
 
 #include "StrikeEngine.h"
 #include <entt/entt.hpp>
-#include <StrikeEngine/Graphics/Core/CameraController.h>
 
 namespace StrikeEngine {
 
@@ -21,8 +20,7 @@ namespace StrikeEngine {
 		void OnEvent(Event& e) override;
 	
 	private:
-		RenderLayer* m_ViewportPanel;
-		CameraController m_CameraController;
+
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 
 	};

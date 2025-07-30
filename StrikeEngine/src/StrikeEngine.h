@@ -10,14 +10,11 @@
 #include "StrikeEngine/Events/KeyCodes.h"
 #include "StrikeEngine/Events/Event.h"
 
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
-#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
-#include "StrikeEngine/Graphics/Managers/TextureManager.h"
-#include "StrikeEngine/Graphics/Managers/MaterialManager.h"
-#include "StrikeEngine/Graphics/Managers/MeshManager.h"
-
-#include "StrikeEngine/Graphics/Core/Shader.h"
-#include "StrikeEngine/Graphics/Core/Texture.h"
-#include "StrikeEngine/Graphics/Core/Material.h"
+#include "StrikeEngine/Graphics/Core/Assets/Mesh.h"
+#include "StrikeEngine/Graphics/Core/ModelParser.h"
+#include "StrikeEngine/Graphics/Core/AssetManager.h"
+#include "StrikeEngine/Graphics/Core/SceneManager.h"
 

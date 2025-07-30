@@ -1,0 +1,82 @@
+<scene name="MainScene" version="1.0">
+
+	<!-- Asset Loading Block - Declares external resources -->
+	<assets>
+		<!-- 3D Models -->
+		<template templateId="playerModel" src="models/character.fbx"
+               templateDir="templates/playerModel" />
+		<template templateId="buildingModel" src="models/building.fbx"
+               templateDir="templates/buildingModel" />
+		<template templateId="weaponModel" src="models/sword.fbx"
+               templateDir="templates/weaponModel" />
+
+		<!-- Templates -->
+		<template templateId="gun" src="templates/gun.xml" />
+
+		<!-- Materials -->
+		<material materialId="metalMat" src="materials/metal.mat" />
+		<material materialId="woodMat" src="materials/wood.mat" />
+
+		<!-- Textures -->
+		<texture2D textureId="skyboxTex" src="textures/skybox.hdr" />
+		<texture2D textureId="grassTex" src="textures/grass.png" />
+	</assets>
+
+	<!-- Scene Entities Definition -->
+	<entities>
+
+		<!-- Player Character Model Entity -->
+		<entity id="playerCharacter" name="Player Character" templateId="playerModel" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+			
+
+			<components>
+				<scriptComponent>
+					<script scriptId="playerHealthScript" src="scripts/PlayerHealth.cs" />
+					<script scriptId="playerInventoryScript" src="scripts/PlayerInventory.cs" />
+				</scriptComponent>
+			</components>
+		</entity>
+
+		<!-- Enemy Character Model Entity -->
+		<entity id="enemyGuard01" name="Enemy Guard 01" templateId="playerModel" position="15,0,10" rotation="0,180,0" scale="1,1,1">
+
+
+			<components>
+				<scriptComponent>
+					<script scriptId="enemyHealthScript" src="scripts/EnemyHealth.cs" />
+				</scriptComponent>
+			</components>
+		</entity>
+
+		<!-- Village House -->
+		<entity id="villageHouse" name="Village House" templateId="buildingModel" position="10,0,5" rotation="0,45,0" scale="1,1,1">
+			
+		</entity>
+
+		<!-- Blacksmith Shop -->
+		<entity id="blacksmithShop" name="Blacksmith Shop" templateId="buildingModel" position="20,0,10" rotation="0,90,0" scale="1.2,1,1.2">
+
+		</entity>
+
+		<!-- Main Camera -->
+		<entity id="mainCamera" name="Main Camera" position="0,5,10" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<camera
+                    fov="60"
+                    near="0.1"
+                    far="1000" />
+			</components>
+		</entity>
+
+		<!-- Sun Light -->
+		<entity id="sunLight" name="Sun Light" position="0,10,0" rotation="45,30,0" scale="1,1,1">
+			<components>
+				<light
+                    type="directional"
+                    color="1,1,0.9,1"
+                    intensity="1.2"
+                    castShadows="true" />
+			</components>
+		</entity>
+	</entities>
+</scene>

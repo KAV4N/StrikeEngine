@@ -37,11 +37,17 @@ set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_GLTF_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 
+# Pugixml configuration
+set(PUGIXML_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(PUGIXML_INSTALL OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)  
+
 # Add subdirectories for external libraries
 add_subdirectory(${INCLUDE_DIR}/GLFW)
 add_subdirectory(${INCLUDE_DIR}/Glad)
 add_subdirectory(${INCLUDE_DIR}/imgui)
 add_subdirectory(${INCLUDE_DIR}/assimp)
+add_subdirectory(${INCLUDE_DIR}/pugixml)
 
 # Add projects
 add_subdirectory(StrikeEngine)
