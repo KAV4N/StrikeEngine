@@ -2,53 +2,41 @@
 
 #include "StrikeEngine/Core/Window.h"
 #include "StrikeEngine/Graphics/Renderer/GraphicsContext.h"
-
 #include <GLFW/glfw3.h>
-
 
 namespace StrikeEngine {
 
-	class WindowsWindow : public Window
-	{
-	public:
-		WindowsWindow(const WindowProps& props);
-		virtual ~WindowsWindow();
+    class WindowsWindow : public Window {
+    public:
+        WindowsWindow(const WindowProps& props);
+        virtual ~WindowsWindow();
 
-		void OnUpdate() override;
+        void onUpdate() override;
+        unsigned int getWidth() const override;
+        unsigned int getHeight() const override;
 
-		inline unsigned int GetWidth() const override { return m_Data.Width; }
-		inline unsigned int GetHeight() const override { return m_Data.Height; }
+        void setEventCallback(const EventCallbackFn& callback) override { mData.eventCallback = callback; }
+        void setVSync(bool enabled) override;
+        bool isVSync() const override;
+        double getTime() const override;
+        void setWindowTitle(std::string title) override;
 
-		// Window attributes
-		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
-		void SetVSync(bool enabled) override;
-		bool IsVSync() const override;
+        void* getNativeWindow() const override;
 
-		inline double GetTime() const override { return glfwGetTime(); };
-		
-		void SetWindowTitle(std::string title) override;
+    private:
+        void init(const WindowProps& props);
+        void shutdown();
 
+        GLFWwindow* mWindow;
+        std::unique_ptr<GraphicsContext> mGraphicsContext;
 
-		inline virtual void* GetNativeWindow() const { return m_Window; };
-
-	private:
-		virtual void Init(const WindowProps& props);
-		virtual void Shutdown();
-	private:
-		GLFWwindow* m_Window;
-		std::unique_ptr<GraphicsContext> m_GraphicsContext;
-
-		struct WindowData
-		{
-			std::string Title;
-			unsigned int Width, Height;
-			bool VSync;
-
-			EventCallbackFn EventCallback;
-		};
-		WindowData m_Data;
-	};
-
-	
-
+        struct WindowData {
+            std::string title;
+            unsigned int width;
+            unsigned int height;
+            bool vSync;
+            EventCallbackFn eventCallback;
+        };
+        WindowData mData;
+    };
 }

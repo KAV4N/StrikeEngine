@@ -13,8 +13,9 @@
 
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
-#include "StrikeEngine/Graphics/Core/Assets/Mesh.h"
-#include "StrikeEngine/Graphics/Core/ModelParser.h"
-#include "StrikeEngine/Graphics/Core/AssetManager.h"
-#include "StrikeEngine/Graphics/Core/SceneManager.h"
+#include "StrikeEngine/Asset/Types/Mesh.h"
+#include "StrikeEngine/Asset/ModelParser.h"
+#include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Asset/AssetManager.h"
+
 

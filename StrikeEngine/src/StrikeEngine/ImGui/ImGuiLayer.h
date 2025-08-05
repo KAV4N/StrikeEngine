@@ -7,23 +7,22 @@
 #include "StrikeEngine/Events/MouseEvent.h"
 
 namespace StrikeEngine {
-	class ImGuiLayer : public Layer 
-	{
-	public: 
-		ImGuiLayer();
-		~ImGuiLayer();
 
+    class ImGuiLayer : public Layer {
+    public:
+        ImGuiLayer();
+        ~ImGuiLayer();
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
-		virtual void OnImGuiRender() override;
+        void onAttach() override;
+        void onDetach() override;
+        void onImGuiRender() override;
 
-		void Begin();
-		void End();
+        void begin();
+        void end();
 
+    private:
+        void setupImGuiStyle();
 
-		void SetupImGuiStyle();
-	private:
-		float m_Time = 0.0f;
-	};
+        float mTime;
+    };
 }

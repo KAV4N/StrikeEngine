@@ -3,25 +3,34 @@
 #include <iomanip>
 
 namespace StrikeEngine {
-    std::random_device UUID::s_randomDevice;
-    std::mt19937_64 UUID::s_engine(s_randomDevice());
-    std::uniform_int_distribution<uint64_t> UUID::s_uniformDistribution;
 
-    UUID::UUID() : m_uuid(Generate()) {}
+    std::random_device UUID::sRandomDevice;
+    std::mt19937_64 UUID::sEngine(sRandomDevice());
+    std::uniform_int_distribution<uint64_t> UUID::sUniformDistribution;
 
-    UUID::UUID(uint64_t uuid) : m_uuid(uuid) {}
+    UUID::UUID() : mUuid(generate()) {}
 
-    UUID UUID::Generate() {
-        uint64_t uuid = s_uniformDistribution(s_engine);
+    UUID::UUID(uint64_t uuid) : mUuid(uuid) {}
+
+    UUID UUID::generate() {
+        uint64_t uuid = sUniformDistribution(sEngine);
         while (uuid == 0) {
-            uuid = s_uniformDistribution(s_engine);
+            uuid = sUniformDistribution(sEngine);
         }
         return UUID(uuid);
     }
 
-    std::string UUID::ToString() const {
+    std::string UUID::toString() const {
         std::stringstream ss;
-        ss << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << m_uuid;
+        ss << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << mUuid;
         return ss.str();
     }
-} // namespace StrikeEngine
+
+    bool UUID::isValid() const {
+        return mUuid != 0;
+    }
+
+    UUID UUID::invalid() {
+        return UUID(0);
+    }
+}

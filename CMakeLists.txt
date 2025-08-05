@@ -52,4 +52,3 @@ add_subdirectory(${INCLUDE_DIR}/pugixml)
 # Add projects
 add_subdirectory(StrikeEngine)
 add_subdirectory(Sandbox)
-add_subdirectory(StrikeEditor)

@@ -1,18 +1,16 @@
 #pragma once
+
 #include "StrikeEngine/Core/Input.h"
 
 namespace StrikeEngine {
-	class WindowsInput : public Input
-	{
-	protected:
-		virtual bool IsKeyPressedImpl(int keycode) override;
 
-		virtual bool IsMouseButtonPressedImpl(int keyCode) override;
-		virtual float GetMouseXImpl() override;
-		virtual float GetMouseYImpl() override;
-		virtual std::pair<float, float> GetMouseXYImpl() override;
-
-		virtual void SetCursorModeImpl(CursorMode mode) override;
-		
-	};
+    class WindowsInput : public Input {
+    protected:
+        bool isKeyPressedImpl(int keycode) override;
+        bool isMouseButtonPressedImpl(int keyCode) override;
+        float getMouseXImpl() override;
+        float getMouseYImpl() override;
+        std::pair<float, float> getMouseXYImpl() override;
+        void setCursorModeImpl(CursorMode mode) override;
+    };
 }

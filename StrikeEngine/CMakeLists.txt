@@ -25,7 +25,7 @@ file(GLOB_RECURSE VENDOR_SOURCES
 )
 
 # Add sources to the library
-target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} ${VENDOR_SOURCES} "src/StrikeEngine/Graphics/Renderer/Renderer.cpp" "src/StrikeEngine/Graphics/Renderer/FrameBuffer.h")
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} ${VENDOR_SOURCES})
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC 

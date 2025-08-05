@@ -2,25 +2,23 @@
 
 #include <glm/glm.hpp>
 
-
 namespace StrikeEngine {
 
-	class RendererAPI
-	{
-	public:
-		enum class API
-		{
-			None = 0, OpenGL = 1
-		};
-	public:
-		virtual ~RendererAPI() = default;
+    class RendererAPI {
+    public:
+        enum class Api {
+            None = 0,
+            OpenGL = 1
+        };
 
-		virtual void Init() = 0;
+        virtual ~RendererAPI() = default;
 
-		static API GetAPI() { return s_API; }
-		static std::unique_ptr <RendererAPI> Create();
-	private:
-		static API s_API;
-	};
+        virtual void init() = 0;
 
+        static Api getApi() { return sApi; }
+        static std::unique_ptr<RendererAPI> create();
+
+    private:
+        static Api sApi;
+    };
 }

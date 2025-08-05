@@ -1,57 +1,44 @@
 #pragma once
 
 #include "Core.h"
-
 #include "Window.h"
 #include "StrikeEngine/Core/LayerStack.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
-
-
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
+namespace StrikeEngine {
 
-
-namespace StrikeEngine
-{
-
-    class Application
-    {
+    class Application {
     public:
         friend class Renderer;
         Application();
         virtual ~Application();
 
-        void Run();
-        void OnEvent(Event& e);
+        void run();
+        void onEvent(Event& e);
+        void onUpdate();
 
-        void OnUpdate();
+        void pushLayer(Layer* layer);
+        void pushOverlay(Layer* overlay);
 
-        void PushLayer(Layer* layer);
-        void PushOverlay(Layer* overlay);
-
-        inline Window& GetWindow() { return *m_Window; }
-
-        inline static Application& Get() { return *s_Instance; }
+        inline Window& getWindow() { return *mWindow; }
+        inline static Application& get() { return *sInstance; }
 
     private:
-        bool OnWindowClose(WindowCloseEvent& e);
+        bool onWindowClose(WindowCloseEvent& e);
+        bool onWindowResize(WindowResizeEvent& e);
+        void createManagers();
 
-        bool OnWindowResize(WindowResizeEvent& e);
-
-        void CreateManagers();
-
-        std::unique_ptr<Window> m_Window;
-        ImGuiLayer* m_ImGuiLayer;
-        bool m_Running = true;
-        LayerStack<Layer*> m_LayerStack;
-        std::chrono::high_resolution_clock::time_point m_LastFrameTime;
+        std::unique_ptr<Window> mWindow;
+        ImGuiLayer* mImGuiLayer;
+        bool mRunning = true;
+        LayerStack<Layer*> mLayerStack;
+        std::chrono::high_resolution_clock::time_point mLastFrameTime;
 
     private:
-        static Application* s_Instance;
+        static Application* sInstance;
     };
 
-    // To be defined in CLIENT
-    Application* CreateApplication();
+    Application* createApplication();
 }
-

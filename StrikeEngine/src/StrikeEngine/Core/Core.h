@@ -1,5 +1,5 @@
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
 
 #ifdef STRIKE_DEBUG
 	#define STRIKE_ENABLE_ASSERTS

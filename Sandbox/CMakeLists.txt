@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Define the executable target first
 add_executable(${PROJECT_NAME})
 
-file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp" "src/*.h")
+file(GLOB_RECURSE PROJECT_SOURCES "*.cpp" "*.h")
 
 # Add sources to the executable
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
@@ -48,27 +48,21 @@ function(create_asset_symlinks target_name)
         # On Windows, create directory junctions (symbolic links for directories)
         add_custom_command(TARGET ${target_name} POST_BUILD
             # Remove existing links/directories first
-            COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/assets
-            COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/scenes
+            COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/Assets
             # Create symbolic links (junctions on Windows)
-            COMMAND cmd /c "mklink /J \"$<TARGET_FILE_DIR:${target_name}>/assets\" \"${CMAKE_SOURCE_DIR}/Sandbox/assets\""
-            COMMAND cmd /c "mklink /J \"$<TARGET_FILE_DIR:${target_name}>/scenes\" \"${CMAKE_SOURCE_DIR}/Sandbox/scenes\""
-            COMMENT "Creating symbolic links for assets and scenes directories (Debug mode)"
+            COMMAND cmd /c "mklink /J \"$<TARGET_FILE_DIR:${target_name}>/Assets\" \"${CMAKE_SOURCE_DIR}/Sandbox/Assets\""
+            COMMENT "Creating symbolic links for Assets directories (Debug mode)"
         )
     else()
         # On Unix-like systems (Linux, macOS), create symbolic links
         add_custom_command(TARGET ${target_name} POST_BUILD
             # Remove existing links/directories first
-            COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:${target_name}>/assets
-            COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:${target_name}>/scenes
+            COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:${target_name}>/Assets
             # Create symbolic links
             COMMAND ${CMAKE_COMMAND} -E create_symlink 
-                ${CMAKE_SOURCE_DIR}/Sandbox/assets 
-                $<TARGET_FILE_DIR:${target_name}>/assets
-            COMMAND ${CMAKE_COMMAND} -E create_symlink 
-                ${CMAKE_SOURCE_DIR}/Sandbox/scenes 
-                $<TARGET_FILE_DIR:${target_name}>/scenes
-            COMMENT "Creating symbolic links for assets and scenes directories (Debug mode)"
+                ${CMAKE_SOURCE_DIR}/Sandbox/Assets 
+                $<TARGET_FILE_DIR:${target_name}>/Assets
+            COMMENT "Creating symbolic links for Assets and scenes directories (Debug mode)"
         )
     endif()
 endfunction()
@@ -77,57 +71,43 @@ endfunction()
 function(copy_asset_directories target_name)
     add_custom_command(TARGET ${target_name} POST_BUILD
         # Remove existing directories first
-        COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/assets
-        COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/scenes
+        COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:${target_name}>/Assets
         # Copy directories
         COMMAND ${CMAKE_COMMAND} -E copy_directory 
-            ${CMAKE_SOURCE_DIR}/Sandbox/assets 
-            $<TARGET_FILE_DIR:${target_name}>/assets
-        COMMAND ${CMAKE_COMMAND} -E copy_directory 
-            ${CMAKE_SOURCE_DIR}/Sandbox/scenes 
-            $<TARGET_FILE_DIR:${target_name}>/scenes
-        COMMENT "Copying assets and scenes directories (Release/Dist mode)"
+            ${CMAKE_SOURCE_DIR}/Sandbox/Assets 
+            $<TARGET_FILE_DIR:${target_name}>/Assets
+        COMMENT "Copying Assets and scenes directories (Release/Dist mode)"
     )
 endfunction()
 
 # Apply different asset handling based on build configuration
 # Debug mode: Create symbolic links for faster development
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Setting up assets for $<CONFIG> configuration..."
+    COMMAND ${CMAKE_COMMAND} -E echo "Setting up Assets for $<CONFIG> configuration..."
 )
 
 # Debug configuration - use symbolic links
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets>
-        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes>
-        COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets\" \"${CMAKE_SOURCE_DIR}/Sandbox/assets\"">
-        COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes\" \"${CMAKE_SOURCE_DIR}/Sandbox/scenes\"">
+        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets>
+        COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets\" \"${CMAKE_SOURCE_DIR}/Sandbox/Assets\"">
         COMMENT "Creating symbolic links for Debug configuration"
     )
 else()
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets>
-        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes>
+        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets>
         COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink 
-            $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/Sandbox/assets>
-            $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets>
-        COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink 
-            $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/Sandbox/scenes>
-            $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes>
+            $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/Sandbox/Assets>
+            $<$<CONFIG:Debug>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets>
         COMMENT "Creating symbolic links for Debug configuration"
     )
 endif()
 
 # Release and Dist configurations - copy files
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets>
-    COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes>
+    COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets>
     COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory 
-        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_SOURCE_DIR}/Sandbox/assets>
-        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets>
-    COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory 
-        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_SOURCE_DIR}/Sandbox/scenes>
-        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/scenes>
-    COMMENT "Copying assets and scenes for Release/Dist configuration"
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_SOURCE_DIR}/Sandbox/Assets>
+        $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:$<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets>
+    COMMENT "Copying Assets and scenes for Release/Dist configuration"
 )

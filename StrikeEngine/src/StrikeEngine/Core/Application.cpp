@@ -1,114 +1,94 @@
 #include "strikepch.h"
 #include "Application.h"
-
 #include "StrikeEngine/Core/Log.h"
-
-#include "StrikeEngine/Graphics/Core/AssetManager.h"
-
+#include "StrikeEngine/Asset/AssetManager.h"
 #include "Input.h"
 #include <glad/glad.h>
-
-
 #include <chrono>
 #include <imgui.h>
-//---------------------------------------------
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-namespace StrikeEngine
-{
-    Application* Application::s_Instance = nullptr;
+namespace StrikeEngine {
+    Application* Application::sInstance = nullptr;
 
-    Application::Application()
-    {
-        STRIKE_CORE_ASSERT(!s_Instance, "Application already exists!");
-        s_Instance = this;
-        m_Window = std::unique_ptr<Window>(Window::Create());
-        m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+    Application::Application() {
+        STRIKE_CORE_ASSERT(!sInstance, "Application already exists!");
+        sInstance = this;
+        mWindow = std::unique_ptr<Window>(Window::create());
+        mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 
-        CreateManagers();
+        createManagers();
 
-        m_ImGuiLayer = new ImGuiLayer();
-        PushOverlay(m_ImGuiLayer);
+        mImGuiLayer = new ImGuiLayer();
+        pushOverlay(mImGuiLayer);
     }
 
-    Application::~Application()
-    {
+    Application::~Application() {
     }
 
-    void Application::CreateManagers() {
-        //AssetManager::Init();
+    void Application::createManagers() {
     }
 
-    void Application::PushLayer(Layer* layer)
-    {
-        m_LayerStack.PushLayer(layer);
-        layer->OnAttach();
+    void Application::pushLayer(Layer* layer) {
+        mLayerStack.pushLayer(layer);
+        layer->onAttach();
     }
 
-    void Application::PushOverlay(Layer* overlay)
-    {
-        m_LayerStack.PushOverlay(overlay);
-        overlay->OnAttach();
+    void Application::pushOverlay(Layer* overlay) {
+        mLayerStack.pushOverlay(overlay);
+        overlay->onAttach();
     }
 
-    void Application::OnEvent(Event& e)
-    {
+    void Application::onEvent(Event& e) {
         EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-        dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+        dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
 
-        for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
-        {
-            (*--it)->OnEvent(e);
-            if (e.Handled)
+        for (auto it = mLayerStack.end(); it != mLayerStack.begin();) {
+            (*--it)->onEvent(e);
+            if (e.handled)
                 break;
         }
     }
 
-    void Application::OnUpdate() {
-
+    void Application::onUpdate() {
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> deltaTimeDuration = now - m_LastFrameTime;
-        m_LastFrameTime = now;
+        std::chrono::duration<float> deltaTimeDuration = now - mLastFrameTime;
+        mLastFrameTime = now;
         float deltaTime = deltaTimeDuration.count();
 
-        AssetManager::Get().Update();
+        AssetManager::get().update();
 
-        for (Layer* layer : m_LayerStack)
-            layer->OnUpdate(deltaTime);
+        for (Layer* layer : mLayerStack)
+            layer->onUpdate(deltaTime);
 
-
-        m_ImGuiLayer->Begin();
-        for (Layer* layer : m_LayerStack) {
-            layer->OnRender();
-            layer->OnImGuiRender();
+        mImGuiLayer->begin();
+        for (Layer* layer : mLayerStack) {
+            layer->onRender();
+            layer->onImGuiRender();
         }
-        m_ImGuiLayer->End();
+        mImGuiLayer->end();
 
-        m_Window->OnUpdate();
+        mWindow->onUpdate();
     }
 
-    void Application::Run() {
-        //Renderer::Get()->Resize(m_Window->GetWidth(), m_Window->GetHeight());
-        m_LastFrameTime = std::chrono::high_resolution_clock::now();
-        while (m_Running) {
-            OnUpdate();
+    void Application::run() {
+        mLastFrameTime = std::chrono::high_resolution_clock::now();
+        while (mRunning) {
+            onUpdate();
         }
     }
 
-    bool Application::OnWindowClose(WindowCloseEvent& e)
-    {
-        m_Running = false;
+    bool Application::onWindowClose(WindowCloseEvent& e) {
+        mRunning = false;
         return true;
     }
 
-    bool Application::OnWindowResize(WindowResizeEvent& e)
-    {
+    bool Application::onWindowResize(WindowResizeEvent& e) {
         return true;
     }
-
 }

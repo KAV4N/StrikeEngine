@@ -1,20 +1,18 @@
 #pragma once
 
-#include "StrikeEngine/Graphics/Renderer/Texture2D.h"
+#include "StrikeEngine/Graphics/Texture2D.h"
 
 namespace StrikeEngine {
 
-    class OpenGLTexture2D : public Texture2D
-    {
+    class OpenGLTexture2D : public Texture2D {
     public:
         OpenGLTexture2D(const Properties& properties);
-        virtual ~OpenGLTexture2D();
+        ~OpenGLTexture2D() override;
 
-        void SetData(void* data, uint32_t size) override;
+        void setData(void* data, uint32_t size) override;
 
     private:
-        uint32_t m_RendererID = 0;
-        Properties m_Properties;
+        uint32_t mRendererId = 0;
+        Properties mProperties;
     };
-
 }

@@ -2,17 +2,18 @@
 
 #ifdef PLATFORM_WINDOWS
 
-extern StrikeEngine::Application* StrikeEngine::CreateApplication();
+#include "Application.h"
+#include "StrikeEngine/Core/Log.h"
 
-int main(int argc, char** argv) 
-{
+extern StrikeEngine::Application* StrikeEngine::createApplication();
 
-	StrikeEngine::Log::Init();
+int main(int argc, char** argv) {
+    StrikeEngine::Log::init();
 
-	auto app = StrikeEngine::CreateApplication();
-	app->Run();
-	delete app;
-	return 0;
+    auto app = StrikeEngine::createApplication();
+    app->run();
+    delete app;
+    return 0;
 }
 
 #endif

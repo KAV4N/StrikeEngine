@@ -9,83 +9,73 @@
 namespace StrikeEngine {
 
     template<typename T>
-    class LayerStack
-    {
+    class LayerStack {
     public:
-        LayerStack()
-            : m_LayerInsertIndex(0)
-        {
+        LayerStack() : mLayerInsertIndex(0) {
         }
 
-        ~LayerStack()
-        {
+        ~LayerStack() {
         }
 
-        void PushLayer(T layer, bool active = true)
-        {
-            m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
-            m_LayerInsertIndex++;
+        void pushLayer(T layer, bool active = true) {
+            mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
+            mLayerInsertIndex++;
             if (active) {
-                m_ActiveLayers.push_back(layer);
+                mActiveLayers.push_back(layer);
             }
         }
 
-        void PushOverlay(T overlay, bool active = true)
-        {
-            m_Layers.emplace_back(overlay);
+        void pushOverlay(T overlay, bool active = true) {
+            mLayers.emplace_back(overlay);
             if (active) {
-                m_ActiveLayers.push_back(overlay);
+                mActiveLayers.push_back(overlay);
             }
         }
 
-        void PopLayer(T layer)
-        {
-            auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
-            if (it != m_Layers.end()) {
-                m_Layers.erase(it);
-                m_LayerInsertIndex--;
+        void popLayer(T layer) {
+            auto it = std::find(mLayers.begin(), mLayers.end(), layer);
+            if (it != mLayers.end()) {
+                mLayers.erase(it);
+                mLayerInsertIndex--;
             }
 
-            auto activeIt = std::find(m_ActiveLayers.begin(), m_ActiveLayers.end(), layer);
-            if (activeIt != m_ActiveLayers.end()) {
-                m_ActiveLayers.erase(activeIt);
-            }
-        }
-
-        void PopOverlay(T overlay)
-        {
-            auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
-            if (it != m_Layers.end()) {
-                m_Layers.erase(it);
-            }
-
-            auto activeIt = std::find(m_ActiveLayers.begin(), m_ActiveLayers.end(), overlay);
-            if (activeIt != m_ActiveLayers.end()) {
-                m_ActiveLayers.erase(activeIt);
+            auto activeIt = std::find(mActiveLayers.begin(), mActiveLayers.end(), layer);
+            if (activeIt != mActiveLayers.end()) {
+                mActiveLayers.erase(activeIt);
             }
         }
 
-        void SetLayerActive(T layer, bool active = true)
-        {
-            auto it = std::find(m_ActiveLayers.begin(), m_ActiveLayers.end(), layer);
-            if (active && it == m_ActiveLayers.end()) {
-                m_ActiveLayers.push_back(layer);
+        void popOverlay(T overlay) {
+            auto it = std::find(mLayers.begin(), mLayers.end(), overlay);
+            if (it != mLayers.end()) {
+                mLayers.erase(it);
             }
-            else if (!active && it != m_ActiveLayers.end()) {
-                m_ActiveLayers.erase(it);
+
+            auto activeIt = std::find(mActiveLayers.begin(), mActiveLayers.end(), overlay);
+            if (activeIt != mActiveLayers.end()) {
+                mActiveLayers.erase(activeIt);
             }
         }
 
-        const std::vector<T>& GetAllLayers() const { return m_Layers; }
-        const std::vector<T>& GetAllActiveLayers() const { return m_ActiveLayers; }
+        void setLayerActive(T layer, bool active = true) {
+            auto it = std::find(mActiveLayers.begin(), mActiveLayers.end(), layer);
+            if (active && it == mActiveLayers.end()) {
+                mActiveLayers.push_back(layer);
+            }
+            else if (!active && it != mActiveLayers.end()) {
+                mActiveLayers.erase(it);
+            }
+        }
 
-        typename std::vector<T>::iterator begin() { return m_ActiveLayers.begin(); }
-        typename std::vector<T>::iterator end() { return m_ActiveLayers.end(); }
+        const std::vector<T>& getAllLayers() const { return mLayers; }
+        const std::vector<T>& getAllActiveLayers() const { return mActiveLayers; }
+
+        typename std::vector<T>::iterator begin() { return mActiveLayers.begin(); }
+        typename std::vector<T>::iterator end() { return mActiveLayers.end(); }
 
     private:
-        std::vector<T> m_Layers;
-        std::vector<T> m_ActiveLayers;
-        unsigned int m_LayerInsertIndex;
+        std::vector<T> mLayers;
+        std::vector<T> mActiveLayers;
+        unsigned int mLayerInsertIndex;
     };
-
 }

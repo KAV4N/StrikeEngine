@@ -5,31 +5,24 @@
 
 namespace StrikeEngine {
 
-	class Input
-	{
-	public:
-		inline static bool IsKeyPressed(int keyCode) { return s_Instance->IsKeyPressedImpl(keyCode); }
+    class Input {
+    public:
+        inline static bool isKeyPressed(int keyCode) { return sInstance->isKeyPressedImpl(keyCode); }
+        inline static bool isMouseButtonPressed(int button) { return sInstance->isMouseButtonPressedImpl(button); }
+        inline static float getMouseX() { return sInstance->getMouseXImpl(); }
+        inline static float getMouseY() { return sInstance->getMouseYImpl(); }
+        inline static std::pair<float, float> getMouseXY() { return sInstance->getMouseXYImpl(); }
+        inline static void setCursorMode(CursorMode mode) { sInstance->setCursorModeImpl(mode); }
 
-		inline static bool IsMouseButtonPressed(int button) { return s_Instance->IsMouseButtonPressedImpl(button); }
-		
-		inline static float GetMouseX() { return s_Instance->GetMouseXImpl(); }
-		inline static float GetMouseY() { return s_Instance->GetMouseYImpl(); }
-		inline static std::pair<float, float> GetMouseXY() { return s_Instance->GetMouseXYImpl(); }
-		inline static void SetCursorMode(CursorMode mode) { s_Instance->SetCursorModeImpl(mode); };
+    protected:
+        virtual bool isKeyPressedImpl(int keyCode) = 0;
+        virtual bool isMouseButtonPressedImpl(int keyCode) = 0;
+        virtual float getMouseXImpl() = 0;
+        virtual float getMouseYImpl() = 0;
+        virtual std::pair<float, float> getMouseXYImpl() = 0;
+        virtual void setCursorModeImpl(CursorMode mode) = 0;
 
-
-		//inline static Input* Get() { return s_Instance; }
-
-	protected:
-		virtual bool IsKeyPressedImpl(int keyCode) = 0;
-
-		virtual bool IsMouseButtonPressedImpl(int keyCode) = 0;
-		virtual float GetMouseXImpl() = 0;
-		virtual float GetMouseYImpl() = 0;
-
-		virtual std::pair<float, float> GetMouseXYImpl() = 0;
-		virtual void SetCursorModeImpl(CursorMode mode) = 0;
-	private:
-		static Input* s_Instance;
-	};
+    private:
+        static Input* sInstance;
+    };
 }

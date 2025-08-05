@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<material materialId="tank_low_poly.Material" name="Material">
-	<diffuse r="0.800000012" g="0.800000012" b="0.800000012" />
-	<specular r="0.800000012" g="0.800000012" b="0.800000012" />
-	<ambient r="0" g="0" b="0" />
-	<shininess value="36" />
-</material>

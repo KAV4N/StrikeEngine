@@ -2,76 +2,66 @@
 
 #include "Event.h"
 
-
 namespace StrikeEngine {
 
-	class KeyEvent : public Event 
-	{
-	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+    class KeyEvent : public Event {
+    public:
+        int getKeyCode() const { return mKeyCode; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-	protected:
-		KeyEvent(int keycode) 
-			: m_KeyCode(keycode) {}
+        EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
-		int m_KeyCode;
-	};
+    protected:
+        KeyEvent(int keycode) : mKeyCode(keycode) {}
 
+        int mKeyCode;
+    };
 
+    class KeyPressedEvent : public KeyEvent {
+    public:
+        KeyPressedEvent(int keycode, int repeatCount)
+            : KeyEvent(keycode), mRepeatCount(repeatCount) {
+        }
 
-	class KeyPressedEvent : public KeyEvent 
-	{
-	public:
-		KeyPressedEvent(int keycode, int repeatCount) 
-			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
+        int getRepeatCount() const { return mRepeatCount; }
 
-		inline int GetRepeatCount() const { return m_RepeatCount; }
+        std::string toString() const override {
+            std::stringstream ss;
+            ss << "KeyPressedEvent: " << mKeyCode << " (" << mRepeatCount << " repeats)";
+            return ss.str();
+        }
 
-		std::string ToString() const override 
-		{
-			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << " (" << m_RepeatCount << " repeats)";
-			return ss.str();
-		}
+        EVENT_CLASS_TYPE(KeyPressed)
+            Event* clone() const override { return new KeyPressedEvent(mKeyCode, mRepeatCount); }
 
-		EVENT_CLASS_TYPE(KeyPressed)
-		virtual Event* Clone() const override { return new KeyPressedEvent(m_KeyCode, m_RepeatCount); }
+    private:
+        int mRepeatCount;
+    };
 
-	private:
-		int m_RepeatCount;
-	};
+    class KeyReleasedEvent : public KeyEvent {
+    public:
+        KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
 
-	class KeyReleasedEvent : public KeyEvent 
-	{
-	public:
-		KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
+        std::string toString() const override {
+            std::stringstream ss;
+            ss << "KeyReleasedEvent: " << mKeyCode;
+            return ss.str();
+        }
 
-		std::string ToString() const override 
-		{
-			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << m_KeyCode;
-			return ss.str();
-		}
+        EVENT_CLASS_TYPE(KeyReleased)
+            Event* clone() const override { return new KeyReleasedEvent(mKeyCode); }
+    };
 
-		EVENT_CLASS_TYPE(KeyReleased)
-		virtual Event* Clone() const override { return new KeyReleasedEvent(m_KeyCode); }
-	};
+    class KeyTypedEvent : public KeyEvent {
+    public:
+        KeyTypedEvent(int keycode) : KeyEvent(keycode) {}
 
-	class KeyTypedEvent : public KeyEvent
-	{
-	public:
-		KeyTypedEvent(int keycode)
-			: KeyEvent(keycode) {}
+        std::string toString() const override {
+            std::stringstream ss;
+            ss << "KeyTypedEvent: " << mKeyCode;
+            return ss.str();
+        }
 
-		std::string ToString() const override
-		{
-			std::stringstream ss;
-			ss << "KeyTypedEvent: " << m_KeyCode;
-			return ss.str();
-		}
-
-		EVENT_CLASS_TYPE(KeyTyped)
-		virtual Event* Clone() const override { return new KeyTypedEvent(m_KeyCode); }
-	};
+        EVENT_CLASS_TYPE(KeyTyped)
+            Event* clone() const override { return new KeyTypedEvent(mKeyCode); }
+    };
 }
