@@ -75,7 +75,7 @@ namespace StrikeEngine {
         SceneGraph();
         ~SceneGraph();
 
-        // Node management  
+        // Node management
         void createRootNode(Entity entity, const std::string& id, const std::string& name);
         void createNode(Entity entity, const std::string& id, const std::string& name);
         void removeNode(Entity entity);

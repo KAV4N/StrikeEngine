@@ -3,13 +3,13 @@
 namespace StrikeEngine {
 
     Mesh::Mesh(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : Asset(AssetType::Mesh, id, path, name),
+        : Asset(id, path, name),
         mBoundsMin(0.0f),
         mBoundsMax(0.0f) {
     }
 
     bool Mesh::swapData(Asset& other) {
-        if (other.getType() != AssetType::Mesh) {
+        if (other.getTypeName() != getStaticTypeName()) {
             return false;
         }
 
@@ -17,7 +17,6 @@ namespace StrikeEngine {
         if (!otherMesh) {
             return false;
         }
-
 
         std::swap(mName, otherMesh->mName);
         std::swap(mVertices, otherMesh->mVertices);

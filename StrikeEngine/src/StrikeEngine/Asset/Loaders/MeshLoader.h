@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AssetLoader.h"
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -16,7 +15,11 @@ namespace StrikeEngine {
     public:
         MeshLoader();
         ~MeshLoader() = default;
+
         std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& filePath) override;
+
+    protected:
+        std::shared_ptr<Asset> createPlaceholder(const std::string& id, const std::filesystem::path& path) override;
 
     private:
         std::shared_ptr<Mesh> parseMeshFromXml(const std::string& id, const std::filesystem::path& filePath);

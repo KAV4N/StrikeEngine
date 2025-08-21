@@ -1,44 +1,84 @@
 #include "AssetManager.h"
-
-#include <iostream>
-#include <algorithm>
-#include "StrikeEngine/Asset/Types/Mesh.h"
-#include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Asset/Loaders/MeshLoader.h"
 
 namespace StrikeEngine {
+
+    AssetManager& AssetManager::get() {
+        static AssetManager instance;
+        return instance;
+    }
 
     AssetManager::AssetManager() {
         registerAssetLoaders();
     }
 
     void AssetManager::registerAssetLoaders() {
-        registerLoader<Mesh>(std::make_unique<MeshLoader>());
+        mLoaders[Mesh::getStaticTypeName()] = std::make_unique<MeshLoader>();
     }
 
-    AssetManager::~AssetManager() {
-        clear();
-    }
+    AssetManager::~AssetManager() = default;
 
-    void AssetManager::registerLoaderByType(AssetType type, std::unique_ptr<AssetLoader> loader) {
+
+    std::shared_ptr<Asset> AssetManager::getAsset(const std::string& type, const std::string& id) {
         std::lock_guard<std::mutex> lock(mMutex);
-        mLoaders[type] = std::move(loader);
-    }
 
-    std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
-            auto asset = it->second.lock();
-            if (asset) {
-                return asset;
+            if (auto asset = it->second.lock()) {
+                if (asset->getTypeName() == type) {
+                    return asset;
+                }
             }
-            else {
-                mLoadedAssets.erase(it);
-            }
+            mLoadedAssets.erase(it); 
         }
         return nullptr;
     }
+
+    std::shared_ptr<Asset> AssetManager::loadAsset(const std::string& type, const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingAsset = getAsset(type, id)) {
+            return existingAsset;
+        }
+
+        auto loader = getLoader(type);
+        if (!loader) {
+            return nullptr;
+        }
+
+        return loader->load(id, filePath);
+    }
+
+
+    std::shared_ptr<Asset> AssetManager::loadAssetAsync(const std::string& type, const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingAsset = getAsset(type, id)) {
+            return existingAsset;
+        }
+
+        auto loader = getLoader(type);
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto placeholderAsset = loader->createPlaceholder(id, filePath);
+        
+        if (!placeholderAsset) {
+            return nullptr;
+        }
+
+        placeholderAsset->setLoadingState(AssetLoadingState::Loading);
+
+
+        placeholderAsset->setName(filePath.stem().string());
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = placeholderAsset;
+        }
+
+        loader->loadAsync(id, filePath, placeholderAsset);
+
+        return placeholderAsset;
+    }
+
 
     bool AssetManager::hasAsset(const std::string& id) const {
         std::lock_guard<std::mutex> lock(mMutex);
@@ -48,87 +88,75 @@ namespace StrikeEngine {
 
     bool AssetManager::isAssetLoading(const std::string& id) const {
         std::lock_guard<std::mutex> lock(mMutex);
-        return mLoadingTasks.find(id) != mLoadingTasks.end();
-    }
-
-    void AssetManager::removeAssetInternal(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        mLoadedAssets.erase(id);
-        mLoadingTasks.erase(id);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (auto asset = it->second.lock()) {
+                return asset->isLoading();
+            }
+        }
+        return false;
     }
 
     void AssetManager::clear() {
         std::lock_guard<std::mutex> lock(mMutex);
         mLoadedAssets.clear();
-        mLoadingTasks.clear();
+        for (auto& [type, loader] : mLoaders) {
+            loader->clearLoadingTasks();
+        }
     }
 
     void AssetManager::update() {
-        std::lock_guard<std::mutex> lock(mMutex);
-
-        for (auto it = mLoadingTasks.begin(); it != mLoadingTasks.end(); ) {
-            if (it->second.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-                try {
-                    auto loadedAsset = it->second.future.get();
-                    if (loadedAsset) {
-                        auto& placeholder = it->second.placeholderAsset;
-                        if (placeholder->swapData(*loadedAsset)) {
-                            placeholder->setLoadingState(AssetLoadingState::Ready);
-                        }
-                        else {
-                            std::cerr << "Failed to swap asset data for '" << it->first
-                                << "': Type mismatch or swap failed" << std::endl;
-                            placeholder->setLoadingState(AssetLoadingState::FAILED);
-                        }
-                    }
-                    else {
-                        it->second.placeholderAsset->setLoadingState(AssetLoadingState::FAILED);
-                    }
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            auto it = mLoadedAssets.begin();
+            while (it != mLoadedAssets.end()) {
+                if (it->second.expired()) {
+                    it = mLoadedAssets.erase(it);
                 }
-                catch (const std::exception& e) {
-                    std::cerr << "Error loading asset '" << it->first << "': " << e.what() << std::endl;
-                    it->second.placeholderAsset->setLoadingState(AssetLoadingState::FAILED);
+                else {
+                    ++it;
                 }
+            }
+        }
 
-                it = mLoadingTasks.erase(it);
-            }
-            else {
-                ++it;
-            }
+        for (auto& [type, loader] : mLoaders) {
+            loader->update();
         }
     }
 
     std::vector<std::string> AssetManager::getLoadedAssetIds() const {
         std::lock_guard<std::mutex> lock(mMutex);
-        std::vector<std::string> loadedIds;
+        std::vector<std::string> ids;
         for (const auto& [id, weakAsset] : mLoadedAssets) {
-            if (!weakAsset.expired()) {
-                auto asset = weakAsset.lock();
-                if (asset && asset->getLoadingState() == AssetLoadingState::Ready) {
-                    loadedIds.push_back(id);
+            if (auto asset = weakAsset.lock()) {
+                if (asset->isReady()) {
+                    ids.push_back(id);
                 }
             }
         }
-        return loadedIds;
+        return ids;
     }
 
     std::vector<std::string> AssetManager::getLoadingAssetIds() const {
         std::lock_guard<std::mutex> lock(mMutex);
-        std::vector<std::string> loadingIds;
-        for (const auto& [id, task] : mLoadingTasks) {
-            loadingIds.push_back(id);
+        std::vector<std::string> ids;
+        for (const auto& [id, weakAsset] : mLoadedAssets) {
+            if (auto asset = weakAsset.lock()) {
+                if (asset->isLoading()) {
+                    ids.push_back(id);
+                }
+            }
         }
-        return loadingIds;
+        return ids;
     }
 
     size_t AssetManager::getLoadedAssetCount() const {
         std::lock_guard<std::mutex> lock(mMutex);
         size_t count = 0;
         for (const auto& [id, weakAsset] : mLoadedAssets) {
-            if (!weakAsset.expired()) {
-                auto asset = weakAsset.lock();
-                if (asset && asset->getLoadingState() == AssetLoadingState::Ready) {
-                    ++count;
+            if (auto asset = weakAsset.lock()) {
+                if (asset->isReady()) {
+                    count++;
                 }
             }
         }
@@ -137,7 +165,35 @@ namespace StrikeEngine {
 
     size_t AssetManager::getLoadingAssetCount() const {
         std::lock_guard<std::mutex> lock(mMutex);
-        return mLoadingTasks.size();
+        size_t count = 0;
+        for (const auto& [id, weakAsset] : mLoadedAssets) {
+            if (auto asset = weakAsset.lock()) {
+                if (asset->isLoading()) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
-}
+    std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            return it->second.lock();
+        }
+        return nullptr;
+    }
+
+    void AssetManager::removeAssetInternal(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        mLoadedAssets.erase(id);
+    }
+
+    AssetLoader* AssetManager::getLoader(const std::string& typeName) {
+        auto it = mLoaders.find(typeName);
+        return (it != mLoaders.end()) ? it->second.get() : nullptr;
+    }
+
+
+} // namespace StrikeEngine

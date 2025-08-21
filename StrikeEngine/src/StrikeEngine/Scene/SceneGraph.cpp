@@ -2,6 +2,7 @@
 #include "Entity.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
+#include <iostream>
 
 namespace StrikeEngine {
 
@@ -15,14 +16,42 @@ namespace StrikeEngine {
     SceneGraph::~SceneGraph() = default;
 
     void SceneGraph::createRootNode(Entity entity, const std::string& id, const std::string& name) {
+        if (!entity.isValid()) {
+            std::cerr << "Error: Attempting to create root node with invalid entity" << std::endl;
+            return;
+        }
+        if (nodes.find(entity) != nodes.end()) {
+            std::cerr << "Error: Entity already exists in scene graph" << std::endl;
+            return;
+        }
         auto node = std::make_shared<GraphNode>(entity, id, name, true);
-        nodes[entity] = node;
-        rootNode = node;
+        try {
+            nodes.emplace(entity, node);
+            rootNode = node;
+            std::cout << "Created root node for entity with ID: " << id << std::endl;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception in createRootNode: " << e.what() << std::endl;
+        }
     }
 
     void SceneGraph::createNode(Entity entity, const std::string& id, const std::string& name) {
+        if (!entity.isValid()) {
+            std::cerr << "Error: Attempting to create node with invalid entity" << std::endl;
+            return;
+        }
+        if (nodes.find(entity) != nodes.end()) {
+            std::cerr << "Error: Entity already exists in scene graph" << std::endl;
+            return;
+        }
         auto node = std::make_shared<GraphNode>(entity, id, name, false);
-        nodes[entity] = node;
+        try {
+            nodes.emplace(entity, node);
+            std::cout << "Created node for entity with ID: " << id << std::endl;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Exception in createNode: " << e.what() << std::endl;
+        }
     }
 
     void SceneGraph::removeNode(Entity entity) {
@@ -325,5 +354,4 @@ namespace StrikeEngine {
         auto it = nodes.find(entity);
         return it != nodes.end() ? it->second : nullptr;
     }
-
 }

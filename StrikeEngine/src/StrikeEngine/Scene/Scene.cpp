@@ -6,9 +6,9 @@
 #include <iomanip>
 
 namespace StrikeEngine {
-
     Scene::Scene(const std::string& id, const std::filesystem::path& path, const std::string& name)
         : mSceneGraph(std::make_unique<SceneGraph>())
+        , mActive(true)
     {
         createRootEntity(id, name);
     }
@@ -23,10 +23,8 @@ namespace StrikeEngine {
         entt::entity handle = mRegistry.create();
         Entity entity(*this, handle);
         mSceneGraph->createNode(entity, id, name);
-
         // By default, parent new entities to the root
         mSceneGraph->setParent(entity, mRootEntity);
-
         return entity;
     }
 
@@ -34,12 +32,10 @@ namespace StrikeEngine {
         if (!isEntityValid(entity)) {
             return;
         }
-
         // Prevent deletion of root entity
         if (isRootEntity(entity)) {
             return;
         }
-
         mSceneGraph->removeNode(entity);
         mRegistry.destroy(entity.handle);
     }
@@ -74,13 +70,41 @@ namespace StrikeEngine {
     void Scene::reset() {
         std::string entId = mRootEntity.getId();
         std::string entName = mRootEntity.getName();
+
         mSceneGraph->clear();
         mRegistry.clear();
         createRootEntity(entId, entName);
     }
 
-    void Scene::update(float dt) {
+    void Scene::onUpdate(float dt) {
+        if (!mActive) return;
+
+        // Visual/rendering updates - interpolation, animations, etc.
         mSceneGraph->updateTransforms();
     }
 
+    void Scene::onRender() {
+        if (!mActive) return;
+
+        // Rendering operations
+        // - Submit render commands
+        // - Prepare render data
+        // - Culling operations
+        // etc.
+    }
+
+
+    void Scene::onImGuiRender() {
+        if (!mActive) return;
+
+        // Rendering operations
+        // - Submit render commands
+        // - Prepare render data
+        // - Culling operations
+        // etc.
+    }
+
+    void Scene::onEvent(Event& e) {
+        if (!mActive) return;
+    }
 }

@@ -27,7 +27,16 @@ namespace StrikeEngine {
     public:
         Mesh(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
 
-        static AssetType getStaticAssetType() { return AssetType::Mesh; }
+        // Static type name for registration
+        static const std::string& getStaticTypeName() {
+            static const std::string typeName = "mesh";
+            return typeName;
+        }
+
+        // Virtual method implementation
+        const std::string& getTypeName() const override {
+            return getStaticTypeName();
+        }
 
         bool swapData(Asset& other) override;
 

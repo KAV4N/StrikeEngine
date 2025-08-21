@@ -1,48 +1,10 @@
 #include "RendererComponent.h"
+#include "StrikeEngine/Scene/ComponentRegistry.h"
 
 namespace StrikeEngine {
 
-    RendererComponentSerializer::RendererComponentSerializer(RendererComponent& component) : mComponent(component) {}
 
-    void RendererComponentSerializer::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
-        auto meshIdIt = attributes.find("meshId");
-        if (meshIdIt != attributes.end()) {
-            mComponent.setMeshId(meshIdIt->second);
-        }
-
-        auto materialIdIt = attributes.find("materialId");
-        if (materialIdIt != attributes.end()) {
-            mComponent.setMaterial(0, materialIdIt->second);
-        }
-
-        for (pugi::xml_node materialNode : node.children("material")) {
-            int slot = materialNode.attribute("slot").as_int(0);
-            std::string matId = materialNode.attribute("materialId").as_string();
-            if (!matId.empty()) {
-                mComponent.setMaterial(slot, matId);
-            }
-        }
-    }
-
-    void RendererComponentSerializer::serialize(pugi::xml_node& node) const {
-        if (!mComponent.getMeshId().empty()) {
-            node.append_attribute("meshId") = mComponent.getMeshId().c_str();
-        }
-
-        const auto& materials = mComponent.getMaterials();
-        if (materials.find(0) != materials.end()) {
-            node.append_attribute("materialId") = mComponent.getMaterial(0).c_str();
-        }
-
-        for (const auto& [slot, materialId] : materials) {
-            if (slot != 0) {
-                pugi::xml_node materialNode = node.append_child("material");
-                materialNode.append_attribute("slot") = slot;
-                materialNode.append_attribute("materialId") = materialId.c_str();
-            }
-        }
-    }
-
+    // RendererComponent implementation
     RendererComponent::RendererComponent() {}
 
     RendererComponent::RendererComponent(const std::string& meshId)
@@ -53,12 +15,6 @@ namespace StrikeEngine {
         : mMeshId(meshId) {
         mMaterials[0] = materialId;
     }
-
-    const std::string& RendererComponent::getTypeName() const {
-        static const std::string typeName = "renderer";
-        return typeName;
-    }
-
 
     void RendererComponent::setMeshId(const std::string& meshId) {
         mMeshId = meshId;
@@ -81,4 +37,44 @@ namespace StrikeEngine {
     const std::unordered_map<uint32_t, std::string>& RendererComponent::getMaterials() const {
         return mMaterials;
     }
+
+    void RendererComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
+        auto meshIdIt = attributes.find("meshId");
+        if (meshIdIt != attributes.end()) {
+            setMeshId(meshIdIt->second);
+        }
+
+        auto materialIdIt = attributes.find("materialId");
+        if (materialIdIt != attributes.end()) {
+            setMaterial(0, materialIdIt->second);
+        }
+
+        for (pugi::xml_node materialNode : node.children("material")) {
+            int slot = materialNode.attribute("slot").as_int(0);
+            std::string matId = materialNode.attribute("materialId").as_string();
+            if (!matId.empty()) {
+                setMaterial(slot, matId);
+            }
+        }
+    }
+
+    void RendererComponent::serialize(pugi::xml_node& node) const {
+        if (!mMeshId.empty()) {
+            node.append_attribute("meshId") = mMeshId.c_str();
+        }
+
+        const auto& materials = mMaterials;
+        if (materials.find(0) != materials.end()) {
+            node.append_attribute("materialId") = getMaterial(0).c_str();
+        }
+
+        for (const auto& [slot, materialId] : materials) {
+            if (slot != 0) {
+                pugi::xml_node materialNode = node.append_child("material");
+                materialNode.append_attribute("slot") = slot;
+                materialNode.append_attribute("materialId") = materialId.c_str();
+            }
+        }
+    }
+
 }

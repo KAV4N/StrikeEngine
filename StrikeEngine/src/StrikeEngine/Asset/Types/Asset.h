@@ -1,17 +1,10 @@
+// Asset.h (updated)
 #pragma once
 #include <string>
 #include <filesystem>
 
 namespace StrikeEngine {
     class AssetManager;
-
-    enum class AssetType {
-        Scene = 0,
-        Mesh,
-        Material,
-        Texture2D,
-        Shader
-    };
 
     enum class AssetLoadingState {
         Uninitialized = 0,
@@ -22,11 +15,12 @@ namespace StrikeEngine {
 
     class Asset {
     public:
-        Asset(AssetType type, const std::string& id, const std::filesystem::path& path, const std::string& name);
+        Asset(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
         virtual ~Asset();
 
+        virtual const std::string& getTypeName() const = 0;
+
         const std::string& getId() const;
-        AssetType getType() const;
         AssetLoadingState getLoadingState() const;
         const std::filesystem::path& getPath() const;
         const std::string& getName() const;
@@ -41,8 +35,8 @@ namespace StrikeEngine {
         virtual bool swapData(Asset& other) = 0;
 
     protected:
+
         std::string mId;
-        AssetType mType;
         std::string mName;
         std::filesystem::path mPath;
         AssetLoadingState mLoadingState;

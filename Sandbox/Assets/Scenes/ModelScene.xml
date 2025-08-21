@@ -1,5 +1,14 @@
 <scene name="MainScene" version="1.0">
 
+	<templates>
+		<template templateId="playerModel" src="models/character.fbx"
+               templateDir="templates/playerModel" />
+		<template templateId="buildingModel" src="models/building.fbx"
+               templateDir="templates/buildingModel" />
+		<template templateId="weaponModel" src="models/sword.fbx"
+               templateDir="templates/weaponModel" />
+	</templates>
+
 	<!-- Asset Loading Block - Declares external resources -->
 	<assets>
 		<!-- 3D Models -->

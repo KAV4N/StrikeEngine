@@ -49,15 +49,21 @@ namespace StrikeEngine {
             parser.parseModel("assets/cubeModel.fbx", "scenes/templates/cubeModel");
             */
             AssetManager& manager = AssetManager::get();
-            auto mesh = manager.loadAssetAsync<Mesh>("mesh1", "Assets/Scenes/templates/tank/Cube.mesh");
-            pushLayer(new TestLayer(mesh));
+            mesh = manager.loadAssetAsync<Mesh>("mesh1", "Assets/Scenes/templates/tank/Cube.mesh");
+            
+            //StrikeEngine::World::get().loadScene("Assets/Scenes/MainScene.xml");
+            
+            // pushLayer(new TestLayer(mesh));
         }
 
         ~Sandbox() {
         }
+        std::shared_ptr<StrikeEngine::Mesh> mesh;
     };
 
     Application* createApplication() {
         return new Sandbox();
     }
+
+
 }

@@ -7,7 +7,7 @@ namespace StrikeEngine {
 
     class Layer {
     public:
-        Layer(const std::string& name = "Layer");
+        Layer(const std::string& name = "Layer", const bool active=true);
         virtual ~Layer();
 
         virtual void onAttach() {}
@@ -17,9 +17,13 @@ namespace StrikeEngine {
         virtual void onRender() {}
         virtual void onEvent(Event& event) {}
 
-        inline const std::string& getName() const { return mDebugName; }
+        inline const std::string& getName() const { return mName; }
+
+        bool IsActive() { return mActive; }
+        void setActive(bool active) { mActive = active; }
 
     protected:
-        std::string mDebugName;
+        std::string mName;
+        bool mActive;
     };
 }

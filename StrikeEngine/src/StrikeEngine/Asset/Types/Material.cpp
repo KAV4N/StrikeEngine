@@ -3,12 +3,12 @@
 namespace StrikeEngine {
 
     Material::Material(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : Asset(AssetType::Material, id, path, name), mDiffuseColor(1.0f), mSpecularColor(1.0f),
+        : Asset(id, path, name), mDiffuseColor(1.0f), mSpecularColor(1.0f),
         mAmbientColor(1.0f), mShininess(32.0f) {
     }
 
     bool Material::swapData(Asset& other) {
-        if (other.getType() != AssetType::Material) {
+        if (other.getTypeName() != getTypeName()) {
             return false;
         }
 

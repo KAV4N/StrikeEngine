@@ -5,14 +5,7 @@
 		<directionalLight color="1,1,1" intensity="0.8" />
 	</components>
 	
-	<templates>
-		<template templateId="playerModel" src="models/character.fbx"
-               templateDir="templates/playerModel" />
-		<template templateId="buildingModel" src="models/building.fbx"
-               templateDir="templates/buildingModel" />
-		<template templateId="weaponModel" src="models/sword.fbx"
-               templateDir="templates/weaponModel" />
-	</templates>
+
 	
 	<assets>
 		<mesh meshId="tank_low_poly.Cylinder_001" src="scenes/templates/tank/Cylinder_001.mesh" />

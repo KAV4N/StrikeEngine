@@ -1,6 +1,7 @@
 #include "Entity.h"
 #include "Scene.h"
 #include "SceneGraph.h"
+#include <iostream>
 
 namespace StrikeEngine {
 
@@ -136,11 +137,18 @@ namespace StrikeEngine {
     }
 
     entt::registry& Entity::getRegistry() const {
+        if (!scene) {
+            std::cerr << "Error: Entity has null scene pointer" << std::endl;
+            throw std::runtime_error("Entity has null scene pointer");
+        }
         return scene->getRegistry();
     }
 
     SceneGraph& Entity::getSceneGraph() const {
+        if (!scene) {
+            std::cerr << "Error: Entity has null scene pointer" << std::endl;
+            throw std::runtime_error("Entity has null scene pointer");
+        }
         return scene->getSceneGraph();
     }
-
 }

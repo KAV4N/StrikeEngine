@@ -12,33 +12,30 @@ namespace StrikeEngine {
 
     class Entity;
 
-    class ComponentMapRegistry {
+    class ComponentRegistry {
     public:
         using ComponentAdder = std::function<void(Entity&, const std::unordered_map<std::string, std::string>&, const pugi::xml_node&)>;
 
-        static ComponentMapRegistry& get() {
-            static ComponentMapRegistry instance;
+        static ComponentRegistry& get() {
+            static ComponentRegistry instance;
             return instance;
         }
 
         template<typename T>
         void registerComponent() {
-            /*
             static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
-            T temp;
-            const std::string& typeName = temp.getTypeName();
+            const std::string& typeName = T::getStaticTypeName();
             mAdders[typeName] = [](Entity& entity, const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
                 auto& component = entity.addComponent<T>();
-                component.setAttributes(attributes, node);
-                };
-                */
+                component.deserialize(attributes, node);
+            };
         }
 
-        bool hasComponent(const std::string& typeName) const;
+        bool isRegistered(const std::string& typeName) const;
         void addComponentToEntity(Entity& entity, const std::string& typeName, const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) const;
 
     private:
-        ComponentMapRegistry();
+        ComponentRegistry();
         std::unordered_map<std::string, ComponentAdder> mAdders;
     };
 }

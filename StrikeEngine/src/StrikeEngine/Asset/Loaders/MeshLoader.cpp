@@ -1,14 +1,18 @@
 #include "MeshLoader.h"
-
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 namespace StrikeEngine {
 
-    MeshLoader::MeshLoader() : AssetLoader(AssetType::Mesh) {}
+    MeshLoader::MeshLoader() : AssetLoader(Mesh::getStaticTypeName()) {}
 
     std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath) {
-        return parseMeshFromXml(id, filePath);
+        auto mesh = parseMeshFromXml(id, filePath);
+        if (mesh) {
+            mesh->setLoadingState(AssetLoadingState::Ready);
+        }
+        return mesh;
     }
 
     std::shared_ptr<Mesh> MeshLoader::parseMeshFromXml(const std::string& id, const std::filesystem::path& filePath) {
@@ -182,6 +186,10 @@ namespace StrikeEngine {
             node.attribute("y").as_float(0.0f),
             node.attribute("z").as_float(0.0f)
         );
+    }
+
+    std::shared_ptr<Asset> MeshLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
+        return std::make_shared<Mesh>(id, path, path.stem().string());
     }
 
 }

@@ -20,7 +20,7 @@ namespace StrikeEngine {
         operator bool() const { return isValid(); }
 
         // Basic properties
-        //entt::entity getHandle() const { return handle; }
+        entt::entity getHandle() const { return handle; }
         std::string getName() const;
         std::string getId() const;
 
@@ -71,7 +71,7 @@ namespace StrikeEngine {
         bool isAncestorOf(Entity other) const;
         bool isDescendantOf(Entity other) const;
         bool isRoot() const;
-        bool isSceneRoot() const; 
+        bool isSceneRoot() const;
         bool isActive() const;
 
         // Comparison operators
@@ -88,7 +88,7 @@ namespace StrikeEngine {
         SceneGraph& getSceneGraph() const;
     };
 
-    // Template implementations
+    
     template<typename T, typename... Args>
     T& Entity::addComponent(Args&&... args) {
         return getRegistry().emplace<T>(handle, std::forward<Args>(args)...);
@@ -123,11 +123,12 @@ namespace StrikeEngine {
     }
 }
 
+// Updated hash function to avoid recursion
 namespace std {
     template <>
     struct hash<StrikeEngine::Entity> {
         std::size_t operator()(const StrikeEngine::Entity& entity) const noexcept {
-            return std::hash<std::string>{}(entity.getId());
+            return std::hash<entt::entity>{}(entity.getHandle());
         }
     };
 }
