@@ -9,25 +9,22 @@ namespace StrikeEngine {
         return mTypeName;
     }
 
+    std::shared_ptr<Asset> AssetLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
+        return nullptr;
+    }
+
     void AssetLoader::loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset) {
         std::lock_guard<std::mutex> lock(mMutex);
 
-        // Check if this asset is already being loaded
         if (mLoadingTasks.find(id) != mLoadingTasks.end()) {
-            return; // Already loading
+            return; 
         }
 
-        // Start async loading
         auto future = std::async(std::launch::async, [this, id, path]() {
-            return this->load(id, path);
+            return this->load(id, path, true);
             });
 
-        // Store the loading task
         mLoadingTasks.emplace(id, LoadingTask(id, path, placeholderAsset, std::move(future)));
-    }
-
-    bool AssetLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loadedAsset) {
-        return placeholder->swapData(*loadedAsset);
     }
 
     void AssetLoader::update() {
@@ -42,14 +39,11 @@ namespace StrikeEngine {
                     auto loadedAsset = task.future.get();
 
                     if (loadedAsset && task.placeholderAsset) {
-                        if (swapData(task.placeholderAsset, loadedAsset)) {
-                            task.placeholderAsset->setLoadingState(AssetLoadingState::Ready);
-                        }
-                        else {
-                            task.placeholderAsset->setLoadingState(AssetLoadingState::FAILED);
-                        }
+                        swapData(task.placeholderAsset, loadedAsset);
+                        task.placeholderAsset->setLoadingState(AssetLoadingState::Ready);
+                        
                     }
-                    else if (task.placeholderAsset){
+                    else if (task.placeholderAsset) {
                         // Loading failed
                         task.placeholderAsset->setLoadingState(AssetLoadingState::FAILED);
                     }

@@ -1,5 +1,13 @@
 #include "AssetManager.h"
 #include "StrikeEngine/Asset/Loaders/MeshLoader.h"
+#include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
+#include "StrikeEngine/Asset/Loaders/ShaderLoader.h"
+#include "StrikeEngine/Asset/Loaders/Texture2DLoader.h"
+
+#include "StrikeEngine/Asset/Types/Mesh.h"
+#include "StrikeEngine/Asset/Types/Shader.h"
+#include "StrikeEngine/Asset/Types/Template.h"
+#include "StrikeEngine/Asset/Types/Texture2D.h"
 
 namespace StrikeEngine {
 
@@ -14,71 +22,232 @@ namespace StrikeEngine {
 
     void AssetManager::registerAssetLoaders() {
         mLoaders[Mesh::getStaticTypeName()] = std::make_unique<MeshLoader>();
+        mLoaders[Template::getStaticTypeName()] = std::make_unique<TemplateLoader>();
+        mLoaders[Shader::getStaticTypeName()] = std::make_unique<ShaderLoader>();
+        mLoaders[Texture2D::getStaticTypeName()] = std::make_unique<Texture2DLoader>();
     }
 
     AssetManager::~AssetManager() = default;
 
+    // Mesh-specific methods
+    std::shared_ptr<Mesh> AssetManager::loadMesh(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingMesh = getMesh(id)) {
+            return existingMesh;
+        }
 
-    std::shared_ptr<Asset> AssetManager::getAsset(const std::string& type, const std::string& id) {
+        auto loader = getLoader(Mesh::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto loadedAsset = loader->load(id, filePath);
+        if (loadedAsset) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return std::static_pointer_cast<Mesh>(loadedAsset);
+    }
+
+    std::shared_ptr<Mesh> AssetManager::loadMeshAsync(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingMesh = getMesh(id)) {
+            return existingMesh;
+        }
+
+        auto loader = getLoader(Mesh::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto placeholderMesh = std::make_shared<Mesh>(id, filePath, filePath.stem().string());
+        placeholderMesh->setLoadingState(AssetLoadingState::Loading);
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = placeholderMesh;
+        }
+
+        loader->loadAsync(id, filePath, placeholderMesh);
+        return placeholderMesh;
+    }
+
+    std::shared_ptr<Mesh> AssetManager::getMesh(const std::string& id) {
         std::lock_guard<std::mutex> lock(mMutex);
-
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
             if (auto asset = it->second.lock()) {
-                if (asset->getTypeName() == type) {
-                    return asset;
+                if (asset->getTypeName() == Mesh::getStaticTypeName()) {
+                    return std::static_pointer_cast<Mesh>(asset);
                 }
             }
-            mLoadedAssets.erase(it); 
+            mLoadedAssets.erase(it);
         }
         return nullptr;
     }
 
-    std::shared_ptr<Asset> AssetManager::loadAsset(const std::string& type, const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingAsset = getAsset(type, id)) {
-            return existingAsset;
+    // Template-specific methods
+    std::shared_ptr<Template> AssetManager::loadTemplate(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingTemplate = getTemplate(id)) {
+            return existingTemplate;
         }
 
-        auto loader = getLoader(type);
+        auto loader = getLoader(Template::getStaticTypeName());
         if (!loader) {
             return nullptr;
         }
 
-        return loader->load(id, filePath);
+        auto loadedAsset = loader->load(id, filePath);
+        if (loadedAsset) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return std::static_pointer_cast<Template>(loadedAsset);
     }
 
-
-    std::shared_ptr<Asset> AssetManager::loadAssetAsync(const std::string& type, const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingAsset = getAsset(type, id)) {
-            return existingAsset;
+    std::shared_ptr<Template> AssetManager::loadTemplateAsync(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingTemplate = getTemplate(id)) {
+            return existingTemplate;
         }
 
-        auto loader = getLoader(type);
+        auto loader = getLoader(Template::getStaticTypeName());
         if (!loader) {
             return nullptr;
         }
 
-        auto placeholderAsset = loader->createPlaceholder(id, filePath);
-        
-        if (!placeholderAsset) {
-            return nullptr;
-        }
-
-        placeholderAsset->setLoadingState(AssetLoadingState::Loading);
-
-
-        placeholderAsset->setName(filePath.stem().string());
+        auto placeholderTemplate = std::make_shared<Template>(id, filePath, filePath.stem().string());
+        placeholderTemplate->setLoadingState(AssetLoadingState::Loading);
 
         {
             std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderAsset;
+            mLoadedAssets[id] = placeholderTemplate;
         }
 
-        loader->loadAsync(id, filePath, placeholderAsset);
-
-        return placeholderAsset;
+        loader->loadAsync(id, filePath, placeholderTemplate);
+        return placeholderTemplate;
     }
 
+    std::shared_ptr<Template> AssetManager::getTemplate(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (auto asset = it->second.lock()) {
+                if (asset->getTypeName() == Template::getStaticTypeName()) {
+                    return std::static_pointer_cast<Template>(asset);
+                }
+            }
+            mLoadedAssets.erase(it);
+        }
+        return nullptr;
+    }
+
+    // Shader-specific methods
+    std::shared_ptr<Shader> AssetManager::loadShader(const std::string& id, const std::filesystem::path& vertexSrc, const std::filesystem::path& fragmentSrc) {
+        if (auto existingShader = getShader(id)) {
+            return existingShader;
+        }
+
+        auto loader = static_cast<ShaderLoader*>(getLoader(Shader::getStaticTypeName()));
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto loadedAsset = loader->loadShader(id, vertexSrc, fragmentSrc);
+        if (loadedAsset) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return loadedAsset;
+    }
+
+    std::shared_ptr<Shader> AssetManager::loadShaderAsync(const std::string& id, const std::filesystem::path& vertexSrc, const std::filesystem::path& fragmentSrc) {
+        if (auto existingShader = getShader(id)) {
+            return existingShader;
+        }
+
+        auto loader = static_cast<ShaderLoader*>(getLoader(Shader::getStaticTypeName()));
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto placeholderShader = std::make_shared<Shader>(id, vertexSrc, fragmentSrc, vertexSrc.stem().string());
+        placeholderShader->setLoadingState(AssetLoadingState::Loading);
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = placeholderShader;
+        }
+
+        loader->loadShaderAsync(id, vertexSrc, fragmentSrc, placeholderShader);
+        return placeholderShader;
+    }
+
+    std::shared_ptr<Shader> AssetManager::getShader(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (auto asset = it->second.lock()) {
+                if (asset->getTypeName() == Shader::getStaticTypeName()) {
+                    return std::static_pointer_cast<Shader>(asset);
+                }
+            }
+            mLoadedAssets.erase(it);
+        }
+        return nullptr;
+    }
+
+    // Texture2D-specific methods
+    std::shared_ptr<Texture2D> AssetManager::loadTexture(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingTexture = getTexture(id)) {
+            return existingTexture;
+        }
+
+        auto loader = getLoader(Texture2D::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto loadedAsset = loader->load(id, filePath);
+        if (loadedAsset) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return std::static_pointer_cast<Texture2D>(loadedAsset);
+    }
+
+    std::shared_ptr<Texture2D> AssetManager::loadTextureAsync(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingTexture = getTexture(id)) {
+            return existingTexture;
+        }
+
+        auto loader = getLoader(Texture2D::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto placeholderTexture = std::make_shared<Texture2D>(id, filePath, filePath.stem().string());
+        placeholderTexture->setLoadingState(AssetLoadingState::Loading);
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = placeholderTexture;
+        }
+
+        loader->loadAsync(id, filePath, placeholderTexture);
+        return placeholderTexture;
+    }
+
+    std::shared_ptr<Texture2D> AssetManager::getTexture(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (auto asset = it->second.lock()) {
+                if (asset->getTypeName() == Texture2D::getStaticTypeName()) {
+                    return std::static_pointer_cast<Texture2D>(asset);
+                }
+            }
+            mLoadedAssets.erase(it);
+        }
+        return nullptr;
+    }
 
     bool AssetManager::hasAsset(const std::string& id) const {
         std::lock_guard<std::mutex> lock(mMutex);
@@ -195,5 +364,35 @@ namespace StrikeEngine {
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
     }
 
+    void AssetManager::serialize(pugi::xml_document& doc) {
+        pugi::xml_node assetsNode = doc.append_child("assets");
 
-} // namespace StrikeEngine
+        std::lock_guard<std::mutex> lock(mMutex);
+        for (const auto& [id, weakAsset] : mLoadedAssets) {
+            if (auto asset = weakAsset.lock()) {
+                pugi::xml_node assetNode = asset->toNode();
+                assetsNode.append_copy(assetNode);
+            }
+        }
+    }
+
+    void AssetManager::deserialize(const pugi::xml_node& node, std::vector<std::shared_ptr<Asset>>& assets) {
+        clear();
+
+        for (pugi::xml_node assetNode : node.children()) {
+            std::string typeName = assetNode.name();
+            auto loader = getLoader(typeName);
+            if (loader) {
+                auto asset = loader->loadFromNode(assetNode);
+                if (asset) {
+                    {
+                        std::lock_guard<std::mutex> lock(mMutex);
+                        mLoadedAssets[asset->getId()] = asset;
+                    }
+                    assets.push_back(asset);
+                }
+            }
+        }
+    }
+
+}

@@ -1,32 +1,40 @@
 #include "Mesh.h"
+#include <glad/glad.h>
 
 namespace StrikeEngine {
 
     Mesh::Mesh(const std::string& id, const std::filesystem::path& path, const std::string& name)
         : Asset(id, path, name),
-        mBoundsMin(0.0f),
-        mBoundsMax(0.0f) {
+        mHasOpenGLResources(false) {
     }
 
-    bool Mesh::swapData(Asset& other) {
-        if (other.getTypeName() != getStaticTypeName()) {
-            return false;
-        }
+    Mesh::~Mesh() {
 
-        Mesh* otherMesh = dynamic_cast<Mesh*>(&other);
-        if (!otherMesh) {
-            return false;
-        }
-
-        std::swap(mName, otherMesh->mName);
-        std::swap(mVertices, otherMesh->mVertices);
-        std::swap(mIndices, otherMesh->mIndices);
-        std::swap(mSubMeshes, otherMesh->mSubMeshes);
-        std::swap(mBoundsMin, otherMesh->mBoundsMin);
-        std::swap(mBoundsMax, otherMesh->mBoundsMax);
-
-        return true;
     }
+
+
+    void Mesh::postLoad() {
+        createOpenGLResources();
+    }
+
+    void Mesh::createOpenGLResources() {
+        if (mVertices.empty() || mIndices.empty()) {
+            return;
+        }
+
+        mVertexBuffer = std::make_shared<VertexBuffer>();
+        mIndexBuffer = std::make_shared<IndexBuffer>();
+        mVertexArray = std::make_shared<VertexArray>();
+
+        mVertexBuffer->setData(mVertices.data(), mVertices.size() * sizeof(Vertex));
+        mIndexBuffer->setData(mIndices.data(), mIndices.size());
+
+        mVertexArray->setVertexBuffer(*mVertexBuffer);
+        mVertexArray->setIndexBuffer(*mIndexBuffer);
+
+        mHasOpenGLResources = true;
+    }
+
 
     const std::vector<Vertex>& Mesh::getVertices() const {
         return mVertices;
@@ -40,36 +48,46 @@ namespace StrikeEngine {
         return mSubMeshes;
     }
 
-    const glm::vec3& Mesh::getBoundsMin() const {
-        return mBoundsMin;
+    const Bounds& Mesh::getBounds() const {
+        return mBounds;
     }
 
-    const glm::vec3& Mesh::getBoundsMax() const {
-        return mBoundsMax;
+    const std::shared_ptr<VertexArray>& Mesh::getVertexArray() const {
+        return mVertexArray;
     }
+
+    const std::shared_ptr<VertexBuffer>& Mesh::getVertexBuffer() const {
+        return mVertexBuffer;
+    }
+
+    const std::shared_ptr<IndexBuffer>& Mesh::getIndexBuffer() const {
+        return mIndexBuffer;
+    }
+
+    bool Mesh::hasOpenGLResources() const {
+        return mHasOpenGLResources;
+    }
+
 
     void Mesh::setVertices(const std::vector<Vertex>& vertices) {
         mVertices = vertices;
+        if (mHasOpenGLResources && mVertexBuffer) {
+            mVertexBuffer->setData(mVertices.data(), mVertices.size() * sizeof(Vertex));
+        }
     }
 
     void Mesh::setIndices(const std::vector<uint32_t>& indices) {
         mIndices = indices;
+        if (mHasOpenGLResources && mIndexBuffer) {
+            mIndexBuffer->setData(mIndices.data(), mIndices.size());
+        }
     }
 
     void Mesh::setSubMeshes(const std::vector<SubMeshData>& subMeshes) {
         mSubMeshes = subMeshes;
     }
 
-    void Mesh::setBoundsMin(const glm::vec3& boundsMin) {
-        mBoundsMin = boundsMin;
-    }
-
-    void Mesh::setBoundsMax(const glm::vec3& boundsMax) {
-        mBoundsMax = boundsMax;
-    }
-
-    void Mesh::setBounds(const glm::vec3& boundsMin, const glm::vec3& boundsMax) {
-        mBoundsMin = boundsMin;
-        mBoundsMax = boundsMax;
+    void Mesh::setBounds(const Bounds& bounds) {
+        mBounds = bounds;
     }
 }

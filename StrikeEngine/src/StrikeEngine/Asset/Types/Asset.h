@@ -1,7 +1,7 @@
-// Asset.h (updated)
 #pragma once
 #include <string>
 #include <filesystem>
+#include <pugixml.hpp>
 
 namespace StrikeEngine {
     class AssetManager;
@@ -32,10 +32,11 @@ namespace StrikeEngine {
 
         void setLoadingState(AssetLoadingState state);
 
-        virtual bool swapData(Asset& other) = 0;
+        virtual void postLoad() {}
+
+        virtual pugi::xml_node toNode() const;
 
     protected:
-
         std::string mId;
         std::string mName;
         std::filesystem::path mPath;

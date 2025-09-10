@@ -1,0 +1,33 @@
+#pragma once
+#include <glad/glad.h>
+#include <cstdint>
+
+namespace StrikeEngine {
+
+    class VertexBuffer {
+    public:
+        VertexBuffer();
+        ~VertexBuffer();
+
+        // Non-copyable
+        VertexBuffer(const VertexBuffer&) = delete;
+        VertexBuffer& operator=(const VertexBuffer&) = delete;
+
+        // Movable
+        VertexBuffer(VertexBuffer&& other) noexcept;
+        VertexBuffer& operator=(VertexBuffer&& other) noexcept;
+
+        void bind() const;
+        void unbind() const;
+
+        void setData(const void* data, size_t size, GLenum usage = GL_STATIC_DRAW);
+
+        GLuint getHandle() const { return mHandle; }
+        bool isValid() const { return mHandle != 0; }
+
+    private:
+        GLuint mHandle;
+        void cleanup();
+    };
+
+} // namespace StrikeEngine

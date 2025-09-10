@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<mesh assetId="tank_low_poly.Cylinder_003" name="">
+<mesh>
 	<positions count="192">
 		<position x="-2.37024651e-05" y="-5.48421907" z="19.8098202" />
 		<position x="-3.86472821" y="-5.48421907" z="19.4291801" />

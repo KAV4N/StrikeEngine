@@ -37,7 +37,7 @@ namespace StrikeEngine {
         Assimp::Importer mImporter;
         std::vector<std::shared_ptr<Mesh>> mMeshes;
         std::vector<std::shared_ptr<Material>> mMaterials;
-        std::shared_ptr<EntityData> mRootEntity;
+        std::vector<std::shared_ptr<EntityData>> mTopLevelEntities; // Changed from mRootEntity to store multiple top-level entities
         std::string mIdPrefix;
 
         void processMaterials(const aiScene* scene);
@@ -47,9 +47,9 @@ namespace StrikeEngine {
         glm::vec3 aiColor3dToGlm(const aiColor3D& color);
         glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& mat);
         void decomposeTransform(const glm::mat4& transform, glm::vec3& position, glm::vec3& rotation, glm::vec3& scale);
-        void saveMeshToXml(const Mesh& mesh, const std::string& templateDir);
-        void saveMaterialToXml(const Material& material, const std::string& templateDir);
-        void saveTemplateXml(const std::string& templateName, const std::string& sourceFile, const std::string& templateDir);
+        void saveMeshToXml(const Mesh& mesh, const std::filesystem::path& templateDir);
+        void saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir);
+        void saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc);
         void writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity);
         std::string sanitizeId(const std::string& name);
         void calculateMeshBounds(Mesh& mesh);
@@ -60,6 +60,6 @@ namespace StrikeEngine {
     public:
         ModelParser();
         ~ModelParser();
-        bool parseModel(const std::string& modelPath, const std::string& templateDir);
+        bool parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc);
     };
 }

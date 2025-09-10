@@ -9,6 +9,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include <pugixml.hpp>
 
 namespace StrikeEngine {
 
@@ -17,7 +18,8 @@ namespace StrikeEngine {
         AssetLoader(const std::string& typeName);
         virtual ~AssetLoader() = default;
 
-        virtual std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& path) = 0;
+        virtual std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& path, bool async=false);
+        virtual std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node) = 0;
 
         virtual void loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset);
 
@@ -30,7 +32,7 @@ namespace StrikeEngine {
     protected:
         friend class AssetManager;
         virtual std::shared_ptr<Asset> createPlaceholder(const std::string& id, const std::filesystem::path& path) = 0;
-        virtual bool swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loadedAsset);
+        virtual void swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) = 0;
 
     protected:
         struct LoadingTask {

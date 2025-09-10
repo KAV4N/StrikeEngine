@@ -41,6 +41,6 @@ namespace StrikeEngine {
     private:
         std::unique_ptr<Scene> mCurrentScene;
         std::future<std::unique_ptr<Scene>> mPendingScene;
-       // std::unique_ptr<SceneLoader> mSceneLoader;
+        std::unique_ptr<SceneLoader> mSceneLoader;
     };
 }

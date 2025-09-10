@@ -2,51 +2,64 @@
 #include "StrikeEngine/Core/UUID.h"
 #include <string>
 #include <memory>
+#include <variant>
+#include <unordered_map>
+#include <vector>
 #include <glm/glm.hpp>
 #include "Asset.h"
+#include "Shader.h"
+#include "Texture2D.h"
 
 namespace StrikeEngine {
     class Material : public Asset {
     public:
         Material(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
 
-        // Static type name for registration
         static const std::string& getStaticTypeName() {
             static const std::string typeName = "material";
             return typeName;
         }
 
-        // Virtual method implementation
         const std::string& getTypeName() const override {
             return getStaticTypeName();
         }
 
-        bool swapData(Asset& other) override;
+        void setInt(const std::string& name, int value);
+        void setIntArray(const std::string& name, int* values, uint32_t count);
+        void setFloat(const std::string& name, float value);
+        void setVec2(const std::string& name, const glm::vec2& value);
+        void setVec3(const std::string& name, const glm::vec3& value);
+        void setVec4(const std::string& name, const glm::vec4& value);
+        void setMat4(const std::string& name, const glm::mat4& value);
 
-        const glm::vec3& getDiffuseColor() const;
-        const glm::vec3& getSpecularColor() const;
-        const glm::vec3& getAmbientColor() const;
-        float getShininess() const;
-        const std::string& getDiffuseTexture() const;
-        const std::string& getSpecularTexture() const;
-        const std::string& getNormalTexture() const;
+        void addTexture(uint32_t slot, std::shared_ptr<Texture2D> texture);
+        void removeTexture(uint32_t slot);
 
-        void setDiffuseColor(const glm::vec3& color);
-        void setSpecularColor(const glm::vec3& color);
-        void setAmbientColor(const glm::vec3& color);
-        void setShininess(float shininess);
-        void setDiffuseTexture(const std::string& texture);
-        void setSpecularTexture(const std::string& texture);
-        void setNormalTexture(const std::string& texture);
+        void setShader(std::shared_ptr<Shader> shader);
+        std::shared_ptr<Shader> getShader() const { return mShader; }
+
+        void bind() const;
+        void unbind() const;
+
+        void clearUniforms();
+        void clearTextures();
 
     private:
-        std::string mName;
-        glm::vec3 mDiffuseColor;
-        glm::vec3 mSpecularColor;
-        glm::vec3 mAmbientColor;
-        float mShininess;
-        std::string mDiffuseTexture;
-        std::string mSpecularTexture;
-        std::string mNormalTexture;
+        using UniformValue = std::variant<
+            int,
+            float,
+            glm::vec2,
+            glm::vec3,
+            glm::vec4,
+            glm::mat4,
+            std::vector<int>  
+        >;
+
+        void applyUniform(const std::string& name, const UniformValue& value) const;
+
+    private:
+        std::shared_ptr<Shader> mShader;
+        std::unordered_map<uint32_t, std::shared_ptr<Texture2D>> mTextures;
+        std::unordered_map<std::string, UniformValue> mUniforms;
     };
 }

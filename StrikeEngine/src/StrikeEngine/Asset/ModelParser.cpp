@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
+#include <limits>
 
 namespace StrikeEngine {
 
@@ -16,7 +17,7 @@ namespace StrikeEngine {
         reset();
     }
 
-    bool ModelParser::parseModel(const std::string& modelPath, const std::string& templateDir) {
+    bool ModelParser::parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc) {
         reset();
 
         if (!std::filesystem::exists(modelPath)) {
@@ -24,14 +25,15 @@ namespace StrikeEngine {
             return false;
         }
 
-        std::string filename = std::filesystem::path(modelPath).stem().string();
+        std::string filename = modelPath.stem().string();
         mIdPrefix = filename + ".";
 
+        std::filesystem::path templateDir = templateSrc.parent_path();
         if (!std::filesystem::exists(templateDir)) {
             std::filesystem::create_directories(templateDir);
         }
 
-        const aiScene* scene = mImporter.ReadFile(modelPath,
+        const aiScene* scene = mImporter.ReadFile(modelPath.string(),
             aiProcess_Triangulate |
             aiProcess_FlipUVs |
             aiProcess_CalcTangentSpace |
@@ -53,18 +55,19 @@ namespace StrikeEngine {
         processMaterials(scene);
         processMeshes(scene);
 
-        mRootEntity = std::make_shared<EntityData>();
-        mRootEntity->name = scene->mRootNode->mName.C_Str();
-        mRootEntity->id = sanitizeId(mRootEntity->name);
-        if (mRootEntity->id.empty()) {
-            mRootEntity->id = "Root";
-            mRootEntity->name = "Root";
+        for (uint32_t i = 0; i < scene->mRootNode->mNumChildren; i++) {
+            auto entity = std::make_shared<EntityData>();
+            entity->name = scene->mRootNode->mChildren[i]->mName.C_Str();
+            entity->id = sanitizeId(entity->name);
+            if (entity->id.empty()) {
+                static int nodeCounter = 0;
+                entity->id = "node_" + std::to_string(nodeCounter++);
+            }
+            glm::mat4 transform = aiMatrix4x4ToGlm(scene->mRootNode->mChildren[i]->mTransformation);
+            decomposeTransform(transform, entity->position, entity->rotation, entity->scale);
+            mTopLevelEntities.push_back(entity);
+            processNode(scene->mRootNode->mChildren[i], scene, entity);
         }
-
-        glm::mat4 transform = aiMatrix4x4ToGlm(scene->mRootNode->mTransformation);
-        decomposeTransform(transform, mRootEntity->position, mRootEntity->rotation, mRootEntity->scale);
-
-        processNode(scene->mRootNode, scene, mRootEntity);
 
         for (const auto& mesh : mMeshes) {
             saveMeshToXml(*mesh, templateDir);
@@ -74,8 +77,8 @@ namespace StrikeEngine {
             saveMaterialToXml(*material, templateDir);
         }
 
-        std::string templateName = std::filesystem::path(modelPath).stem().string();
-        saveTemplateXml(templateName, modelPath, templateDir);
+        std::string templateName = modelPath.stem().string();
+        saveTemplateXml(templateName, modelPath, templateSrc);
 
         reset();
         return true;
@@ -104,6 +107,7 @@ namespace StrikeEngine {
             aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
             aiMat->Get(AI_MATKEY_COLOR_SPECULAR, specular);
             aiMat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
+            /*
             material->setDiffuseColor(aiColor3dToGlm(diffuse));
             material->setSpecularColor(aiColor3dToGlm(specular));
             material->setAmbientColor(aiColor3dToGlm(ambient));
@@ -124,6 +128,7 @@ namespace StrikeEngine {
             }
 
             mMaterials.push_back(material);
+            */
         }
     }
 
@@ -154,7 +159,7 @@ namespace StrikeEngine {
                     baseId = "mesh_" + std::to_string(meshIndex);
                 }
                 std::string meshId = mIdPrefix + baseId;
-                auto mesh = std::make_shared<Mesh>(meshId, meshName);
+                auto mesh = std::make_shared<Mesh>(meshId, "", meshName);
 
                 std::vector<Vertex> vertices;
                 vertices.reserve(aiMesh->mNumVertices);
@@ -163,6 +168,8 @@ namespace StrikeEngine {
                     vertex.position = aiVector3dToGlm(aiMesh->mVertices[j]);
                     vertex.normal = aiMesh->HasNormals() ? aiVector3dToGlm(aiMesh->mNormals[j]) : glm::vec3(0.0f, 1.0f, 0.0f);
                     vertex.texCoord = aiMesh->HasTextureCoords(0) ? glm::vec2(aiMesh->mTextureCoords[0][j].x, aiMesh->mTextureCoords[0][j].y) : glm::vec2(0.0f);
+                    vertex.tangent = aiMesh->HasTangentsAndBitangents() ? aiVector3dToGlm(aiMesh->mTangents[j]) : glm::vec3(0.0f);
+                    vertex.biNormal = aiMesh->HasTangentsAndBitangents() ? aiVector3dToGlm(aiMesh->mBitangents[j]) : glm::vec3(0.0f);
                     vertices.push_back(vertex);
                 }
                 mesh->setVertices(vertices);
@@ -177,6 +184,7 @@ namespace StrikeEngine {
                 mesh->setIndices(indices);
 
                 SubMeshData subMeshData;
+                subMeshData.slot = 0;
                 subMeshData.startIndex = 0;
                 subMeshData.indexCount = indices.size();
                 subMeshData.materialId = (aiMesh->mMaterialIndex < mMaterials.size()) ? mMaterials[aiMesh->mMaterialIndex]->getId() : "";
@@ -193,7 +201,7 @@ namespace StrikeEngine {
                     baseId = "combined_mesh_" + std::to_string(meshIndices[0]);
                 }
                 std::string meshId = mIdPrefix + baseId;
-                auto combinedMesh = std::make_shared<Mesh>(meshId, combinedName);
+                auto combinedMesh = std::make_shared<Mesh>(meshId, "", combinedName);
                 combineMeshes(meshIndices, scene, *combinedMesh);
                 mMeshes.push_back(combinedMesh);
             }
@@ -218,9 +226,11 @@ namespace StrikeEngine {
         subMeshes.reserve(meshIndices.size());
 
         uint32_t vertexOffset = 0, indexOffset = 0;
+        uint32_t slot = 0;
         for (uint32_t meshIndex : meshIndices) {
             aiMesh* aiMesh = scene->mMeshes[meshIndex];
             SubMeshData subMeshData;
+            subMeshData.slot = slot++;
             subMeshData.startIndex = indexOffset;
             subMeshData.materialId = (aiMesh->mMaterialIndex < mMaterials.size()) ? mMaterials[aiMesh->mMaterialIndex]->getId() : "";
 
@@ -229,6 +239,8 @@ namespace StrikeEngine {
                 vertex.position = aiVector3dToGlm(aiMesh->mVertices[j]);
                 vertex.normal = aiMesh->HasNormals() ? aiVector3dToGlm(aiMesh->mNormals[j]) : glm::vec3(0.0f, 1.0f, 0.0f);
                 vertex.texCoord = aiMesh->HasTextureCoords(0) ? glm::vec2(aiMesh->mTextureCoords[0][j].x, aiMesh->mTextureCoords[0][j].y) : glm::vec2(0.0f);
+                vertex.tangent = aiMesh->HasTangentsAndBitangents() ? aiVector3dToGlm(aiMesh->mTangents[j]) : glm::vec3(0.0f);
+                vertex.biNormal = aiMesh->HasTangentsAndBitangents() ? aiVector3dToGlm(aiMesh->mBitangents[j]) : glm::vec3(0.0f);
                 vertices.push_back(vertex);
             }
 
@@ -256,8 +268,9 @@ namespace StrikeEngine {
     }
 
     void ModelParser::processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent) {
-        std::shared_ptr<EntityData> entity;
-        if (parent && node != scene->mRootNode) {
+        std::shared_ptr<EntityData> entity = parent;
+
+        if (parent) {
             entity = std::make_shared<EntityData>();
             entity->name = node->mName.C_Str();
             entity->id = sanitizeId(entity->name);
@@ -269,11 +282,8 @@ namespace StrikeEngine {
             decomposeTransform(transform, entity->position, entity->rotation, entity->scale);
             parent->children.push_back(entity);
         }
-        else {
-            entity = parent;
-        }
 
-        if (node->mNumMeshes > 0) {
+        if (node->mNumMeshes > 0 && entity) {
             for (const auto& mesh : mMeshes) {
                 bool belongsToNode = false;
                 for (uint32_t i = 0; i < node->mNumMeshes; i++) {
@@ -284,7 +294,7 @@ namespace StrikeEngine {
                         break;
                     }
                 }
-                if (belongsToNode && entity) {
+                if (belongsToNode) {
                     entity->meshId = mesh->getId();
                     for (const auto& subMeshData : mesh->getSubMeshes()) {
                         if (!subMeshData.materialId.empty()) {
@@ -341,11 +351,9 @@ namespace StrikeEngine {
         }
     }
 
-    void ModelParser::saveMeshToXml(const Mesh& mesh, const std::string& templateDir) {
+    void ModelParser::saveMeshToXml(const Mesh& mesh, const std::filesystem::path& templateDir) {
         pugi::xml_document doc;
         auto root = doc.append_child("mesh");
-        root.append_attribute("assetId") = mesh.getId().c_str();
-        root.append_attribute("name") = mesh.getName().c_str();
 
         auto positionsNode = root.append_child("positions");
         positionsNode.append_attribute("count") = mesh.getVertices().size();
@@ -373,6 +381,24 @@ namespace StrikeEngine {
             texCoordNode.append_attribute("v") = vertex.texCoord.y;
         }
 
+        auto tangentsNode = root.append_child("tangents");
+        tangentsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto tangentNode = tangentsNode.append_child("tangent");
+            tangentNode.append_attribute("x") = vertex.tangent.x;
+            tangentNode.append_attribute("y") = vertex.tangent.y;
+            tangentNode.append_attribute("z") = vertex.tangent.z;
+        }
+
+        auto bitangentsNode = root.append_child("bitangents");
+        bitangentsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto bitangentNode = bitangentsNode.append_child("bitangent");
+            bitangentNode.append_attribute("x") = vertex.biNormal.x;
+            bitangentNode.append_attribute("y") = vertex.biNormal.y;
+            bitangentNode.append_attribute("z") = vertex.biNormal.z;
+        }
+
         if (!mesh.getIndices().empty()) {
             auto indicesNode = root.append_child("indices");
             indicesNode.append_attribute("count") = mesh.getIndices().size();
@@ -389,47 +415,46 @@ namespace StrikeEngine {
             subMeshesNode.append_attribute("count") = mesh.getSubMeshes().size();
             for (size_t i = 0; i < mesh.getSubMeshes().size(); ++i) {
                 const auto& subMeshData = mesh.getSubMeshes()[i];
-                auto subMeshNode = subMeshesNode.append_child("SubMeshData");
-                subMeshNode.append_attribute("slot") = i;
+                auto subMeshNode = subMeshesNode.append_child("submesh");
+                subMeshNode.append_attribute("slot") = subMeshData.slot;
                 subMeshNode.append_attribute("startIndex") = subMeshData.startIndex;
                 subMeshNode.append_attribute("indexCount") = subMeshData.indexCount;
                 subMeshNode.append_attribute("materialId") = subMeshData.materialId.c_str();
 
                 auto subBoundsNode = subMeshNode.append_child("bounds");
                 auto subMinNode = subBoundsNode.append_child("min");
-                subMinNode.append_attribute("x") = subMeshData.boundsMin.x;
-                subMinNode.append_attribute("y") = subMeshData.boundsMin.y;
-                subMinNode.append_attribute("z") = subMeshData.boundsMin.z;
+                subMinNode.append_attribute("x") = subMeshData.bounds.aabbMin.x;
+                subMinNode.append_attribute("y") = subMeshData.bounds.aabbMin.y;
+                subMinNode.append_attribute("z") = subMeshData.bounds.aabbMin.z;
                 auto subMaxNode = subBoundsNode.append_child("max");
-                subMaxNode.append_attribute("x") = subMeshData.boundsMax.x;
-                subMaxNode.append_attribute("y") = subMeshData.boundsMax.y;
-                subMaxNode.append_attribute("z") = subMeshData.boundsMax.z;
+                subMaxNode.append_attribute("x") = subMeshData.bounds.aabbMax.x;
+                subMaxNode.append_attribute("y") = subMeshData.bounds.aabbMax.y;
+                subMaxNode.append_attribute("z") = subMeshData.bounds.aabbMax.z;
             }
         }
 
         auto boundsNode = root.append_child("bounds");
         auto minNode = boundsNode.append_child("min");
-        minNode.append_attribute("x") = mesh.getBoundsMin().x;
-        minNode.append_attribute("y") = mesh.getBoundsMin().y;
-        minNode.append_attribute("z") = mesh.getBoundsMin().z;
+        minNode.append_attribute("x") = mesh.getBounds().aabbMin.x;
+        minNode.append_attribute("y") = mesh.getBounds().aabbMin.y;
+        minNode.append_attribute("z") = mesh.getBounds().aabbMin.z;
         auto maxNode = boundsNode.append_child("max");
-        maxNode.append_attribute("x") = mesh.getBoundsMax().x;
-        maxNode.append_attribute("y") = mesh.getBoundsMax().y;
-        maxNode.append_attribute("z") = mesh.getBoundsMax().z;
+        maxNode.append_attribute("x") = mesh.getBounds().aabbMax.x;
+        maxNode.append_attribute("y") = mesh.getBounds().aabbMax.y;
+        maxNode.append_attribute("z") = mesh.getBounds().aabbMax.z;
 
         std::string meshIdWithoutPrefix = mesh.getId();
         if (meshIdWithoutPrefix.find(mIdPrefix) == 0) {
             meshIdWithoutPrefix = meshIdWithoutPrefix.substr(mIdPrefix.length());
         }
-        std::string filepath = (std::filesystem::path(templateDir) / (meshIdWithoutPrefix + ".mesh")).string();
-        doc.save_file(filepath.c_str());
+        std::filesystem::path filepath = templateDir / (meshIdWithoutPrefix + ".mesh");
+        doc.save_file(filepath.string().c_str());
     }
 
-    void ModelParser::saveMaterialToXml(const Material& material, const std::string& templateDir) {
+    void ModelParser::saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir) {
+        /*
         pugi::xml_document doc;
         auto root = doc.append_child("material");
-        root.append_attribute("assetId") = material.getId().c_str();
-        root.append_attribute("name") = material.getName().c_str();
 
         auto diffuseNode = root.append_child("diffuse");
         diffuseNode.append_attribute("r") = material.getDiffuseColor().r;
@@ -471,11 +496,12 @@ namespace StrikeEngine {
         if (materialIdWithoutPrefix.find(mIdPrefix) == 0) {
             materialIdWithoutPrefix = materialIdWithoutPrefix.substr(mIdPrefix.length());
         }
-        std::string filepath = (std::filesystem::path(templateDir) / (materialIdWithoutPrefix + ".mat")).string();
-        doc.save_file(filepath.c_str());
+        std::filesystem::path filepath = templateDir / (materialIdWithoutPrefix + ".mat");
+        doc.save_file(filepath.string().c_str());
+        */
     }
 
-    void ModelParser::saveTemplateXml(const std::string& templateName, const std::string& sourceFile, const std::string& templateDir) {
+    void ModelParser::saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc) {
         pugi::xml_document doc;
         auto decl = doc.prepend_child(pugi::node_declaration);
         decl.append_attribute("version") = "1.0";
@@ -483,7 +509,7 @@ namespace StrikeEngine {
 
         auto root = doc.append_child("template");
         root.append_attribute("name") = templateName.c_str();
-        root.append_attribute("source") = sourceFile.c_str();
+        root.append_attribute("source") = sourceFile.string().c_str();
 
         auto assetsNode = root.append_child("assets");
         for (const auto& mesh : mMeshes) {
@@ -507,12 +533,11 @@ namespace StrikeEngine {
         }
 
         auto entitiesNode = root.append_child("entities");
-        if (mRootEntity) {
-            writeEntityToXml(entitiesNode, mRootEntity);
+        for (const auto& entity : mTopLevelEntities) {
+            writeEntityToXml(entitiesNode, entity);
         }
 
-        std::string filepath = (std::filesystem::path(templateDir) / (templateName + ".xml")).string();
-        doc.save_file(filepath.c_str());
+        doc.save_file(templateSrc.string().c_str());
     }
 
     void ModelParser::writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity) {
@@ -580,50 +605,46 @@ namespace StrikeEngine {
 
     void ModelParser::calculateMeshBounds(Mesh& mesh) {
         if (mesh.getVertices().empty()) {
-            mesh.setBoundsMin(glm::vec3(0.0f));
-            mesh.setBoundsMax(glm::vec3(0.0f));
+            mesh.setBounds(Bounds());
             return;
         }
 
-        glm::vec3 boundsMin = mesh.getVertices()[0].position;
-        glm::vec3 boundsMax = mesh.getVertices()[0].position;
+        Bounds bounds;
         for (const auto& vertex : mesh.getVertices()) {
-            boundsMin = glm::min(boundsMin, vertex.position);
-            boundsMax = glm::max(boundsMax, vertex.position);
+            bounds.Union(Bounds(vertex.position));
         }
 
-        mesh.setBoundsMin(boundsMin);
-        mesh.setBoundsMax(boundsMax);
+        mesh.setBounds(bounds);
     }
 
     void ModelParser::calculateSubMeshBounds(const Mesh& mesh, SubMeshData& subMeshData) {
         if (mesh.getVertices().empty() || mesh.getIndices().empty() ||
             subMeshData.startIndex >= mesh.getIndices().size() ||
             subMeshData.startIndex + subMeshData.indexCount > mesh.getIndices().size()) {
-            subMeshData.boundsMin = subMeshData.boundsMax = glm::vec3(0.0f);
+            subMeshData.bounds = Bounds();
             return;
         }
 
         uint32_t firstIndex = mesh.getIndices()[subMeshData.startIndex];
         if (firstIndex >= mesh.getVertices().size()) {
-            subMeshData.boundsMin = subMeshData.boundsMax = glm::vec3(0.0f);
+            subMeshData.bounds = Bounds();
             return;
         }
 
-        subMeshData.boundsMin = subMeshData.boundsMax = mesh.getVertices()[firstIndex].position;
+        Bounds bounds(mesh.getVertices()[firstIndex].position);
         for (uint32_t i = subMeshData.startIndex; i < subMeshData.startIndex + subMeshData.indexCount; ++i) {
             uint32_t vertexIndex = mesh.getIndices()[i];
             if (vertexIndex < mesh.getVertices().size()) {
-                const glm::vec3& position = mesh.getVertices()[vertexIndex].position;
-                subMeshData.boundsMin = glm::min(subMeshData.boundsMin, position);
-                subMeshData.boundsMax = glm::max(subMeshData.boundsMax, position);
+                bounds.Union(Bounds(mesh.getVertices()[vertexIndex].position));
             }
         }
+
+        subMeshData.bounds = bounds;
     }
 
     void ModelParser::reset() {
         mMeshes.clear();
         mMaterials.clear();
-        mRootEntity.reset();
+        mTopLevelEntities.clear();
     }
 }

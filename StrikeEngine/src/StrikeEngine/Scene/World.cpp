@@ -1,20 +1,50 @@
 #include "World.h"
 #include <iostream>
+#include <chrono>
 
 namespace StrikeEngine {
 
     World::World()
+        : mSceneLoader(std::make_unique<SceneLoader>())
     {
     }
 
     void World::loadScene(const std::filesystem::path& path)
     {
-        //mCurrentScene = mSceneLoader->loadScene(path);
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Scene file does not exist: " << path << std::endl;
+            return;
+        }
+
+        mCurrentScene = mSceneLoader->loadScene(path);
+
+        if (mCurrentScene) {
+            std::cout << "Successfully loaded scene from: " << path << std::endl;
+        }
+        else {
+            std::cerr << "Failed to load scene from: " << path << std::endl;
+        }
     }
 
     void World::loadSceneAsync(const std::filesystem::path& path)
     {
-        //mPendingScene = mSceneLoader->loadSceneAsync(path);
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Scene file does not exist: " << path << std::endl;
+            return;
+        }
+
+        if (mPendingScene.valid()) {
+            std::cout << "Cancelling previous async scene loading operation" << std::endl;
+        }
+
+        mPendingScene = mSceneLoader->loadSceneAsync(path);
+
+        if (mPendingScene.valid()) {
+            std::cout << "Started async loading of scene from: " << path << std::endl;
+        }
+        else {
+            std::cerr << "Failed to start async loading of scene from: " << path << std::endl;
+        }
     }
 
     bool World::isSceneLoading() const
@@ -54,8 +84,20 @@ namespace StrikeEngine {
     void World::checkAndSwitchScene()
     {
         if (mPendingScene.valid() && mPendingScene.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            mCurrentScene = mPendingScene.get();
+            try {
+                auto newScene = mPendingScene.get();
+                if (newScene) {
+                    mCurrentScene = std::move(newScene);
+                    std::cout << "Successfully switched to new scene" << std::endl;
+                }
+                else {
+                    std::cerr << "Async scene loading failed" << std::endl;
+                }
+            }
+            catch (const std::exception& e) {
+                std::cerr << "Exception during scene switching: " << e.what() << std::endl;
+            }
         }
     }
 
-} // namespace StrikeEngine
+} 

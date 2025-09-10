@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<mesh assetId="tank_low_poly.BezierCircle_002" name="">
+<mesh>
 	<positions count="1012">
 		<position x="-82.1941605" y="12.7170382" z="-28.1700535" />
 		<position x="-82.1941605" y="-12.7170105" z="-28.1700535" />

@@ -4,10 +4,14 @@
 #include "Timer.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
+
+
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
-#include "StrikeEngine/Scene/World.h"
+
 
 namespace StrikeEngine {
+    class World;
     class Application {
     public:
         friend class Renderer;

@@ -1,13 +1,12 @@
-// Asset.cpp (updated)
 #include "Asset.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
 namespace StrikeEngine {
     Asset::Asset(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : mId(id), 
-        mPath(path), 
-        mName(name), 
-        mLoadingState(AssetLoadingState::Uninitialized) 
+        : mId(id),
+        mPath(path),
+        mName(name),
+        mLoadingState(AssetLoadingState::Uninitialized)
     {
     }
 
@@ -53,5 +52,18 @@ namespace StrikeEngine {
 
     void Asset::setLoadingState(AssetLoadingState state) {
         mLoadingState = state;
+
+        // Call postLoad when asset becomes ready
+        if (state == AssetLoadingState::Ready) {
+            postLoad();
+        }
+    }
+
+    pugi::xml_node Asset::toNode() const {
+        pugi::xml_document doc;
+        pugi::xml_node node = doc.append_child(getTypeName());
+        node.append_attribute("assetId") = getId().c_str();
+        node.append_attribute("src") = mPath.string().c_str();
+        return node;
     }
 }

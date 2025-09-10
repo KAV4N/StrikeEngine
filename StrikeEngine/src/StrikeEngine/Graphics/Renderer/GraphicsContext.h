@@ -1,14 +1,22 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
+
+struct GLFWwindow;
+
 namespace StrikeEngine {
 
     class GraphicsContext {
     public:
-        virtual ~GraphicsContext() = default;
+        GraphicsContext(GLFWwindow* windowHandle);
+        ~GraphicsContext() = default;
 
-        virtual void init() = 0;
-        virtual void swapBuffers() = 0;
+        void init();
+        void swapBuffers();
 
-        static std::unique_ptr<GraphicsContext> create(void* window);
+        static std::unique_ptr<GraphicsContext> create(GLFWwindow* window);
+
+    private:
+        GLFWwindow* mWindowHandle;
     };
 }

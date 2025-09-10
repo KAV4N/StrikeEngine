@@ -5,7 +5,9 @@
 #include "Input.h"
 #include <glad/glad.h>
 #include <chrono>
-#include <imgui.h>
+
+#include "StrikeEngine/Scene/World.h"
+
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -70,7 +72,7 @@ namespace StrikeEngine {
         mWorld->onImGuiRender();
 
         mImGuiLayer->end();
-        mWindow->onUpdate();
+        mWindow->onUpdate();      
 
         // Limit frame rate if needed
         mTimer.limitFrameRate();

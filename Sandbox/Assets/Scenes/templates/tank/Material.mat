@@ -1,7 +1,25 @@
 <?xml version="1.0"?>
-<material assetId="tank_low_poly.Material" name="">
-	<diffuse r="0.800000012" g="0.800000012" b="0.800000012" />
-	<specular r="0.800000012" g="0.800000012" b="0.800000012" />
-	<ambient r="0" g="0" b="0" />
-	<shininess value="36" />
+<material>
+	<shader assetId="PBR_Standard" vertex="shaders/standard.vert" fragment="shaders/standard.frag"/>
+
+	<properties>
+		<property name="uBaseColor"  type="vec3"   value="1.0,1.0,1.0"/>
+		<property name="uMetallic"   type="float"  value="0.0"/>
+		<property name="uRoughness"  type="float"  value="0.5"/>
+		<property name="uHeight"     type="float"  value="0.0"/>
+		<property name="uOpacity"    type="float"  value="1.0"/>
+		<property name="uEmission"   type="vec3"   value="0.0,0.0,0.0"/>
+	</properties>
+
+	<textures>
+		<texture2D name="albedo" src="textures/wood_albedo.jpg" />
+		<texture2D name="normal" src="textures/wood_normal.jpg"/>
+		<texture2D name="roughness" src="textures/wood_roughness.jpg" />
+		<texture2D name="metallic" src="textures/wood_metallic.jpg"/>
+		<texture2D name="ao" src="textures/wood_ao.jpg"/>
+
+		<texture2D name="tank" src="textures/tank.jpg"/>
+		<texture2D name="car" src="textures/car.jpg"/>
+		<texture2D name="background" src="textures/car.jpg"/>
+	</textures>
 </material>

@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<material assetId="cubeModel.Material" name="">
-	<diffuse r="0.0253556482" g="0.800000072" b="0" />
-	<specular r="0.0253556482" g="0.800000072" b="0" />
-	<ambient r="0" g="0" b="0" />
-	<shininess value="25" />
-</material>

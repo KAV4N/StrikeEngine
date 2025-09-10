@@ -2,17 +2,42 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include "StrikeEngine/Asset/AssetManager.h"
 
 namespace StrikeEngine {
 
     MeshLoader::MeshLoader() : AssetLoader(Mesh::getStaticTypeName()) {}
 
-    std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath) {
+    std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath, bool async) {
         auto mesh = parseMeshFromXml(id, filePath);
-        if (mesh) {
+        if (mesh && !async) {
             mesh->setLoadingState(AssetLoadingState::Ready);
         }
         return mesh;
+    }
+
+    std::shared_ptr<Asset> MeshLoader::loadFromNode(const pugi::xml_node& node) {
+        std::string assetId = node.attribute("assetId").as_string();
+        std::filesystem::path src = node.attribute("src").as_string();
+        bool async = true;
+        
+        if (assetId.empty() || src.empty()) {
+            std::cerr << "Invalid mesh node: missing assetId or srcModel attribute" << std::endl;
+            return nullptr;
+        }
+
+        if (async) 
+            return AssetManager::get().loadMeshAsync(assetId, src);
+        else 
+            return AssetManager::get().loadMesh(assetId, src);
+    }
+
+    void MeshLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded)
+    {
+        auto placeholderAsset = std::dynamic_pointer_cast<Mesh>(placeholder);
+        auto loadedAsset = std::dynamic_pointer_cast<Mesh>(loaded);
+        *(placeholderAsset) = std::move(*loadedAsset);
+        //*placeholderMesh = *loadedMesh;
     }
 
     std::shared_ptr<Mesh> MeshLoader::parseMeshFromXml(const std::string& id, const std::filesystem::path& filePath) {
@@ -50,7 +75,7 @@ namespace StrikeEngine {
             if (boundsNode) {
                 glm::vec3 boundsMin = parseBounds(boundsNode, "min");
                 glm::vec3 boundsMax = parseBounds(boundsNode, "max");
-                mesh->setBounds(boundsMin, boundsMax);
+                mesh->setBounds(Bounds(boundsMin, boundsMax));
             }
 
             return mesh;
@@ -169,6 +194,17 @@ namespace StrikeEngine {
             subMeshData.startIndex = subMeshNode.attribute("startIndex").as_uint(0);
             subMeshData.indexCount = subMeshNode.attribute("indexCount").as_uint(0);
             subMeshData.materialId = subMeshNode.attribute("materialId").as_string();
+
+            pugi::xml_node boundsNode = subMeshNode.child("bounds");
+            if (boundsNode) {
+                glm::vec3 boundsMin = parseBounds(boundsNode, "min");
+                glm::vec3 boundsMax = parseBounds(boundsNode, "max");
+                subMeshData.bounds = Bounds(boundsMin, boundsMax);
+            }
+            else {
+                subMeshData.bounds = Bounds();
+            }
+
             subMeshes.push_back(subMeshData);
         }
 

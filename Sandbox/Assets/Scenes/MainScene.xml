@@ -4,26 +4,23 @@
 		<script name="SceneController" />
 		<directionalLight color="1,1,1" intensity="0.8" />
 	</components>
-	
 
-	
 	<assets>
-		<mesh meshId="tank_low_poly.Cylinder_001" src="scenes/templates/tank/Cylinder_001.mesh" />
-		<mesh meshId="tank_low_poly.Cube" src="scenes/templates/tank/Cube.mesh" />
-		<mesh meshId="tank_low_poly.Cylinder_012" src="scenes/templates/tank/Cylinder_012.mesh" />
-		<mesh meshId="tank_low_poly.Cube_001" src="scenes/templates/tank/Cube_001.mesh" />
-		<mesh meshId="tank_low_poly.Cube_003" src="scenes/templates/tank/Cube_003.mesh" />
-		<mesh meshId="tank_low_poly.Cylinder_002" src="scenes/templates/tank/Cylinder_002.mesh" />
-		<mesh meshId="tank_low_poly.Cylinder_003" src="scenes/templates/tank/Cylinder_003.mesh" />
-		<mesh meshId="tank_low_poly.BezierCircle_002" src="scenes/templates/tank/BezierCircle_002.mesh" />
-		<mesh meshId="cubeModel.Cube" src="scenes/templates/tank/Cube.mesh" />
-		<material materialId="cubeModel.Material_001" src="scenes/templates/tank/Material_001.mat" />
-		<material materialId="cubeModel.Material" src="scenes/templates/tank/Material.mat" />
-		<material materialId="tank_low_poly.Body" src="scenes/templates/tank/Body.mat" />
-		<material materialId="tank_low_poly.Material" src="scenes/templates/tank/Material.mat" />
+		<template assetId="tankModel2" src="Assets/Scenes/templates/tank/tank.xml"  srcModel="Assets/Objects/Panzer/tank_low_poly.fbx"/>
+		<!-- Materials -->
+		<material assetId="metalMat" src="materials/metal.mat" />
+		<material assetId="woodMat" src="materials/wood.mat" />
+
+		<!-- Textures -->
+		<texture2D assetId="skyboxTex" src="textures/skybox.hdr" />
+		<texture2D assetId="grassTex" src="textures/grass.png" />
 	</assets>
 
+
+
 	<entities>
+		<entity id="tank" name="tanker" templateId="tankModel2" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100"/>
+
 		<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
 			<components>
 				<renderer meshId="cubeModel.Cube">
@@ -38,6 +35,7 @@
 				<renderer meshId="tank_low_poly.Cube" materialId="tank_low_poly.Body" />
 			</components>
 			<children>
+
 				<entity id="Turret" name="Turret" position="0.439,-0.000,52.973" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
 					<components>
 						<renderer meshId="tank_low_poly.Cube_001" materialId="tank_low_poly.Body" />
