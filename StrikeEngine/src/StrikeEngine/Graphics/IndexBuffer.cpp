@@ -2,32 +2,32 @@
 
 namespace StrikeEngine {
 
-    IndexBuffer::IndexBuffer() : mHandle(0), mCount(0) {
-        glGenBuffers(1, &mHandle);
+    IndexBuffer::IndexBuffer() : mRendererID(0), mCount(0) {
+        glGenBuffers(1, &mRendererID);
     }
 
     IndexBuffer::~IndexBuffer() {
         cleanup();
     }
 
-    IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept : mHandle(other.mHandle), mCount(other.mCount) {
-        other.mHandle = 0;
+    IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept : mRendererID(other.mRendererID), mCount(other.mCount) {
+        other.mRendererID = 0;
         other.mCount = 0;
     }
 
     IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept {
         if (this != &other) {
             cleanup();
-            mHandle = other.mHandle;
+            mRendererID = other.mRendererID;
             mCount = other.mCount;
-            other.mHandle = 0;
+            other.mRendererID = 0;
             other.mCount = 0;
         }
         return *this;
     }
 
     void IndexBuffer::bind() const {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHandle);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
     }
 
     void IndexBuffer::unbind() const {
@@ -41,9 +41,9 @@ namespace StrikeEngine {
     }
 
     void IndexBuffer::cleanup() {
-        if (mHandle != 0) {
-            glDeleteBuffers(1, &mHandle);
-            mHandle = 0;
+        if (mRendererID != 0) {
+            glDeleteBuffers(1, &mRendererID);
+            mRendererID = 0;
             mCount = 0;
         }
     }

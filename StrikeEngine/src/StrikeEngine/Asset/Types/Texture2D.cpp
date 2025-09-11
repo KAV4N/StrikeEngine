@@ -9,8 +9,7 @@ namespace StrikeEngine {
         mWidth(0),
         mHeight(0),
         mChannels(0),
-        mTextureID(0),
-        mHasOpenGLResources(false),
+        mRendererID(0),
         mFormat(TextureFormat::RGBA),
         mMinFilter(TextureFilter::Linear),
         mMagFilter(TextureFilter::Linear),
@@ -24,14 +23,42 @@ namespace StrikeEngine {
         cleanup();
     }
 
-    void Texture2D::postLoad() {
-        createOpenGLTexture();
+    void Texture2D::postload() {
+        if (!mData || mWidth == 0 || mHeight == 0) {
+            std::cerr << "Cannot create OpenGL texture: invalid data for texture " << getId() << std::endl;
+            return;
+        }
+
+        glGenTextures(1, &mRendererID);
+        glBindTexture(GL_TEXTURE_2D, mRendererID);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(mMinFilter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mMagFilter));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLint>(mWrapS));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<GLint>(mWrapT));
+
+        // Upload texture data
+        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(mFormat), mWidth, mHeight, 0,
+            static_cast<GLenum>(mFormat), GL_UNSIGNED_BYTE, mData);
+
+        // Generate mipmaps if requested
+        if (mGenerateMipmaps) {
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        if (mData) {
+            delete[] mData;
+            mData = nullptr;
+        }
     }
 
     void Texture2D::bind(uint32_t slot) const {
-        if (mHasOpenGLResources) {
+        if (mRendererID!=0) {
             glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_2D, mTextureID);
+            glBindTexture(GL_TEXTURE_2D, mRendererID);
         }
     }
 
@@ -65,47 +92,12 @@ namespace StrikeEngine {
         }
     }
 
-    void Texture2D::createOpenGLTexture() {
-        if (!mData || mWidth == 0 || mHeight == 0) {
-            std::cerr << "Cannot create OpenGL texture: invalid data for texture " << getId() << std::endl;
-            return;
-        }
-
-        glGenTextures(1, &mTextureID);
-        glBindTexture(GL_TEXTURE_2D, mTextureID);
-
-        // Set texture parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(mMinFilter));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mMagFilter));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLint>(mWrapS));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<GLint>(mWrapT));
-
-        // Upload texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(mFormat), mWidth, mHeight, 0,
-            static_cast<GLenum>(mFormat), GL_UNSIGNED_BYTE, mData);
-
-        // Generate mipmaps if requested
-        if (mGenerateMipmaps) {
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        mHasOpenGLResources = true;
-        
-        if (mData) {
-            delete[] mData;
-            mData = nullptr;
-        }
-        
-        
-    }
 
     void Texture2D::cleanup() {
-        if (mHasOpenGLResources && mTextureID != 0) {
-            glDeleteTextures(1, &mTextureID);
-            mTextureID = 0;
-            mHasOpenGLResources = false;
+        if (mRendererID != 0) {
+            glDeleteTextures(1, &mRendererID);
+            mRendererID = 0;
+            setLoadingState(AssetLoadingState::Uninitialized);
         }
 
         if (mData) {

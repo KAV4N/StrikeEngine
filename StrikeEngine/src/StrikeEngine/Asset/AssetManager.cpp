@@ -3,11 +3,13 @@
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
 #include "StrikeEngine/Asset/Loaders/ShaderLoader.h"
 #include "StrikeEngine/Asset/Loaders/Texture2DLoader.h"
+#include "StrikeEngine/Asset/Loaders/MaterialLoader.h"
 
 #include "StrikeEngine/Asset/Types/Mesh.h"
 #include "StrikeEngine/Asset/Types/Shader.h"
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/Types/Texture2D.h"
+#include "StrikeEngine/Asset/Types/Material.h"
 
 namespace StrikeEngine {
 
@@ -25,6 +27,7 @@ namespace StrikeEngine {
         mLoaders[Template::getStaticTypeName()] = std::make_unique<TemplateLoader>();
         mLoaders[Shader::getStaticTypeName()] = std::make_unique<ShaderLoader>();
         mLoaders[Texture2D::getStaticTypeName()] = std::make_unique<Texture2DLoader>();
+        mLoaders[Material::getStaticTypeName()] = std::make_unique<MaterialLoader>();
     }
 
     AssetManager::~AssetManager() = default;
@@ -248,6 +251,62 @@ namespace StrikeEngine {
         }
         return nullptr;
     }
+
+    // Material-specific methods
+    std::shared_ptr<Material> AssetManager::loadMaterial(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingMaterial = getMaterial(id)) {
+            return existingMaterial;
+        }
+
+        auto loader = getLoader(Material::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto loadedAsset = loader->load(id, filePath);
+        if (loadedAsset) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return std::static_pointer_cast<Material>(loadedAsset);
+    }
+
+    std::shared_ptr<Material> AssetManager::loadMaterialAsync(const std::string& id, const std::filesystem::path& filePath) {
+        if (auto existingMaterial = getMaterial(id)) {
+            return existingMaterial;
+        }
+
+        auto loader = getLoader(Material::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto placeholderMaterial = std::make_shared<Material>(id, filePath, filePath.stem().string());
+        placeholderMaterial->setLoadingState(AssetLoadingState::Loading);
+
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            mLoadedAssets[id] = placeholderMaterial;
+        }
+
+        loader->loadAsync(id, filePath, placeholderMaterial);
+        return placeholderMaterial;
+    }
+
+    std::shared_ptr<Material> AssetManager::getMaterial(const std::string& id) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (auto asset = it->second.lock()) {
+                if (asset->getTypeName() == Material::getStaticTypeName()) {
+                    return std::static_pointer_cast<Material>(asset);
+                }
+            }
+            mLoadedAssets.erase(it);
+        }
+        return nullptr;
+    }
+
 
     bool AssetManager::hasAsset(const std::string& id) const {
         std::lock_guard<std::mutex> lock(mMutex);

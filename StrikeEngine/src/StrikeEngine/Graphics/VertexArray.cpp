@@ -5,29 +5,29 @@
 
 namespace StrikeEngine {
 
-    VertexArray::VertexArray() : mHandle(0) {
-        glGenVertexArrays(1, &mHandle);
+    VertexArray::VertexArray() : mRendererID(0) {
+        glGenVertexArrays(1, &mRendererID);
     }
 
     VertexArray::~VertexArray() {
         cleanup();
     }
 
-    VertexArray::VertexArray(VertexArray&& other) noexcept : mHandle(other.mHandle) {
-        other.mHandle = 0;
+    VertexArray::VertexArray(VertexArray&& other) noexcept : mRendererID(other.mRendererID) {
+        other.mRendererID = 0;
     }
 
     VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
         if (this != &other) {
             cleanup();
-            mHandle = other.mHandle;
-            other.mHandle = 0;
+            mRendererID = other.mRendererID;
+            other.mRendererID = 0;
         }
         return *this;
     }
 
     void VertexArray::bind() const {
-        glBindVertexArray(mHandle);
+        glBindVertexArray(mRendererID);
     }
 
     void VertexArray::unbind() const {
@@ -64,9 +64,9 @@ namespace StrikeEngine {
     }
 
     void VertexArray::cleanup() {
-        if (mHandle != 0) {
-            glDeleteVertexArrays(1, &mHandle);
-            mHandle = 0;
+        if (mRendererID != 0) {
+            glDeleteVertexArrays(1, &mRendererID);
+            mRendererID = 0;
         }
     }
 

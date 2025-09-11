@@ -20,6 +20,7 @@ namespace StrikeEngine {
     class Shader;
     class Template;
     class Texture2D;
+    class Material;
 
     class AssetManager {
     public:
@@ -44,6 +45,11 @@ namespace StrikeEngine {
         std::shared_ptr<Texture2D> loadTexture(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<Texture2D> loadTextureAsync(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<Texture2D> getTexture(const std::string& id);
+
+        // Material-specific methods
+        std::shared_ptr<Material> loadMaterial(const std::string& id, const std::filesystem::path& src);
+        std::shared_ptr<Material> loadMaterialAsync(const std::string& id, const std::filesystem::path& src);
+        std::shared_ptr<Material> getMaterial(const std::string& id);
 
         bool hasAsset(const std::string& id) const;
         bool isAssetLoading(const std::string& id) const;

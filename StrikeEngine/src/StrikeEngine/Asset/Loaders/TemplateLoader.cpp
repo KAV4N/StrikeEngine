@@ -31,6 +31,8 @@ namespace StrikeEngine {
         AssetManager& assetManager = AssetManager::get();
         pugi::xml_node assetsNode = templateNode.child("assets");
         if (assetsNode) {
+            //TODO: make it use load from nodes in assetmanager
+            /*
             for (pugi::xml_node assetNode : assetsNode.children()) {
                 std::string assetType = assetNode.name();
                 std::string assetId = assetNode.attribute("assetId").as_string();
@@ -42,10 +44,11 @@ namespace StrikeEngine {
                 templateAsset->mAssetReferences[assetId] = asset;
                 
             }
+            */
         }
 
         if (!async) {
-            templateAsset->setLoadingState(AssetLoadingState::Ready);
+            templateAsset->setLoadingState(AssetLoadingState::Loaded);
         }
         return templateAsset;
     }
@@ -75,7 +78,7 @@ namespace StrikeEngine {
     {
         auto placeholderAsset = std::dynamic_pointer_cast<Template>(placeholder);
         auto loadedAsset = std::dynamic_pointer_cast<Template>(loaded);
-        *(placeholderAsset) = std::move(*loadedAsset);
+        placeholderAsset = std::move(loadedAsset);
     }
 
 

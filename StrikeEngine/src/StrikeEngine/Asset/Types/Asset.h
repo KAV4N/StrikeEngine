@@ -9,6 +9,7 @@ namespace StrikeEngine {
     enum class AssetLoadingState {
         Uninitialized = 0,
         Loading,
+        Loaded,
         Ready,
         FAILED
     };
@@ -26,13 +27,14 @@ namespace StrikeEngine {
         const std::string& getName() const;
         void setName(const std::string& name);
 
+        virtual void postload() {};
+
         bool isReady() const;
+        bool isLoaded() const;
         bool isLoading() const;
         bool hasFailed() const;
 
         void setLoadingState(AssetLoadingState state);
-
-        virtual void postLoad() {}
 
         virtual pugi::xml_node toNode() const;
 
@@ -41,5 +43,6 @@ namespace StrikeEngine {
         std::string mName;
         std::filesystem::path mPath;
         AssetLoadingState mLoadingState;
+
     };
 }

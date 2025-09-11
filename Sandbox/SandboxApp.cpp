@@ -51,7 +51,8 @@ namespace StrikeEngine {
             */
             AssetManager& manager = AssetManager::get();
             //mesh = manager.loadMeshAsync("mesh1", "Assets/Scenes/templates/tank/Cube.mesh");
-            texture = manager.loadTextureAsync("texture1", "Assets/Objects/panzer/14077_WWII_Tank_Germany_Panzer_III_hull_diff.jpg");
+            //texture = manager.loadTexture("material1", "Assets/Objects/panzer/14077_WWII_Tank_Germany_Panzer_III_hull_diff.jpg");
+            material = manager.loadMaterialAsync("material1", "Assets/Scenes/templates/tank/Material.mat");
             //shader = manager.loadShader("shader3", "Assets/Shaders/testShader.vert", "Assets/Shaders/testShader.frag");
             
             auto& world = StrikeEngine::World::get();
@@ -64,6 +65,7 @@ namespace StrikeEngine {
         std::shared_ptr<StrikeEngine::Mesh> mesh;
         std::shared_ptr<StrikeEngine::Shader> shader;
         std::shared_ptr<StrikeEngine::Texture2D> texture;
+        std::shared_ptr<StrikeEngine::Material> material;
     };
 
     Application* createApplication() {

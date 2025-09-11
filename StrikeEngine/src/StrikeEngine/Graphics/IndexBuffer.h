@@ -22,12 +22,12 @@ namespace StrikeEngine {
 
         void setData(const uint32_t* indices, size_t count, GLenum usage = GL_STATIC_DRAW);
 
-        GLuint getHandle() const { return mHandle; }
-        bool isValid() const { return mHandle != 0; }
+        GLuint getID() const { return mRendererID; }
+        bool isValid() const { return mRendererID != 0; }
         size_t getCount() const { return mCount; }
 
     private:
-        GLuint mHandle;
+        GLuint mRendererID;
         size_t mCount;
         void cleanup();
     };

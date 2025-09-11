@@ -12,6 +12,8 @@
 
 namespace StrikeEngine {
 
+    class GraphicsAsset;
+
     struct Bounds {
         glm::vec3 aabbMax, aabbMin;
         Bounds() {
@@ -75,26 +77,23 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void postLoad() override;
-
         // Getters
         const std::vector<Vertex>& getVertices() const;
         const std::vector<uint32_t>& getIndices() const;
         const std::vector<SubMeshData>& getSubMeshes() const;
         const Bounds& getBounds() const;
 
+        void postload() override;
+
         const std::shared_ptr<VertexArray>& getVertexArray() const;
         const std::shared_ptr<VertexBuffer>& getVertexBuffer() const;
         const std::shared_ptr<IndexBuffer>& getIndexBuffer() const;
-
-        bool hasOpenGLResources() const;
 
         void setVertices(const std::vector<Vertex>& vertices);
         void setIndices(const std::vector<uint32_t>& indices);
         void setSubMeshes(const std::vector<SubMeshData>& subMeshes);
         void setBounds(const Bounds& bounds);
-    private:
-        void createOpenGLResources();
+
     private:
         // CPU data
         std::vector<Vertex> mVertices;
@@ -106,6 +105,5 @@ namespace StrikeEngine {
         std::shared_ptr<VertexArray> mVertexArray;
         std::shared_ptr<VertexBuffer> mVertexBuffer;
         std::shared_ptr<IndexBuffer> mIndexBuffer;
-        bool mHasOpenGLResources;
     };
 }

@@ -11,6 +11,7 @@
 
 
 namespace StrikeEngine {
+    class GraphicsAsset;
 
     class Shader : public Asset
     {
@@ -38,27 +39,24 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void postLoad() override;
+        void postload() override;
 
         pugi::xml_node toNode() const override;
 
         // Getters
-        GLuint getHandle() const { return mHandle; }
+        GLuint getID() const { return mRendererID; }
         const std::filesystem::path& getFragmentPath() const { return mFragmentPath; }
-        bool hasOpenGLResources() const { return mHandle != 0; }
 
-        // Setters for loading
         void setVertexSource(const std::string& source) { mVertexSource = source; }
         void setFragmentSource(const std::string& source) { mFragmentSource = source; }
 
     private:
-        void createOpenGLResources();
         GLuint compileShader(GLenum type, const std::string& source);
         void linkProgram();
         GLint getUniformLocation(const std::string& name);
 
     private:
-        GLuint mHandle;
+        GLuint mRendererID;
         std::filesystem::path mFragmentPath;
         std::string mVertexSource;
         std::string mFragmentSource;

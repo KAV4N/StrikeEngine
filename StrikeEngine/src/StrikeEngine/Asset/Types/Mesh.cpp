@@ -4,8 +4,8 @@
 namespace StrikeEngine {
 
     Mesh::Mesh(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : Asset(id, path, name),
-        mHasOpenGLResources(false) {
+        : Asset(id, path, name)
+    {
     }
 
     Mesh::~Mesh() {
@@ -13,11 +13,7 @@ namespace StrikeEngine {
     }
 
 
-    void Mesh::postLoad() {
-        createOpenGLResources();
-    }
-
-    void Mesh::createOpenGLResources() {
+    void Mesh::postload() {
         if (mVertices.empty() || mIndices.empty()) {
             return;
         }
@@ -31,9 +27,8 @@ namespace StrikeEngine {
 
         mVertexArray->setVertexBuffer(*mVertexBuffer);
         mVertexArray->setIndexBuffer(*mIndexBuffer);
-
-        mHasOpenGLResources = true;
     }
+
 
 
     const std::vector<Vertex>& Mesh::getVertices() const {
@@ -64,21 +59,18 @@ namespace StrikeEngine {
         return mIndexBuffer;
     }
 
-    bool Mesh::hasOpenGLResources() const {
-        return mHasOpenGLResources;
-    }
 
 
     void Mesh::setVertices(const std::vector<Vertex>& vertices) {
         mVertices = vertices;
-        if (mHasOpenGLResources && mVertexBuffer) {
+        if (mVertexBuffer) {
             mVertexBuffer->setData(mVertices.data(), mVertices.size() * sizeof(Vertex));
         }
     }
 
     void Mesh::setIndices(const std::vector<uint32_t>& indices) {
         mIndices = indices;
-        if (mHasOpenGLResources && mIndexBuffer) {
+        if (mIndexBuffer) {
             mIndexBuffer->setData(mIndices.data(), mIndices.size());
         }
     }

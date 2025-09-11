@@ -5,6 +5,7 @@
 #include <variant>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 #include <glm/glm.hpp>
 #include "Asset.h"
 #include "Shader.h"
@@ -32,11 +33,26 @@ namespace StrikeEngine {
         void setVec4(const std::string& name, const glm::vec4& value);
         void setMat4(const std::string& name, const glm::mat4& value);
 
+        std::optional<int> getInt(const std::string& name) const;
+        std::optional<std::vector<int>> getIntArray(const std::string& name) const;
+        std::optional<float> getFloat(const std::string& name) const;
+        std::optional<glm::vec2> getVec2(const std::string& name) const;
+        std::optional<glm::vec3> getVec3(const std::string& name) const;
+        std::optional<glm::vec4> getVec4(const std::string& name) const;
+        std::optional<glm::mat4> getMat4(const std::string& name) const;
+
         void addTexture(uint32_t slot, std::shared_ptr<Texture2D> texture);
+        void setTextures(const std::vector<std::pair<uint32_t, std::shared_ptr<Texture2D>>>& textures);
         void removeTexture(uint32_t slot);
+        void setTextureSlot(uint32_t oldSlot, uint32_t newSlot);
+
+        const std::unordered_map<uint32_t, std::shared_ptr<Texture2D>>& getTextures() const { return mTextures; }
+        std::shared_ptr<Texture2D> getTexture(uint32_t slot) const;
 
         void setShader(std::shared_ptr<Shader> shader);
         std::shared_ptr<Shader> getShader() const { return mShader; }
+
+        void serialize(const std::filesystem::path& path) const;
 
         void bind() const;
         void unbind() const;
@@ -52,7 +68,7 @@ namespace StrikeEngine {
             glm::vec3,
             glm::vec4,
             glm::mat4,
-            std::vector<int>  
+            std::vector<int>
         >;
 
         void applyUniform(const std::string& name, const UniformValue& value) const;

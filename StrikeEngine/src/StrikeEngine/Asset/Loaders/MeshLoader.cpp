@@ -11,7 +11,7 @@ namespace StrikeEngine {
     std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath, bool async) {
         auto mesh = parseMeshFromXml(id, filePath);
         if (mesh && !async) {
-            mesh->setLoadingState(AssetLoadingState::Ready);
+            mesh->setLoadingState(AssetLoadingState::Loaded);
         }
         return mesh;
     }
@@ -36,7 +36,7 @@ namespace StrikeEngine {
     {
         auto placeholderAsset = std::dynamic_pointer_cast<Mesh>(placeholder);
         auto loadedAsset = std::dynamic_pointer_cast<Mesh>(loaded);
-        *(placeholderAsset) = std::move(*loadedAsset);
+        placeholderAsset = std::move(loadedAsset);
         //*placeholderMesh = *loadedMesh;
     }
 

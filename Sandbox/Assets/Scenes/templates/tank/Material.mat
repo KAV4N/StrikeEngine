@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <material>
-	<shader assetId="PBR_Standard" vertex="shaders/standard.vert" fragment="shaders/standard.frag"/>
+	<shader assetId="PBR_Standard" srcVert="../../Shaders/testShader.vert" srcFrag="../../Shaders/testShader.frag"/>
 
 	<properties>
 		<property name="uBaseColor"  type="vec3"   value="1.0,1.0,1.0"/>
@@ -12,14 +12,6 @@
 	</properties>
 
 	<textures>
-		<texture2D name="albedo" src="textures/wood_albedo.jpg" />
-		<texture2D name="normal" src="textures/wood_normal.jpg"/>
-		<texture2D name="roughness" src="textures/wood_roughness.jpg" />
-		<texture2D name="metallic" src="textures/wood_metallic.jpg"/>
-		<texture2D name="ao" src="textures/wood_ao.jpg"/>
-
-		<texture2D name="tank" src="textures/tank.jpg"/>
-		<texture2D name="car" src="textures/car.jpg"/>
-		<texture2D name="background" src="textures/car.jpg"/>
+		<texture2D name="albedo" src="../../Objects/panzer/14077_WWII_Tank_Germany_Panzer_III_hull_diff.jpg" />
 	</textures>
 </material>

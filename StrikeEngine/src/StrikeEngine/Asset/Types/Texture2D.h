@@ -8,6 +8,8 @@
 
 namespace StrikeEngine {
 
+    class GraphicsAsset;
+
     enum class TextureFormat {
         RGB = GL_RGB,
         RGBA = GL_RGBA,
@@ -45,7 +47,7 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void postLoad() override;
+        void postload() override;
 
         // OpenGL operations
         void bind(uint32_t slot = 0) const;
@@ -55,13 +57,13 @@ namespace StrikeEngine {
         uint32_t getWidth() const { return mWidth; }
         uint32_t getHeight() const { return mHeight; }
         uint32_t getChannels() const { return mChannels; }
-        GLuint getTextureID() const { return mTextureID; }
+        GLuint getID() const { return mRendererID; }
         TextureFormat getFormat() const { return mFormat; }
         TextureFilter getMinFilter() const { return mMinFilter; }
         TextureFilter getMagFilter() const { return mMagFilter; }
         TextureWrap getWrapS() const { return mWrapS; }
         TextureWrap getWrapT() const { return mWrapT; }
-        bool hasOpenGLResources() const { return mHasOpenGLResources; }
+
 
         // Setters (should be called before postLoad)
         void setTextureData(unsigned char* data, uint32_t width, uint32_t height, uint32_t channels);
@@ -75,7 +77,6 @@ namespace StrikeEngine {
         pugi::xml_node toNode() const override;
 
     private:
-        void createOpenGLTexture();
         void cleanup();
     private:
         // CPU data
@@ -85,8 +86,7 @@ namespace StrikeEngine {
         uint32_t mChannels;
 
         // GPU resources
-        GLuint mTextureID;
-        bool mHasOpenGLResources;
+        GLuint mRendererID;
 
         // Texture parameters
         TextureFormat mFormat;

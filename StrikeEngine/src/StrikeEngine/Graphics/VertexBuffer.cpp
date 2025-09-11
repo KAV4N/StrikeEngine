@@ -2,29 +2,29 @@
 
 namespace StrikeEngine {
 
-    VertexBuffer::VertexBuffer() : mHandle(0) {
-        glGenBuffers(1, &mHandle);
+    VertexBuffer::VertexBuffer() : mRendererID(0) {
+        glGenBuffers(1, &mRendererID);
     }
 
     VertexBuffer::~VertexBuffer() {
         cleanup();
     }
 
-    VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept : mHandle(other.mHandle) {
-        other.mHandle = 0;
+    VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept : mRendererID(other.mRendererID) {
+        other.mRendererID = 0;
     }
 
     VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept {
         if (this != &other) {
             cleanup();
-            mHandle = other.mHandle;
-            other.mHandle = 0;
+            mRendererID = other.mRendererID;
+            other.mRendererID = 0;
         }
         return *this;
     }
 
     void VertexBuffer::bind() const {
-        glBindBuffer(GL_ARRAY_BUFFER, mHandle);
+        glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
     }
 
     void VertexBuffer::unbind() const {
@@ -37,9 +37,9 @@ namespace StrikeEngine {
     }
 
     void VertexBuffer::cleanup() {
-        if (mHandle != 0) {
-            glDeleteBuffers(1, &mHandle);
-            mHandle = 0;
+        if (mRendererID != 0) {
+            glDeleteBuffers(1, &mRendererID);
+            mRendererID = 0;
         }
     }
 

@@ -46,23 +46,29 @@ namespace StrikeEngine {
         return mLoadingState == AssetLoadingState::Loading;
     }
 
+    bool Asset::isLoaded() const {
+        return mLoadingState == AssetLoadingState::Loaded;
+    }
+
     bool Asset::hasFailed() const {
         return mLoadingState == AssetLoadingState::FAILED;
     }
 
     void Asset::setLoadingState(AssetLoadingState state) {
         mLoadingState = state;
-
-        // Call postLoad when asset becomes ready
+        /*
+        * TODO SET IN RENDERER
         if (state == AssetLoadingState::Ready) {
             postLoad();
         }
+        */
     }
 
     pugi::xml_node Asset::toNode() const {
         pugi::xml_document doc;
         pugi::xml_node node = doc.append_child(getTypeName());
         node.append_attribute("assetId") = getId().c_str();
+        node.append_attribute("name") = mName.c_str();
         node.append_attribute("src") = mPath.string().c_str();
         return node;
     }

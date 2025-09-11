@@ -8,18 +8,18 @@
 namespace StrikeEngine {
 
     Shader::Shader(const std::string& id, const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath, const std::string& name)
-        : Asset(id, vertexPath, name), mFragmentPath(fragmentPath), mHandle(0) {
+        : Asset(id, vertexPath, name), mFragmentPath(fragmentPath), mRendererID(0) {
     }
 
     Shader::~Shader() {
-        if (mHandle != 0) {
-            glDeleteProgram(mHandle);
+        if (mRendererID != 0) {
+            glDeleteProgram(mRendererID);
         }
     }
 
     void Shader::bind() const {
-        if (mHandle != 0) {
-            glUseProgram(mHandle);
+        if (mRendererID != 0) {
+            glUseProgram(mRendererID);
         }
     }
 
@@ -27,11 +27,7 @@ namespace StrikeEngine {
         glUseProgram(0);
     }
 
-    void Shader::postLoad() {
-        createOpenGLResources();
-    }
-
-    void Shader::createOpenGLResources() {
+    void Shader::postload() {
         if (mVertexSource.empty() || mFragmentSource.empty()) {
             std::cerr << "Shader sources are empty for shader: " << getId() << std::endl;
             return;
@@ -41,26 +37,27 @@ namespace StrikeEngine {
             GLuint vertexShader = compileShader(GL_VERTEX_SHADER, mVertexSource);
             GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, mFragmentSource);
 
-            mHandle = glCreateProgram();
-            glAttachShader(mHandle, vertexShader);
-            glAttachShader(mHandle, fragmentShader);
+            mRendererID = glCreateProgram();
+            glAttachShader(mRendererID, vertexShader);
+            glAttachShader(mRendererID, fragmentShader);
 
             linkProgram();
 
-            glDetachShader(mHandle, vertexShader);
-            glDetachShader(mHandle, fragmentShader);
+            glDetachShader(mRendererID, vertexShader);
+            glDetachShader(mRendererID, fragmentShader);
             glDeleteShader(vertexShader);
             glDeleteShader(fragmentShader);
 
         }
         catch (const std::exception& e) {
             std::cerr << "Failed to create OpenGL resources for shader " << getId() << ": " << e.what() << std::endl;
-            if (mHandle != 0) {
-                glDeleteProgram(mHandle);
-                mHandle = 0;
+            if (mRendererID != 0) {
+                glDeleteProgram(mRendererID);
+                mRendererID = 0;
             }
         }
     }
+
 
     GLuint Shader::compileShader(GLenum type, const std::string& source) {
         GLuint shader = glCreateShader(type);
@@ -87,15 +84,15 @@ namespace StrikeEngine {
     }
 
     void Shader::linkProgram() {
-        glLinkProgram(mHandle);
+        glLinkProgram(mRendererID);
 
         GLint success;
-        glGetProgramiv(mHandle, GL_LINK_STATUS, &success);
+        glGetProgramiv(mRendererID, GL_LINK_STATUS, &success);
         if (!success) {
             GLint length;
-            glGetProgramiv(mHandle, GL_INFO_LOG_LENGTH, &length);
+            glGetProgramiv(mRendererID, GL_INFO_LOG_LENGTH, &length);
             std::string log(length, '\0');
-            glGetProgramInfoLog(mHandle, length, nullptr, log.data());
+            glGetProgramInfoLog(mRendererID, length, nullptr, log.data());
 
             const std::string errorMsg = "Shader linking error for " + getId() + ":\n" + log;
             throw std::runtime_error(errorMsg);
@@ -108,7 +105,7 @@ namespace StrikeEngine {
             return it->second;
         }
 
-        GLint location = glGetUniformLocation(mHandle, name.c_str());
+        GLint location = glGetUniformLocation(mRendererID, name.c_str());
         mUniformLocationCache[name] = location;
         return location;
     }
@@ -166,6 +163,7 @@ namespace StrikeEngine {
         pugi::xml_document doc;
         pugi::xml_node node = doc.append_child(getTypeName());
         node.append_attribute("assetId") = getId().c_str();
+        node.append_attribute("name") = mName.c_str();
         node.append_attribute("srcVert") = mPath.string().c_str();
         node.append_attribute("srcFrag") = mFragmentPath.string().c_str();
         return node;
