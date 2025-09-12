@@ -27,8 +27,10 @@ namespace StrikeEngine {
 
         loadMaterialFromXml(material, materialNode, path.parent_path());
 
+
+        material->setLoadingState(AssetLoadingState::Loaded);
         if (!async) {
-            material->setLoadingState(AssetLoadingState::Loaded);
+            material->setLoadingState(AssetLoadingState::Ready);
         }
 
         return material;
@@ -43,7 +45,11 @@ namespace StrikeEngine {
             return nullptr;
         }
 
-        return AssetManager::get().loadMaterialAsync(assetId, src);
+        bool async = true;
+        if (async)
+            return AssetManager::get().loadMaterialAsync(assetId, src);
+        else
+            return AssetManager::get().loadMaterial(assetId, src);
     }
 
     std::shared_ptr<Asset> MaterialLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {

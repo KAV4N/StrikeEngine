@@ -23,7 +23,7 @@ namespace StrikeEngine {
         cleanup();
     }
 
-    void Texture2D::postload() {
+    void Texture2D::postLoad() {
         if (!mData || mWidth == 0 || mHeight == 0) {
             std::cerr << "Cannot create OpenGL texture: invalid data for texture " << getId() << std::endl;
             return;

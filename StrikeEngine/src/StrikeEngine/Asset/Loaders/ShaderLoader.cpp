@@ -30,8 +30,15 @@ namespace StrikeEngine {
             auto shader = std::make_shared<Shader>(id, vertexPath, fragmentPath, vertexPath.stem().string());
             shader->setVertexSource(vertexSource);
             shader->setFragmentSource(fragmentSource);
-            if (!async) {
-                shader->setLoadingState(AssetLoadingState::Loaded);
+            shader->setLoadingState(AssetLoadingState::Loaded);
+            if (shader && !async) {
+                std::lock_guard<std::mutex> lock(mMutex);
+                LoadingTask task;
+                task.id = shader->getId();
+                task.path = shader->getPath();
+                task.placeholderAsset = shader;
+                task.flagOnlyPostLoad = true;
+                mLoadingTasks.emplace(task.id, std::move(task));
             }
 
             return shader;

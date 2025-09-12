@@ -27,7 +27,7 @@ namespace StrikeEngine {
         glUseProgram(0);
     }
 
-    void Shader::postload() {
+    void Shader::postLoad() {
         if (mVertexSource.empty() || mFragmentSource.empty()) {
             std::cerr << "Shader sources are empty for shader: " << getId() << std::endl;
             return;

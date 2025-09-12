@@ -83,7 +83,7 @@ namespace StrikeEngine {
         const std::vector<SubMeshData>& getSubMeshes() const;
         const Bounds& getBounds() const;
 
-        void postload() override;
+        void postLoad() override;
 
         const std::shared_ptr<VertexArray>& getVertexArray() const;
         const std::shared_ptr<VertexBuffer>& getVertexBuffer() const;

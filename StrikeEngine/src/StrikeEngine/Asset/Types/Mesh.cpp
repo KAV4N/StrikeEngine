@@ -13,7 +13,7 @@ namespace StrikeEngine {
     }
 
 
-    void Mesh::postload() {
+    void Mesh::postLoad() {
         if (mVertices.empty() || mIndices.empty()) {
             return;
         }

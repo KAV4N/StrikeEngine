@@ -10,8 +10,15 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath, bool async) {
         auto mesh = parseMeshFromXml(id, filePath);
+        mesh->setLoadingState(AssetLoadingState::Loaded);
         if (mesh && !async) {
-            mesh->setLoadingState(AssetLoadingState::Loaded);
+            std::lock_guard<std::mutex> lock(mMutex);
+            LoadingTask task;
+            task.id = mesh->getId();
+            task.path = mesh->getPath();
+            task.placeholderAsset = mesh;
+            task.flagOnlyPostLoad = true;
+            mLoadingTasks.emplace(task.id, std::move(task));
         }
         return mesh;
     }

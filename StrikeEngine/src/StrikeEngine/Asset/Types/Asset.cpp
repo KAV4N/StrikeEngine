@@ -18,6 +18,10 @@ namespace StrikeEngine {
         */
     }
 
+    void Asset::postLoad() {
+
+    }
+
     const std::string& Asset::getId() const {
         return mId;
     }

@@ -1,5 +1,6 @@
 #include "AssetLoader.h"
 #include <algorithm>
+#include "StrikeEngine/Asset/AssetManager.h"
 
 namespace StrikeEngine {
 
@@ -25,6 +26,7 @@ namespace StrikeEngine {
             });
 
         mLoadingTasks.emplace(id, LoadingTask(id, path, placeholderAsset, std::move(future)));
+
     }
 
     void AssetLoader::update() {
@@ -33,15 +35,22 @@ namespace StrikeEngine {
         auto it = mLoadingTasks.begin();
         while (it != mLoadingTasks.end()) {
             auto& task = it->second;
-
-            if (task.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            if (task.flagOnlyPostLoad && task.placeholderAsset->isLoaded()) {
+                task.placeholderAsset->postLoad();
+                task.placeholderAsset->setLoadingState(AssetLoadingState::Ready);
+                it = mLoadingTasks.erase(it);
+                //auto& assetM = AssetManager::get();
+                
+            }
+            else if (task.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 try {
                     auto loadedAsset = task.future.get();
 
                     if (loadedAsset && task.placeholderAsset) {
                         swapData(task.placeholderAsset, loadedAsset);
+                        task.placeholderAsset->postLoad();
                         task.placeholderAsset->setLoadingState(AssetLoadingState::Ready);
-                        
+
                     }
                     else if (task.placeholderAsset) {
                         // Loading failed
@@ -56,6 +65,7 @@ namespace StrikeEngine {
 
                 it = mLoadingTasks.erase(it);
             }
+
             else {
                 ++it;
             }

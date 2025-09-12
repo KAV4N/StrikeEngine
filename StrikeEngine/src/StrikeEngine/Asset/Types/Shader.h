@@ -39,7 +39,7 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void postload() override;
+        void postLoad() override;
 
         pugi::xml_node toNode() const override;
 

@@ -27,7 +27,7 @@ namespace StrikeEngine {
         const std::string& getName() const;
         void setName(const std::string& name);
 
-        virtual void postload() {};
+        virtual void postLoad();
 
         bool isReady() const;
         bool isLoaded() const;

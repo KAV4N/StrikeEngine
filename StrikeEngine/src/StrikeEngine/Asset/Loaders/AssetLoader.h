@@ -40,31 +40,29 @@ namespace StrikeEngine {
             std::filesystem::path path;
             std::shared_ptr<Asset> placeholderAsset;
             std::future<std::shared_ptr<Asset>> future;
+            bool flagOnlyPostLoad = false;
 
-            LoadingTask() = default;
-            LoadingTask(const std::string& taskId, const std::filesystem::path& taskPath,
-                std::shared_ptr<Asset> placeholder, std::future<std::shared_ptr<Asset>> taskFuture)
-                : id(taskId), path(taskPath), placeholderAsset(std::move(placeholder)), future(std::move(taskFuture)) {
+            LoadingTask()
+                : id(),
+                path(),
+                placeholderAsset(nullptr),
+                future(),
+                flagOnlyPostLoad(false) {
             }
 
-            LoadingTask(LoadingTask&& other) noexcept
-                : id(std::move(other.id)), path(std::move(other.path)),
-                placeholderAsset(std::move(other.placeholderAsset)), future(std::move(other.future)) {
+            LoadingTask(std::string id_,
+                std::filesystem::path path_,
+                std::shared_ptr<Asset> placeholderAsset_,
+                std::future<std::shared_ptr<Asset>> future_,
+                bool flagOnlyPostLoad_ = false)
+                : id(std::move(id_)),
+                path(std::move(path_)),
+                placeholderAsset(std::move(placeholderAsset_)),
+                future(std::move(future_)),
+                flagOnlyPostLoad(flagOnlyPostLoad_) {
             }
-
-            LoadingTask& operator=(LoadingTask&& other) noexcept {
-                if (this != &other) {
-                    id = std::move(other.id);
-                    path = std::move(other.path);
-                    placeholderAsset = std::move(other.placeholderAsset);
-                    future = std::move(other.future);
-                }
-                return *this;
-            }
-
-            LoadingTask(const LoadingTask&) = delete;
-            LoadingTask& operator=(const LoadingTask&) = delete;
         };
+
 
         std::unordered_map<std::string, LoadingTask> mLoadingTasks;
         std::string mTypeName;

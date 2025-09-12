@@ -23,8 +23,15 @@ namespace StrikeEngine {
         }
 
         texture->setTextureData(data, width, height, channels);
-        if (!async) {
-            texture->setLoadingState(AssetLoadingState::Loaded);
+        texture->setLoadingState(AssetLoadingState::Loaded);
+        if (texture && !async) {
+            std::lock_guard<std::mutex> lock(mMutex);
+            LoadingTask task;
+            task.id = texture->getId();
+            task.path = texture->getPath();
+            task.placeholderAsset = texture;
+            task.flagOnlyPostLoad = true;
+            mLoadingTasks.emplace(task.id, std::move(task));
         }
         
         return texture;

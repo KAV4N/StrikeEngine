@@ -47,7 +47,7 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void postload() override;
+        void postLoad() override;
 
         // OpenGL operations
         void bind(uint32_t slot = 0) const;
