@@ -19,7 +19,7 @@ namespace StrikeEngine {
         virtual ~AssetLoader() = default;
 
         virtual std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& path, bool async=false);
-        virtual std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node) = 0;
+        virtual std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) = 0;
 
         virtual void loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset);
 

@@ -43,7 +43,6 @@ namespace StrikeEngine {
 
         pugi::xml_node toNode() const override;
 
-        // Getters
         GLuint getID() const { return mRendererID; }
         const std::filesystem::path& getFragmentPath() const { return mFragmentPath; }
 

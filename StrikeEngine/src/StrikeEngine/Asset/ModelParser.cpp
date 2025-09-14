@@ -17,6 +17,27 @@ namespace StrikeEngine {
         reset();
     }
 
+    std::string ModelParser::generateUniqueId(const std::string& baseId) {
+        if (mUsedIds.find(baseId) == mUsedIds.end()) {
+            mUsedIds.insert(baseId);
+            return baseId;
+        }
+
+        int counter = 1;
+        std::string uniqueId;
+
+        do {
+            std::ostringstream oss;
+            oss << baseId << "_" << counter;
+            uniqueId = oss.str();
+            counter++;
+        } while (mUsedIds.find(uniqueId) != mUsedIds.end());
+
+        mUsedIds.insert(uniqueId);
+        return uniqueId;
+    }
+
+
     bool ModelParser::parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc) {
         reset();
 
@@ -58,11 +79,8 @@ namespace StrikeEngine {
         for (uint32_t i = 0; i < scene->mRootNode->mNumChildren; i++) {
             auto entity = std::make_shared<EntityData>();
             entity->name = scene->mRootNode->mChildren[i]->mName.C_Str();
-            entity->id = sanitizeId(entity->name);
-            if (entity->id.empty()) {
-                static int nodeCounter = 0;
-                entity->id = "node_" + std::to_string(nodeCounter++);
-            }
+            entity->id = generateUniqueId(entity->name);
+
             glm::mat4 transform = aiMatrix4x4ToGlm(scene->mRootNode->mChildren[i]->mTransformation);
             decomposeTransform(transform, entity->position, entity->rotation, entity->scale);
             mTopLevelEntities.push_back(entity);
@@ -93,42 +111,57 @@ namespace StrikeEngine {
             aiString name;
             aiMat->Get(AI_MATKEY_NAME, name);
             std::string matName = name.C_Str();
-            std::string baseId = sanitizeId(matName);
-            if (baseId.empty()) {
-                baseId = "material_" + std::to_string(i);
+
+            std::string materialId = generateUniqueId(matName);
+
+            // Create a standard Material instead of PBRMaterial
+            auto material = std::make_shared<Material>(mIdPrefix + materialId, "", matName);
+
+            // Set base color (diffuse) as a vec3 uniform
+            aiColor3D baseColor(1.0f, 1.0f, 1.0f);
+            if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor) == AI_SUCCESS) {
+                material->setVec3("uBaseColor", aiColor3dToGlm(baseColor));
             }
-            std::string materialId = mIdPrefix + baseId;
 
-            auto material = std::make_shared<Material>(materialId, matName);
-
-            aiColor3D diffuse(1.0f, 1.0f, 1.0f);
-            aiColor3D specular(1.0f, 1.0f, 1.0f);
-            aiColor3D ambient(0.2f, 0.2f, 0.2f);
-            aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-            aiMat->Get(AI_MATKEY_COLOR_SPECULAR, specular);
-            aiMat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
-            /*
-            material->setDiffuseColor(aiColor3dToGlm(diffuse));
-            material->setSpecularColor(aiColor3dToGlm(specular));
-            material->setAmbientColor(aiColor3dToGlm(ambient));
-
-            float shininess = 32.0f;
-            aiMat->Get(AI_MATKEY_SHININESS, shininess);
-            material->setShininess(shininess);
-
-            aiString texPath;
-            if (aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS) {
-                material->setDiffuseTexture(texPath.C_Str());
+            // Set metallic as a float uniform
+            float metallic = 0.0f;
+            if (aiMat->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS) {
+                material->setFloat("uMetallic", metallic);
             }
-            if (aiMat->GetTexture(aiTextureType_SPECULAR, 0, &texPath) == AI_SUCCESS) {
-                material->setSpecularTexture(texPath.C_Str());
+            else {
+                aiColor3D specular;
+                if (aiMat->Get(AI_MATKEY_COLOR_SPECULAR, specular) == AI_SUCCESS) {
+                    float avgSpecular = (specular.r + specular.g + specular.b) / 3.0f;
+                    material->setFloat("uMetallic", avgSpecular > 0.9f ? 1.0f : 0.0f);
+                }
             }
-            if (aiMat->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
-                material->setNormalTexture(texPath.C_Str());
+
+            // Set roughness as a float uniform
+            float roughness = 0.5f;
+            if (aiMat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == AI_SUCCESS) {
+                material->setFloat("uRoughness", roughness);
+            }
+            else {
+                float shininess = 0.0f;
+                if (aiMat->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
+                    roughness = std::sqrt(2.0f / (shininess + 2.0f));
+                    material->setFloat("uRoughness", glm::clamp(roughness, 0.04f, 1.0f));
+                }
+            }
+
+            // Set emission as a vec3 uniform
+            aiColor3D emission(0.0f, 0.0f, 0.0f);
+            if (aiMat->Get(AI_MATKEY_COLOR_EMISSIVE, emission) == AI_SUCCESS) {
+                material->setVec3("uEmission", aiColor3dToGlm(emission));
+            }
+
+            // Set opacity as a float uniform
+            float opacity = 1.0f;
+            if (aiMat->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS) {
+                material->setFloat("uOpacity", opacity);
             }
 
             mMaterials.push_back(material);
-            */
         }
     }
 
@@ -150,16 +183,13 @@ namespace StrikeEngine {
         collectMeshes(scene->mRootNode);
 
         for (const auto& [node, meshIndices] : nodeMeshes) {
-            if (meshIndices.size() == 1) {
-                uint32_t meshIndex = meshIndices[0];
+            for (uint32_t meshIndex : meshIndices) {
                 aiMesh* aiMesh = scene->mMeshes[meshIndex];
                 std::string meshName = aiMesh->mName.C_Str();
-                std::string baseId = sanitizeId(meshName);
-                if (baseId.empty()) {
-                    baseId = "mesh_" + std::to_string(meshIndex);
-                }
-                std::string meshId = mIdPrefix + baseId;
-                auto mesh = std::make_shared<Mesh>(meshId, "", meshName);
+                std::string baseId = meshName.empty() ? "mesh_" + std::to_string(meshIndex) : meshName;
+
+                std::string meshId = generateUniqueId(baseId);
+                auto mesh = std::make_shared<Mesh>(mIdPrefix +meshId, "", meshName);
 
                 std::vector<Vertex> vertices;
                 vertices.reserve(aiMesh->mNumVertices);
@@ -193,17 +223,6 @@ namespace StrikeEngine {
 
                 calculateMeshBounds(*mesh);
                 mMeshes.push_back(mesh);
-            }
-            else if (meshIndices.size() > 1) {
-                std::string combinedName = scene->mMeshes[meshIndices[0]]->mName.C_Str();
-                std::string baseId = sanitizeId(combinedName);
-                if (baseId.empty()) {
-                    baseId = "combined_mesh_" + std::to_string(meshIndices[0]);
-                }
-                std::string meshId = mIdPrefix + baseId;
-                auto combinedMesh = std::make_shared<Mesh>(meshId, "", combinedName);
-                combineMeshes(meshIndices, scene, *combinedMesh);
-                mMeshes.push_back(combinedMesh);
             }
         }
     }
@@ -273,11 +292,7 @@ namespace StrikeEngine {
         if (parent) {
             entity = std::make_shared<EntityData>();
             entity->name = node->mName.C_Str();
-            entity->id = sanitizeId(entity->name);
-            if (entity->id.empty()) {
-                static int nodeCounter = 0;
-                entity->id = "node_" + std::to_string(nodeCounter++);
-            }
+            entity->id = generateUniqueId(mIdPrefix+entity->name);
             glm::mat4 transform = aiMatrix4x4ToGlm(node->mTransformation);
             decomposeTransform(transform, entity->position, entity->rotation, entity->scale);
             parent->children.push_back(entity);
@@ -355,61 +370,7 @@ namespace StrikeEngine {
         pugi::xml_document doc;
         auto root = doc.append_child("mesh");
 
-        auto positionsNode = root.append_child("positions");
-        positionsNode.append_attribute("count") = mesh.getVertices().size();
-        for (const auto& vertex : mesh.getVertices()) {
-            auto positionNode = positionsNode.append_child("position");
-            positionNode.append_attribute("x") = vertex.position.x;
-            positionNode.append_attribute("y") = vertex.position.y;
-            positionNode.append_attribute("z") = vertex.position.z;
-        }
-
-        auto normalsNode = root.append_child("normals");
-        normalsNode.append_attribute("count") = mesh.getVertices().size();
-        for (const auto& vertex : mesh.getVertices()) {
-            auto normalNode = normalsNode.append_child("normal");
-            normalNode.append_attribute("x") = vertex.normal.x;
-            normalNode.append_attribute("y") = vertex.normal.y;
-            normalNode.append_attribute("z") = vertex.normal.z;
-        }
-
-        auto texCoordsNode = root.append_child("texcoords");
-        texCoordsNode.append_attribute("count") = mesh.getVertices().size();
-        for (const auto& vertex : mesh.getVertices()) {
-            auto texCoordNode = texCoordsNode.append_child("texcoord");
-            texCoordNode.append_attribute("u") = vertex.texCoord.x;
-            texCoordNode.append_attribute("v") = vertex.texCoord.y;
-        }
-
-        auto tangentsNode = root.append_child("tangents");
-        tangentsNode.append_attribute("count") = mesh.getVertices().size();
-        for (const auto& vertex : mesh.getVertices()) {
-            auto tangentNode = tangentsNode.append_child("tangent");
-            tangentNode.append_attribute("x") = vertex.tangent.x;
-            tangentNode.append_attribute("y") = vertex.tangent.y;
-            tangentNode.append_attribute("z") = vertex.tangent.z;
-        }
-
-        auto bitangentsNode = root.append_child("bitangents");
-        bitangentsNode.append_attribute("count") = mesh.getVertices().size();
-        for (const auto& vertex : mesh.getVertices()) {
-            auto bitangentNode = bitangentsNode.append_child("bitangent");
-            bitangentNode.append_attribute("x") = vertex.biNormal.x;
-            bitangentNode.append_attribute("y") = vertex.biNormal.y;
-            bitangentNode.append_attribute("z") = vertex.biNormal.z;
-        }
-
-        if (!mesh.getIndices().empty()) {
-            auto indicesNode = root.append_child("indices");
-            indicesNode.append_attribute("count") = mesh.getIndices().size();
-            std::stringstream ss;
-            for (size_t i = 0; i < mesh.getIndices().size(); ++i) {
-                if (i > 0) ss << ",";
-                ss << mesh.getIndices()[i];
-            }
-            indicesNode.text() = ss.str().c_str();
-        }
-
+        // Add submeshes node first
         if (!mesh.getSubMeshes().empty()) {
             auto subMeshesNode = root.append_child("submeshes");
             subMeshesNode.append_attribute("count") = mesh.getSubMeshes().size();
@@ -433,6 +394,7 @@ namespace StrikeEngine {
             }
         }
 
+        // Add bounds node second
         auto boundsNode = root.append_child("bounds");
         auto minNode = boundsNode.append_child("min");
         minNode.append_attribute("x") = mesh.getBounds().aabbMin.x;
@@ -443,6 +405,68 @@ namespace StrikeEngine {
         maxNode.append_attribute("y") = mesh.getBounds().aabbMax.y;
         maxNode.append_attribute("z") = mesh.getBounds().aabbMax.z;
 
+        // Add positions node
+        auto positionsNode = root.append_child("positions");
+        positionsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto positionNode = positionsNode.append_child("position");
+            positionNode.append_attribute("x") = vertex.position.x;
+            positionNode.append_attribute("y") = vertex.position.y;
+            positionNode.append_attribute("z") = vertex.position.z;
+        }
+
+        // Add normals node
+        auto normalsNode = root.append_child("normals");
+        normalsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto normalNode = normalsNode.append_child("normal");
+            normalNode.append_attribute("x") = vertex.normal.x;
+            normalNode.append_attribute("y") = vertex.normal.y;
+            normalNode.append_attribute("z") = vertex.normal.z;
+        }
+
+        // Add texcoords node
+        auto texCoordsNode = root.append_child("texcoords");
+        texCoordsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto texCoordNode = texCoordsNode.append_child("texcoord");
+            texCoordNode.append_attribute("u") = vertex.texCoord.x;
+            texCoordNode.append_attribute("v") = vertex.texCoord.y;
+        }
+
+        // Add tangents node
+        auto tangentsNode = root.append_child("tangents");
+        tangentsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto tangentNode = tangentsNode.append_child("tangent");
+            tangentNode.append_attribute("x") = vertex.tangent.x;
+            tangentNode.append_attribute("y") = vertex.tangent.y;
+            tangentNode.append_attribute("z") = vertex.tangent.z;
+        }
+
+        // Add bitangents node
+        auto bitangentsNode = root.append_child("bitangents");
+        bitangentsNode.append_attribute("count") = mesh.getVertices().size();
+        for (const auto& vertex : mesh.getVertices()) {
+            auto bitangentNode = bitangentsNode.append_child("bitangent");
+            bitangentNode.append_attribute("x") = vertex.biNormal.x;
+            bitangentNode.append_attribute("y") = vertex.biNormal.y;
+            bitangentNode.append_attribute("z") = vertex.biNormal.z;
+        }
+
+        // Add indices node
+        if (!mesh.getIndices().empty()) {
+            auto indicesNode = root.append_child("indices");
+            indicesNode.append_attribute("count") = mesh.getIndices().size();
+            std::stringstream ss;
+            for (size_t i = 0; i < mesh.getIndices().size(); ++i) {
+                if (i > 0) ss << ",";
+                ss << mesh.getIndices()[i];
+            }
+            indicesNode.text() = ss.str().c_str();
+        }
+
+        // Save to file
         std::string meshIdWithoutPrefix = mesh.getId();
         if (meshIdWithoutPrefix.find(mIdPrefix) == 0) {
             meshIdWithoutPrefix = meshIdWithoutPrefix.substr(mIdPrefix.length());
@@ -452,53 +476,67 @@ namespace StrikeEngine {
     }
 
     void ModelParser::saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir) {
-        /*
         pugi::xml_document doc;
+
+        // Add XML declaration
+        auto decl = doc.prepend_child(pugi::node_declaration);
+        decl.append_attribute("version") = "1.0";
+
         auto root = doc.append_child("material");
 
-        auto diffuseNode = root.append_child("diffuse");
-        diffuseNode.append_attribute("r") = material.getDiffuseColor().r;
-        diffuseNode.append_attribute("g") = material.getDiffuseColor().g;
-        diffuseNode.append_attribute("b") = material.getDiffuseColor().b;
+        // Add shader node with generic shader (adjust as needed)
+        auto shaderNode = root.append_child("shader");
+        shaderNode.append_attribute("assetId") = "Standard";
+        shaderNode.append_attribute("srcVert") = "../../Shaders/standard.vert";
+        shaderNode.append_attribute("srcFrag") = "../../Shaders/standard.frag";
 
-        auto specularNode = root.append_child("specular");
-        specularNode.append_attribute("r") = material.getSpecularColor().r;
-        specularNode.append_attribute("g") = material.getSpecularColor().g;
-        specularNode.append_attribute("b") = material.getSpecularColor().b;
+        // Add properties section
+        auto propertiesNode = root.append_child("properties");
 
-        auto ambientNode = root.append_child("ambient");
-        ambientNode.append_attribute("r") = material.getAmbientColor().r;
-        ambientNode.append_attribute("g") = material.getAmbientColor().g;
-        ambientNode.append_attribute("b") = material.getAmbientColor().b;
+        // Serialize uniforms from the Material
+        for (const auto& [name, value] : material.getUniforms()) {
+            auto propertyNode = propertiesNode.append_child("property");
+            propertyNode.append_attribute("name") = name.c_str();
 
-        auto shininessNode = root.append_child("shininess");
-        shininessNode.append_attribute("value") = material.getShininess();
-
-        if (!material.getDiffuseTexture().empty()) {
-            auto diffuseTexNode = root.append_child("texture");
-            diffuseTexNode.append_attribute("type") = "diffuse";
-            diffuseTexNode.append_attribute("path") = material.getDiffuseTexture().c_str();
+            std::visit([&propertyNode](const auto& val) {
+                using T = std::decay_t<decltype(val)>;
+                if constexpr (std::is_same_v<T, int>) {
+                    propertyNode.append_attribute("type") = "int";
+                    propertyNode.append_attribute("value") = val;
+                }
+                else if constexpr (std::is_same_v<T, float>) {
+                    propertyNode.append_attribute("type") = "float";
+                    propertyNode.append_attribute("value") = std::to_string(val).c_str();
+                }
+                else if constexpr (std::is_same_v<T, glm::vec2>) {
+                    propertyNode.append_attribute("type") = "vec2";
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << val.x << "," << val.y;
+                    propertyNode.append_attribute("value") = ss.str().c_str();
+                }
+                else if constexpr (std::is_same_v<T, glm::vec3>) {
+                    propertyNode.append_attribute("type") = "vec3";
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << val.x << "," << val.y << "," << val.z;
+                    propertyNode.append_attribute("value") = ss.str().c_str();
+                }
+                else if constexpr (std::is_same_v<T, glm::vec4>) {
+                    propertyNode.append_attribute("type") = "vec4";
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(1) << val.x << "," << val.y << "," << val.z << "," << val.w;
+                    propertyNode.append_attribute("value") = ss.str().c_str();
+                }
+                }, value);
         }
 
-        if (!material.getSpecularTexture().empty()) {
-            auto specularTexNode = root.append_child("texture");
-            specularTexNode.append_attribute("type") = "specular";
-            specularTexNode.append_attribute("path") = material.getSpecularTexture().c_str();
-        }
 
-        if (!material.getNormalTexture().empty()) {
-            auto normalTexNode = root.append_child("texture");
-            normalTexNode.append_attribute("type") = "normal";
-            normalTexNode.append_attribute("path") = material.getNormalTexture().c_str();
-        }
-
+        auto texturesNode = root.append_child("textures");
         std::string materialIdWithoutPrefix = material.getId();
         if (materialIdWithoutPrefix.find(mIdPrefix) == 0) {
             materialIdWithoutPrefix = materialIdWithoutPrefix.substr(mIdPrefix.length());
         }
         std::filesystem::path filepath = templateDir / (materialIdWithoutPrefix + ".mat");
         doc.save_file(filepath.string().c_str());
-        */
     }
 
     void ModelParser::saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc) {
@@ -537,7 +575,7 @@ namespace StrikeEngine {
             writeEntityToXml(entitiesNode, entity);
         }
 
-        doc.save_file(templateSrc.string().c_str());
+        doc.save_file((templateSrc.string()).c_str());
     }
 
     void ModelParser::writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity) {
@@ -590,19 +628,6 @@ namespace StrikeEngine {
         }
     }
 
-    std::string ModelParser::sanitizeId(const std::string& name) {
-        std::string result = name;
-        std::replace_if(result.begin(), result.end(),
-            [](char c) { return !std::isalnum(c) && c != '_' && c != '-'; }, '_');
-        if (!result.empty() && std::isdigit(result[0])) {
-            result = "_" + result;
-        }
-        auto end = std::unique(result.begin(), result.end(),
-            [](char a, char b) { return a == '_' && b == '_'; });
-        result.erase(end, result.end());
-        return result;
-    }
-
     void ModelParser::calculateMeshBounds(Mesh& mesh) {
         if (mesh.getVertices().empty()) {
             mesh.setBounds(Bounds());
@@ -646,5 +671,6 @@ namespace StrikeEngine {
         mMeshes.clear();
         mMaterials.clear();
         mTopLevelEntities.clear();
+        mUsedIds.clear();
     }
 }

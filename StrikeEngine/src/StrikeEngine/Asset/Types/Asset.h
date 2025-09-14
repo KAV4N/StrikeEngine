@@ -2,6 +2,7 @@
 #include <string>
 #include <filesystem>
 #include <pugixml.hpp>
+#include <mutex>
 
 namespace StrikeEngine {
     class AssetManager;
@@ -33,7 +34,9 @@ namespace StrikeEngine {
         bool isLoaded() const;
         bool isLoading() const;
         bool hasFailed() const;
+        bool isAsync() const;
 
+        void setLoadAsync(bool async);
         void setLoadingState(AssetLoadingState state);
 
         virtual pugi::xml_node toNode() const;
@@ -43,6 +46,7 @@ namespace StrikeEngine {
         std::string mName;
         std::filesystem::path mPath;
         AssetLoadingState mLoadingState;
-
+        bool mLoadAsync;
+        mutable std::mutex mMutex;
     };
 }

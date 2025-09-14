@@ -10,8 +10,11 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> MeshLoader::load(const std::string& id, const std::filesystem::path& filePath, bool async) {
         auto mesh = parseMeshFromXml(id, filePath);
+        if (!mesh) {
+            std::runtime_error("Failed to load mesh XML: " + filePath.string());
+        }
         mesh->setLoadingState(AssetLoadingState::Loaded);
-        if (mesh && !async) {
+        if (!async) {
             std::lock_guard<std::mutex> lock(mMutex);
             LoadingTask task;
             task.id = mesh->getId();
@@ -23,10 +26,11 @@ namespace StrikeEngine {
         return mesh;
     }
 
-    std::shared_ptr<Asset> MeshLoader::loadFromNode(const pugi::xml_node& node) {
+    std::shared_ptr<Asset> MeshLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
-        bool async = true;
+        src = basePath / src;
+        bool async = node.attribute("async").as_bool();
         
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid mesh node: missing assetId or srcModel attribute" << std::endl;
@@ -49,7 +53,8 @@ namespace StrikeEngine {
 
     std::shared_ptr<Mesh> MeshLoader::parseMeshFromXml(const std::string& id, const std::filesystem::path& filePath) {
         if (!std::filesystem::exists(filePath)) {
-            std::cerr << "Mesh file does not exist: " << filePath << std::endl;
+            std::runtime_error("Mesh file does not exist " + filePath.string());
+            //std::cerr << "Mesh file does not exist: " << filePath << std::endl;
             return nullptr;
         }
 

@@ -30,44 +30,40 @@ namespace StrikeEngine {
 
         AssetManager& assetManager = AssetManager::get();
         pugi::xml_node assetsNode = templateNode.child("assets");
+
         if (assetsNode) {
-            //TODO: make it use load from nodes in assetmanager
-            /*
-            for (pugi::xml_node assetNode : assetsNode.children()) {
-                std::string assetType = assetNode.name();
-                std::string assetId = assetNode.attribute("assetId").as_string();
-                std::string assetSrc = assetNode.attribute("src").as_string();
-
-                std::filesystem::path assetPath = path.parent_path() / assetSrc;
-                auto asset = assetManager.loadTemplateAsync(assetId, assetPath);
-
-                templateAsset->mAssetReferences[assetId] = asset;
-                
-            }
-            */
+            AssetManager::get().deserialize(assetsNode, templateAsset->mAssetReferences, path.parent_path());
         }
 
+        templateAsset->setTemplateDoc(doc);
+        templateAsset->setLoadingState(AssetLoadingState::Loaded);
         if (!async) {
-            templateAsset->setLoadingState(AssetLoadingState::Loaded);
+            templateAsset->setLoadingState(AssetLoadingState::Ready);
         }
         return templateAsset;
     }
 
-    std::shared_ptr<Asset> TemplateLoader::loadFromNode(const pugi::xml_node& node) {
+    std::shared_ptr<Asset> TemplateLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
         std::filesystem::path srcModel = node.attribute("srcModel").as_string();
+
+        src = basePath / src;
+        srcModel = basePath / srcModel;
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid mesh node: missing assetId or srcModel attribute" << std::endl;
             return nullptr;
         }
-        if (!srcModel.empty()) {
+        if (!std::filesystem::exists(src)) {
+            if (srcModel.empty() || !std::filesystem::exists(srcModel)) {
+                throw std::runtime_error("Failed to load object:");
+            }
             ModelParser parser;
             parser.parseModel(srcModel, src);
         }
 
-        bool async = true;
+        bool async = node.attribute("async").as_bool();
         if (async)
             return AssetManager::get().loadTemplateAsync(assetId, src);
         else

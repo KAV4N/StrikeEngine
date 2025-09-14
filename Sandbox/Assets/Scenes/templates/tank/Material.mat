@@ -1,17 +1,12 @@
 <?xml version="1.0"?>
 <material>
-	<shader assetId="PBR_Standard" srcVert="../../Shaders/testShader.vert" srcFrag="../../Shaders/testShader.frag"/>
-
+	<shader assetId="Standard" srcVert="../../Shaders/DefaultPBR.vert" srcFrag="../../Shaders/DefaultPBR.frag" />
 	<properties>
-		<property name="uBaseColor"  type="vec3"   value="1.0,1.0,1.0"/>
-		<property name="uMetallic"   type="float"  value="0.0"/>
-		<property name="uRoughness"  type="float"  value="0.5"/>
-		<property name="uHeight"     type="float"  value="0.0"/>
-		<property name="uOpacity"    type="float"  value="1.0"/>
-		<property name="uEmission"   type="vec3"   value="0.0,0.0,0.0"/>
+		<property name="uBaseColor" type="vec3" value="0.8,0.8,0.8" />
+		<property name="uOpacity" type="float" value="1.000000" />
+		<property name="uMetallic" type="float" value="0.000000" />
+		<property name="uRoughness" type="float" value="0.400000" />
+		<property name="uEmission" type="vec3" value="0.0,0.0,0.0" />
 	</properties>
-
-	<textures>
-		<texture2D name="albedo" src="../../Objects/panzer/14077_WWII_Tank_Germany_Panzer_III_hull_diff.jpg" />
-	</textures>
+	<textures />
 </material>

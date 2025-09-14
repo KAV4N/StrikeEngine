@@ -6,14 +6,7 @@
 	</components>
 
 	<assets>
-		<template assetId="tankModel2" src="Assets/Scenes/templates/tank/tank.xml"  srcModel="Assets/Objects/Panzer/tank_low_poly.fbx"/>
-		<!-- Materials -->
-		<material assetId="metalMat" src="materials/metal.mat" />
-		<material assetId="woodMat" src="materials/wood.mat" />
-
-		<!-- Textures -->
-		<texture2D assetId="skyboxTex" src="textures/skybox.hdr" />
-		<texture2D assetId="grassTex" src="textures/grass.png" />
+		<template assetId="tankModel2" src="templates/tank/tank.template"  srcModel="../Objects/Panzer/tank_low_poly.fbx"/>
 	</assets>
 
 
@@ -21,6 +14,7 @@
 	<entities>
 		<entity id="tank" name="tanker" templateId="tankModel2" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100"/>
 
+		<!-- Textures 
 		<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
 			<components>
 				<renderer meshId="cubeModel.Cube">
@@ -55,5 +49,6 @@
 				</entity>
 			</children>
 		</entity>
+		-->
 	</entities>
 </scene>

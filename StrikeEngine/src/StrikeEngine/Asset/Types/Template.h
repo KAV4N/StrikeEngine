@@ -25,10 +25,11 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-
         void instantiate(Scene& scene, Entity parentEntity, const std::string& idPrefix = "");
 
     private:
+        void setTemplateDoc(const pugi::xml_document& doc);
+
         void createEntities(Scene& scene, const pugi::xml_node& entitiesNode, Entity parentEntity, const std::string& idPrefix);
 
         glm::vec3 parseVector3(const std::string& str);

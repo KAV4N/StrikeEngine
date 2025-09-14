@@ -11,7 +11,7 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Asset> MaterialLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto material = std::make_shared<Material>(id, path, path.stem().string());
+        
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
@@ -24,7 +24,7 @@ namespace StrikeEngine {
         if (!materialNode) {
             throw std::runtime_error("Invalid material format: no material node found in " + path.string());
         }
-
+        auto material = std::make_shared<Material>(id, path, path.stem().string());
         loadMaterialFromXml(material, materialNode, path.parent_path());
 
 
@@ -36,16 +36,17 @@ namespace StrikeEngine {
         return material;
     }
 
-    std::shared_ptr<Asset> MaterialLoader::loadFromNode(const pugi::xml_node& node) {
+    std::shared_ptr<Asset> MaterialLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
-        std::string src = node.attribute("src").as_string();
+        std::filesystem::path src = node.attribute("src").as_string();
+        src = basePath / src;
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid material node: missing assetId or src attribute" << std::endl;
             return nullptr;
         }
 
-        bool async = true;
+        bool async = node.attribute("async").as_bool();
         if (async)
             return AssetManager::get().loadMaterialAsync(assetId, src);
         else
@@ -68,8 +69,8 @@ namespace StrikeEngine {
         pugi::xml_node shaderNode = materialNode.child("shader");
         if (shaderNode) {
             std::string shaderAssetId = shaderNode.attribute("assetId").as_string();
-            std::string vertSrc = shaderNode.attribute("srcVert").as_string();
-            std::string fragSrc = shaderNode.attribute("srcFrag").as_string();
+            std::filesystem::path vertSrc = shaderNode.attribute("srcVert").as_string();
+            std::filesystem::path fragSrc = shaderNode.attribute("srcFrag").as_string();
 
             if (!shaderAssetId.empty() && !vertSrc.empty() && !fragSrc.empty()) {
                 std::filesystem::path vertPath = basePath.parent_path() / vertSrc;

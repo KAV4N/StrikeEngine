@@ -33,12 +33,14 @@ namespace StrikeEngine {
     };
 
     class ModelParser {
+
+    public:
+        ModelParser();
+        ~ModelParser();
+        bool parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc);
     private:
-        Assimp::Importer mImporter;
-        std::vector<std::shared_ptr<Mesh>> mMeshes;
-        std::vector<std::shared_ptr<Material>> mMaterials;
-        std::vector<std::shared_ptr<EntityData>> mTopLevelEntities; // Changed from mRootEntity to store multiple top-level entities
-        std::string mIdPrefix;
+
+        std::string generateUniqueId(const std::string& baseId);
 
         void processMaterials(const aiScene* scene);
         void processMeshes(const aiScene* scene);
@@ -51,15 +53,19 @@ namespace StrikeEngine {
         void saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir);
         void saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc);
         void writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity);
-        std::string sanitizeId(const std::string& name);
+
         void calculateMeshBounds(Mesh& mesh);
         void calculateSubMeshBounds(const Mesh& mesh, SubMeshData& subMeshData);
         void combineMeshes(const std::vector<unsigned int>& meshIndices, const aiScene* scene, Mesh& combinedMesh);
         void reset();
+    private:
+        Assimp::Importer mImporter;
+        std::vector<std::shared_ptr<Mesh>> mMeshes;
+        std::vector<std::shared_ptr<Material>> mMaterials;
+        std::vector<std::shared_ptr<EntityData>> mTopLevelEntities;
+        std::string mIdPrefix;
+        std::unordered_set<std::string> mUsedIds;
 
-    public:
-        ModelParser();
-        ~ModelParser();
-        bool parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc);
+
     };
 }

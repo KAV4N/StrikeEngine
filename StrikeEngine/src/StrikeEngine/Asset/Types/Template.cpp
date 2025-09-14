@@ -34,13 +34,11 @@ namespace StrikeEngine {
                 throw std::runtime_error("Entity missing id attribute in template: " + getId());
             }
 
-            // Apply idPrefix if provided
             std::string prefixedId = idPrefix.empty() ? id : idPrefix + "." + id;
             if (name.empty()) {
-                name = id; // Use id as name if name is not provided
+                name = id; 
             }
 
-            // Parse transform attributes with template transform applied
             glm::vec3 localPos = parseVector3(entityNode.attribute("position").as_string("0.0,0.0,0.0"));
             glm::vec3 localRot = parseVector3(entityNode.attribute("rotation").as_string("0.0,0.0,0.0"));
             glm::vec3 localScale = parseVector3(entityNode.attribute("scale").as_string("1.0,1.0,1.0"));
@@ -82,7 +80,7 @@ namespace StrikeEngine {
 
             pugi::xml_node childrenNode = entityNode.child("children");
             if (childrenNode) {
-                createEntities(scene, childrenNode, entity, prefixedId);
+                createEntities(scene, childrenNode, entity, idPrefix);
             }
 
             std::cout << "Created entity: " << prefixedId << " (" << name << ") in template: " << getId() << std::endl;
@@ -97,5 +95,9 @@ namespace StrikeEngine {
 
         std::sscanf(str.c_str(), "%f,%f,%f", &vec.x, &vec.y, &vec.z);
         return vec;
+    }
+
+    void Template::setTemplateDoc(const pugi::xml_document& doc) {
+        mDoc.reset(doc);
     }
 }

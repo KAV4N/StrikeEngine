@@ -54,6 +54,7 @@ namespace StrikeEngine {
 
     void World::update(float dt)
     {
+        mSceneLoader->update();
         checkAndSwitchScene();
         if (mCurrentScene && mCurrentScene->isActive()) {
             mCurrentScene->onUpdate(dt);

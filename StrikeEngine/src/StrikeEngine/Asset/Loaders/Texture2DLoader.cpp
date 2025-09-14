@@ -24,7 +24,7 @@ namespace StrikeEngine {
 
         texture->setTextureData(data, width, height, channels);
         texture->setLoadingState(AssetLoadingState::Loaded);
-        if (texture && !async) {
+        if (!async) {
             std::lock_guard<std::mutex> lock(mMutex);
             LoadingTask task;
             task.id = texture->getId();
@@ -37,9 +37,11 @@ namespace StrikeEngine {
         return texture;
     }
 
-    std::shared_ptr<Asset> Texture2DLoader::loadFromNode(const pugi::xml_node& node) {
+    std::shared_ptr<Asset> Texture2DLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
+        src = basePath / src;
+        bool async = node.attribute("async").as_bool();
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid texture2D node: missing assetId or src attribute" << std::endl;
@@ -52,8 +54,6 @@ namespace StrikeEngine {
         std::string wrapS = node.attribute("wrapS").as_string("repeat");
         std::string wrapT = node.attribute("wrapT").as_string("repeat");
         bool generateMipmaps = node.attribute("generateMipmaps").as_bool(true);
-
-        bool async = true;
         std::shared_ptr<Texture2D> texture;
 
         if (async) {

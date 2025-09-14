@@ -16,7 +16,7 @@ namespace StrikeEngine {
     void Scene::createRootEntity(const std::string& id, const std::string& name) {
         entt::entity handle = mRegistry.create();
         mRootEntity = Entity(*this, handle);
-        mSceneGraph->createRootNode(mRootEntity, "scene_root", "Scene Root");
+        mSceneGraph->createRootNode(mRootEntity, id, name);
     }
 
     Entity Scene::createEntity(const std::string& id, const std::string& name) {
@@ -97,11 +97,6 @@ namespace StrikeEngine {
     void Scene::onImGuiRender() {
         if (!mActive) return;
 
-        // Rendering operations
-        // - Submit render commands
-        // - Prepare render data
-        // - Culling operations
-        // etc.
     }
 
     void Scene::onEvent(Event& e) {

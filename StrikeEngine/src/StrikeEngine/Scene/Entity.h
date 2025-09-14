@@ -19,12 +19,11 @@ namespace StrikeEngine {
         bool isValid() const;
         operator bool() const { return isValid(); }
 
-        // Basic properties
         entt::entity getHandle() const { return handle; }
         std::string getName() const;
         std::string getId() const;
 
-        // Component management
+
         template<typename T, typename... Args>
         T& addComponent(Args&&... args);
 
@@ -43,7 +42,6 @@ namespace StrikeEngine {
         template<typename T, typename... Args>
         T& getOrAddComponent(Args&&... args);
 
-        // Transform operations
         void setPosition(const glm::vec3& position);
         void setRotation(const glm::quat& rotation);
         void setScale(const glm::vec3& scale);
@@ -52,13 +50,11 @@ namespace StrikeEngine {
         glm::quat getRotation() const;
         glm::vec3 getScale() const;
 
-        // World transform operations
         glm::vec3 getWorldPosition() const;
         glm::quat getWorldRotation() const;
         glm::vec3 getWorldScale() const;
         glm::mat4 getWorldMatrix() const;
 
-        // Hierarchy operations
         void setParent(Entity parent);
         void removeParent();
         Entity getParent() const;
@@ -67,14 +63,12 @@ namespace StrikeEngine {
         void addChild(Entity child);
         void removeChild(Entity child);
 
-        // Hierarchy queries
         bool isAncestorOf(Entity other) const;
         bool isDescendantOf(Entity other) const;
         bool isRoot() const;
         bool isSceneRoot() const;
         bool isActive() const;
 
-        // Comparison operators
         bool operator==(const Entity& other) const { return handle == other.handle && scene == other.scene; }
         bool operator!=(const Entity& other) const { return !(*this == other); }
 

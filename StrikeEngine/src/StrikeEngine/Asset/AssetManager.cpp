@@ -158,7 +158,7 @@ namespace StrikeEngine {
             std::lock_guard<std::mutex> lock(mMutex);
             mLoadedAssets[id] = loadedAsset;
         }
-        return loadedAsset;
+        return std::static_pointer_cast<Shader>(loadedAsset);
     }
 
     std::shared_ptr<Shader> AssetManager::loadShaderAsync(const std::string& id, const std::filesystem::path& vertexSrc, const std::filesystem::path& fragmentSrc) {
@@ -435,20 +435,21 @@ namespace StrikeEngine {
         }
     }
 
-    void AssetManager::deserialize(const pugi::xml_node& node, std::vector<std::shared_ptr<Asset>>& assets) {
-        clear();
-
+    void AssetManager::deserialize(const pugi::xml_node& node, std::unordered_map<std::string, std::shared_ptr<Asset>>& assets, const std::filesystem::path& basePath) {
+        //clear();
+        
         for (pugi::xml_node assetNode : node.children()) {
             std::string typeName = assetNode.name();
             auto loader = getLoader(typeName);
             if (loader) {
-                auto asset = loader->loadFromNode(assetNode);
+
+                auto asset = loader->loadFromNode(assetNode, basePath);
                 if (asset) {
                     {
                         std::lock_guard<std::mutex> lock(mMutex);
                         mLoadedAssets[asset->getId()] = asset;
                     }
-                    assets.push_back(asset);
+                    assets.emplace(asset->getId(), asset);
                 }
             }
         }

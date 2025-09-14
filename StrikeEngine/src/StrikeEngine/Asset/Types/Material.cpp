@@ -274,4 +274,22 @@ namespace StrikeEngine {
         doc.save_file(path.c_str());
     }
 
+    std::optional<Material::UniformValue> Material::getUniform(const std::string& name) const {
+        auto it = mUniforms.find(name);
+        if (it != mUniforms.end()) {
+            return it->second;
+        }
+        return std::nullopt;
+    }
+
+    std::vector<std::string> Material::getUniformNames() const {
+        std::vector<std::string> names;
+        names.reserve(mUniforms.size());
+
+        for (const auto& [name, value] : mUniforms) {
+            names.push_back(name);
+        }
+
+        return names;
+    }
 }

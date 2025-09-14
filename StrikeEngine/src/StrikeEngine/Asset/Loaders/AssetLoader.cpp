@@ -20,7 +20,7 @@ namespace StrikeEngine {
         if (mLoadingTasks.find(id) != mLoadingTasks.end()) {
             return; 
         }
-
+        placeholderAsset->setLoadAsync(true);
         auto future = std::async(std::launch::async, [this, id, path]() {
             return this->load(id, path, true);
             });

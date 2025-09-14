@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <material>
-	<diffuse r="0.800000012" g="0.800000012" b="0.800000012" />
-	<specular r="0.800000012" g="0.800000012" b="0.800000012" />
-	<ambient r="0" g="0" b="0" />
-	<shininess value="25" />
+	<shader assetId="Standard" srcVert="../../Shaders/DefaultPBR.vert" srcFrag="../../Shaders/DefaultPBR.frag" />
+	<properties>
+		<property name="uBaseColor" type="vec3" value="0.8,0.8,0.8" />
+		<property name="uOpacity" type="float" value="1.000000" />
+		<property name="uMetallic" type="float" value="0.000000" />
+		<property name="uRoughness" type="float" value="0.500000" />
+		<property name="uEmission" type="vec3" value="0.0,0.0,0.0" />
+	</properties>
+	<textures />
 </material>

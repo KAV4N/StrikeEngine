@@ -15,7 +15,7 @@ namespace StrikeEngine {
         MaterialLoader();
 
         std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& path, bool async = false) override;
-        std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node) override;
+        std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) override;
 
     protected:
         std::shared_ptr<Asset> createPlaceholder(const std::string& id, const std::filesystem::path& path) override;

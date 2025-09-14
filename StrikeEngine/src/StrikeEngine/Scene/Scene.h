@@ -41,6 +41,11 @@ namespace StrikeEngine {
         void setActive(bool active) { mActive = active; }
         bool isActive() const { return mActive; }
 
+        // Scene assets management
+        const std::unordered_map<std::string, std::shared_ptr<Asset>>& getSceneAssets() const { return mSceneAssets; }
+        std::unordered_map<std::string, std::shared_ptr<Asset>>& getSceneAssets() { return mSceneAssets; }
+        void clearSceneAssets() { mSceneAssets.clear(); }
+
     private:
         entt::registry& getRegistry() { return mRegistry; }
         SceneGraph& getSceneGraph() { return *mSceneGraph; }
@@ -48,6 +53,7 @@ namespace StrikeEngine {
 
     private:
         friend class Entity;
+        friend class SceneLoader;
 
         entt::registry mRegistry;
         std::unique_ptr<SceneGraph> mSceneGraph;

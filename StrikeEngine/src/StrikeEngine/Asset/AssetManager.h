@@ -63,7 +63,7 @@ namespace StrikeEngine {
         size_t getLoadedAssetCount() const;
         size_t getLoadingAssetCount() const;
 
-        void deserialize(const pugi::xml_node& node, std::vector<std::shared_ptr<Asset>>& assets);
+        void deserialize(const pugi::xml_node& node, std::unordered_map<std::string, std::shared_ptr<Asset>>& assets, const std::filesystem::path& basePath);
         void serialize(pugi::xml_document& doc);
 
     private:
