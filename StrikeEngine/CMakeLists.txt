@@ -80,3 +80,37 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Release>:STRIKE_RELEASE>
     $<$<CONFIG:Dist>:STRIKE_DIST>
 )
+
+# Export engine resources path for dependent projects
+set(STRIKE_ENGINE_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources CACHE PATH "StrikeEngine resources directory")
+
+# Function to setup engine resources for a target
+function(strike_engine_setup_resources TARGET_NAME)
+    # Check if engine resources directory exists
+    if(EXISTS ${STRIKE_ENGINE_RESOURCES_DIR})
+        if(WIN32)
+            # Debug: Create junction link for fast development
+            add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources
+                COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources\" \"${STRIKE_ENGINE_RESOURCES_DIR}\"">
+                COMMENT "Setting up StrikeEngine resources for Debug configuration"
+            )
+        else()
+            # Debug: Create symlink for fast development
+            add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources
+                COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink ${STRIKE_ENGINE_RESOURCES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources
+                COMMENT "Setting up StrikeEngine resources for Debug configuration"
+            )
+        endif()
+
+        # Release/Dist: Copy resources for distribution
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources
+            COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory ${STRIKE_ENGINE_RESOURCES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/EngineResources
+            COMMENT "Copying StrikeEngine resources for Release/Dist configuration"
+        )
+    else()
+        message(WARNING "StrikeEngine resources directory not found at: ${STRIKE_ENGINE_RESOURCES_DIR}")
+    endif()
+endfunction()

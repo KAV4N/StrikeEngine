@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <material>
-	<shader assetId="Standard" srcVert="../../Shaders/DefaultPBR.vert" srcFrag="../../Shaders/DefaultPBR.frag" />
+	<shader assetId="DefaultPBR" srcVert="@/EngineResources/Shaders/DefaultPBR.vert" srcFrag="@/EngineResources/Shaders/DefaultPBR.frag" />
 	<properties>
 		<property name="uBaseColor" type="vec3" value="0.8,0.8,0.8" />
 		<property name="uOpacity" type="float" value="1.000000" />

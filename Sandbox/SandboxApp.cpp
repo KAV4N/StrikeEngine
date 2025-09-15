@@ -29,6 +29,7 @@ namespace StrikeEngine {
             
             auto& world = World::get();
             world.loadScene("Assets/Scenes/MainScene.xml");
+            AssetManager::get();
         }
 
         ~Sandbox() {

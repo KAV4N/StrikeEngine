@@ -13,7 +13,7 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Asset> Texture2DLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto texture = std::make_shared<Texture2D>(id, path, path.stem().string());
+        auto texture = std::make_shared<Texture2D>(id, addRootPrefix(path), path.stem().string());
 
         int width, height, channels;
         unsigned char* data = loadImageData(path, width, height, channels);
@@ -40,13 +40,16 @@ namespace StrikeEngine {
     std::shared_ptr<Asset> Texture2DLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
-        src = basePath / src;
+        std::string srcString = src.string();
+
         bool async = node.attribute("async").as_bool();
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid texture2D node: missing assetId or src attribute" << std::endl;
             return nullptr;
         }
+
+        src = resolvePath(src, basePath);
 
         // Check for optional texture parameters
         std::string minFilter = node.attribute("minFilter").as_string("linear");

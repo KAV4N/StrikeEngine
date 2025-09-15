@@ -32,4 +32,4 @@ namespace StrikeEngine {
         void cleanup();
     };
 
-} // namespace StrikeEngine
+} 

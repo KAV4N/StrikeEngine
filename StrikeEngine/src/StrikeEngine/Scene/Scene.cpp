@@ -78,19 +78,12 @@ namespace StrikeEngine {
 
     void Scene::onUpdate(float dt) {
         if (!mActive) return;
-
-        // Visual/rendering updates - interpolation, animations, etc.
         mSceneGraph->updateTransforms();
     }
 
     void Scene::onRender() {
         if (!mActive) return;
 
-        // Rendering operations
-        // - Submit render commands
-        // - Prepare render data
-        // - Culling operations
-        // etc.
     }
 
 

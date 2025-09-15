@@ -57,8 +57,11 @@ namespace StrikeEngine {
 
     void Texture2D::bind(uint32_t slot) const {
         if (mRendererID!=0) {
+            glBindTextureUnit(slot, mRendererID);
+            /*
             glActiveTexture(GL_TEXTURE0 + slot);
             glBindTexture(GL_TEXTURE_2D, mRendererID);
+            */
         }
     }
 

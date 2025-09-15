@@ -11,7 +11,7 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Asset> TemplateLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto templateAsset = std::make_shared<Template>(id, path, path.stem().string());
+        auto templateAsset = std::make_shared<Template>(id, addRootPrefix(path), path.stem().string());
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
@@ -48,13 +48,18 @@ namespace StrikeEngine {
         std::filesystem::path src = node.attribute("src").as_string();
         std::filesystem::path srcModel = node.attribute("srcModel").as_string();
 
-        src = basePath / src;
-        srcModel = basePath / srcModel;
+
+
+
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid mesh node: missing assetId or srcModel attribute" << std::endl;
             return nullptr;
         }
+
+        src = resolvePath(src, basePath);
+        srcModel = resolvePath(srcModel, basePath);
+
         if (!std::filesystem::exists(src)) {
             if (srcModel.empty() || !std::filesystem::exists(srcModel)) {
                 throw std::runtime_error("Failed to load object:");

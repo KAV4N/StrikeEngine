@@ -24,7 +24,7 @@ namespace StrikeEngine {
         if (!materialNode) {
             throw std::runtime_error("Invalid material format: no material node found in " + path.string());
         }
-        auto material = std::make_shared<Material>(id, path, path.stem().string());
+        auto material = std::make_shared<Material>(id, addRootPrefix(path), path.stem().string());
         loadMaterialFromXml(material, materialNode, path.parent_path());
 
 
@@ -39,7 +39,8 @@ namespace StrikeEngine {
     std::shared_ptr<Asset> MaterialLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
-        src = basePath / src;
+
+        src = resolvePath(src, basePath);
 
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid material node: missing assetId or src attribute" << std::endl;
@@ -73,10 +74,11 @@ namespace StrikeEngine {
             std::filesystem::path fragSrc = shaderNode.attribute("srcFrag").as_string();
 
             if (!shaderAssetId.empty() && !vertSrc.empty() && !fragSrc.empty()) {
-                std::filesystem::path vertPath = basePath.parent_path() / vertSrc;
-                std::filesystem::path fragPath = basePath.parent_path() / fragSrc;
+                
+                vertSrc = resolvePath(vertSrc, basePath);
+                fragSrc = resolvePath(fragSrc, basePath);
 
-                auto shader = AssetManager::get().loadShader(shaderAssetId, vertPath, fragPath);
+                auto shader = AssetManager::get().loadShader(shaderAssetId,vertSrc,fragSrc);
                 material->setShader(shader);
             }
         }
@@ -135,15 +137,15 @@ namespace StrikeEngine {
 
         for (pugi::xml_node textureNode : texturesNode.children("texture2D")) {
             std::string name = textureNode.attribute("name").as_string();
-            std::string src = textureNode.attribute("src").as_string();
+            std::filesystem::path src = textureNode.attribute("src").as_string();
 
             if (name.empty() || src.empty()) {
                 continue;
             }
 
-            std::filesystem::path texturePath = basePath.parent_path() / src;
+            src = resolvePath(src, basePath);
           
-            auto texture = AssetManager::get().loadTexture(src, texturePath);
+            auto texture = AssetManager::get().loadTexture(src.string(), src);
             if (texture) {
                 material->addTexture(slot, texture);
 

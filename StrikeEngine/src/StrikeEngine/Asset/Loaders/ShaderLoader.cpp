@@ -26,7 +26,7 @@ namespace StrikeEngine {
         std::string vertexSource = readFile(vertexPath);
         std::string fragmentSource = readFile(fragmentPath);
 
-        auto shader = std::make_shared<Shader>(id, vertexPath, fragmentPath, vertexPath.stem().string());
+        auto shader = std::make_shared<Shader>(id, addRootPrefix(vertexPath), addRootPrefix(fragmentPath), vertexPath.stem().string());
         if (!shader) {
             std::runtime_error("Failed to load shader: vertex:" + vertexPath.string() + " fragment" + fragmentPath.string());
         }
@@ -67,15 +67,14 @@ namespace StrikeEngine {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path srcVert = node.attribute("srcVert").as_string();
         std::filesystem::path srcFrag = node.attribute("srcFrag").as_string();
-
-        std::filesystem::path src = node.attribute("src").as_string();
-        srcVert = basePath / srcVert;
-        srcFrag = basePath / srcFrag;
+        
 
         if (assetId.empty() || srcVert.empty() || srcFrag.empty()) {
             std::cerr << "Invalid shader node: missing assetId, srcVert, or srcFrag attribute" << std::endl;
             return nullptr;
         }
+        srcVert = resolvePath(srcVert, basePath);
+        srcFrag = resolvePath(srcFrag, basePath);
 
         bool async = node.attribute("async").as_bool();
         if (async)

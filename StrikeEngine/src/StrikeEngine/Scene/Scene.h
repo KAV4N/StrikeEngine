@@ -32,10 +32,10 @@ namespace StrikeEngine {
         void reset();
 
         // Update methods
-        void onUpdate(float dt);      // Rendering/visual updates
-        void onRender();              // Rendering operations
-        void onImGuiRender();         // ImGui rendering
-        void onEvent(Event& e);       // Event handling
+        void onUpdate(float dt);      
+        void onRender();             
+        void onImGuiRender();       
+        void onEvent(Event& e);      
 
         // Scene state
         void setActive(bool active) { mActive = active; }

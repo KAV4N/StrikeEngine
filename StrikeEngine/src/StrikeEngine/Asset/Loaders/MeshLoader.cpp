@@ -29,13 +29,16 @@ namespace StrikeEngine {
     std::shared_ptr<Asset> MeshLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         std::string assetId = node.attribute("assetId").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
-        src = basePath / src;
+        std::string srcString = src.string();
+
         bool async = node.attribute("async").as_bool();
         
         if (assetId.empty() || src.empty()) {
             std::cerr << "Invalid mesh node: missing assetId or srcModel attribute" << std::endl;
             return nullptr;
         }
+
+        src = resolvePath(src, basePath);
 
         if (async) 
             return AssetManager::get().loadMeshAsync(assetId, src);
@@ -71,7 +74,7 @@ namespace StrikeEngine {
             return nullptr;
         }
 
-        auto mesh = std::make_shared<Mesh>(id, filePath, filePath.stem().string());
+        auto mesh = std::make_shared<Mesh>(id, addRootPrefix(filePath), filePath.stem().string());
 
         try {
             std::vector<Vertex> vertices = parseVertices(meshNode);

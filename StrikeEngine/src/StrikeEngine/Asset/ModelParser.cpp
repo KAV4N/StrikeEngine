@@ -486,9 +486,9 @@ namespace StrikeEngine {
 
         // Add shader node with generic shader (adjust as needed)
         auto shaderNode = root.append_child("shader");
-        shaderNode.append_attribute("assetId") = "Standard";
-        shaderNode.append_attribute("srcVert") = "../../Shaders/standard.vert";
-        shaderNode.append_attribute("srcFrag") = "../../Shaders/standard.frag";
+        shaderNode.append_attribute("assetId") = "DefaultPBR";
+        shaderNode.append_attribute("srcVert") = "@/EngineResources/Shaders/DefaultPBR.vert";
+        shaderNode.append_attribute("srcFrag") = "@/EngineResources/Shaders/DefaultPBR.frag";
 
         // Add properties section
         auto propertiesNode = root.append_child("properties");
