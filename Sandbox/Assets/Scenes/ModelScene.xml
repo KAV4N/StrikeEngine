@@ -65,7 +65,7 @@
 
 			<components>
 				<scriptComponent>
-					<script scriptId="enemyHealthScript" src="scripts/EnemyHealth.cs" />
+					<script scriptId="enemyHealthScript" src="scripts/EnemyHealth.cpp" />
 				</scriptComponent>
 			</components>
 		</entity>

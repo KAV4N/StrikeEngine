@@ -94,7 +94,7 @@ namespace StrikeEngine {
         auto placeholderTexture = std::dynamic_pointer_cast<Texture2D>(placeholder);
         auto loadedTexture = std::dynamic_pointer_cast<Texture2D>(loaded);
 
-        placeholderTexture = std::move(loadedTexture);
+        *placeholderTexture = std::move(*loadedTexture);
         //loadedTexture->setTextureData({}, 0, 0, 0);
     }
 

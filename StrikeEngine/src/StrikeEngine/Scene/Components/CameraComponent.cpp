@@ -175,16 +175,6 @@ namespace StrikeEngine {
         mProjectionDirty = false;
     }
 
-    void CameraComponent::enableRenderToTexture(uint32_t width, uint32_t height) {
-        mUseRenderToTexture = true;
-        mFrameBuffer = std::make_shared<FrameBuffer>(width, height);
-    }
-
-    void CameraComponent::disableRenderToTexture() {
-        mUseRenderToTexture = false;
-        mFrameBuffer = nullptr;
-    }
-
     void CameraComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
         auto projTypeIt = attributes.find("projectionType");
         if (projTypeIt != attributes.end()) {
@@ -263,7 +253,7 @@ namespace StrikeEngine {
             if (widthIt != attributes.end() && heightIt != attributes.end()) {
                 uint32_t width = std::stoi(widthIt->second);
                 uint32_t height = std::stoi(heightIt->second);
-                enableRenderToTexture(width, height);
+                //enableRenderToTexture(width, height);
             }
         }
 
@@ -297,11 +287,6 @@ namespace StrikeEngine {
         node.append_attribute("viewportWidth") = mViewportRect.width;
         node.append_attribute("viewportHeight") = mViewportRect.height;
 
-        if (mUseRenderToTexture && mFrameBuffer) {
-            node.append_attribute("renderToTexture") = "true";
-            node.append_attribute("textureWidth") = mFrameBuffer->getWidth();
-            node.append_attribute("textureHeight") = mFrameBuffer->getHeight();
-        }
     }
 
 }

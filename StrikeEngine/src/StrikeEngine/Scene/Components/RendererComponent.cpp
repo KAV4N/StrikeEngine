@@ -3,29 +3,65 @@
 
 namespace StrikeEngine {
 
-
     // RendererComponent implementation
     RendererComponent::RendererComponent() {}
 
-    RendererComponent::RendererComponent(const std::string& meshId)
-        : mMeshId(meshId) {
+    RendererComponent::RendererComponent(const std::string& meshId) {
+        setMeshId(meshId);
     }
 
-    RendererComponent::RendererComponent(const std::string& meshId, const std::string& materialId)
-        : mMeshId(meshId) {
-        mMaterials[0] = materialId;
+    RendererComponent::RendererComponent(const std::string& meshId, const std::string& materialId) {
+        setMeshId(meshId);
+        setMaterial(0, materialId);
     }
 
+    // Mesh management
     void RendererComponent::setMeshId(const std::string& meshId) {
         mMeshId = meshId;
+        mMesh = AssetManager::get().getMesh(meshId);
+    }
+
+    void RendererComponent::removeMesh() {
+        mMeshId.clear();
+        mMesh.reset();
+    }
+
+    bool RendererComponent::hasMesh() const {
+        return !mMeshId.empty() && mMesh != nullptr;
     }
 
     const std::string& RendererComponent::getMeshId() const {
         return mMeshId;
     }
 
+    std::shared_ptr<Mesh> RendererComponent::getMesh() const {
+        return mMesh;
+    }
+
+    // Material management
     void RendererComponent::setMaterial(uint32_t slot, const std::string& materialId) {
         mMaterials[slot] = materialId;
+        mMaterialAssets[slot] = AssetManager::get().getMaterial(materialId);
+    }
+
+    void RendererComponent::addMaterials(const std::unordered_map<uint32_t, std::string>& materials) {
+        for (const auto& [slot, materialId] : materials) {
+            setMaterial(slot, materialId);
+        }
+    }
+
+    void RendererComponent::removeMaterial(uint32_t slot) {
+        mMaterials.erase(slot);
+        mMaterialAssets.erase(slot);
+    }
+
+    void RendererComponent::clearMaterials() {
+        mMaterials.clear();
+        mMaterialAssets.clear();
+    }
+
+    bool RendererComponent::hasMaterial(uint32_t slot) const {
+        return mMaterials.find(slot) != mMaterials.end() && mMaterialAssets.find(slot) != mMaterialAssets.end();
     }
 
     const std::string& RendererComponent::getMaterial(uint32_t slot) const {
@@ -36,6 +72,15 @@ namespace StrikeEngine {
 
     const std::unordered_map<uint32_t, std::string>& RendererComponent::getMaterials() const {
         return mMaterials;
+    }
+
+    std::shared_ptr<Material> RendererComponent::getMaterialAsset(uint32_t slot) const {
+        auto it = mMaterialAssets.find(slot);
+        return (it != mMaterialAssets.end()) ? it->second : nullptr;
+    }
+
+    const std::unordered_map<uint32_t, std::shared_ptr<Material>>& RendererComponent::getMaterialAssets() const {
+        return mMaterialAssets;
     }
 
     void RendererComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {

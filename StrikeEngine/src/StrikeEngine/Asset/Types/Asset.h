@@ -47,6 +47,5 @@ namespace StrikeEngine {
         std::filesystem::path mPath;
         AssetLoadingState mLoadingState;
         bool mLoadAsync;
-        mutable std::mutex mMutex;
     };
 }

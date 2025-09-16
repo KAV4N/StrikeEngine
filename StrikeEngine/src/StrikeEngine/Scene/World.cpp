@@ -1,11 +1,14 @@
 #include "World.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
 #include <iostream>
 #include <chrono>
 
 namespace StrikeEngine {
 
     World::World()
-        : mSceneLoader(std::make_unique<SceneLoader>())
+        : mSceneLoader(std::make_unique<SceneLoader>()),
+        mRenderSystem(std::make_unique<RenderSystem>()),
+        mScriptSystem(std::make_unique<ScriptSystem>())
     {
     }
 
@@ -58,14 +61,16 @@ namespace StrikeEngine {
         checkAndSwitchScene();
         if (mCurrentScene && mCurrentScene->isActive()) {
             mCurrentScene->onUpdate(dt);
+            mScriptSystem->onUpdate(mCurrentScene.get(), dt);
+            mRenderSystem->onUpdate(mCurrentScene.get());
         }
     }
 
     void World::onRender()
     {
-        if (mCurrentScene && mCurrentScene->isActive()) {
-            mCurrentScene->onRender();
-        }
+        // Call the renderer to execute the rendering pipeline
+        auto& renderer = Renderer::get();
+        renderer.render();
     }
 
     void World::onImGuiRender()
@@ -101,4 +106,4 @@ namespace StrikeEngine {
         }
     }
 
-} 
+}

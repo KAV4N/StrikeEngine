@@ -50,8 +50,9 @@ namespace StrikeEngine {
     {
         auto placeholderAsset = std::dynamic_pointer_cast<Mesh>(placeholder);
         auto loadedAsset = std::dynamic_pointer_cast<Mesh>(loaded);
-        placeholderAsset = std::move(loadedAsset);
-        //*placeholderMesh = *loadedMesh;
+        *placeholderAsset = std::move(*loadedAsset);
+        //placeholderAsset = std::move(loadedAsset);
+        //placeholderAsset = loadedAsset;
     }
 
     std::shared_ptr<Mesh> MeshLoader::parseMeshFromXml(const std::string& id, const std::filesystem::path& filePath) {
@@ -203,7 +204,7 @@ namespace StrikeEngine {
         }
 
         subMeshes.reserve(subMeshCount);
-        for (pugi::xml_node subMeshNode : subMeshesNode.children("SubMeshData")) {
+        for (pugi::xml_node subMeshNode : subMeshesNode.children("submesh")) {
             SubMeshData subMeshData;
             subMeshData.slot = subMeshNode.attribute("slot").as_uint(0);
             subMeshData.startIndex = subMeshNode.attribute("startIndex").as_uint(0);

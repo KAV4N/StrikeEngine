@@ -7,11 +7,13 @@
 
 
 
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
 
 namespace StrikeEngine {
     class World;
+
     class Application {
     public:
         friend class Renderer;
@@ -52,6 +54,7 @@ namespace StrikeEngine {
 
     private:
         static Application* sInstance;
+
     };
 
     Application* createApplication();

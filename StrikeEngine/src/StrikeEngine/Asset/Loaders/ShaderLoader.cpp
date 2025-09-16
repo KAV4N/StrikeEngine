@@ -86,7 +86,7 @@ namespace StrikeEngine {
     void ShaderLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
         auto placeholderAsset = std::dynamic_pointer_cast<Shader>(placeholder);
         auto loadedAsset = std::dynamic_pointer_cast<Shader>(loaded);
-        placeholderAsset = std::move(loadedAsset);
+        *placeholderAsset = std::move(*loadedAsset);
     }
 
     std::shared_ptr<Asset> ShaderLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {

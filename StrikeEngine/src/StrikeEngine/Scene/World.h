@@ -7,8 +7,14 @@
 #include "Scene.h"
 #include "SceneLoader.h"
 #include "StrikeEngine/Events/Event.h"
+#include "Systems/RenderSystem.h"
+#include "Systems/ScriptSystem.h"
 
 namespace StrikeEngine {
+
+    class RenderSystem;
+    class ScriptSystem;
+
     class World final {
     public:
         // Singleton access
@@ -42,5 +48,8 @@ namespace StrikeEngine {
         std::unique_ptr<Scene> mCurrentScene;
         std::future<std::unique_ptr<Scene>> mPendingScene;
         std::unique_ptr<SceneLoader> mSceneLoader;
+
+        std::unique_ptr<RenderSystem> mRenderSystem;
+        std::unique_ptr<ScriptSystem> mScriptSystem;
     };
 }

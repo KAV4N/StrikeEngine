@@ -86,13 +86,8 @@ namespace StrikeEngine {
         };
         Frustum calculateFrustum(const glm::vec3& position, const glm::quat& rotation);
 
-        void enableRenderToTexture(uint32_t width, uint32_t height);
-        void disableRenderToTexture();
-
-        bool isRenderToTextureEnabled() const { return mUseRenderToTexture; }
-        FrameBuffer* getFrameBuffer() const { return mFrameBuffer.get(); }
-        GLuint getRenderTextureID() const { return mFrameBuffer ? mFrameBuffer->getColorTextureID() : 0; }
-        GLuint getDepthTextureID() const { return mFrameBuffer ? mFrameBuffer->getDepthTextureID() : 0; }
+        //void enableRenderToTexture(uint32_t width, uint32_t height);
+        //void disableRenderToTexture();
 
     private:
         void updateProjectionMatrix();
@@ -121,9 +116,6 @@ namespace StrikeEngine {
         mutable glm::mat4 mProjectionMatrix = glm::mat4(1.0f);
         mutable bool mProjectionDirty = true;
 
-        // Render-to-texture
-        bool mUseRenderToTexture = false;
-        std::shared_ptr<FrameBuffer> mFrameBuffer = nullptr;
     };
 
 }

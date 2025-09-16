@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "SceneGraph.h"
 #include "Entity.h"
+#include "StrikeEngine/Scene/Components/ScriptComponent.h"
 #include <random>
 #include <sstream>
 #include <iomanip>
@@ -23,7 +24,6 @@ namespace StrikeEngine {
         entt::entity handle = mRegistry.create();
         Entity entity(*this, handle);
         mSceneGraph->createNode(entity, id, name);
-        // By default, parent new entities to the root
         mSceneGraph->setParent(entity, mRootEntity);
         return entity;
     }
@@ -36,6 +36,7 @@ namespace StrikeEngine {
         if (isRootEntity(entity)) {
             return;
         }
+
         mSceneGraph->removeNode(entity);
         mRegistry.destroy(entity.handle);
     }
@@ -78,21 +79,23 @@ namespace StrikeEngine {
 
     void Scene::onUpdate(float dt) {
         if (!mActive) return;
+
+        // Update transforms
         mSceneGraph->updateTransforms();
     }
 
     void Scene::onRender() {
         if (!mActive) return;
-
+        // Rendering logic here
     }
-
 
     void Scene::onImGuiRender() {
         if (!mActive) return;
-
+        // ImGui rendering logic here
     }
 
     void Scene::onEvent(Event& e) {
         if (!mActive) return;
+        // Event handling logic here
     }
 }

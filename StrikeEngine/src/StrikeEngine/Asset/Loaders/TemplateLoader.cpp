@@ -79,7 +79,7 @@ namespace StrikeEngine {
     {
         auto placeholderAsset = std::dynamic_pointer_cast<Template>(placeholder);
         auto loadedAsset = std::dynamic_pointer_cast<Template>(loaded);
-        placeholderAsset = std::move(loadedAsset);
+        *placeholderAsset = std::move(*loadedAsset);
     }
 
 

@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "StrikeEngine/Asset/AssetManager.h"
 
+#include "StrikeEngine/Asset/Types/Mesh.h";
+
 namespace StrikeEngine {
 
     AssetLoader::AssetLoader(const std::string& typeName) : mTypeName(typeName) {}
@@ -70,6 +72,7 @@ namespace StrikeEngine {
                     auto loadedAsset = task.future.get();
                     if (loadedAsset && task.placeholderAsset) {
                         swapData(task.placeholderAsset, loadedAsset);
+                        auto placeholderAsset = std::dynamic_pointer_cast<Mesh>(task.placeholderAsset);
                         task.placeholderAsset->postLoad();
                         task.placeholderAsset->setLoadingState(AssetLoadingState::Ready);
                     }

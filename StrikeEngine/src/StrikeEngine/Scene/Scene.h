@@ -32,10 +32,10 @@ namespace StrikeEngine {
         void reset();
 
         // Update methods
-        void onUpdate(float dt);      
-        void onRender();             
-        void onImGuiRender();       
-        void onEvent(Event& e);      
+        void onUpdate(float dt);
+        void onRender();
+        void onImGuiRender();
+        void onEvent(Event& e);
 
         // Scene state
         void setActive(bool active) { mActive = active; }
@@ -46,9 +46,10 @@ namespace StrikeEngine {
         std::unordered_map<std::string, std::shared_ptr<Asset>>& getSceneAssets() { return mSceneAssets; }
         void clearSceneAssets() { mSceneAssets.clear(); }
 
-    private:
         entt::registry& getRegistry() { return mRegistry; }
         SceneGraph& getSceneGraph() { return *mSceneGraph; }
+
+    private:
         void createRootEntity(const std::string& id, const std::string& name = "");
 
     private:
@@ -57,6 +58,7 @@ namespace StrikeEngine {
 
         entt::registry mRegistry;
         std::unique_ptr<SceneGraph> mSceneGraph;
+
         Entity mRootEntity;
         std::unordered_map<std::string, std::shared_ptr<Asset>> mSceneAssets;
 

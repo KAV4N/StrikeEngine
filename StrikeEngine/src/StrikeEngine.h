@@ -19,3 +19,7 @@
 #include "StrikeEngine/Asset/AssetManager.h"
 
 
+#include "StrikeEngine/Scene/ScriptRegistry.h"
+#include "StrikeEngine/Scene/Script.h"
+
+

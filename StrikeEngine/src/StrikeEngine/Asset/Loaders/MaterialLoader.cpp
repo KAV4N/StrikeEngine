@@ -61,7 +61,7 @@ namespace StrikeEngine {
     void MaterialLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
         auto placeholderMaterial = std::dynamic_pointer_cast<Material>(placeholder);
         auto loadedMaterial = std::dynamic_pointer_cast<Material>(loaded);
-        placeholderMaterial = std::move(loadedMaterial);
+        *placeholderMaterial = std::move(*loadedMaterial);
       
     }
 

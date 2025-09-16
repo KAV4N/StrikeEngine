@@ -6,8 +6,10 @@
 #include <glad/glad.h>
 #include <chrono>
 
-#include "StrikeEngine/Scene/World.h"
 
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
+#include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Graphics/FrameBuffer.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -53,28 +55,29 @@ namespace StrikeEngine {
     }
 
     void Application::onUpdate() {
-        // Update frame timing
+
+
         mTimer.updateFrame();
         float deltaTime = mTimer.getDeltaTime();
 
-        //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         AssetManager::get().update();
 
-        // Update rendering
+        // Update world
         mWorld->update(deltaTime);
 
+        // Render the World and imgui
         mImGuiLayer->begin();
-
-        // Render the World
         mWorld->onRender();
+        Renderer::get().display();
         mWorld->onImGuiRender();
-
         mImGuiLayer->end();
-        mWindow->onUpdate();      
 
-        // Limit frame rate if needed
+        mWindow->onUpdate();      
+        // Limit frame rate
         mTimer.limitFrameRate();
     }
 
@@ -92,6 +95,8 @@ namespace StrikeEngine {
     }
 
     bool Application::onWindowResize(WindowResizeEvent& e) {
+        
+        Renderer::get().resize(e.getWidth(), e.getHeight());
         return true;
     }
 }

@@ -54,6 +54,8 @@ namespace StrikeEngine {
         std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
         auto it = mPendingTemplates.begin();
         while (it != mPendingTemplates.end()) {
+            auto mesh = mAssetManager.getMesh("mesh789");
+ 
             auto templateAsset = mAssetManager.getTemplate(it->templateId);
             if (templateAsset && templateAsset->isReady()) {
                 // Create parent entity for the template
