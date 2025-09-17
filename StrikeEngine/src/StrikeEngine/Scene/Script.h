@@ -17,7 +17,6 @@ namespace StrikeEngine {
         virtual void onUpdate(float deltaTime);
         virtual void onDestroy();
 
-        Entity& getEntity();
         const Entity& getEntity() const;
 
         bool isActive() const;

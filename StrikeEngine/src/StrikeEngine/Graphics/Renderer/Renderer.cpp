@@ -6,7 +6,7 @@
 
 namespace StrikeEngine {
 
-    Renderer::Renderer() {
+    Renderer::Renderer() : mScreenVAO(0), mScreenVBO(0), mScreenEBO(0) {
         mFrameBuffer = std::make_unique<FrameBuffer>(mWidth, mHeight);
         init();
     }
@@ -65,9 +65,9 @@ namespace StrikeEngine {
             mScreenShader->setInt("screenTexture", 0);
             mFrameBuffer->bindFramebufferTexture(0);
 
-            mScreenVAO->bind();
-            glDrawElements(GL_TRIANGLES, mScreenIBO->getCount(), GL_UNSIGNED_INT, nullptr);
-            mScreenVAO->unbind();
+            glBindVertexArray(mScreenVAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            glBindVertexArray(0);
 
             mScreenShader->unbind();
         }
@@ -77,11 +77,11 @@ namespace StrikeEngine {
         return mFrameBuffer->getColorTextureID();
     }
 
-    uint32_t Renderer::getWidth() const {
+    uint32_t  Renderer::getWidth() const {
         return mWidth;
     }
 
-    uint32_t Renderer::getHeight() const {
+    uint32_t  Renderer::getHeight() const {
         return mHeight;
     }
 
@@ -93,11 +93,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::setupScreenQuad() {
-        
-        mScreenVAO = std::make_unique<VertexArray>();
-        mScreenVBO = std::make_unique<VertexBuffer>();
-        mScreenIBO = std::make_unique<IndexBuffer>();
-
         // Full-screen quad vertices
         float vertices[] = {
             -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
@@ -111,26 +106,40 @@ namespace StrikeEngine {
             2, 3, 0
         };
 
-        mScreenVBO->setData(vertices, sizeof(vertices), GL_STATIC_DRAW);
-        mScreenIBO->setData(indices, 6, GL_STATIC_DRAW);
+        // Generate and bind Vertex Array Object (VAO)
+        glGenVertexArrays(1, &mScreenVAO);
+        glBindVertexArray(mScreenVAO);
 
-        mScreenVAO->bind();
-        mScreenVBO->bind();
-        mScreenIBO->bind();
+        // Generate and bind Vertex Buffer Object (VBO)
+        glGenBuffers(1, &mScreenVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, mScreenVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+        // Generate and bind Element Buffer Object (EBO)
+        glGenBuffers(1, &mScreenEBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mScreenEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        // Set vertex attribute pointers
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-        mScreenVAO->unbind();
-        
+        // Unbind VAO to prevent accidental modification
+        glBindVertexArray(0);
     }
 
     void Renderer::cleanup() {
-        mScreenVAO.reset();
-        mScreenVBO.reset();
-        mScreenIBO.reset();
+        if (mScreenVAO) {
+            glDeleteVertexArrays(1, &mScreenVAO);
+        }
+        if (mScreenVBO) {
+            glDeleteBuffers(1, &mScreenVBO);
+        }
+        if (mScreenEBO) {
+            glDeleteBuffers(1, &mScreenEBO);
+        }
         mScreenShader.reset();
     }
 

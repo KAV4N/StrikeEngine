@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="cubeModel" source="Assets/Scenes\../Objects/cubeModel.fbx">
+	<assets>
+		<mesh assetId="cubeModel.Cube" src="Cube.mesh" />
+		<mesh assetId="cubeModel.Cube_1" src="Cube_1.mesh" />
+		<material assetId="cubeModel.Material.001" src="Material.001.mat" />
+		<material assetId="cubeModel.Material" src="Material.mat" />
+	</assets>
+	<entities>
+		<entity id="Cube_2" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+			<children>
+				<entity id="cubeModel.Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+					<components>
+						<renderer meshId="cubeModel.Cube" materialId="cubeModel.Material.001" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+	</entities>
+</template>

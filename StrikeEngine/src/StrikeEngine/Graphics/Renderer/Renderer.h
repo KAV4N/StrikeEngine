@@ -5,9 +5,7 @@
 #include "StrikeEngine/Asset/AssetManager.h"
 #include "StrikeEngine/Asset/Types/Shader.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
-#include "StrikeEngine/Graphics/VertexArray.h"
-#include "StrikeEngine/Graphics/VertexBuffer.h"
-#include "StrikeEngine/Graphics/IndexBuffer.h"
+#include <GL/gl.h>
 
 namespace StrikeEngine {
 
@@ -48,9 +46,9 @@ namespace StrikeEngine {
         std::unique_ptr<FrameBuffer> mFrameBuffer;
 
         std::shared_ptr<Shader> mScreenShader;
-        std::unique_ptr<VertexArray> mScreenVAO;
-        std::unique_ptr<VertexBuffer> mScreenVBO;
-        std::unique_ptr<IndexBuffer> mScreenIBO;
+        GLuint mScreenVAO; // Vertex Array Object
+        GLuint mScreenVBO; // Vertex Buffer Object
+        GLuint mScreenEBO; // Element Buffer Object
         uint32_t mWidth = 1920;
         uint32_t mHeight = 1080;
     };

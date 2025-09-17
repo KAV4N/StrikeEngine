@@ -13,9 +13,6 @@ namespace StrikeEngine {
     void Script::onUpdate(float deltaTime) {}
     void Script::onDestroy() {}
 
-    Entity& Script::getEntity() {
-        return mEntity;
-    }
 
     const Entity& Script::getEntity() const {
         return mEntity;

@@ -55,14 +55,12 @@ namespace StrikeEngine {
                 shader->setMat4("uModel", renderItem.worldMatrix);
             }
 
-            // Bind vertex array
-            auto vertexArray = renderItem.mesh->getVertexArray();
-            if (vertexArray && vertexArray->isValid()) {
-                vertexArray->bind();
-            }
-            else {
+            // Bind vertex array object
+            GLuint vao = renderItem.mesh->getVAO();
+            if (vao == 0) {
                 continue;
             }
+            glBindVertexArray(vao);
 
             // Get submesh data
             const auto& subMesh = renderItem.mesh->getSubMeshes()[renderItem.subMeshIndex];
@@ -74,7 +72,7 @@ namespace StrikeEngine {
                 (void*)(subMesh.startIndex * sizeof(uint32_t)));
 
             // Unbind resources
-            vertexArray->unbind();
+            glBindVertexArray(0);
             renderItem.material->unbind();
         }
 
@@ -85,11 +83,9 @@ namespace StrikeEngine {
     }
 
     void GeometryRenderPass::setupOpenGLState() {
-        /*
         // Enable depth testing
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-
 
         // Enable face culling
         glEnable(GL_CULL_FACE);
@@ -98,8 +94,6 @@ namespace StrikeEngine {
 
         glDepthFunc(GL_LESS);
         //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        */
-   
     }
 
     void GeometryRenderPass::restoreOpenGLState() {

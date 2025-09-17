@@ -1,14 +1,11 @@
 #pragma once
-#include "StrikeEngine/Core/UUID.h"
+#include "glad/glad.h"
 #include <string>
-#include <memory>
 #include <vector>
 #include <glm/glm.hpp>
 #include "Asset.h"
-#include "StrikeEngine/Graphics/VertexArray.h"
-#include "StrikeEngine/Graphics/VertexBuffer.h"
-#include "StrikeEngine/Graphics/IndexBuffer.h"
 #include <pugixml.hpp>
+
 
 namespace StrikeEngine {
 
@@ -22,15 +19,15 @@ namespace StrikeEngine {
             aabbMin = glm::vec3(maxNum, maxNum, maxNum);
             aabbMax = glm::vec3(minNum, minNum, minNum);
         }
-        Bounds(const glm::vec3& p) { 
+        Bounds(const glm::vec3& p) {
             aabbMax = p;
             aabbMin = p;
         }
-        Bounds(const glm::vec3& min, const glm::vec3& max) { 
+        Bounds(const glm::vec3& min, const glm::vec3& max) {
             aabbMax = max;
             aabbMin = min;
         }
-        Bounds(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) { 
+        Bounds(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
             aabbMax = glm::max(glm::max(a, b), c);
             aabbMin = glm::min(glm::min(a, b), c);
         }
@@ -49,8 +46,8 @@ namespace StrikeEngine {
 
     struct Vertex {
         glm::vec3 position;
-        glm::vec2 texCoord;
         glm::vec3 normal;
+        glm::vec2 texCoord;
         glm::vec3 tangent;
         glm::vec3 biNormal;
     };
@@ -82,12 +79,9 @@ namespace StrikeEngine {
         const std::vector<uint32_t>& getIndices() const;
         const std::vector<SubMeshData>& getSubMeshes() const;
         const Bounds& getBounds() const;
+        GLuint getVAO() const;
 
         void postLoad() override;
-
-        const std::shared_ptr<VertexArray>& getVertexArray() const;
-        const std::shared_ptr<VertexBuffer>& getVertexBuffer() const;
-        const std::shared_ptr<IndexBuffer>& getIndexBuffer() const;
 
         void setVertices(const std::vector<Vertex>& vertices);
         void setIndices(const std::vector<uint32_t>& indices);
@@ -102,8 +96,8 @@ namespace StrikeEngine {
         Bounds mBounds;
 
         // GPU resources
-        std::shared_ptr<VertexArray> mVertexArray;
-        std::shared_ptr<VertexBuffer> mVertexBuffer;
-        std::shared_ptr<IndexBuffer> mIndexBuffer;
+        GLuint mVAO; // Vertex Array Object
+        GLuint mVBO; // Vertex Buffer Object
+        GLuint mEBO; // Element Buffer Object
     };
 }

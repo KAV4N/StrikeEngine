@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="tank_low_poly" source="Assets/Scenes\../Objects/Panzer/tank_low_poly.obj">
+	<assets>
+		<mesh assetId="tank_low_poly.Turret" src="Turret.mesh" />
+		<mesh assetId="tank_low_poly.Body_1" src="Body_1.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_L01" src="Wheel_L01.mesh" />
+		<mesh assetId="tank_low_poly.Barrel" src="Barrel.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_L06" src="Wheel_L06.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_L04" src="Wheel_L04.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_L03" src="Wheel_L03.mesh" />
+		<mesh assetId="tank_low_poly.Track_R" src="Track_R.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_L02" src="Wheel_L02.mesh" />
+		<mesh assetId="tank_low_poly.WheelL_05" src="WheelL_05.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R05" src="Wheel_R05.mesh" />
+		<mesh assetId="tank_low_poly.Track_L" src="Track_L.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R06" src="Wheel_R06.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R04" src="Wheel_R04.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R03" src="Wheel_R03.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R02" src="Wheel_R02.mesh" />
+		<mesh assetId="tank_low_poly.Wheel_R01" src="Wheel_R01.mesh" />
+		<material assetId="tank_low_poly.Body" src="Body.mat" />
+	</assets>
+	<entities>
+		<entity id="Body_2" name="Body" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Body" name="Body" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Body_1" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Turret_1" name="Turret" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Turret" name="Turret" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Turret" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Barrel_1" name="Barrel" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Barrel" name="Barrel" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Barrel" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_L06_1" name="Wheel_L06" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_L06" name="Wheel_L06" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_L06" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_L04_1" name="Wheel_L04" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_L04" name="Wheel_L04" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_L04" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_L03_1" name="Wheel_L03" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_L03" name="Wheel_L03" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_L03" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_L02_1" name="Wheel_L02" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_L02" name="Wheel_L02" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_L02" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_L01_1" name="Wheel_L01" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_L01" name="Wheel_L01" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_L01" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="WheelL_05_1" name="WheelL_05" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.WheelL_05" name="WheelL_05" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.WheelL_05" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Track_L_1" name="Track_L" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Track_L" name="Track_L" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Track_L" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R06_1" name="Wheel_R06" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R06" name="Wheel_R06" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R06" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R04_1" name="Wheel_R04" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R04" name="Wheel_R04" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R04" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R03_1" name="Wheel_R03" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R03" name="Wheel_R03" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R03" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R02_1" name="Wheel_R02" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R02" name="Wheel_R02" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R02" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R01_1" name="Wheel_R01" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R01" name="Wheel_R01" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R01" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Wheel_R05_1" name="Wheel_R05" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Wheel_R05" name="Wheel_R05" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Wheel_R05" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		<entity id="Track_R_1" name="Track_R" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="tank_low_poly.Track_R" name="Track_R" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Track_R" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+	</entities>
+</template>

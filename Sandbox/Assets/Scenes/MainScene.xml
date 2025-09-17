@@ -6,9 +6,10 @@
 	</components>
 
 	<assets>
-		<template assetId="tankModel2" src="templates/tank/tank.template"  srcModel="../Objects/Panzer/tank_low_poly.fbx" async="true"/>
+		<template assetId="tankModel2" src="templates/tank3/tank.template"  srcModel="../Objects/Panzer/tank_low_poly.fbx" async="true"/>
 
 		<template assetId="panzer" src="templates/tank2/tank.template"  srcModel="../Objects/Panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj" async="true"/>
+		<template assetId="cubeTemplate" src="templates/Cube/cube.template"  srcModel="../Objects/cubeModel.fbx" async="true"/>
 
 		<!--<template assetId="penguin" src="templates/penguin/penguin.template"  srcModel="../Objects/penguin/PenguinBaseMesh.obj"/>-->
 	</assets>
@@ -29,17 +30,29 @@
 					viewportWidth="1.0"
 					viewportHeight="1.0"
 				/>
+
 				<scriptComponent>
 					<script type="TestScript"  />
 				</scriptComponent>
 			</components>
 		</entity>
 
+
+
+		<entity id="tank4" name="tanker" templateId="tankModel2" position="0.000,-50.000,0.000" rotation="0.000,0.000,90.000" scale=".5,.5,.5">
+			<components>
+				<scriptComponent>
+					<script type="TestScript"  />
+				</scriptComponent>
+			</components>
+		</entity>
+
+
 		<entity id="tank" name="tanker" templateId="panzer" position="0.000,-1.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
 
-		<entity id="tank4" name="tanker" templateId="tankModel2" position="0.000,-30.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5"/>
-		
 		<!-- Textures 
+				<entity id="cube" name="tanker" templateId="cubeTemplate" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5"/>
+	
 		<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
 			<components>
 				<renderer meshId="cubeModel.Cube">

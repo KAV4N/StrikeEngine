@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <template name="tank_low_poly" source="Assets/Scenes\../Objects/Panzer/tank_low_poly.fbx">
 	<assets>
-		<mesh assetId="tank_low_poly.Cylinder.012" src="Cylinder.012.mesh" />
-		<mesh assetId="tank_low_poly.Cylinder.011" src="Cylinder.011.mesh" />
-		<mesh assetId="tank_low_poly.Cube" src="Cube.mesh" />
-		<mesh assetId="tank_low_poly.Cube.001" src="Cube.001.mesh" />
-		<mesh assetId="tank_low_poly.Cube.003" src="Cube.003.mesh" />
-		<mesh assetId="tank_low_poly.Cylinder.003" src="Cylinder.003.mesh" />
-		<mesh assetId="tank_low_poly.Cylinder.004" src="Cylinder.004.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.001" src="Cylinder.001.mesh" />
+		<mesh assetId="tank_low_poly.Cube" src="Cube.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.002" src="Cylinder.002.mesh" />
+		<mesh assetId="tank_low_poly.Cube.001" src="Cube.001.mesh" />
+		<mesh assetId="tank_low_poly.Cylinder.004" src="Cylinder.004.mesh" />
+		<mesh assetId="tank_low_poly.Cube.003" src="Cube.003.mesh" />
+		<mesh assetId="tank_low_poly.Cylinder.012" src="Cylinder.012.mesh" />
+		<mesh assetId="tank_low_poly.Cylinder.003" src="Cylinder.003.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.005" src="Cylinder.005.mesh" />
 		<mesh assetId="tank_low_poly.BezierCircle" src="BezierCircle.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.013" src="Cylinder.013.mesh" />
@@ -17,6 +16,7 @@
 		<mesh assetId="tank_low_poly.Cylinder.008" src="Cylinder.008.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.009" src="Cylinder.009.mesh" />
 		<mesh assetId="tank_low_poly.Cylinder.010" src="Cylinder.010.mesh" />
+		<mesh assetId="tank_low_poly.Cylinder.011" src="Cylinder.011.mesh" />
 		<mesh assetId="tank_low_poly.BezierCircle.002" src="BezierCircle.002.mesh" />
 		<material assetId="tank_low_poly.Body" src="Body.mat" />
 		<material assetId="tank_low_poly.Material" src="Material.mat" />
