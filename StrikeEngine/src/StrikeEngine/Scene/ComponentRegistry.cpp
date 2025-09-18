@@ -16,10 +16,10 @@ namespace StrikeEngine {
         return mAdders.find(typeName) != mAdders.end();
     }
 
-    void ComponentRegistry::addComponentToEntity(Entity& entity, const std::string& typeName, const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) const {
+    void ComponentRegistry::addComponentToEntity(Entity& entity, const std::string& typeName, const pugi::xml_node& node) const {
         auto it = mAdders.find(typeName);
         if (it != mAdders.end()) {
-            it->second(entity, attributes, node);
+            it->second(entity, node);
         }
     }
 }

@@ -175,91 +175,80 @@ namespace StrikeEngine {
         mProjectionDirty = false;
     }
 
-    void CameraComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
-        auto projTypeIt = attributes.find("projectionType");
-        if (projTypeIt != attributes.end()) {
-            mProjectionType = (projTypeIt->second == "orthographic") ? ProjectionType::ORTHOGRAPHIC : ProjectionType::PERSPECTIVE;
+    void CameraComponent::deserialize(const pugi::xml_node& node) {
+        // Projection type
+        if (auto attr = node.attribute("projectionType")) {
+            std::string value = attr.as_string();
+            mProjectionType = (value == "orthographic") ? ProjectionType::ORTHOGRAPHIC : ProjectionType::PERSPECTIVE;
         }
 
-        auto nearIt = attributes.find("nearPlane");
-        if (nearIt != attributes.end()) {
-            mNearPlane = std::stof(nearIt->second);
+        // Near/Far planes
+        if (auto attr = node.attribute("nearPlane")) {
+            mNearPlane = attr.as_float();
+        }
+        if (auto attr = node.attribute("farPlane")) {
+            mFarPlane = attr.as_float();
         }
 
-        auto farIt = attributes.find("farPlane");
-        if (farIt != attributes.end()) {
-            mFarPlane = std::stof(farIt->second);
+        // FOV & Aspect Ratio
+        if (auto attr = node.attribute("fov")) {
+            mFOV = attr.as_float();
+        }
+        if (auto attr = node.attribute("aspectRatio")) {
+            mAspectRatio = attr.as_float();
         }
 
-        auto fovIt = attributes.find("fov");
-        if (fovIt != attributes.end()) {
-            mFOV = std::stof(fovIt->second);
+        // Orthographic bounds
+        if (auto attr = node.attribute("left")) {
+            mLeft = attr.as_float();
+        }
+        if (auto attr = node.attribute("right")) {
+            mRight = attr.as_float();
+        }
+        if (auto attr = node.attribute("bottom")) {
+            mBottom = attr.as_float();
+        }
+        if (auto attr = node.attribute("top")) {
+            mTop = attr.as_float();
         }
 
-        auto aspectIt = attributes.find("aspectRatio");
-        if (aspectIt != attributes.end()) {
-            mAspectRatio = std::stof(aspectIt->second);
+        // Render order
+        if (auto attr = node.attribute("renderOrder")) {
+            mRenderOrder = attr.as_int();
         }
 
-        auto leftIt = attributes.find("left");
-        if (leftIt != attributes.end()) {
-            mLeft = std::stof(leftIt->second);
+        // Viewport rect
+        if (auto attr = node.attribute("viewportX")) {
+            mViewportRect.x = attr.as_float();
+        }
+        if (auto attr = node.attribute("viewportY")) {
+            mViewportRect.y = attr.as_float();
+        }
+        if (auto attr = node.attribute("viewportWidth")) {
+            mViewportRect.width = attr.as_float();
+        }
+        if (auto attr = node.attribute("viewportHeight")) {
+            mViewportRect.height = attr.as_float();
         }
 
-        auto rightIt = attributes.find("right");
-        if (rightIt != attributes.end()) {
-            mRight = std::stof(rightIt->second);
-        }
-
-        auto bottomIt = attributes.find("bottom");
-        if (bottomIt != attributes.end()) {
-            mBottom = std::stof(bottomIt->second);
-        }
-
-        auto topIt = attributes.find("top");
-        if (topIt != attributes.end()) {
-            mTop = std::stof(topIt->second);
-        }
-
-        auto orderIt = attributes.find("renderOrder");
-        if (orderIt != attributes.end()) {
-            mRenderOrder = std::stoi(orderIt->second);
-        }
-
-        auto viewportXIt = attributes.find("viewportX");
-        if (viewportXIt != attributes.end()) {
-            mViewportRect.x = std::stof(viewportXIt->second);
-        }
-
-        auto viewportYIt = attributes.find("viewportY");
-        if (viewportYIt != attributes.end()) {
-            mViewportRect.y = std::stof(viewportYIt->second);
-        }
-
-        auto viewportWidthIt = attributes.find("viewportWidth");
-        if (viewportWidthIt != attributes.end()) {
-            mViewportRect.width = std::stof(viewportWidthIt->second);
-        }
-
-        auto viewportHeightIt = attributes.find("viewportHeight");
-        if (viewportHeightIt != attributes.end()) {
-            mViewportRect.height = std::stof(viewportHeightIt->second);
-        }
-
-        auto renderToTextureIt = attributes.find("renderToTexture");
-        if (renderToTextureIt != attributes.end() && renderToTextureIt->second == "true") {
-            auto widthIt = attributes.find("textureWidth");
-            auto heightIt = attributes.find("textureHeight");
-            if (widthIt != attributes.end() && heightIt != attributes.end()) {
-                uint32_t width = std::stoi(widthIt->second);
-                uint32_t height = std::stoi(heightIt->second);
-                //enableRenderToTexture(width, height);
+        // Render-to-texture
+        if (auto attr = node.attribute("renderToTexture")) {
+            if (std::string(attr.as_string()) == "true") {
+                auto widthAttr = node.attribute("textureWidth");
+                auto heightAttr = node.attribute("textureHeight");
+                if (widthAttr && heightAttr) {
+                    uint32_t width = widthAttr.as_int();
+                    uint32_t height = heightAttr.as_int();
+                    // enableRenderToTexture(width, height);
+                }
             }
         }
 
+        // Final setup
         setViewportRect(mViewportRect.x, mViewportRect.y, mViewportRect.width, mViewportRect.height);
         mProjectionDirty = true;
     }
+
 
     void CameraComponent::serialize(pugi::xml_node& node) const {
         node.append_attribute("projectionType") = (mProjectionType == ProjectionType::ORTHOGRAPHIC) ? "orthographic" : "perspective";

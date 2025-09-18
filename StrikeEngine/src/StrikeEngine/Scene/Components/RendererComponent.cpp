@@ -83,25 +83,27 @@ namespace StrikeEngine {
         return mMaterialAssets;
     }
 
-    void RendererComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
-        auto meshIdIt = attributes.find("meshId");
-        if (meshIdIt != attributes.end()) {
-            setMeshId(meshIdIt->second);
+    void RendererComponent::deserialize(const pugi::xml_node& node) {
+        // Mesh ID
+        if (auto attr = node.attribute("meshId")) {
+            setMeshId(attr.as_string());
         }
 
-        auto materialIdIt = attributes.find("materialId");
-        if (materialIdIt != attributes.end()) {
-            setMaterial(0, materialIdIt->second);
+        // Default material ID
+        if (auto attr = node.attribute("materialId")) {
+            setMaterial(0, attr.as_string());
         }
 
+        // Material slots
         for (pugi::xml_node materialNode : node.children("material")) {
-            int slot = materialNode.attribute("slot").as_int(0);
+            int slot = materialNode.attribute("slot").as_int(0); // default to slot 0 if missing
             std::string matId = materialNode.attribute("materialId").as_string();
             if (!matId.empty()) {
                 setMaterial(slot, matId);
             }
         }
     }
+
 
     void RendererComponent::serialize(pugi::xml_node& node) const {
         if (!mMeshId.empty()) {

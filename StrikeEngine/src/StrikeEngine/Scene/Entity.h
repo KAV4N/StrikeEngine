@@ -7,22 +7,32 @@
 #include <vector>
 
 namespace StrikeEngine {
-    class Scene;
+
     class SceneGraph;
+    class Scene;
 
     class Entity final {
     public:
+        static Entity create(Scene* scene, const std::string& id, const std::string& parentId = "");
+        static Entity get(Scene* scene, const std::string& id);
+
         Entity() = default;
-        Entity(Scene& scene, entt::entity handle);
+        ~Entity() = default;
+
+        // Copy constructor and assignment
+        Entity(const Entity&) = default;
+        Entity& operator=(const Entity&) = default;
+
+        // Move constructor and assignment
+        Entity(Entity&&) = default;
+        Entity& operator=(Entity&&) = default;
 
         // Validity
         bool isValid() const;
-        operator bool() const { return isValid(); }
 
-        entt::entity getHandle() const { return handle; }
+        void setName(const std::string& name);
         std::string getName() const;
         std::string getId() const;
-
 
         template<typename T, typename... Args>
         T& addComponent(Args&&... args);
@@ -44,19 +54,18 @@ namespace StrikeEngine {
 
         void setPosition(const glm::vec3& position);
         void setRotation(const glm::quat& rotation);
+        void setEulerRotation(const glm::vec3& rotation);
         void setScale(const glm::vec3& scale);
 
         glm::vec3 getPosition() const;
         glm::quat getRotation() const;
+        glm::vec3 getEulerRotation() const;
         glm::vec3 getScale() const;
 
-        glm::vec3 getWorldPosition() const;
-        glm::quat getWorldRotation() const;
-        glm::vec3 getWorldScale() const;
+        glm::mat4 getLocalMatrix() const;
         glm::mat4 getWorldMatrix() const;
 
         void setParent(Entity parent);
-        void removeParent();
         Entity getParent() const;
         std::vector<Entity> getChildren() const;
 
@@ -66,46 +75,69 @@ namespace StrikeEngine {
         bool isAncestorOf(Entity other) const;
         bool isDescendantOf(Entity other) const;
         bool isRoot() const;
-        bool isSceneRoot() const;
         bool isActive() const;
 
-        bool operator==(const Entity& other) const { return handle == other.handle && scene == other.scene; }
+        operator bool() const { return isValid(); }
+
         bool operator!=(const Entity& other) const { return !(*this == other); }
+        bool operator==(const Entity& other) const { return mId == other.mId && mSceneGraph == other.mSceneGraph; }
+
+        Scene* getScene() const;
+        SceneGraph* getSceneGraph() const;
+
+    private:
+        entt::registry& Entity::getRegistry() const;
 
     private:
         friend class Scene;
+        friend class SceneGraph;
+        friend struct std::hash<Entity>;
 
-        Scene* scene = nullptr;
-        entt::entity handle = entt::null;
-
-        entt::registry& getRegistry() const;
-        SceneGraph& getSceneGraph() const;
+        Scene* mScene = nullptr;
+        SceneGraph* mSceneGraph = nullptr;
+        std::string mId;
+        std::string mName = "";
+        entt::entity mHandle = entt::null;
     };
 
-    
     template<typename T, typename... Args>
     T& Entity::addComponent(Args&&... args) {
-        return getRegistry().emplace<T>(handle, std::forward<Args>(args)...);
+        if (!isValid()) {
+            throw std::runtime_error("Invalid entity or scene graph");
+        }
+        return getRegistry().emplace<T>(mHandle, std::forward<Args>(args)...);
     }
 
     template<typename T>
     void Entity::removeComponent() {
-        getRegistry().remove<T>(handle);
+        if (!isValid()) {
+            return;
+        }
+        getRegistry().remove<T>(mHandle);
     }
 
     template<typename T>
     T& Entity::getComponent() {
-        return getRegistry().get<T>(handle);
+        if (!isValid()) {
+            throw std::runtime_error("Invalid entity or scene graph");
+        }
+        return getRegistry().get<T>(mHandle);
     }
 
     template<typename T>
     const T& Entity::getComponent() const {
-        return getRegistry().get<T>(handle);
+        if (!isValid()) {
+            throw std::runtime_error("Invalid entity or scene graph");
+        }
+        return getRegistry().get<T>(mHandle);
     }
 
     template<typename T>
     bool Entity::hasComponent() const {
-        return getRegistry().all_of<T>(handle);
+        if (!isValid()) {
+            return false;
+        }
+        return getRegistry().all_of<T>(mHandle);
     }
 
     template<typename T, typename... Args>
@@ -117,12 +149,11 @@ namespace StrikeEngine {
     }
 }
 
-// Updated hash function to avoid recursion
 namespace std {
-    template <>
+    template<>
     struct hash<StrikeEngine::Entity> {
-        std::size_t operator()(const StrikeEngine::Entity& entity) const noexcept {
-            return std::hash<entt::entity>{}(entity.getHandle());
+        std::size_t operator()(const StrikeEngine::Entity& e) const noexcept {
+            return std::hash<std::string>()(e.getId());
         }
     };
 }

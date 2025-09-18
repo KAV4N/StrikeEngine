@@ -16,7 +16,7 @@ namespace StrikeEngine {
         void setActive(bool active) { mIsActive = active; }
 
         // Virtual serialization methods
-        virtual void deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) = 0;
+        virtual void deserialize(const pugi::xml_node& node) = 0;
         virtual void serialize(pugi::xml_node& node) const = 0;
 
     protected:

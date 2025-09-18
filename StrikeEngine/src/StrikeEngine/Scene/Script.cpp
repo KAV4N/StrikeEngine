@@ -30,10 +30,12 @@ namespace StrikeEngine {
         return mStarted;
     }
 
-    void Script::setEntity(entt::entity entity, Scene* scene) {
-        if (mStarted == false) {
-            mEntity = Entity{ *scene, entity };
+    void Script::setEntity(const Entity& entity) {
+        
+        if (mStarted == false && entity.isValid()) {
+            mEntity = entity;
         }
+        
     }
 
     void Script::markStarted() {

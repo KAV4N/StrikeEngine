@@ -29,7 +29,7 @@ namespace StrikeEngine {
         }
 
         // Serialization methods
-        void deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) override;
+        void deserialize( const pugi::xml_node& node) override;
         void serialize(pugi::xml_node& node) const override;
 
         // Mesh management

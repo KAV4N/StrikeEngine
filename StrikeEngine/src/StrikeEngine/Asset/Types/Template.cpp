@@ -44,14 +44,17 @@ namespace StrikeEngine {
             glm::vec3 localScale = parseVector3(entityNode.attribute("scale").as_string("1.0,1.0,1.0"));
 
             // Apply parent transform
+            /*
             glm::quat localQuat = glm::quat(glm::radians(localRot));
             localPos = parentEntity.getPosition() + parentEntity.getRotation() * (parentEntity.getScale() * localPos);
             localQuat = parentEntity.getRotation() * localQuat;
             localScale *= parentEntity.getScale();
+            */
 
-            Entity entity = scene.createEntity(prefixedId, name);
+            Entity entity = Entity::create(&scene, prefixedId);
+            entity.setName(name);
             entity.setPosition(localPos);
-            entity.setRotation(localQuat);
+            entity.setEulerRotation(localRot);
             entity.setScale(localScale);
 
             if (parentEntity.isValid()) {
@@ -63,13 +66,8 @@ namespace StrikeEngine {
                 for (pugi::xml_node componentNode : componentsNode.children()) {
                     std::string componentType = componentNode.name();
 
-                    std::unordered_map<std::string, std::string> attributes;
-                    for (pugi::xml_attribute attr : componentNode.attributes()) {
-                        attributes[attr.name()] = attr.value();
-                    }
-
                     if (componentRegistry.isRegistered(componentType)) {
-                        componentRegistry.addComponentToEntity(entity, componentType, attributes, componentNode);
+                        componentRegistry.addComponentToEntity(entity, componentType, componentNode);
                         std::cout << "Added component: " << componentType << " to entity: " << entity.getId() << " in template: " << getId() << std::endl;
                     }
                     else {

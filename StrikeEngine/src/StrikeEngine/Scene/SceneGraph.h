@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <entt/entt.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,127 +12,140 @@
 
 namespace StrikeEngine {
 
+    class Scene;
     class Entity;
 
     class GraphNode : public std::enable_shared_from_this<GraphNode> {
     public:
-        GraphNode(Entity entity, const std::string& id, const std::string& name, bool isRoot = false);
+        GraphNode(Entity entity, bool isRoot = false);
 
         // Accessors
         Entity getEntity() const { return mEntity; }
-        const std::string& getId() const { return mId; }
-        const std::string& getName() const { return mName; }
+
         const glm::vec3& getPosition() const { return mPosition; }
         const glm::quat& getRotation() const { return mRotation; }
         const glm::vec3& getScale() const { return mScale; }
+
+        const glm::mat4& getLocalMatrix() const { return mLocalMatrix; }
+        const glm::mat4& getWorldMatrix() const { return mWorldMatrix; }
+
+        glm::vec3 getEulerRotation();
+        void setEulerRotation(const glm::vec3& eulerAngles);
+
         std::shared_ptr<GraphNode> getParent() const { return mParent.lock(); }
         const std::vector<std::shared_ptr<GraphNode>>& getChildren() const { return mChildren; }
 
-        bool isDirty() const { return mIsDirty; }
         bool isRoot() const { return mIsRootNode; }
         bool isActive() const { return mIsActive; }
 
         // Mutators
-        void setPosition(const glm::vec3& pos) { mPosition = pos; markDirty(); }
-        void setRotation(const glm::quat& rot) { mRotation = rot; markDirty(); }
-        void setScale(const glm::vec3& scl) { mScale = scl; markDirty(); }
-        void setParent(const std::shared_ptr<GraphNode>& newParent) {
-            if (!mIsRootNode) {
-                mParent = newParent;
-                markDirty();
-            }
-        }
+        void setPosition(const glm::vec3& pos) { mPosition = pos; mIsDirty = true; }
+        void setRotation(const glm::quat& rot) { mRotation = rot; mIsDirty = true; }
+        void setScale(const glm::vec3& scl) { mScale = scl; mIsDirty = true; }
 
-        void addChild(const std::shared_ptr<GraphNode>& child) {
-            mChildren.push_back(child);
-            child->setParent(shared_from_this());
-        }
-
-        void removeChild(const std::shared_ptr<GraphNode>& child) {
-            mChildren.erase(std::remove(mChildren.begin(), mChildren.end(), child), mChildren.end());
-        }
-
-        void markDirty() { mIsDirty = true; }
-        void clearDirty() { mIsDirty = false; }
         void setActive(bool active) { mIsActive = active; }
+        const std::string& getEntityId() const { return mEntity.getId(); }
+
+
+    private:
+        friend class SceneGraph;
+        void setParent(const std::shared_ptr<GraphNode>& newParent);
+        void addChild(const std::shared_ptr<GraphNode>& child);
+        void removeChild(const std::shared_ptr<GraphNode>& child);
+
+        float normalizeAngle(float angle);
+        glm::vec3 normalizeEulerAngles(const glm::vec3& angles);
+
+        void updateLocalMatrix();
+        void updateWorldMatrix(const glm::mat4& parentWorldMatrix = glm::mat4(1.0f));
 
     private:
         Entity mEntity;
-        std::string mId;
-        std::string mName;
+
         glm::vec3 mPosition;
         glm::quat mRotation;
         glm::vec3 mScale;
+
+        glm::mat4 mLocalMatrix;
+        glm::mat4 mWorldMatrix;
+        bool mIsDirty = true;
 
         std::weak_ptr<GraphNode> mParent;
         std::vector<std::shared_ptr<GraphNode>> mChildren;
 
         bool mIsActive = true;
-        bool mIsDirty = true;
         bool mIsRootNode = false;
     };
 
     class SceneGraph {
     public:
-        SceneGraph();
-        ~SceneGraph();
+        SceneGraph(Scene* scene, const std::string& rootId, const std::string& rootName = "");
+        ~SceneGraph() = default;
 
-        // Node management
-        void createRootNode(Entity entity, const std::string& id, const std::string& name);
-        void createNode(Entity entity, const std::string& id, const std::string& name);
-        void removeNode(Entity entity);
-        bool hasNode(Entity entity) const;
-        bool isRootNode(Entity entity) const;
-        bool isActive(Entity entity) const;
+        // Entity creation and retrieval
+        void createRootEntity(const std::string& rootId, const std::string& rootName = "");
+        Entity createEntity(const std::string& id, const std::string& parentId = "");
+        Entity getEntity(const std::string& id);
+        std::vector<Entity> getEntitiesByName(const std::string& name) const;
+
+        // Retrieve all entities with a specific component
+        template<typename Component>
+        std::vector<Entity> getEntitiesWithComponent() const {
+            std::vector<Entity> result;
+            for (const auto& pair : mNodes) {
+                const auto& node = pair.second;
+                if (node && node->getEntity().isValid()) {
+                    if (mRegistry.all_of<Component>(node->getEntity().mHandle)) {
+                        result.push_back(node->getEntity());
+                    }
+                }
+            }
+            return result;
+        }
+
+        // Entity destruction
+        bool destroyEntity(const std::string& id);
+
+        // Root entity operations
+        Entity getRootEntity() const;
+        bool isRoot(const std::string& id) const;
+        bool isActive(const std::string& id) const;
+
+        // Entity existence check
+        bool entityExists(const std::string& id);
 
         // Hierarchy operations
-        void setParent(Entity child, Entity parent);
-        void removeParent(Entity child);
-        void addChild(Entity parent, Entity child);
-        void removeChild(Entity parent, Entity child);
-
-        // Transform operations
-        void setPosition(Entity entity, const glm::vec3& position);
-        void setRotation(Entity entity, const glm::quat& rotation);
-        void setScale(Entity entity, const glm::vec3& scale);
-
-        glm::vec3 getPosition(Entity entity) const;
-        glm::quat getRotation(Entity entity) const;
-        glm::vec3 getScale(Entity entity) const;
-
-        // World transform calculations
-        glm::vec3 getWorldPosition(Entity entity) const;
-        glm::quat getWorldRotation(Entity entity) const;
-        glm::vec3 getWorldScale(Entity entity) const;
-        glm::mat4 getWorldMatrix(Entity entity) const;
+        void setParent(const std::string& childId, const std::string& parentId);
+        void addChild(const std::string& parentId, const std::string& childId);
+        void removeChild(const std::string& parentId, const std::string& childId);
 
         // Query operations
-        Entity getEntityByName(const std::string& name) const;
-        Entity getEntityById(const std::string& id) const;
-        std::string getEntityName(Entity entity) const;
-        std::string getEntityId(Entity entity) const;
-        std::vector<Entity> getChildren(Entity entity) const;
-        Entity getParent(Entity entity) const;
+        std::vector<Entity> getChildren(const std::string& id) const;
+        Entity getParent(const std::string& id) const;
 
         // Hierarchy queries
-        bool isAncestor(Entity ancestor, Entity descendant) const;
-        bool isDescendant(Entity descendant, Entity ancestor) const;
-        std::vector<Entity> getRootEntities() const;
-        Entity getRootEntity() const;
+        bool isAncestor(const std::string& ancestorId, const std::string& descendantId) const;
+        bool isDescendant(const std::string& descendantId, const std::string& ancestorId) const;
 
         // Update operations
-        void markDirty(Entity entity);
-        void clearDirty(Entity entity);
-        bool isDirty(Entity entity) const;
         void updateTransforms();
 
         // Management
         void clear();
 
     private:
-        std::unordered_map<Entity, std::shared_ptr<GraphNode>> nodes;
-        std::shared_ptr<GraphNode> rootNode;
+        friend class Scene;
+        friend class Entity;
 
-        std::shared_ptr<GraphNode> getNode(Entity entity) const;
+        // Node access (internal)
+        std::shared_ptr<GraphNode> getNode(const std::string& id) const;
+        void updateNodeTransforms(std::shared_ptr<GraphNode> node);
+        Entity createEntityInternal(const std::string& id);
+
+    private:
+        entt::registry mRegistry;
+        Scene* mScene;
+        std::unordered_map<std::string, std::shared_ptr<GraphNode>> mNodes;
+        std::pair<std::string, std::shared_ptr<GraphNode>> mRootNode;
     };
 }

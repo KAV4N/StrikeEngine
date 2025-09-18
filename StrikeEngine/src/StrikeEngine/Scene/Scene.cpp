@@ -8,94 +8,22 @@
 
 namespace StrikeEngine {
     Scene::Scene(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : mSceneGraph(std::make_unique<SceneGraph>())
+        : mSceneGraph(std::make_unique<SceneGraph>(this, id, name))
         , mActive(true)
     {
-        createRootEntity(id, name);
-    }
-
-    void Scene::createRootEntity(const std::string& id, const std::string& name) {
-        entt::entity handle = mRegistry.create();
-        mRootEntity = Entity(*this, handle);
-        mSceneGraph->createRootNode(mRootEntity, id, name);
-    }
-
-    Entity Scene::createEntity(const std::string& id, const std::string& name) {
-        entt::entity handle = mRegistry.create();
-        Entity entity(*this, handle);
-        mSceneGraph->createNode(entity, id, name);
-        mSceneGraph->setParent(entity, mRootEntity);
-        return entity;
-    }
-
-    void Scene::destroyEntity(Entity entity) {
-        if (!isEntityValid(entity)) {
-            return;
-        }
-        // Prevent deletion of root entity
-        if (isRootEntity(entity)) {
-            return;
-        }
-
-        mSceneGraph->removeNode(entity);
-        mRegistry.destroy(entity.handle);
-    }
-
-    bool Scene::isEntityValid(Entity entity) const {
-        return mRegistry.valid(entity.handle);
-    }
-
-    Entity Scene::getEntity(entt::entity handle) {
-        if (!mRegistry.valid(handle)) {
-            return Entity(*this, entt::null);
-        }
-        return Entity(*this, handle);
-    }
-
-    Entity Scene::getEntityByName(const std::string& name) {
-        return mSceneGraph->getEntityByName(name);
-    }
-
-    Entity Scene::getEntityById(const std::string& id) {
-        return mSceneGraph->getEntityById(id);
-    }
-
-    Entity Scene::getRootEntity() const {
-        return mRootEntity;
-    }
-
-    bool Scene::isRootEntity(Entity entity) const {
-        return entity.isValid() && entity == mRootEntity;
+  
     }
 
     void Scene::reset() {
-        std::string entId = mRootEntity.getId();
-        std::string entName = mRootEntity.getName();
-
         mSceneGraph->clear();
-        mRegistry.clear();
-        createRootEntity(entId, entName);
     }
 
     void Scene::onUpdate(float dt) {
         if (!mActive) return;
-
-        // Update transforms
         mSceneGraph->updateTransforms();
     }
 
     void Scene::onRender() {
         if (!mActive) return;
-        // Rendering logic here
-    }
-
-    void Scene::onImGuiRender() {
-        if (!mActive) return;
-        // ImGui rendering logic here
-    }
-
-    void Scene::onEvent(Event& e) {
-        if (!mActive) return;
-        // Event handling logic here
     }
 }

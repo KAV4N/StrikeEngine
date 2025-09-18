@@ -1,4 +1,5 @@
 #pragma once
+#include "SystemECS.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <vector>
@@ -24,11 +25,11 @@ namespace StrikeEngine {
         std::vector<RenderItem> renderItems;
     };
 
-    class RenderSystem {
+    class RenderSystem : public SystemECS{
     public:
         RenderSystem();
 
-        void onUpdate(Scene* scene);
+        void onUpdate(float dt) override;
 
     private:
         void collectCameras(Scene* scene);

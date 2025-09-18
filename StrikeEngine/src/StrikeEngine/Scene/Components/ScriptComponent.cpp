@@ -3,7 +3,9 @@
 
 namespace StrikeEngine {
 
-    ScriptComponent::ScriptComponent() {}
+    ScriptComponent::ScriptComponent() 
+        : mEntity()
+    {}
 
     ScriptComponent::~ScriptComponent() {
         destroyAllScriptInstances();
@@ -19,7 +21,7 @@ namespace StrikeEngine {
         createScriptInstance(scriptType);
     }
 
-    void ScriptComponent::removeScript(const std::string& scriptType) {
+    void ScriptComponent::destroyScript(const std::string& scriptType) {
         // Destroy instance if it exists
         destroyScriptInstance(scriptType);
 
@@ -94,36 +96,38 @@ namespace StrikeEngine {
         return nullptr;
     }
 
-    void ScriptComponent::createAllScriptInstances(entt::entity handle, Scene* scene) {
-        for (const auto& [scriptType, scriptInfo] : mScriptInfos) {
-            createScriptInstance(scriptType);
-            auto it = mScriptInstances.find(scriptType);
-            if (it != mScriptInstances.end() && it->second) {
-                it->second->setEntity(handle, scene);
-            }
-        }
-    }
 
     void ScriptComponent::destroyAllScriptInstances() {
         mScriptInstances.clear();
     }
 
-    void ScriptComponent::deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) {
+    void ScriptComponent::asignEntityToScripts(const Entity& entity) {
+        for (const auto& [scriptType, scriptInfo] : mScriptInfos) {
+            createScriptInstance(scriptType);
+            auto it = mScriptInstances.find(scriptType);
+            if (it != mScriptInstances.end() && it->second) {
+                it->second->setEntity(entity);
+            }
+        }
+    }
+
+    void ScriptComponent::deserialize(const pugi::xml_node& node) {
         // Clear existing scripts
         clearScripts();
 
-        // Parse script nodes
+        // Parse <script> child nodes
         for (pugi::xml_node scriptNode : node.children("script")) {
             std::string scriptType = scriptNode.attribute("type").as_string();
 
             if (!scriptType.empty() && ScriptRegistry::hasScriptFactory(scriptType)) {
                 addScript(scriptType);
 
-                bool active = scriptNode.attribute("active").as_bool(true);
+                bool active = scriptNode.attribute("active").as_bool(true); // defaults to true if missing
                 setScriptActive(scriptType, active);
             }
         }
     }
+
 
     void ScriptComponent::serialize(pugi::xml_node& node) const {
         for (const auto& [scriptType, scriptInfo] : mScriptInfos) {

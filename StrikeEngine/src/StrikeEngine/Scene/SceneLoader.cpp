@@ -59,9 +59,10 @@ namespace StrikeEngine {
             auto templateAsset = mAssetManager.getTemplate(it->templateId);
             if (templateAsset && templateAsset->isReady()) {
                 // Create parent entity for the template
-                Entity templateParent = it->scene->createEntity(it->id, it->name);
+                Entity templateParent = Entity::create(it->scene, it->id);
+                templateParent.setName(it->name);
                 templateParent.setPosition(it->position);
-                templateParent.setRotation(it->rotation);
+                templateParent.setEulerRotation(it->rotation);
                 templateParent.setScale(it->scale);
 
                 if (it->parent.isValid()) {
@@ -83,7 +84,7 @@ namespace StrikeEngine {
     }
 
     void SceneLoader::addPendingTemplateInstantiation(const std::string& templateId, const std::string& id, const std::string& name,
-        const std::string& idPrefix, const glm::vec3& position, const glm::quat& rotation,
+        const std::string& idPrefix, const glm::vec3& position, const glm::vec3& rotation,
         const glm::vec3& scale, Entity parent, Scene* scene, const pugi::xml_node& entityNode) {
         std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
         mPendingTemplates.emplace_back(PendingTemplateInstantiation{
@@ -129,7 +130,7 @@ namespace StrikeEngine {
         std::string scale = sceneNode.attribute("scale").as_string("1.0,1.0,1.0");
 
         rootEntity.setPosition(parseVec3(position));
-        rootEntity.setRotation(parseRotation(rotation));
+        rootEntity.setEulerRotation(parseVec3(rotation));
         rootEntity.setScale(parseVec3(scale, glm::vec3(1.0f)));
 
         // Parse root entity components
@@ -187,7 +188,8 @@ namespace StrikeEngine {
         }
 
         // Create entity
-        Entity entity = scene.createEntity(prefixedId, name);
+        Entity entity = Entity::create(&scene, prefixedId);
+        entity.setName(name);
 
         // Set parent if provided
         if (parent.isValid()) {
@@ -200,7 +202,7 @@ namespace StrikeEngine {
         std::string scale = entityNode.attribute("scale").as_string("1.0,1.0,1.0");
 
         entity.setPosition(parseVec3(position));
-        entity.setRotation(parseRotation(rotation));
+        entity.setEulerRotation(parseVec3(rotation));
         entity.setScale(parseVec3(scale, glm::vec3(1.0f)));
 
         // Parse components
@@ -243,16 +245,18 @@ namespace StrikeEngine {
         std::string scale = entityNode.attribute("scale").as_string("1.0,1.0,1.0");
 
         glm::vec3 localPos = parseVec3(position);
-        glm::quat localRot = parseRotation(rotation);
+        glm::vec3 localRot = parseVec3(rotation);
         glm::vec3 localScale = parseVec3(scale, glm::vec3(1.0f));
 
         // Check if template is ready
         auto templateAsset = mAssetManager.getTemplate(templateId);
         if (templateAsset && templateAsset->isReady()) {
             // Create parent entity for the template
-            Entity templateParent = scene.createEntity(prefixedId, name);
+            Entity templateParent = Entity::create(&scene, prefixedId);
+            templateParent.setName(name);
+
             templateParent.setPosition(localPos);
-            templateParent.setRotation(localRot);
+            templateParent.setEulerRotation(localRot);
             templateParent.setScale(localScale);
 
             if (parent.isValid()) {
@@ -273,10 +277,9 @@ namespace StrikeEngine {
     void SceneLoader::parseEntityComponents(Entity& entity, const pugi::xml_node& componentsNode) {
         for (pugi::xml_node componentNode : componentsNode.children()) {
             std::string componentType = componentNode.name();
-            auto attributes = parseAttributes(componentNode);
 
             if (mComponentRegistry.isRegistered(componentType)) {
-                mComponentRegistry.addComponentToEntity(entity, componentType, attributes, componentNode);
+                mComponentRegistry.addComponentToEntity(entity, componentType, componentNode);
                 std::cout << "Added component: " << componentType << " to entity: " << entity.getId() << std::endl;
             }
             else {
@@ -313,14 +316,6 @@ namespace StrikeEngine {
         glm::vec3 eulerDegrees = parseVec3(str, glm::vec3(0.0f));
         glm::vec3 eulerRadians = glm::radians(eulerDegrees);
         return glm::quat(eulerRadians);
-    }
-
-    std::unordered_map<std::string, std::string> SceneLoader::parseAttributes(const pugi::xml_node& node) {
-        std::unordered_map<std::string, std::string> attributes;
-        for (pugi::xml_attribute attr : node.attributes()) {
-            attributes[attr.name()] = attr.value();
-        }
-        return attributes;
     }
 
     bool SceneLoader::validateSceneFile(const pugi::xml_document& doc) {

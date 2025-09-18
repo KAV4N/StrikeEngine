@@ -1,357 +1,369 @@
 #include "SceneGraph.h"
 #include "Entity.h"
+#include "Scene.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <algorithm>
 #include <iostream>
 
 namespace StrikeEngine {
 
-    GraphNode::GraphNode(Entity entity, const std::string& id, const std::string& name, bool isRoot)
-        : mEntity(entity), mId(id), mName(name), mPosition(0.0f),
-        mRotation(1.0f, 0.0f, 0.0f, 0.0f), mScale(1.0f), mIsDirty(true),
-        mIsRootNode(isRoot), mIsActive(true) {
+    // GraphNode Implementation
+    GraphNode::GraphNode(Entity entity, bool isRoot)
+        : mEntity(entity), mIsRootNode(isRoot),
+        mPosition(0.0f), mRotation(1.0f, 0.0f, 0.0f, 0.0f), mScale(1.0f),
+        mLocalMatrix(1.0f), mWorldMatrix(1.0f) {
     }
 
-    SceneGraph::SceneGraph() = default;
-    SceneGraph::~SceneGraph() = default;
+    glm::vec3 GraphNode::getEulerRotation() {
+        glm::vec3 eulerRad = glm::eulerAngles(mRotation);
+        return normalizeEulerAngles(glm::degrees(eulerRad));
+    }
 
-    void SceneGraph::createRootNode(Entity entity, const std::string& id, const std::string& name) {
+    void GraphNode::setEulerRotation(const glm::vec3& eulerAngles) {
+        glm::vec3 normalizedAngles = normalizeEulerAngles(eulerAngles);
+        glm::vec3 eulerRad = glm::radians(normalizedAngles);
+        mRotation = glm::normalize(glm::quat(eulerRad));
+        mIsDirty = true;
+    }
+
+    void GraphNode::setParent(const std::shared_ptr<GraphNode>& newParent) {
+        if (!mIsRootNode && newParent != shared_from_this()) {
+            mParent = newParent;
+            mIsDirty = true;
+        }
+    }
+
+    void GraphNode::addChild(const std::shared_ptr<GraphNode>& child) {
+        if (child && child != shared_from_this()) {
+            // Check if child is already in the list
+            auto it = std::find(mChildren.begin(), mChildren.end(), child);
+            if (it == mChildren.end()) {
+                mChildren.push_back(child);
+                child->setParent(shared_from_this());
+                child->mIsDirty = true;
+            }
+        }
+    }
+
+    void GraphNode::removeChild(const std::shared_ptr<GraphNode>& child) {
+        auto it = std::remove(mChildren.begin(), mChildren.end(), child);
+        if (it != mChildren.end()) {
+            mChildren.erase(it, mChildren.end());
+            if (child) {
+                child->mParent.reset();
+                child->mIsDirty = true;
+            }
+        }
+    }
+
+    void GraphNode::updateLocalMatrix() {
+        if (mIsDirty) {
+            glm::mat4 translation = glm::translate(glm::mat4(1.0f), mPosition);
+            glm::mat4 rotation = glm::mat4_cast(mRotation);
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), mScale);
+
+            mLocalMatrix = translation * rotation * scale;
+            mIsDirty = false;
+        }
+    }
+
+    void GraphNode::updateWorldMatrix(const glm::mat4& parentWorldMatrix) {
+        updateLocalMatrix();
+        mWorldMatrix = parentWorldMatrix * mLocalMatrix;
+    }
+
+    float GraphNode::normalizeAngle(float angle) {
+        angle = fmod(angle, 360.0f);
+        return angle < 0.0f ? angle + 360.0f : angle;
+    }
+
+    glm::vec3 GraphNode::normalizeEulerAngles(const glm::vec3& angles) {
+        return glm::vec3(
+            normalizeAngle(angles.x),
+            normalizeAngle(angles.y),
+            normalizeAngle(angles.z)
+        );
+    }
+
+    // SceneGraph Implementation
+    SceneGraph::SceneGraph(Scene* scene, const std::string& rootId, const std::string& rootName) : mScene(scene) {
+        createRootEntity(rootId, rootName);
+    }
+
+    void SceneGraph::createRootEntity(const std::string& rootId, const std::string& rootName) {
+        Entity entity = createEntityInternal(rootId);
+        entity.setName(rootName);
+        auto rootNode = std::make_shared<GraphNode>(entity, true);
+        mNodes[rootId] = rootNode;
+        mRootNode = std::make_pair(rootId, rootNode);
+    }
+
+    Entity SceneGraph::createEntity(const std::string& id, const std::string& parentId) {
+        if (id.empty()) {
+            throw std::runtime_error("Entity ID cannot be empty");
+        }
+
+        if (entityExists(id)) {
+            throw std::runtime_error("Entity with ID " + id + " already exists");
+        }
+
+        Entity entity = createEntityInternal(id);
         if (!entity.isValid()) {
-            std::cerr << "Error: Attempting to create root node with invalid entity" << std::endl;
-            return;
+            throw std::runtime_error("Failed to create entity with ID " + id);
         }
-        if (nodes.find(entity) != nodes.end()) {
-            std::cerr << "Error: Entity already exists in scene graph" << std::endl;
-            return;
+
+        auto node = std::make_shared<GraphNode>(entity, false);
+        mNodes[id] = node;
+
+        if (!parentId.empty() && entityExists(parentId)) {
+            setParent(id, parentId);
         }
-        auto node = std::make_shared<GraphNode>(entity, id, name, true);
-        try {
-            nodes.emplace(entity, node);
-            rootNode = node;
-            std::cout << "Created root node for entity with ID: " << id << std::endl;
+        else if (mRootNode.second) {
+            setParent(id, mRootNode.first);
         }
-        catch (const std::exception& e) {
-            std::cerr << "Exception in createRootNode: " << e.what() << std::endl;
-        }
+
+        return entity;
     }
 
-    void SceneGraph::createNode(Entity entity, const std::string& id, const std::string& name) {
-        if (!entity.isValid()) {
-            std::cerr << "Error: Attempting to create node with invalid entity" << std::endl;
-            return;
+    Entity SceneGraph::getEntity(const std::string& id) {
+        if (id.empty()) {
+            return Entity();
         }
-        if (nodes.find(entity) != nodes.end()) {
-            std::cerr << "Error: Entity already exists in scene graph" << std::endl;
-            return;
+
+        auto it = mNodes.find(id);
+        if (it != mNodes.end()) {
+            return it->second->getEntity();
         }
-        auto node = std::make_shared<GraphNode>(entity, id, name, false);
-        try {
-            nodes.emplace(entity, node);
-            std::cout << "Created node for entity with ID: " << id << std::endl;
-        }
-        catch (const std::exception& e) {
-            std::cerr << "Exception in createNode: " << e.what() << std::endl;
-        }
+
+        return Entity();
     }
 
-    void SceneGraph::removeNode(Entity entity) {
-        auto node = getNode(entity);
-        if (!node || node->isRoot()) return; // Cannot remove root node
+    std::vector<Entity> SceneGraph::getEntitiesByName(const std::string& name) const {
+        std::vector<Entity> result;
 
-        // Remove from parent's children
-        if (auto parent = node->getParent()) {
+        for (const auto& pair : mNodes) {
+            const auto& node = pair.second;
+            if (node && node->getEntity().getName() == name) {
+                result.push_back(node->getEntity());
+            }
+        }
+
+        return result;
+    }
+
+    Entity SceneGraph::createEntityInternal(const std::string& id) {
+        Entity entity;
+        entity.mHandle = mRegistry.create();
+        entity.mId = id;
+        entity.mScene = mScene;
+        entity.mSceneGraph = this;
+
+        return entity;
+    }
+
+    bool SceneGraph::destroyEntity(const std::string& id) {
+        if (!entityExists(id)) {
+            return false;
+        }
+
+        if (isRoot(id)) {
+            std::cerr << "Error: Cannot remove root node: " << id << std::endl;
+            return false;
+        }
+
+        auto node = getNode(id);
+        if (!node) {
+            return false;
+        }
+
+        auto parent = node->getParent();
+        if (parent) {
             parent->removeChild(node);
         }
 
-        // Re-parent children to this node's parent (or root if no parent)
-        auto parent = node->getParent();
-        if (!parent && rootNode) {
-            parent = rootNode; // If no parent, use root
-        }
-
-        for (auto& child : node->getChildren()) {
-            if (parent) {
-                parent->addChild(child);
+        auto children = node->getChildren();
+        for (auto& child : children) {
+            if (child) {
+                destroyEntity(child->getEntityId());
             }
         }
 
-        // Remove from nodes map
-        nodes.erase(entity);
-    }
-
-    bool SceneGraph::hasNode(Entity entity) const {
-        return nodes.find(entity) != nodes.end();
-    }
-
-    bool SceneGraph::isRootNode(Entity entity) const {
-        auto node = getNode(entity);
-        return node && node->isRoot();
-    }
-
-    bool SceneGraph::isActive(Entity entity) const {
-        auto node = getNode(entity);
-        return node && node->isActive();
-    }
-
-    void SceneGraph::setParent(Entity child, Entity parent) {
-        auto childNode = getNode(child);
-        auto parentNode = getNode(parent);
-
-        if (!childNode || !parentNode || child == parent) return;
-
-        // Cannot reparent root node
-        if (childNode->isRoot()) return;
-
-        // Check for circular dependency
-        if (isDescendant(parent, child)) return;
-
-        // Remove from current parent
-        if (auto currentParent = childNode->getParent()) {
-            currentParent->removeChild(childNode);
+        if (node->getEntity().isValid()) {
+            mRegistry.destroy(node->getEntity().mHandle);
         }
 
-        // Set new parent
-        parentNode->addChild(childNode);
-    }
+        mNodes.erase(id);
 
-    void SceneGraph::removeParent(Entity child) {
-        auto childNode = getNode(child);
-        if (!childNode || childNode->isRoot()) return; // Cannot remove parent from root
-
-        if (auto parent = childNode->getParent()) {
-            parent->removeChild(childNode);
-            childNode->setParent(nullptr);
-
-            // Re-parent to root if available
-            if (rootNode && childNode != rootNode) {
-                rootNode->addChild(childNode);
-            }
-        }
-    }
-
-    void SceneGraph::addChild(Entity parent, Entity child) {
-        setParent(child, parent);
-    }
-
-    void SceneGraph::removeChild(Entity parent, Entity child) {
-        auto parentNode = getNode(parent);
-        auto childNode = getNode(child);
-
-        if (!parentNode || !childNode || childNode->isRoot()) return;
-
-        parentNode->removeChild(childNode);
-        childNode->setParent(nullptr);
-
-        // Re-parent to root if available and not already root
-        if (rootNode && childNode != rootNode) {
-            rootNode->addChild(childNode);
-        }
-    }
-
-    void SceneGraph::setPosition(Entity entity, const glm::vec3& position) {
-        auto node = getNode(entity);
-        if (node) {
-            node->setPosition(position);
-        }
-    }
-
-    void SceneGraph::setRotation(Entity entity, const glm::quat& rotation) {
-        auto node = getNode(entity);
-        if (node) {
-            node->setRotation(rotation);
-        }
-    }
-
-    void SceneGraph::setScale(Entity entity, const glm::vec3& scale) {
-        auto node = getNode(entity);
-        if (node) {
-            node->setScale(scale);
-        }
-    }
-
-    glm::vec3 SceneGraph::getPosition(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->getPosition() : glm::vec3(0.0f);
-    }
-
-    glm::quat SceneGraph::getRotation(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->getRotation() : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    }
-
-    glm::vec3 SceneGraph::getScale(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->getScale() : glm::vec3(1.0f);
-    }
-
-    glm::vec3 SceneGraph::getWorldPosition(Entity entity) const {
-        auto node = getNode(entity);
-        if (!node) return glm::vec3(0.0f);
-
-        glm::vec3 worldPos = node->getPosition();
-        auto parent = node->getParent();
-
-        while (parent) {
-            worldPos = parent->getPosition() + parent->getRotation() * (parent->getScale() * worldPos);
-            parent = parent->getParent();
-        }
-
-        return worldPos;
-    }
-
-    glm::quat SceneGraph::getWorldRotation(Entity entity) const {
-        auto node = getNode(entity);
-        if (!node) return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-
-        glm::quat worldRot = node->getRotation();
-        auto parent = node->getParent();
-
-        while (parent) {
-            worldRot = parent->getRotation() * worldRot;
-            parent = parent->getParent();
-        }
-
-        return worldRot;
-    }
-
-    glm::vec3 SceneGraph::getWorldScale(Entity entity) const {
-        auto node = getNode(entity);
-        if (!node) return glm::vec3(1.0f);
-
-        glm::vec3 worldScale = node->getScale();
-        auto parent = node->getParent();
-
-        while (parent) {
-            worldScale *= parent->getScale();
-            parent = parent->getParent();
-        }
-
-        return worldScale;
-    }
-
-    glm::mat4 SceneGraph::getWorldMatrix(Entity entity) const {
-        glm::vec3 worldPos = getWorldPosition(entity);
-        glm::quat worldRot = getWorldRotation(entity);
-        glm::vec3 worldScale = getWorldScale(entity);
-
-        glm::mat4 translation = glm::translate(glm::mat4(1.0f), worldPos);
-        glm::mat4 rotation = glm::mat4_cast(worldRot);
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f), worldScale);
-
-        return translation * rotation * scale;
-    }
-
-    Entity SceneGraph::getEntityByName(const std::string& name) const {
-        for (const auto& [entity, node] : nodes) {
-            if (node->getName() == name) {
-                return entity;
-            }
-        }
-        return Entity(); // Return invalid entity
-    }
-
-    Entity SceneGraph::getEntityById(const std::string& id) const {
-        for (const auto& [entity, node] : nodes) {
-            if (node->getId() == id) {
-                return entity;
-            }
-        }
-        return Entity(); // Return invalid entity
-    }
-
-    std::string SceneGraph::getEntityName(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->getName() : "";
-    }
-
-    std::string SceneGraph::getEntityId(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->getId() : "";
-    }
-
-    std::vector<Entity> SceneGraph::getChildren(Entity entity) const {
-        auto node = getNode(entity);
-        if (!node) return {};
-
-        std::vector<Entity> children;
-        for (const auto& child : node->getChildren()) {
-            children.push_back(child->getEntity());
-        }
-        return children;
-    }
-
-    Entity SceneGraph::getParent(Entity entity) const {
-        auto node = getNode(entity);
-        if (!node) return Entity(); // Return invalid entity
-
-        auto parent = node->getParent();
-        return parent ? parent->getEntity() : Entity(); // Return invalid entity if no parent
-    }
-
-    bool SceneGraph::isAncestor(Entity ancestor, Entity descendant) const {
-        return isDescendant(descendant, ancestor);
-    }
-
-    bool SceneGraph::isDescendant(Entity descendant, Entity ancestor) const {
-        auto node = getNode(descendant);
-        if (!node) return false;
-
-        auto parent = node->getParent();
-        while (parent) {
-            if (parent->getEntity() == ancestor) {
-                return true;
-            }
-            parent = parent->getParent();
-        }
-        return false;
-    }
-
-    std::vector<Entity> SceneGraph::getRootEntities() const {
-        std::vector<Entity> roots;
-        if (rootNode) {
-            roots.push_back(rootNode->getEntity());
-        }
-        return roots;
+        return true;
     }
 
     Entity SceneGraph::getRootEntity() const {
-        return rootNode ? rootNode->getEntity() : Entity();
+        if (mRootNode.second) {
+            return mRootNode.second->getEntity();
+        }
+        return Entity();
     }
 
-    void SceneGraph::markDirty(Entity entity) {
-        auto node = getNode(entity);
-        if (node) {
-            node->markDirty();
+    bool SceneGraph::isRoot(const std::string& id) const {
+        return mRootNode.first == id;
+    }
+
+    bool SceneGraph::isActive(const std::string& id) const {
+        auto node = getNode(id);
+        return node ? node->isActive() : false;
+    }
+
+    bool SceneGraph::entityExists(const std::string& id) {
+        return mNodes.find(id) != mNodes.end();
+    }
+
+    void SceneGraph::setParent(const std::string& childId, const std::string& parentId) {
+        if (childId == parentId || childId.empty() || parentId.empty()) {
+            return;
+        }
+
+        auto childNode = getNode(childId);
+        auto parentNode = getNode(parentId);
+
+        if (!childNode || !parentNode || childNode->isRoot()) {
+            return;
+        }
+
+        // Check for circular dependency
+        if (isDescendant(parentId, childId)) {
+            return;
+        }
+
+        // Remove from current parent
+        auto currentParent = childNode->getParent();
+        if (currentParent) {
+            currentParent->removeChild(childNode);
+        }
+
+        // Add to new parent
+        parentNode->addChild(childNode);
+    }
+
+    void SceneGraph::addChild(const std::string& parentId, const std::string& childId) {
+        setParent(childId, parentId);
+    }
+
+    void SceneGraph::removeChild(const std::string& parentId, const std::string& childId) {
+        auto parentNode = getNode(parentId);
+        auto childNode = getNode(childId);
+
+        if (!parentNode || !childNode) {
+            return;
+        }
+
+        parentNode->removeChild(childNode);
+
+        // Reparent to root if available
+        if (mRootNode.second && !childNode->isRoot()) {
+            mRootNode.second->addChild(childNode);
         }
     }
 
-    void SceneGraph::clearDirty(Entity entity) {
-        auto node = getNode(entity);
+    std::vector<Entity> SceneGraph::getChildren(const std::string& id) const {
+        std::vector<Entity> result;
+        auto node = getNode(id);
+
         if (node) {
-            node->clearDirty();
+            const auto& children = node->getChildren();
+            result.reserve(children.size());
+
+            for (const auto& child : children) {
+                if (child) {
+                    result.push_back(child->getEntity());
+                }
+            }
         }
+
+        return result;
     }
 
-    bool SceneGraph::isDirty(Entity entity) const {
-        auto node = getNode(entity);
-        return node ? node->isDirty() : false;
+    Entity SceneGraph::getParent(const std::string& id) const {
+        auto node = getNode(id);
+        if (node) {
+            auto parent = node->getParent();
+            if (parent) {
+                return parent->getEntity();
+            }
+        }
+        return Entity();
+    }
+
+    bool SceneGraph::isAncestor(const std::string& ancestorId, const std::string& descendantId) const {
+        if (ancestorId == descendantId) {
+            return false;
+        }
+
+        auto descendantNode = getNode(descendantId);
+        if (!descendantNode) {
+            return false;
+        }
+
+        auto current = descendantNode->getParent();
+        while (current) {
+            if (current->getEntityId() == ancestorId) {
+                return true;
+            }
+            current = current->getParent();
+        }
+
+        return false;
+    }
+
+    bool SceneGraph::isDescendant(const std::string& descendantId, const std::string& ancestorId) const {
+        return isAncestor(ancestorId, descendantId);
     }
 
     void SceneGraph::updateTransforms() {
-        for (auto& [entity, node] : nodes) {
-            if (node->isDirty()) {
-                node->clearDirty();
-            }
+        if (mRootNode.second) {
+            updateNodeTransforms(mRootNode.second);
+        }
+    }
+
+    void SceneGraph::updateNodeTransforms(std::shared_ptr<GraphNode> node) {
+        if (!node) {
+            return;
+        }
+
+        // Update this node's matrices
+        auto parent = node->getParent();
+        if (parent) {
+            node->updateWorldMatrix(parent->getWorldMatrix());
+        }
+        else {
+            node->updateWorldMatrix();
+        }
+
+        // Update children
+        for (auto& child : node->getChildren()) {
+            updateNodeTransforms(child);
         }
     }
 
     void SceneGraph::clear() {
-        nodes.clear();
-        rootNode.reset();
+        for (auto it = mNodes.begin(); it != mNodes.end();) {
+            if (!isRoot(it->first)) {
+                mRegistry.destroy(it->second->getEntity().mHandle);
+                it = mNodes.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+
+        if (mRootNode.second) {
+            auto rootChildren = mRootNode.second->getChildren();
+            rootChildren.clear();
+        }
     }
 
-    std::shared_ptr<GraphNode> SceneGraph::getNode(Entity entity) const {
-        auto it = nodes.find(entity);
-        return it != nodes.end() ? it->second : nullptr;
+    std::shared_ptr<GraphNode> SceneGraph::getNode(const std::string& id) const {
+        auto it = mNodes.find(id);
+        return it != mNodes.end() ? it->second : nullptr;
     }
 }

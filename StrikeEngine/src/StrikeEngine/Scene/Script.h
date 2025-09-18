@@ -61,7 +61,7 @@ namespace StrikeEngine {
         friend class ScriptComponent;
         friend class ScriptSystem;
 
-        void setEntity(entt::entity entity, Scene* scene);
+        void setEntity(const Entity& entity);
         void markStarted();
 
     private:

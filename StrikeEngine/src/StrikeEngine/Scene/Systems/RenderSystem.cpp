@@ -2,16 +2,19 @@
 #include "StrikeEngine/Graphics/Renderer/Renderer.h"
 #include <algorithm>
 #include "StrikeEngine/Scene/Entity.h"
+#include "StrikeEngine/Scene/World.h"
 
 namespace StrikeEngine {
 
     RenderSystem::RenderSystem() {}
 
-    void RenderSystem::onUpdate(Scene* scene) {
+    void RenderSystem::onUpdate(float dt) {
+        Scene* scene = World::get().getCurrentScene();
         if (!scene) return;
         collectCameras(scene);
         collectRenderables(scene);
-        //cullRenderables();
+        cullRenderables();
+        STRIKE_CORE_INFO(mCameraRenderData[0].renderItems.size());
         sortRenderables();
         submit();
     }
@@ -20,7 +23,6 @@ namespace StrikeEngine {
         
         auto& renderer = Renderer::get();
         
-        // Iterate through sorted cameras and submit to renderer
         for (const auto& cameraData : mCameraRenderData) {
             renderer.submit(cameraData);
         }
@@ -28,16 +30,17 @@ namespace StrikeEngine {
     }
 
     void RenderSystem::collectCameras(Scene* scene) {
+        
         if (!scene) return; // Safety check
         mCameraRenderData.clear();
-        auto view = scene->getRegistry().view<CameraComponent>();
-        for (auto entityHandle : view) {
-            Entity entity(*scene, entityHandle); // Pass scene by reference
-            auto& camera = view.get<CameraComponent>(entityHandle);
+        auto sceneGraph = scene->getSceneGraph();
+        auto entities = sceneGraph->getEntitiesWithComponent<CameraComponent>();
+        for (auto entity : entities) {
+            
             if (!entity.isActive()) continue;
-
-            glm::vec3 position = entity.getWorldPosition();
-            glm::quat rotation = entity.getWorldRotation();
+            auto& camera = entity.getComponent<CameraComponent>();
+            glm::vec3 position = entity.getPosition();
+            glm::quat rotation = entity.getRotation();
             CameraRenderData data{
                 &camera,
                 camera.getViewProjectionMatrix(position, rotation),
@@ -52,16 +55,18 @@ namespace StrikeEngine {
             [](const CameraRenderData& a, const CameraRenderData& b) {
                 return a.camera->getRenderOrder() < b.camera->getRenderOrder();
             });
+            
     }
 
     void RenderSystem::collectRenderables(Scene* scene) {
+        
         if (!scene) return; // Safety check
-        auto view = scene->getRegistry().view<RendererComponent>();
-        for (auto entityHandle : view) {
-            Entity entity(*scene, entityHandle); // Pass scene by reference
+        auto sceneGraph = scene->getSceneGraph();
+        auto entities = sceneGraph->getEntitiesWithComponent<RendererComponent>();
+        for (auto entity : entities) {
             if (!entity.isActive()) continue;
 
-            auto& renderer = view.get<RendererComponent>(entityHandle);
+            auto& renderer = entity.getComponent<RendererComponent>();
             if (!renderer.hasMesh()) continue;
 
             auto mesh = renderer.getMesh();

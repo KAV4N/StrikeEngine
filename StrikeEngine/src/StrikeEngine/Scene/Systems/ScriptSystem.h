@@ -1,18 +1,18 @@
 #pragma once
-
+#include "SystemECS.h"
 #include "StrikeEngine/Scene/Scene.h"
 
 namespace StrikeEngine {
 
-    class ScriptSystem {
+    class ScriptSystem :public SystemECS {
     public:
         ScriptSystem() = default;
         ~ScriptSystem() = default;
 
         // Update all scripts in the scene
-        void onUpdate(Scene* scene, float dt);
+        void onUpdate(float dt) override;
 
-        void onEvent(Scene* scene, Event& e);
+        void onEvent(Event& e);
 
     private:
         // Prevent copying

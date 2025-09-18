@@ -13,7 +13,7 @@ namespace StrikeEngine {
     class Scene;
 
     struct ScriptInfo {
-        std::string scriptType; // Now stores the class name instead of path
+        std::string scriptType; 
         bool isActive = true;
     };
 
@@ -25,10 +25,6 @@ namespace StrikeEngine {
         // Delete copy constructor and assignment operator
         ScriptComponent(const ScriptComponent&) = delete;
         ScriptComponent& operator=(const ScriptComponent&) = delete;
-
-        // Add move constructor and assignment operator
-        ScriptComponent(ScriptComponent&&) = default;
-        ScriptComponent& operator=(ScriptComponent&&) = default;
 
         // Static type name for registration
         static const std::string& getStaticTypeName() {
@@ -42,28 +38,17 @@ namespace StrikeEngine {
         }
 
         // Serialization methods
-        void deserialize(const std::unordered_map<std::string, std::string>& attributes, const pugi::xml_node& node) override;
+        void deserialize(const pugi::xml_node& node) override;
         void serialize(pugi::xml_node& node) const override;
 
         // Script management
         void addScript(const std::string& scriptType);
-        void removeScript(const std::string& scriptType);
+        void destroyScript(const std::string& scriptType);
         void clearScripts();
         bool hasScript(const std::string& scriptType) const;
-
-        // Script instance management
-        void createScriptInstance(const std::string& scriptType);
-        void destroyScriptInstance(const std::string& scriptType);
         void setScriptActive(const std::string& scriptType, bool active);
-        bool isScriptActive(const std::string& scriptType) const;
 
         // Script access
-        template<typename T>
-        T* getScript(const std::string& scriptType);
-
-        template<typename T>
-        const T* getScript(const std::string& scriptType) const;
-
         Script* getScriptByType(const std::string& scriptType);
         const Script* getScriptByType(const std::string& scriptType) const;
 
@@ -72,31 +57,20 @@ namespace StrikeEngine {
         std::unordered_map<std::string, std::unique_ptr<Script>>& getScriptInstances() { return mScriptInstances; }
         const std::unordered_map<std::string, std::unique_ptr<Script>>& getScriptInstances() const { return mScriptInstances; }
 
-        void createAllScriptInstances(entt::entity handle, Scene* scene);
-
+        bool isValid() { return mEntity; }
+    private:
+        friend class ScriptSystem;
+        // Script instance management
+        void createScriptInstance(const std::string& scriptType);
+        void destroyScriptInstance(const std::string& scriptType);
+        bool isScriptActive(const std::string& scriptType) const;
+        void destroyAllScriptInstances();
+        void asignEntityToScripts(const Entity& entity);
     private:
         std::unordered_map<std::string, ScriptInfo> mScriptInfos;
         std::unordered_map<std::string, std::unique_ptr<Script>> mScriptInstances;
 
-        void destroyAllScriptInstances();
+        Entity mEntity;
+
     };
-
-    // Template implementations
-    template<typename T>
-    T* ScriptComponent::getScript(const std::string& scriptType) {
-        auto it = mScriptInstances.find(scriptType);
-        if (it != mScriptInstances.end()) {
-            return dynamic_cast<T*>(it->second.get());
-        }
-        return nullptr;
-    }
-
-    template<typename T>
-    const T* ScriptComponent::getScript(const std::string& scriptType) const {
-        auto it = mScriptInstances.find(scriptType);
-        if (it != mScriptInstances.end()) {
-            return dynamic_cast<const T*>(it->second.get());
-        }
-        return nullptr;
-    }
 }

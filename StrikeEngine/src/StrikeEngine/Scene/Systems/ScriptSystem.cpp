@@ -1,23 +1,27 @@
 #include "ScriptSystem.h"
 #include "StrikeEngine/Scene/Components/ScriptComponent.h"
+#include "StrikeEngine/Scene/World.h"
+
 
 namespace StrikeEngine {
 
-    void ScriptSystem::onEvent(Scene* scene, Event& e) {
+    void ScriptSystem::onEvent(Event& e) {
         // Event handling logic here
     }
 
-    void ScriptSystem::onUpdate(Scene* scene, float dt) {
-        
-        if (!scene || !scene->isActive()) {
-            return;
-        }
+    void ScriptSystem::onUpdate(float dt) {
+        Scene* scene = World::get().getCurrentScene();
+        if (!scene) return;
 
-        auto scriptView = scene->getRegistry().view<ScriptComponent>();
+        auto sceneGraph = scene->getSceneGraph();
+        auto entities = sceneGraph->getEntitiesWithComponent<ScriptComponent>();
 
-        for (auto entityHandle : scriptView) {
-            Entity entity = scene->getEntity(entityHandle);
+        for (auto entity : entities) {
             auto& scriptComponent = entity.getComponent<ScriptComponent>();
+            if (!scriptComponent.isValid()) {
+                scriptComponent.mEntity = entity;
+                scriptComponent.asignEntityToScripts(entity);
+            }
 
             auto& scriptInstances = scriptComponent.getScriptInstances();
 

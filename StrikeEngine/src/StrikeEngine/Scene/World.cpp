@@ -61,8 +61,8 @@ namespace StrikeEngine {
         checkAndSwitchScene();
         if (mCurrentScene && mCurrentScene->isActive()) {
             mCurrentScene->onUpdate(dt);
-            mScriptSystem->onUpdate(mCurrentScene.get(), dt);
-            mRenderSystem->onUpdate(mCurrentScene.get());
+            mScriptSystem->onUpdate(dt);
+            mRenderSystem->onUpdate(dt);
         }
     }
 
@@ -76,14 +76,14 @@ namespace StrikeEngine {
     void World::onImGuiRender()
     {
         if (mCurrentScene && mCurrentScene->isActive()) {
-            mCurrentScene->onImGuiRender();
+            
         }
     }
 
     void World::onEvent(Event& e)
     {
         if (mCurrentScene && mCurrentScene->isActive()) {
-            mCurrentScene->onEvent(e);
+            mScriptSystem->onEvent(e);
         }
     }
 
