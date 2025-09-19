@@ -31,6 +31,8 @@ namespace StrikeEngine {
         mImGuiLayer = new ImGuiLayer();
         mImGuiLayer->onAttach();
 
+        Renderer::get().resize(mWindow.get()->getWidth(), mWindow.get()->getHeight());
+
         // Initialize timer with default values
         mTimer.setTargetFPS(60.0f);
     }
@@ -39,7 +41,6 @@ namespace StrikeEngine {
         if (mImGuiLayer) {
             delete mImGuiLayer;
         }
-        // Note: mWorld is not deleted as it's a singleton reference
     }
 
     void Application::createManagers() {

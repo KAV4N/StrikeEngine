@@ -6,9 +6,10 @@
 namespace StrikeEngine {
 
     World::World()
-        : mSceneLoader(std::make_unique<SceneLoader>()),
-        mRenderSystem(std::make_unique<RenderSystem>()),
-        mScriptSystem(std::make_unique<ScriptSystem>())
+        : mSceneLoader(std::make_unique<SceneLoader>())
+        , mRenderSystem(std::make_unique<RenderSystem>())
+        , mScriptSystem(std::make_unique<ScriptSystem>())
+        , mSkybox(std::make_unique<Skybox>())
     {
     }
 
@@ -68,7 +69,6 @@ namespace StrikeEngine {
 
     void World::onRender()
     {
-        // Call the renderer to execute the rendering pipeline
         auto& renderer = Renderer::get();
         renderer.render();
     }
@@ -76,7 +76,6 @@ namespace StrikeEngine {
     void World::onImGuiRender()
     {
         if (mCurrentScene && mCurrentScene->isActive()) {
-            
         }
     }
 

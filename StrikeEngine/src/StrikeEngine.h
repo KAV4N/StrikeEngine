@@ -15,7 +15,7 @@
 
 #include "StrikeEngine/Asset/Types/Mesh.h"
 #include "StrikeEngine/Asset/Types/Template.h"
-#include "StrikeEngine/Asset/Types/Texture2D.h"
+#include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Types/Shader.h"
 #include "StrikeEngine/Asset/Types/Material.h"
 

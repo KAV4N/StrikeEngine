@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include "Asset.h"
 #include "Shader.h"
-#include "Texture2D.h"
+#include "Texture.h"
 
 namespace StrikeEngine {
     class Material : public Asset {

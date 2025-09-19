@@ -1,5 +1,4 @@
 #pragma once
-
 #include "StrikeEngine/Asset/Types/Asset.h"
 #include "StrikeEngine/Asset/Loaders/AssetLoader.h"
 #include <filesystem>
@@ -20,6 +19,7 @@ namespace StrikeEngine {
     class Shader;
     class Template;
     class Texture2D;
+    class CubeMap;
     class Material;
 
     class AssetManager {
@@ -45,6 +45,11 @@ namespace StrikeEngine {
         std::shared_ptr<Texture2D> loadTexture(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<Texture2D> loadTextureAsync(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<Texture2D> getTexture(const std::string& id);
+
+        // CubeMap-specific methods
+        std::shared_ptr<CubeMap> loadCubeMap(const std::string& id, const std::filesystem::path& src);
+        std::shared_ptr<CubeMap> loadCubeMapAsync(const std::string& id, const std::filesystem::path& src);
+        std::shared_ptr<CubeMap> getCubeMap(const std::string& id);
 
         // Material-specific methods
         std::shared_ptr<Material> loadMaterial(const std::string& id, const std::filesystem::path& src);
@@ -85,5 +90,4 @@ namespace StrikeEngine {
         std::unordered_map<std::string, std::unique_ptr<AssetLoader>> mLoaders;
         mutable std::mutex mMutex;
     };
-
 }

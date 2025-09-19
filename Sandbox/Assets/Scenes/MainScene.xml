@@ -11,10 +11,12 @@
 		<template assetId="panzer" src="templates/tank2/tank.template"  srcModel="../Objects/Panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj" async="false"/>
 		<template assetId="cubeTemplate" src="templates/Cube/cube.template"  srcModel="../Objects/cubeModel.fbx" async="false"/>
 
+
+		<cubeMap assetId="skyboxMainScene" src="@/Assets/Textures/Skybox"/>
 		<!--<template assetId="penguin" src="templates/penguin/penguin.template"  srcModel="../Objects/penguin/PenguinBaseMesh.obj"/>-->
 	</assets>
 
-
+	<skybox cubeMapId ="skyboxMainScene"/>
 
 	<entities>
 		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="270.000,-0.000,0.000" scale="1,1,1">
@@ -33,7 +35,6 @@
 				<scriptComponent>
 					<script type="CameraMovement"  />
 				</scriptComponent>
-
 			</components>
 		</entity>
 

@@ -1,45 +1,33 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "StrikeEngine/Asset/Types/Texture.h"
+#include "StrikeEngine/Asset/Types/Shader.h"
 
-#define SKYBOX_SHADER "SkyboxShader"
-#define SKYBOX_TEXTURES_PATH "assets/textures/skybox/"
+#include <glm/glm.hpp>
+#include <memory>
 
 namespace StrikeEngine {
 
-    class Shader;
-
     class Skybox {
     public:
-        Skybox(
-            const std::vector<std::string>& faces = {
-                SKYBOX_TEXTURES_PATH "right.png", SKYBOX_TEXTURES_PATH "left.png",
-                SKYBOX_TEXTURES_PATH "top.png", SKYBOX_TEXTURES_PATH "bottom.png",
-                SKYBOX_TEXTURES_PATH "front.png", SKYBOX_TEXTURES_PATH "back.png"
-            }
-        );
+        Skybox();
         ~Skybox();
 
-        void bind();
-        void unbind();
-        inline GLuint getTextureId() const { return mTextureId; }
-        inline GLuint getVao() const { return mVao; }
-        inline Shader* getShader() const { return mSkyboxShader; }
-        void draw();
+        void bind() const;
+        void unbind() const;
+
+        std::shared_ptr<CubeMap> getCubeMap() const { return mCubeMap; }
+        std::shared_ptr<Shader> getShader() const { return mShader; }
+
+        void setCubeMap(std::shared_ptr<CubeMap> cubeMap) { mCubeMap = cubeMap; }
+        void setShader(std::shared_ptr<Shader> shader) { mShader = shader; }
 
     private:
-        void setupShader();
-        void loadSkybox();
-        void setupSkybox();
+        void setupCube();
 
-        std::vector<std::string> mFaces;
-        GLuint mTextureId;
-        GLuint mVao, mVbo, mEbo;
-        Shader* mSkyboxShader;
-        GLuint mNumIndices;
+        std::shared_ptr<CubeMap> mCubeMap;
+        std::shared_ptr<Shader> mShader;
+        GLuint mVAO;
+        GLuint mVBO;
     };
-
 }

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <entt/entt.hpp>
 #include <memory>
 #include <string>
@@ -9,6 +10,7 @@
 #include "StrikeEngine/Events/Event.h"
 #include "Systems/RenderSystem.h"
 #include "Systems/ScriptSystem.h"
+#include "StrikeEngine/Graphics/Skybox.h"
 
 namespace StrikeEngine {
 
@@ -17,7 +19,6 @@ namespace StrikeEngine {
 
     class World final {
     public:
-        // Singleton access
         static World& get() {
             static World instance;
             return instance;
@@ -28,11 +29,12 @@ namespace StrikeEngine {
         Scene* getCurrentScene() const { return mCurrentScene.get(); }
         bool isSceneLoading() const;
 
-        // Update methods
         void update(float dt);
         void onRender();
         void onImGuiRender();
         void onEvent(Event& e);
+
+        Skybox* getSkybox() const { return mSkybox.get(); }
 
     private:
         World();
@@ -51,5 +53,7 @@ namespace StrikeEngine {
 
         std::unique_ptr<RenderSystem> mRenderSystem;
         std::unique_ptr<ScriptSystem> mScriptSystem;
+
+        std::unique_ptr<Skybox> mSkybox;
     };
 }
