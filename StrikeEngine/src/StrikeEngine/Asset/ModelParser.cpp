@@ -343,6 +343,11 @@ namespace StrikeEngine {
         );
     }
 
+    float ModelParser::normalizeAngle(float angle) {
+        angle = fmod(angle, 360.0f);
+        return angle < 0.0f ? angle + 360.0f : angle;
+    }
+
     void ModelParser::decomposeTransform(const glm::mat4& transform, glm::vec3& position, glm::vec3& rotation, glm::vec3& scale) {
         position = glm::vec3(transform[3]);
         scale.x = glm::length(glm::vec3(transform[0]));
@@ -355,6 +360,7 @@ namespace StrikeEngine {
         rotMat[2] /= scale.z;
         rotMat[3] = glm::vec4(0, 0, 0, 1);
 
+
         rotation.y = asin(-rotMat[0][2]);
         if (cos(rotation.y) != 0) {
             rotation.x = atan2(rotMat[1][2], rotMat[2][2]);
@@ -364,6 +370,10 @@ namespace StrikeEngine {
             rotation.x = atan2(-rotMat[2][1], rotMat[1][1]);
             rotation.z = 0;
         }
+        rotation = glm::degrees(rotation);
+        rotation.x = normalizeAngle(rotation.x);
+        rotation.y = normalizeAngle(rotation.y);
+        rotation.z = normalizeAngle(rotation.z);
     }
 
     void ModelParser::saveMeshToXml(const Mesh& mesh, const std::filesystem::path& templateDir) {
@@ -590,9 +600,9 @@ namespace StrikeEngine {
 
         std::stringstream rotStream;
         rotStream << std::fixed << std::setprecision(3)
-            << glm::degrees(entity->rotation.x) << ","
-            << glm::degrees(entity->rotation.y) << ","
-            << glm::degrees(entity->rotation.z);
+            << entity->rotation.x << ","
+            << entity->rotation.y << ","
+            << entity->rotation.z;
         entityNode.append_attribute("rotation") = rotStream.str().c_str();
 
         std::stringstream scaleStream;

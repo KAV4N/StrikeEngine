@@ -53,7 +53,7 @@ namespace StrikeEngine {
         void saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir);
         void saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc);
         void writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity);
-
+        float normalizeAngle(float angle);
         void calculateMeshBounds(Mesh& mesh);
         void calculateSubMeshBounds(const Mesh& mesh, SubMeshData& subMeshData);
         void combineMeshes(const std::vector<unsigned int>& meshIndices, const aiScene* scene, Mesh& combinedMesh);

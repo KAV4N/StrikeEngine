@@ -47,9 +47,11 @@ namespace StrikeEngine {
 
     void Application::onEvent(Event& e) {
         EventDispatcher dispatcher(e);
+
+        dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
+
         dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
         dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
-
         // Let the World handle events
         mWorld->onEvent(e);
     }

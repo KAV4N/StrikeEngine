@@ -14,6 +14,11 @@
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
 #include "StrikeEngine/Asset/Types/Mesh.h"
+#include "StrikeEngine/Asset/Types/Template.h"
+#include "StrikeEngine/Asset/Types/Texture2D.h"
+#include "StrikeEngine/Asset/Types/Shader.h"
+#include "StrikeEngine/Asset/Types/Material.h"
+
 #include "StrikeEngine/Asset/ModelParser.h"
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Asset/AssetManager.h"

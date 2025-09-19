@@ -10,7 +10,8 @@ namespace StrikeEngine {
     }
 
 
-    void Template::instantiate(Scene& scene, Entity parentEntity, const std::string& idPrefix) {
+    void Template::instantiate(Entity parentEntity) {
+
         if (getLoadingState() != AssetLoadingState::Ready) {
             throw std::runtime_error("Template not loaded: " + getId());
         }
@@ -20,7 +21,10 @@ namespace StrikeEngine {
             throw std::runtime_error("Invalid template format: " + getId());
         }
 
-        createEntities(scene, templateNode.child("entities"), parentEntity, idPrefix);
+        Scene* scene = parentEntity.getScene();
+        std::string idPrefix = parentEntity.getId();
+
+        createEntities(*scene, templateNode.child("entities"), parentEntity, idPrefix);
     }
 
     void Template::createEntities(Scene& scene, const pugi::xml_node& entitiesNode, Entity parentEntity, const std::string& idPrefix) {

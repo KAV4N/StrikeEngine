@@ -3,6 +3,7 @@
 #include "strikepch.h"
 #include "StrikeEngine/Core/Core.h"
 
+
 namespace StrikeEngine {
 
     enum class CursorMode {
@@ -16,7 +17,8 @@ namespace StrikeEngine {
         WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
         KeyPressed, KeyReleased, KeyTyped,
-        MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+        MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
+        User
     };
 
     enum EventCategory {
@@ -25,7 +27,8 @@ namespace StrikeEngine {
         EventCategoryInput = BIT(1),
         EventCategoryKeyboard = BIT(2),
         EventCategoryMouse = BIT(3),
-        EventCategoryMouseButton = BIT(4)
+        EventCategoryMouseButton = BIT(4),
+        EventCategoryUser = BIT(5) 
     };
 
 #define EVENT_CLASS_TYPE(type) static EventType getStaticType() { return EventType::##type; }\
@@ -74,4 +77,6 @@ namespace StrikeEngine {
     inline std::string format_as(const Event& e) {
         return e.toString();
     }
+
+
 }

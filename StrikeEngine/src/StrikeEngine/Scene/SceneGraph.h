@@ -23,14 +23,23 @@ namespace StrikeEngine {
         Entity getEntity() const { return mEntity; }
 
         const glm::vec3& getPosition() const { return mPosition; }
+        float getPositionX() const { return mPosition.x; }
+        float getPositionY() const { return mPosition.y; }
+        float getPositionZ() const { return mPosition.z; }
+
         const glm::quat& getRotation() const { return mRotation; }
+        glm::vec3 getEulerRotation();
+        float getRotationX() { return getEulerRotation().x; }
+        float getRotationY() { return getEulerRotation().y; }
+        float getRotationZ() { return getEulerRotation().z; }
+
         const glm::vec3& getScale() const { return mScale; }
+        float getScaleX() const { return mScale.x; }
+        float getScaleY() const { return mScale.y; }
+        float getScaleZ() const { return mScale.z; }
 
         const glm::mat4& getLocalMatrix() const { return mLocalMatrix; }
         const glm::mat4& getWorldMatrix() const { return mWorldMatrix; }
-
-        glm::vec3 getEulerRotation();
-        void setEulerRotation(const glm::vec3& eulerAngles);
 
         std::shared_ptr<GraphNode> getParent() const { return mParent.lock(); }
         const std::vector<std::shared_ptr<GraphNode>>& getChildren() const { return mChildren; }
@@ -40,12 +49,36 @@ namespace StrikeEngine {
 
         // Mutators
         void setPosition(const glm::vec3& pos) { mPosition = pos; mIsDirty = true; }
+        void setPositionX(float x) { mPosition.x = x; mIsDirty = true; }
+        void setPositionY(float y) { mPosition.y = y; mIsDirty = true; }
+        void setPositionZ(float z) { mPosition.z = z; mIsDirty = true; }
+        void move(const glm::vec3& offset) { mPosition += offset; mIsDirty = true; }
+        void moveX(float x) { mPosition.x += x; mIsDirty = true; }
+        void moveY(float y) { mPosition.y += y; mIsDirty = true; }
+        void moveZ(float z) { mPosition.z += z; mIsDirty = true; }
+
         void setRotation(const glm::quat& rot) { mRotation = rot; mIsDirty = true; }
+        void setEulerRotation(const glm::vec3& eulerAngles);
+        void setRotationX(float angleDegrees);
+        void setRotationY(float angleDegrees);
+        void setRotationZ(float angleDegrees);
+        void rotate(const glm::quat& rotation) { mRotation = glm::normalize(rotation * mRotation); mIsDirty = true; }
+        void rotateEuler(const glm::vec3& anglesDegrees);
+        void rotateX(float angleDegrees);
+        void rotateY(float angleDegrees);
+        void rotateZ(float angleDegrees);
+
         void setScale(const glm::vec3& scl) { mScale = scl; mIsDirty = true; }
+        void setScaleX(float x) { mScale.x = x; mIsDirty = true; }
+        void setScaleY(float y) { mScale.y = y; mIsDirty = true; }
+        void setScaleZ(float z) { mScale.z = z; mIsDirty = true; }
+        void scaleBy(const glm::vec3& factor) { mScale *= factor; mIsDirty = true; }
+        void scaleByX(float x) { mScale.x *= x; mIsDirty = true; }
+        void scaleByY(float y) { mScale.y *= y; mIsDirty = true; }
+        void scaleByZ(float z) { mScale.z *= z; mIsDirty = true; }
 
         void setActive(bool active) { mIsActive = active; }
         const std::string& getEntityId() const { return mEntity.getId(); }
-
 
     private:
         friend class SceneGraph;
@@ -83,7 +116,7 @@ namespace StrikeEngine {
         ~SceneGraph() = default;
 
         // Entity creation and retrieval
-        void createRootEntity(const std::string& rootId, const std::string& rootName = "");
+        
         Entity createEntity(const std::string& id, const std::string& parentId = "");
         Entity getEntity(const std::string& id);
         std::vector<Entity> getEntitiesByName(const std::string& name) const;
@@ -128,6 +161,7 @@ namespace StrikeEngine {
         bool isDescendant(const std::string& descendantId, const std::string& ancestorId) const;
 
         // Update operations
+        // Update operations
         void updateTransforms();
 
         // Management
@@ -141,6 +175,7 @@ namespace StrikeEngine {
         std::shared_ptr<GraphNode> getNode(const std::string& id) const;
         void updateNodeTransforms(std::shared_ptr<GraphNode> node);
         Entity createEntityInternal(const std::string& id);
+        void createRootEntity(const std::string& rootId, const std::string& rootName = "");
 
     private:
         entt::registry mRegistry;

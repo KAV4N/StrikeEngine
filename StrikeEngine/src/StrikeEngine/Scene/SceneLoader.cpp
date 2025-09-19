@@ -19,12 +19,12 @@ namespace StrikeEngine {
             std::cerr << "Cannot load scene: another scene is currently being loaded" << std::endl;
             return nullptr;
         }
+
         mIsLoading = true;
         auto scene = loadSceneInternal(filePath);
         mIsLoading = false;
 
         processPendingTemplates();
-
         return scene;
     }
 
@@ -33,8 +33,8 @@ namespace StrikeEngine {
             std::cerr << "Cannot load scene asynchronously: another scene is currently being loaded" << std::endl;
             return std::future<std::unique_ptr<Scene>>();
         }
-        mIsLoading = true;
 
+        mIsLoading = true;
         return std::async(std::launch::async, [this, filePath]() {
             auto scene = loadSceneInternal(filePath);
             mIsLoading = false;
@@ -50,47 +50,7 @@ namespace StrikeEngine {
         processPendingTemplates();
     }
 
-    void SceneLoader::processPendingTemplates() {
-        std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
-        auto it = mPendingTemplates.begin();
-        while (it != mPendingTemplates.end()) {
-            auto mesh = mAssetManager.getMesh("mesh789");
- 
-            auto templateAsset = mAssetManager.getTemplate(it->templateId);
-            if (templateAsset && templateAsset->isReady()) {
-                // Create parent entity for the template
-                Entity templateParent = Entity::create(it->scene, it->id);
-                templateParent.setName(it->name);
-                templateParent.setPosition(it->position);
-                templateParent.setEulerRotation(it->rotation);
-                templateParent.setScale(it->scale);
-
-                if (it->parent.isValid()) {
-                    templateParent.setParent(it->parent);
-                }
-
-                // Instantiate the template
-                templateAsset->instantiate(*it->scene, templateParent, it->idPrefix);
-
-                std::cout << "Instantiated pending template: " << it->templateId << " as entity: " << it->id << " (" << it->name << ")" << std::endl;
-
-                // Remove from pending list
-                it = mPendingTemplates.erase(it);
-            }
-            else {
-                ++it;
-            }
-        }
-    }
-
-    void SceneLoader::addPendingTemplateInstantiation(const std::string& templateId, const std::string& id, const std::string& name,
-        const std::string& idPrefix, const glm::vec3& position, const glm::vec3& rotation,
-        const glm::vec3& scale, Entity parent, Scene* scene, const pugi::xml_node& entityNode) {
-        std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
-        mPendingTemplates.emplace_back(PendingTemplateInstantiation{
-            templateId, id, name, idPrefix, position, rotation, scale, parent, scene, entityNode
-            });
-    }
+    // ========== Core Loading Functions ==========
 
     std::unique_ptr<Scene> SceneLoader::loadSceneInternal(const std::filesystem::path& filePath) {
         if (!std::filesystem::exists(filePath)) {
@@ -100,7 +60,6 @@ namespace StrikeEngine {
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(filePath.string().c_str());
-
         if (!result) {
             std::cerr << "Failed to parse scene file: " << filePath << " - " << result.description() << std::endl;
             return nullptr;
@@ -112,47 +71,40 @@ namespace StrikeEngine {
         }
 
         pugi::xml_node sceneNode = doc.child("scene");
-
-        // Extract scene information
         std::string sceneId = sceneNode.attribute("sceneId").as_string();
         if (sceneId.empty()) {
             std::cerr << "Scene must have a sceneId attribute" << std::endl;
             return nullptr;
         }
 
-        // Create the scene
+        // Create scene and setup root entity
         auto scene = std::make_unique<Scene>(sceneId, filePath, sceneId);
-
-        // Parse root entity transform
         Entity rootEntity = scene->getRootEntity();
-        std::string position = sceneNode.attribute("position").as_string("0.0,0.0,0.0");
-        std::string rotation = sceneNode.attribute("rotation").as_string("0.0,0.0,0.0");
-        std::string scale = sceneNode.attribute("scale").as_string("1.0,1.0,1.0");
 
-        rootEntity.setPosition(parseVec3(position));
-        rootEntity.setEulerRotation(parseVec3(rotation));
-        rootEntity.setScale(parseVec3(scale, glm::vec3(1.0f)));
+        // Parse root entity data and apply it
+        EntityData rootData;
+        rootData.position = parseVec3(sceneNode.attribute("position").as_string("0.0,0.0,0.0"));
+        rootData.rotation = parseVec3(sceneNode.attribute("rotation").as_string("0.0,0.0,0.0"));
+        rootData.scale = parseVec3(sceneNode.attribute("scale").as_string("1.0,1.0,1.0"), glm::vec3(1.0f));
+        rootData.componentsNode = sceneNode.child("components");
 
-        // Parse root entity components
-        pugi::xml_node rootComponentsNode = sceneNode.child("components");
-        if (rootComponentsNode) {
-            parseEntityComponents(rootEntity, rootComponentsNode);
+        applyEntityTransform(rootEntity, rootData);
+        if (rootData.componentsNode) {
+            parseEntityComponents(rootEntity, rootData.componentsNode);
         }
 
-        // Get the base path (directory of the scene file)
-        std::filesystem::path basePath = filePath.parent_path();
-
-        // Load assets first
+        // Load assets
         pugi::xml_node assetsNode = sceneNode.child("assets");
         if (assetsNode) {
-            loadAssetsFromXML(assetsNode, scene.get(), basePath);
+            loadAssetsFromXML(assetsNode, scene.get(), filePath.parent_path());
         }
 
-        // Parse entities
+        // Process all entities
         pugi::xml_node entitiesNode = sceneNode.child("entities");
         if (entitiesNode) {
             for (pugi::xml_node entityNode : entitiesNode.children("entity")) {
-                parseEntity(*scene, entityNode, rootEntity);
+                EntityData entityData = parseEntityData(entityNode);
+                processEntity(*scene, entityData, rootEntity, "");
             }
         }
 
@@ -164,114 +116,60 @@ namespace StrikeEngine {
         mAssetManager.deserialize(assetsNode, scene->getSceneAssets(), basePath);
     }
 
-    void SceneLoader::parseEntity(Scene& scene, const pugi::xml_node& entityNode, Entity parent, const std::string& idPrefix) {
-        std::string templateId = entityNode.attribute("templateId").as_string();
-        if (!templateId.empty()) {
-            // Handle template instantiation
-            instantiateTemplate(scene, entityNode, parent, idPrefix);
-            return;
-        }
+    // ========== Entity Data Parsing ==========
 
-        // Extract entity attributes
-        std::string id = entityNode.attribute("id").as_string();
-        std::string name = entityNode.attribute("name").as_string();
+    SceneLoader::EntityData SceneLoader::parseEntityData(const pugi::xml_node& entityNode) {
+        EntityData data;
+        data.id = entityNode.attribute("id").as_string();
+        data.name = entityNode.attribute("name").as_string();
+        data.templateId = entityNode.attribute("templateId").as_string();
+        data.position = parseVec3(entityNode.attribute("position").as_string("0.0,0.0,0.0"));
+        data.rotation = parseVec3(entityNode.attribute("rotation").as_string("0.0,0.0,0.0"));
+        data.scale = parseVec3(entityNode.attribute("scale").as_string("1.0,1.0,1.0"), glm::vec3(1.0f));
+        data.componentsNode = entityNode.child("components");
+        data.childrenNode = entityNode.child("children");
+        return data;
+    }
 
-        if (id.empty()) {
+    void SceneLoader::processEntity(Scene& scene, const EntityData& data, Entity parent, const std::string& idPrefix) {
+        if (data.id.empty()) {
             std::cerr << "Entity missing id attribute" << std::endl;
             return;
         }
 
-        // Apply idPrefix if provided
-        std::string prefixedId = idPrefix.empty() ? id : idPrefix + "." + id;
-        if (name.empty()) {
-            name = id; // Use id as name if name is not provided
-        }
-
-        // Create entity
-        Entity entity = Entity::create(&scene, prefixedId);
-        entity.setName(name);
-
-        // Set parent if provided
-        if (parent.isValid()) {
-            entity.setParent(parent);
-        }
-
-        // Parse transform
-        std::string position = entityNode.attribute("position").as_string("0.0,0.0,0.0");
-        std::string rotation = entityNode.attribute("rotation").as_string("0.0,0.0,0.0");
-        std::string scale = entityNode.attribute("scale").as_string("1.0,1.0,1.0");
-
-        entity.setPosition(parseVec3(position));
-        entity.setEulerRotation(parseVec3(rotation));
-        entity.setScale(parseVec3(scale, glm::vec3(1.0f)));
-
-        // Parse components
-        pugi::xml_node componentsNode = entityNode.child("components");
-        if (componentsNode) {
-            parseEntityComponents(entity, componentsNode);
-        }
-
-        // Parse children recursively
-        pugi::xml_node childrenNode = entityNode.child("children");
-        if (childrenNode) {
-            for (pugi::xml_node childEntityNode : childrenNode.children("entity")) {
-                parseEntity(scene, childEntityNode, entity, prefixedId);
-            }
-        }
-
-        std::cout << "Created entity: " << prefixedId << " (" << name << ")" << std::endl;
-    }
-
-    void SceneLoader::instantiateTemplate(Scene& scene, const pugi::xml_node& entityNode, Entity parent, const std::string& idPrefix) {
-        std::string templateId = entityNode.attribute("templateId").as_string();
-        std::string id = entityNode.attribute("id").as_string();
-        std::string name = entityNode.attribute("name").as_string();
-
-        if (id.empty()) {
-            std::cerr << "Template entity missing id attribute" << std::endl;
-            return;
-        }
-
-        if (name.empty()) {
-            name = id;
-        }
-
-        // Apply idPrefix if provided
-        std::string prefixedId = idPrefix.empty() ? id : idPrefix + "." + id;
-
-        // Parse transform
-        std::string position = entityNode.attribute("position").as_string("0.0,0.0,0.0");
-        std::string rotation = entityNode.attribute("rotation").as_string("0.0,0.0,0.0");
-        std::string scale = entityNode.attribute("scale").as_string("1.0,1.0,1.0");
-
-        glm::vec3 localPos = parseVec3(position);
-        glm::vec3 localRot = parseVec3(rotation);
-        glm::vec3 localScale = parseVec3(scale, glm::vec3(1.0f));
-
-        // Check if template is ready
-        auto templateAsset = mAssetManager.getTemplate(templateId);
-        if (templateAsset && templateAsset->isReady()) {
-            // Create parent entity for the template
-            Entity templateParent = Entity::create(&scene, prefixedId);
-            templateParent.setName(name);
-
-            templateParent.setPosition(localPos);
-            templateParent.setEulerRotation(localRot);
-            templateParent.setScale(localScale);
-
-            if (parent.isValid()) {
-                templateParent.setParent(parent);
-            }
-
-            // Instantiate the template
-            templateAsset->instantiate(scene, templateParent, prefixedId);
-
-            std::cout << "Instantiated template: " << templateId << " as entity: " << prefixedId << " (" << name << ")" << std::endl;
+        if (data.isTemplate()) {
+            handleTemplateEntity(scene, data, parent, idPrefix);
         }
         else {
-            addPendingTemplateInstantiation(templateId, prefixedId, name, idPrefix, localPos, localRot, localScale, parent, &scene, entityNode);
-            std::cout << "Template " << templateId << " not ready, queued for instantiation as entity: " << prefixedId << std::endl;
+            std::string prefixedId = buildPrefixedId(data.id, idPrefix);
+            Entity entity = createEntityFromData(scene, data, prefixedId);
+
+            if (parent.isValid()) {
+                entity.setParent(parent);
+            }
+
+            processEntityChildren(scene, data, entity, prefixedId);
+            logEntityCreation(prefixedId, data.getDisplayName());
         }
+    }
+
+    Entity SceneLoader::createEntityFromData(Scene& scene, const EntityData& data, const std::string& prefixedId) {
+        Entity entity = Entity::create(&scene, prefixedId);
+        entity.setName(data.getDisplayName());
+
+        applyEntityTransform(entity, data);
+
+        if (data.componentsNode) {
+            parseEntityComponents(entity, data.componentsNode);
+        }
+
+        return entity;
+    }
+
+    void SceneLoader::applyEntityTransform(Entity& entity, const EntityData& data) {
+        entity.setPosition(data.position);
+        entity.setEulerRotation(data.rotation);
+        entity.setScale(data.scale);
     }
 
     void SceneLoader::parseEntityComponents(Entity& entity, const pugi::xml_node& componentsNode) {
@@ -288,10 +186,75 @@ namespace StrikeEngine {
         }
     }
 
-    glm::vec3 SceneLoader::parseVec3(const std::string& str, const glm::vec3& defaultValue) {
-        if (str.empty()) {
-            return defaultValue;
+    void SceneLoader::processEntityChildren(Scene& scene, const EntityData& data, Entity parent, const std::string& prefixedId) {
+        if (!data.childrenNode) return;
+
+        for (pugi::xml_node childEntityNode : data.childrenNode.children("entity")) {
+            EntityData childData = parseEntityData(childEntityNode);
+            processEntity(scene, childData, parent, prefixedId);
         }
+    }
+
+    // ========== Template Handling ==========
+
+    void SceneLoader::handleTemplateEntity(Scene& scene, const EntityData& data, Entity parent, const std::string& idPrefix) {
+        std::string prefixedId = buildPrefixedId(data.id, idPrefix);
+
+        auto templateAsset = mAssetManager.getTemplate(data.templateId);
+        if (templateAsset && templateAsset->isReady()) {
+            instantiateReadyTemplate(scene, data, prefixedId, parent);
+        }
+        else {
+            queuePendingTemplate(data, prefixedId, idPrefix, parent, &scene);
+        }
+    }
+
+    void SceneLoader::instantiateReadyTemplate(Scene& scene, const EntityData& data, const std::string& prefixedId, Entity parent) {
+        Entity templateParent = createEntityFromData(scene, data, prefixedId);
+
+        if (parent.isValid()) {
+            templateParent.setParent(parent);
+        }
+
+        processEntityChildren(scene, data, templateParent, prefixedId);
+
+        auto templateAsset = mAssetManager.getTemplate(data.templateId);
+        templateAsset->instantiate(templateParent);
+
+        logTemplateStatus(data.templateId, prefixedId, true);
+    }
+
+    void SceneLoader::queuePendingTemplate(const EntityData& data, const std::string& prefixedId,
+        const std::string& idPrefix, Entity parent, Scene* scene) {
+        std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
+        mPendingTemplates.emplace_back(PendingTemplate{ data, prefixedId, idPrefix, parent, scene });
+        logTemplateStatus(data.templateId, prefixedId, false);
+    }
+
+    void SceneLoader::processPendingTemplates() {
+        std::lock_guard<std::mutex> lock(mPendingTemplatesMutex);
+
+        auto it = mPendingTemplates.begin();
+        while (it != mPendingTemplates.end()) {
+            auto templateAsset = mAssetManager.getTemplate(it->entityData.templateId);
+            if (templateAsset && templateAsset->isReady()) {
+                instantiateReadyTemplate(*it->scene, it->entityData, it->prefixedId, it->parent);
+                it = mPendingTemplates.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+
+    // ========== Utility Functions ==========
+
+    std::string SceneLoader::buildPrefixedId(const std::string& id, const std::string& idPrefix) {
+        return idPrefix.empty() ? id : idPrefix + "." + id;
+    }
+
+    glm::vec3 SceneLoader::parseVec3(const std::string& str, const glm::vec3& defaultValue) {
+        if (str.empty()) return defaultValue;
 
         std::istringstream iss(str);
         std::string token;
@@ -308,7 +271,6 @@ namespace StrikeEngine {
             }
             index++;
         }
-
         return result;
     }
 
@@ -329,7 +291,21 @@ namespace StrikeEngine {
             std::cerr << "Scene node must have 'sceneId' attribute" << std::endl;
             return false;
         }
-
         return true;
     }
+
+    void SceneLoader::logEntityCreation(const std::string& prefixedId, const std::string& name, bool isTemplate) {
+        const char* entityType = isTemplate ? "template entity" : "entity";
+        std::cout << "Created " << entityType << ": " << prefixedId << " (" << name << ")" << std::endl;
+    }
+
+    void SceneLoader::logTemplateStatus(const std::string& templateId, const std::string& prefixedId, bool instantiated) {
+        if (instantiated) {
+            std::cout << "Instantiated template: " << templateId << " as entity: " << prefixedId << std::endl;
+        }
+        else {
+            std::cout << "Template " << templateId << " not ready, queued for instantiation as entity: " << prefixedId << std::endl;
+        }
+    }
+
 }

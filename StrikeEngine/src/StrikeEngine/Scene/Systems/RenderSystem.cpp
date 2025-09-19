@@ -14,7 +14,7 @@ namespace StrikeEngine {
         collectCameras(scene);
         collectRenderables(scene);
         cullRenderables();
-        STRIKE_CORE_INFO(mCameraRenderData[0].renderItems.size());
+        //STRIKE_CORE_INFO(mCameraRenderData[0].renderItems.size());
         sortRenderables();
         submit();
     }

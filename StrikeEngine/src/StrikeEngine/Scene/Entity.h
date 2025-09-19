@@ -52,15 +52,50 @@ namespace StrikeEngine {
         template<typename T, typename... Args>
         T& getOrAddComponent(Args&&... args);
 
+        // Position controls
         void setPosition(const glm::vec3& position);
+        void setPositionX(float x);
+        void setPositionY(float y);
+        void setPositionZ(float z);
+        void move(const glm::vec3& offset);
+        void moveX(float x);
+        void moveY(float y);
+        void moveZ(float z);
+        glm::vec3 getPosition() const;
+        float getPositionX() const;
+        float getPositionY() const;
+        float getPositionZ() const;
+
+        // Rotation controls
         void setRotation(const glm::quat& rotation);
         void setEulerRotation(const glm::vec3& rotation);
-        void setScale(const glm::vec3& scale);
-
-        glm::vec3 getPosition() const;
+        void setRotationX(float angleDegrees);
+        void setRotationY(float angleDegrees);
+        void setRotationZ(float angleDegrees);
+        void rotate(const glm::quat& rotation);
+        void rotateEuler(const glm::vec3& anglesDegrees);
+        void rotateX(float angleDegrees);
+        void rotateY(float angleDegrees);
+        void rotateZ(float angleDegrees);
         glm::quat getRotation() const;
         glm::vec3 getEulerRotation() const;
+        float getRotationX() const;
+        float getRotationY() const;
+        float getRotationZ() const;
+
+        // Scale controls
+        void setScale(const glm::vec3& scale);
+        void setScaleX(float x);
+        void setScaleY(float y);
+        void setScaleZ(float z);
+        void scaleBy(const glm::vec3& factor);
+        void scaleByX(float x);
+        void scaleByY(float y);
+        void scaleByZ(float z);
         glm::vec3 getScale() const;
+        float getScaleX() const;
+        float getScaleY() const;
+        float getScaleZ() const;
 
         glm::mat4 getLocalMatrix() const;
         glm::mat4 getWorldMatrix() const;

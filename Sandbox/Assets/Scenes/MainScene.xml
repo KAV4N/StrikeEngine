@@ -17,7 +17,7 @@
 
 
 	<entities>
-		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="1,1,1">
+		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="270.000,-0.000,0.000" scale="1,1,1">
 			<components>
 				<camera
 					projectionType="perspective"
@@ -30,10 +30,10 @@
 					viewportWidth="1.0"
 					viewportHeight="1.0"
 				/>
-
 				<scriptComponent>
-					<script type="TestScript"  />
+					<script type="CameraMovement"  />
 				</scriptComponent>
+
 			</components>
 		</entity>
 

@@ -27,6 +27,41 @@ namespace StrikeEngine {
         mIsDirty = true;
     }
 
+    void GraphNode::setRotationX(float angleDegrees) {
+        glm::vec3 euler = getEulerRotation();
+        euler.x = normalizeAngle(angleDegrees);
+        setEulerRotation(euler);
+    }
+
+    void GraphNode::setRotationY(float angleDegrees) {
+        glm::vec3 euler = getEulerRotation();
+        euler.y = normalizeAngle(angleDegrees);
+        setEulerRotation(euler);
+    }
+
+    void GraphNode::setRotationZ(float angleDegrees) {
+        glm::vec3 euler = getEulerRotation();
+        euler.z = normalizeAngle(angleDegrees);
+        setEulerRotation(euler);
+    }
+
+    void GraphNode::rotateEuler(const glm::vec3& anglesDegrees) {
+        glm::vec3 currentEuler = getEulerRotation();
+        setEulerRotation(currentEuler + anglesDegrees);
+    }
+
+    void GraphNode::rotateX(float angleDegrees) {
+        rotateEuler(glm::vec3(angleDegrees, 0.0f, 0.0f));
+    }
+
+    void GraphNode::rotateY(float angleDegrees) {
+        rotateEuler(glm::vec3(0.0f, angleDegrees, 0.0f));
+    }
+
+    void GraphNode::rotateZ(float angleDegrees) {
+        rotateEuler(glm::vec3(0.0f, 0.0f, angleDegrees));
+    }
+
     void GraphNode::setParent(const std::shared_ptr<GraphNode>& newParent) {
         if (!mIsRootNode && newParent != shared_from_this()) {
             mParent = newParent;
@@ -36,7 +71,6 @@ namespace StrikeEngine {
 
     void GraphNode::addChild(const std::shared_ptr<GraphNode>& child) {
         if (child && child != shared_from_this()) {
-            // Check if child is already in the list
             auto it = std::find(mChildren.begin(), mChildren.end(), child);
             if (it == mChildren.end()) {
                 mChildren.push_back(child);
@@ -230,18 +264,15 @@ namespace StrikeEngine {
             return;
         }
 
-        // Check for circular dependency
         if (isDescendant(parentId, childId)) {
             return;
         }
 
-        // Remove from current parent
         auto currentParent = childNode->getParent();
         if (currentParent) {
             currentParent->removeChild(childNode);
         }
 
-        // Add to new parent
         parentNode->addChild(childNode);
     }
 
@@ -259,7 +290,6 @@ namespace StrikeEngine {
 
         parentNode->removeChild(childNode);
 
-        // Reparent to root if available
         if (mRootNode.second && !childNode->isRoot()) {
             mRootNode.second->addChild(childNode);
         }
@@ -330,7 +360,6 @@ namespace StrikeEngine {
             return;
         }
 
-        // Update this node's matrices
         auto parent = node->getParent();
         if (parent) {
             node->updateWorldMatrix(parent->getWorldMatrix());
@@ -339,7 +368,6 @@ namespace StrikeEngine {
             node->updateWorldMatrix();
         }
 
-        // Update children
         for (auto& child : node->getChildren()) {
             updateNodeTransforms(child);
         }

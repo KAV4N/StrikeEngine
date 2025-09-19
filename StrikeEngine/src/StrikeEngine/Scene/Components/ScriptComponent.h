@@ -53,7 +53,6 @@ namespace StrikeEngine {
         const Script* getScriptByType(const std::string& scriptType) const;
 
         // Get all scripts
-        const std::unordered_map<std::string, ScriptInfo>& getScriptInfos() const { return mScriptInfos; }
         std::unordered_map<std::string, std::unique_ptr<Script>>& getScriptInstances() { return mScriptInstances; }
         const std::unordered_map<std::string, std::unique_ptr<Script>>& getScriptInstances() const { return mScriptInstances; }
 
@@ -66,7 +65,9 @@ namespace StrikeEngine {
         bool isScriptActive(const std::string& scriptType) const;
         void destroyAllScriptInstances();
         void asignEntityToScripts(const Entity& entity);
+        const std::unordered_map<std::string, ScriptInfo>& getScriptInfos() const { return mScriptInfos; }
     private:
+
         std::unordered_map<std::string, ScriptInfo> mScriptInfos;
         std::unordered_map<std::string, std::unique_ptr<Script>> mScriptInstances;
 

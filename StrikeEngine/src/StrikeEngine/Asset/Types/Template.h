@@ -25,7 +25,7 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void instantiate(Scene& scene, Entity parentEntity, const std::string& idPrefix = "");
+        void instantiate(Entity parentEntity);
 
     private:
         void setTemplateDoc(const pugi::xml_document& doc);

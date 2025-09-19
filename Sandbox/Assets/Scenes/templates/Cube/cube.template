@@ -7,9 +7,9 @@
 		<material assetId="cubeModel.Material" src="Material.mat" />
 	</assets>
 	<entities>
-		<entity id="Cube_2" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+		<entity id="Cube_2" name="Cube" position="0.000,0.000,0.000" rotation="270.000,-0.000,0.000" scale="0.100,0.100,0.100">
 			<children>
-				<entity id="cubeModel.Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+				<entity id="cubeModel.Cube" name="Cube" position="0.000,0.000,0.000" rotation="270.000,-0.000,0.000" scale="0.100,0.100,0.100">
 					<components>
 						<renderer meshId="cubeModel.Cube" materialId="cubeModel.Material.001" />
 					</components>
