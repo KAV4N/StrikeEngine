@@ -19,7 +19,7 @@
 	<skybox cubeMapId ="skyboxMainScene"/>
 
 	<entities>
-		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="270.000,-0.000,0.000" scale="1,1,1">
+		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="90.000,-0.000,0.000" scale="1,1,1">
 			<components>
 				<camera
 					projectionType="perspective"
@@ -40,7 +40,7 @@
 
 
 
-		<entity id="tank4" name="tanker" templateId="tankModel2" position="0.000,-500.000,0.000" rotation="0.000,0.000,90.000" scale=".5,.5,.5">
+		<entity id="tank4" name="tanker" templateId="tankModel2" position="0.000,500.000,0.000" rotation="0.000,0.000,90.000" scale=".5,.5,.5">
 			<components>
 				<scriptComponent>
 					<script type="TestScript"  />
@@ -49,7 +49,7 @@
 		</entity>
 
 
-		<entity id="tank" name="tanker" templateId="panzer" position="0.000,-10.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
+		<entity id="tank" name="tanker" templateId="panzer" position="0.000,10.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
 
 		<!-- Textures 
 				<entity id="cube" name="tanker" templateId="cubeTemplate" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5"/>

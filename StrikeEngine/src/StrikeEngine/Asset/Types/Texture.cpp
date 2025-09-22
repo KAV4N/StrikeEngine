@@ -144,19 +144,15 @@ namespace StrikeEngine {
         glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
 
         for (unsigned int i = 0; i < 6; ++i) {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, static_cast<GLint>(mFormat),
-                mSize, mSize, 0, static_cast<GLenum>(mFormat), GL_UNSIGNED_BYTE, mData[i]);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
+                mSize, mSize, 0, GL_RGB, GL_UNSIGNED_BYTE, mData[i]);
         }
 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(mMinFilter));
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mMagFilter));
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, static_cast<GLint>(mWrapS));
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, static_cast<GLint>(mWrapT));
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, static_cast<GLint>(mWrapS));
-
-        if (mGenerateMipmaps) {
-            glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -170,7 +166,7 @@ namespace StrikeEngine {
 
     void CubeMap::bind(uint32_t slot) const {
         if (mRendererID != 0) {
-            glBindTextureUnit(slot, mRendererID);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
         }
     }
 
@@ -179,29 +175,7 @@ namespace StrikeEngine {
     }
 
     void CubeMap::setTextureData(unsigned char* data[6], uint32_t size, uint32_t channels) {
-        for (int i = 0; i < 6; ++i) {
-            mData[i] = data[i];
-        }
-        mSize = size;
-        mChannels = channels;
 
-        switch (channels) {
-        case 1:
-            mFormat = TextureFormat::RED;
-            break;
-        case 2:
-            mFormat = TextureFormat::RG;
-            break;
-        case 3:
-            mFormat = TextureFormat::RGB;
-            break;
-        case 4:
-            mFormat = TextureFormat::RGBA;
-            break;
-        default:
-            mFormat = TextureFormat::RGBA;
-            break;
-        }
     }
 
     pugi::xml_node CubeMap::toNode() const {

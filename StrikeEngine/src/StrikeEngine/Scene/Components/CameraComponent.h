@@ -11,23 +11,12 @@
 
 namespace StrikeEngine {
 
-    enum class ProjectionType {
-        PERSPECTIVE = 0,
-        ORTHOGRAPHIC = 1
-    };
 
-    struct Rect {
-        float x;
-        float y;
-        float width;
-        float height;
-    };
 
     class CameraComponent : public Component {
     public:
         CameraComponent();
         CameraComponent(float fov, float aspectRatio, float nearPlane, float farPlane);
-        CameraComponent(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 
         // Static type name for registration
         static const std::string& getStaticTypeName() {
@@ -40,26 +29,30 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
+        struct Frustum {
+            glm::vec4 planes[6];
+        };
+
+        struct Rect {
+            float x;
+            float y;
+            float width;
+            float height;
+        };
+
         // Serialization methods
         void deserialize(const pugi::xml_node& node) override;
         void serialize(pugi::xml_node& node) const override;
 
         // Projection settings
         void setPerspective(float fov, float aspectRatio, float nearPlane, float farPlane);
-        void setOrthographic(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 
         // Getters
-        ProjectionType getProjectionType() const { return mProjectionType; }
         float getFOV() { return mFOV; }
         float getAspectRatio() { return mAspectRatio; }
         float getNearPlane() { return mNearPlane; }
         float getFarPlane() { return mFarPlane; }
-
-        // Orthographic specific getters
-        float getLeft() const { return mLeft; }
-        float getRight() const { return mRight; }
-        float getBottom() const { return mBottom; }
-        float getTop() const { return mTop; }
+        const Frustum& getFrustum() const { return mFrustum; }
 
         // Viewport rectangle (Unity-like)
         void setViewportRect(float x, float y, float width, float height);
@@ -70,41 +63,31 @@ namespace StrikeEngine {
         void setAspectRatio(float aspectRatio);
         void setNearPlane(float nearPlane);
         void setFarPlane(float farPlane);
-        void setOrthographicBounds(float left, float right, float bottom, float top);
 
         // Matrix calculations
         glm::mat4 getProjectionMatrix();
-        glm::mat4 getViewMatrix(const glm::vec3& position, const glm::quat& rotation);
-        glm::mat4 getViewProjectionMatrix(const glm::vec3& position, const glm::quat& rotation);
+        glm::mat4 getViewMatrix();
+        glm::mat4 getViewProjectionMatrix();
 
         int getRenderOrder() const { return mRenderOrder; }
         void setRenderOrder(int order) { mRenderOrder = order; }
 
-        // View frustum
-        struct Frustum {
-            glm::vec4 planes[6]; // left, right, bottom, top, near, far
-        };
-        Frustum calculateFrustum(const glm::vec3& position, const glm::quat& rotation);
 
-        //void enableRenderToTexture(uint32_t width, uint32_t height);
-        //void disableRenderToTexture();
 
     private:
-        void updateProjectionMatrix();
+        friend class SceneGraph;
 
-        ProjectionType mProjectionType = ProjectionType::PERSPECTIVE;
+        void update(const glm::vec3& position, const glm::quat& rotation);
+        void updateProjectionMatrix(const glm::vec3& position, const glm::quat& rotation);
+        void updateViewMatrix(const glm::vec3& position, const glm::quat& rotation);
+        void updateViewProjectionMatrix(const glm::vec3& position, const glm::quat& rotation);
+        void calculateFrustum(const glm::vec3& position, const glm::quat& rotation);
 
+    private:
         // Perspective parameters
-        float mFOV = 45.0f;
         float mAspectRatio = 16.0f / 9.0f;
 
-        // Orthographic parameters
-        float mLeft = -10.0f;
-        float mRight = 10.0f;
-        float mBottom = -10.0f;
-        float mTop = 10.0f;
-
-        // Common parameters
+        float mFOV = 45.0f;
         float mNearPlane = 0.1f;
         float mFarPlane = 1000.0f;
 
@@ -112,10 +95,15 @@ namespace StrikeEngine {
 
         Rect mViewportRect = { 0.0f, 0.0f, 1.0f, 1.0f };
 
-        // Cached matrices
-        mutable glm::mat4 mProjectionMatrix = glm::mat4(1.0f);
-        mutable bool mProjectionDirty = true;
+        Frustum mFrustum;
 
+        glm::vec3 mRight;
+        glm::vec3 mUp;
+        glm::vec3 mForward;
+
+        glm::mat4 mProjectionMatrix;
+        glm::mat4 mViewMatrix;
+        glm::mat4 mViewProjectionMatrix;
     };
 
 }

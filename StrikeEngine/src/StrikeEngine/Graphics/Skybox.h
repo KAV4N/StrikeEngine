@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <string>
 
 namespace StrikeEngine {
 
@@ -19,15 +20,25 @@ namespace StrikeEngine {
         std::shared_ptr<CubeMap> getCubeMap() const { return mCubeMap; }
         std::shared_ptr<Shader> getShader() const { return mShader; }
 
-        void setCubeMap(std::shared_ptr<CubeMap> cubeMap) { mCubeMap = cubeMap; }
-        void setShader(std::shared_ptr<Shader> shader) { mShader = shader; }
+        std::string getShaderId() const { return mShaderId; }
+        std::string getCubeMapId() const { return mCubeMapId; }
+
+        void setCubeMap(const std::string& cubeMapId);
+        void setShader(const std::string& shaderId);
+
+        bool isCubeMapValid() const { return mCubeMap && mCubeMap->isReady(); }
+        bool isShaderValid() const { return mShader && mShader->isReady(); }
 
     private:
         void setupCube();
+
+        std::string mShaderId;
+        std::string mCubeMapId;
 
         std::shared_ptr<CubeMap> mCubeMap;
         std::shared_ptr<Shader> mShader;
         GLuint mVAO;
         GLuint mVBO;
+        GLuint mEBO;
     };
 }

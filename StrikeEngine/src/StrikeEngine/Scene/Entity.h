@@ -57,10 +57,20 @@ namespace StrikeEngine {
         void setPositionX(float x);
         void setPositionY(float y);
         void setPositionZ(float z);
+
         void move(const glm::vec3& offset);
+
         void moveX(float x);
         void moveY(float y);
         void moveZ(float z);
+
+        void moveUp(float distance);
+        void moveDown(float distance);
+        void moveLeft(float distance);
+        void moveRight(float distance);
+        void moveForward(float distance);
+        void moveBackward(float distance);
+
         glm::vec3 getPosition() const;
         float getPositionX() const;
         float getPositionY() const;

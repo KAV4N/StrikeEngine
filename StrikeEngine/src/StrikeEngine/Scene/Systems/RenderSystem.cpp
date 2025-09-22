@@ -14,37 +14,29 @@ namespace StrikeEngine {
         collectCameras(scene);
         collectRenderables(scene);
         cullRenderables();
-        //STRIKE_CORE_INFO(mCameraRenderData[0].renderItems.size());
         sortRenderables();
         submit();
     }
 
     void RenderSystem::submit() {
-        
         auto& renderer = Renderer::get();
-        
         for (const auto& cameraData : mCameraRenderData) {
             renderer.submit(cameraData);
         }
-        
     }
 
     void RenderSystem::collectCameras(Scene* scene) {
-        
-        if (!scene) return; // Safety check
+        if (!scene) return; 
         mCameraRenderData.clear();
         auto sceneGraph = scene->getSceneGraph();
         auto entities = sceneGraph->getEntitiesWithComponent<CameraComponent>();
         for (auto entity : entities) {
-            
             if (!entity.isActive()) continue;
             auto& camera = entity.getComponent<CameraComponent>();
             glm::vec3 position = entity.getPosition();
             glm::quat rotation = entity.getRotation();
             CameraRenderData data{
-                &camera,
-                camera.getViewProjectionMatrix(position, rotation),
-                camera.calculateFrustum(position, rotation),
+                camera,
                 {}
             };
             mCameraRenderData.push_back(data);
@@ -53,13 +45,11 @@ namespace StrikeEngine {
         // Sort cameras by render order
         std::sort(mCameraRenderData.begin(), mCameraRenderData.end(),
             [](const CameraRenderData& a, const CameraRenderData& b) {
-                return a.camera->getRenderOrder() < b.camera->getRenderOrder();
+                return a.camera.getRenderOrder() < b.camera.getRenderOrder();
             });
-            
     }
 
     void RenderSystem::collectRenderables(Scene* scene) {
-        
         if (!scene) return; // Safety check
         auto sceneGraph = scene->getSceneGraph();
         auto entities = sceneGraph->getEntitiesWithComponent<RendererComponent>();
@@ -105,7 +95,7 @@ namespace StrikeEngine {
                         glm::mat4 worldMatrix = item.worldMatrix;
                         glm::vec3 corners[8];
                         boundsToCorners(bounds, worldMatrix, corners);
-                        return !isAABBInFrustum(cameraData.frustum, corners);
+                        return !isAABBInFrustum(cameraData.camera.getFrustum(), corners); // Updated to use camera.getFrustum()
                     }),
                 renderItems.end()
             );

@@ -5,7 +5,7 @@ class CameraMovement : public StrikeEngine::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;
-    void onEvent(StrikeEngine::Event& event) override; // Now void
+    void onEvent(StrikeEngine::Event& event) override; 
 
     bool keyEventTest(StrikeEngine::KeyReleasedEvent& event);
 

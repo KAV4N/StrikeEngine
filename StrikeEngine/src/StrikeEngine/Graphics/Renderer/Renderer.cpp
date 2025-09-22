@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "StrikeEngine/Scene/Systems/RenderSystem.h"
 #include "GeometryRenderPass.h"
+#include "SkyboxRenderPass.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -16,6 +17,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::init() {
+        //addPass(std::move(std::make_unique<SkyboxRenderPass>(*this, "SkyboxPass")));
         addPass(std::move(std::make_unique<GeometryRenderPass>(*this, "GeometryPass")));
 
         setupScreenQuad();

@@ -26,8 +26,11 @@ namespace StrikeEngine {
     void GeometryRenderPass::execute(const CameraRenderData& cameraData) {
         if (!isEnabled()) return;
 
+
+        auto camera = cameraData.camera;
+
         // Setup viewport and scissor test using Renderer dimensions
-        const Rect& viewportRect = cameraData.camera->getViewportRect();
+        const CameraComponent::Rect& viewportRect = camera.getViewportRect();
         GLint viewportX = static_cast<GLint>(viewportRect.x * mRenderer.getWidth());
         GLint viewportY = static_cast<GLint>(viewportRect.y * mRenderer.getHeight());
         GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mRenderer.getWidth());
@@ -51,7 +54,7 @@ namespace StrikeEngine {
             // Set the view-projection matrix
             auto shader = renderItem.material->getShader();
             if (shader) {
-                shader->setMat4("uViewProjection", cameraData.viewProjectionMatrix);
+                shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
                 shader->setMat4("uModel", renderItem.worldMatrix);
             }
 
@@ -62,16 +65,13 @@ namespace StrikeEngine {
             }
             glBindVertexArray(vao);
 
-            // Get submesh data
             const auto& subMesh = renderItem.mesh->getSubMeshes()[renderItem.subMeshIndex];
 
-            // Draw the geometry
             glDrawElements(GL_TRIANGLES,
                 subMesh.indexCount,
                 GL_UNSIGNED_INT,
                 (void*)(subMesh.startIndex * sizeof(uint32_t)));
 
-            // Unbind resources
             glBindVertexArray(0);
             renderItem.material->unbind();
         }

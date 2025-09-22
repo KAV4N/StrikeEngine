@@ -2,8 +2,8 @@
 <template name="14077_WWII_Tank_Germany_Panzer_III_v1_L2" source="Assets/Scenes\../Objects/Panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj">
 	<assets>
 		<mesh assetId="14077_WWII_Tank_Germany_Panzer_III_v1_L2.14077_WWII_Tank_Germany_Panzer_III_turret" src="14077_WWII_Tank_Germany_Panzer_III_turret.mesh" />
-		<mesh assetId="14077_WWII_Tank_Germany_Panzer_III_v1_L2.14077_WWII_Tank_Germany_Panzer_III_tracks" src="14077_WWII_Tank_Germany_Panzer_III_tracks.mesh" />
 		<mesh assetId="14077_WWII_Tank_Germany_Panzer_III_v1_L2.14077_WWII_Tank_Germany_Panzer_III_hull" src="14077_WWII_Tank_Germany_Panzer_III_hull.mesh" />
+		<mesh assetId="14077_WWII_Tank_Germany_Panzer_III_v1_L2.14077_WWII_Tank_Germany_Panzer_III_tracks" src="14077_WWII_Tank_Germany_Panzer_III_tracks.mesh" />
 		<material assetId="14077_WWII_Tank_Germany_Panzer_III_v1_L2.03___14077_WWII_Tank_Germany_Panzer_III_turret" src="03___14077_WWII_Tank_Germany_Panzer_III_turret.mat" />
 	</assets>
 	<entities>

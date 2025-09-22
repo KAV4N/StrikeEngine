@@ -1,3 +1,4 @@
+
 #include "Entity.h"
 #include "Scene.h"
 #include "SceneGraph.h"
@@ -118,6 +119,30 @@ namespace StrikeEngine {
 
     void Entity::moveZ(float z) {
         move(glm::vec3(0.0f, 0.0f, z));
+    }
+
+    void Entity::moveUp(float distance) {
+        moveZ(distance);
+    }
+
+    void Entity::moveDown(float distance) {
+        moveZ(-distance);
+    }
+
+    void Entity::moveLeft(float distance) {
+        moveX(-distance);
+    }
+
+    void Entity::moveRight(float distance) {
+        moveX(distance);
+    }
+
+    void Entity::moveForward(float distance) {
+        moveY(distance);
+    }
+
+    void Entity::moveBackward(float distance) {
+        moveY(-distance);
     }
 
     glm::vec3 Entity::getPosition() const {

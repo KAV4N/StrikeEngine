@@ -57,6 +57,7 @@ namespace StrikeEngine {
         // Main loading functions
         std::unique_ptr<Scene> loadSceneInternal(const std::filesystem::path& filePath);
         void loadAssetsFromXML(const pugi::xml_node& assetsNode, Scene* scene, const std::filesystem::path& basePath);
+        void loadSkybox(const pugi::xml_node& skyboxNode);
 
         // Entity parsing and creation
         EntityData parseEntityData(const pugi::xml_node& entityNode);

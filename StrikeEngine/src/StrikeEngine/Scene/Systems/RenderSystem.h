@@ -19,13 +19,11 @@ namespace StrikeEngine {
     };
 
     struct CameraRenderData {
-        CameraComponent* camera;
-        glm::mat4 viewProjectionMatrix;
-        CameraComponent::Frustum frustum;
+        CameraComponent camera; 
         std::vector<RenderItem> renderItems;
     };
 
-    class RenderSystem : public SystemECS{
+    class RenderSystem : public SystemECS {
     public:
         RenderSystem();
 

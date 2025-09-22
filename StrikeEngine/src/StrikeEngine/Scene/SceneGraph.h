@@ -46,38 +46,40 @@ namespace StrikeEngine {
 
         bool isRoot() const { return mIsRootNode; }
         bool isActive() const { return mIsActive; }
+        bool isDirty() const { return mIsDirty; }
 
         // Mutators
-        void setPosition(const glm::vec3& pos) { mPosition = pos; mIsDirty = true; }
-        void setPositionX(float x) { mPosition.x = x; mIsDirty = true; }
-        void setPositionY(float y) { mPosition.y = y; mIsDirty = true; }
-        void setPositionZ(float z) { mPosition.z = z; mIsDirty = true; }
-        void move(const glm::vec3& offset) { mPosition += offset; mIsDirty = true; }
-        void moveX(float x) { mPosition.x += x; mIsDirty = true; }
-        void moveY(float y) { mPosition.y += y; mIsDirty = true; }
-        void moveZ(float z) { mPosition.z += z; mIsDirty = true; }
+        void setPosition(const glm::vec3& pos) { mPosition = pos; markDirty(); }
+        void setPositionX(float x) { mPosition.x = x; markDirty(); }
+        void setPositionY(float y) { mPosition.y = y; markDirty(); }
+        void setPositionZ(float z) { mPosition.z = z; markDirty(); }
+        void move(const glm::vec3& offset) { mPosition += offset; markDirty(); }
+        void moveX(float x) { mPosition.x += x; markDirty(); }
+        void moveY(float y) { mPosition.y += y; markDirty(); }
+        void moveZ(float z) { mPosition.z += z; markDirty(); }
 
-        void setRotation(const glm::quat& rot) { mRotation = rot; mIsDirty = true; }
+        void setRotation(const glm::quat& rot) { mRotation = rot; markDirty(); }
         void setEulerRotation(const glm::vec3& eulerAngles);
         void setRotationX(float angleDegrees);
         void setRotationY(float angleDegrees);
         void setRotationZ(float angleDegrees);
-        void rotate(const glm::quat& rotation) { mRotation = glm::normalize(rotation * mRotation); mIsDirty = true; }
+        void rotate(const glm::quat& rotation) { mRotation = glm::normalize(rotation * mRotation); markDirty(); }
         void rotateEuler(const glm::vec3& anglesDegrees);
         void rotateX(float angleDegrees);
         void rotateY(float angleDegrees);
         void rotateZ(float angleDegrees);
 
-        void setScale(const glm::vec3& scl) { mScale = scl; mIsDirty = true; }
-        void setScaleX(float x) { mScale.x = x; mIsDirty = true; }
-        void setScaleY(float y) { mScale.y = y; mIsDirty = true; }
-        void setScaleZ(float z) { mScale.z = z; mIsDirty = true; }
-        void scaleBy(const glm::vec3& factor) { mScale *= factor; mIsDirty = true; }
-        void scaleByX(float x) { mScale.x *= x; mIsDirty = true; }
-        void scaleByY(float y) { mScale.y *= y; mIsDirty = true; }
-        void scaleByZ(float z) { mScale.z *= z; mIsDirty = true; }
+        void setScale(const glm::vec3& scl) { mScale = scl; markDirty(); }
+        void setScaleX(float x) { mScale.x = x; markDirty(); }
+        void setScaleY(float y) { mScale.y = y; markDirty(); }
+        void setScaleZ(float z) { mScale.z = z; markDirty(); }
+        void scaleBy(const glm::vec3& factor) { mScale *= factor; markDirty(); }
+        void scaleByX(float x) { mScale.x *= x; markDirty(); }
+        void scaleByY(float y) { mScale.y *= y; markDirty(); }
+        void scaleByZ(float z) { mScale.z *= z; markDirty(); }
 
         void setActive(bool active) { mIsActive = active; }
+        void markDirty() { mIsDirty = true; }
         const std::string& getEntityId() const { return mEntity.getId(); }
 
     private:
@@ -116,7 +118,6 @@ namespace StrikeEngine {
         ~SceneGraph() = default;
 
         // Entity creation and retrieval
-        
         Entity createEntity(const std::string& id, const std::string& parentId = "");
         Entity getEntity(const std::string& id);
         std::vector<Entity> getEntitiesByName(const std::string& name) const;
@@ -161,7 +162,6 @@ namespace StrikeEngine {
         bool isDescendant(const std::string& descendantId, const std::string& ancestorId) const;
 
         // Update operations
-        // Update operations
         void updateTransforms();
 
         // Management
@@ -173,7 +173,7 @@ namespace StrikeEngine {
 
         // Node access (internal)
         std::shared_ptr<GraphNode> getNode(const std::string& id) const;
-        void updateNodeTransforms(std::shared_ptr<GraphNode> node);
+        void updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty = false);
         Entity createEntityInternal(const std::string& id);
         void createRootEntity(const std::string& rootId, const std::string& rootName = "");
 

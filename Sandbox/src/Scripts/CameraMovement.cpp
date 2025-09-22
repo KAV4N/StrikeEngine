@@ -7,17 +7,26 @@ void CameraMovement::onStart() {
 }
 
 void CameraMovement::onUpdate(float deltaTime) {
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) {
-        camera.moveX(1 * deltaTime);
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S)) {
-        camera.moveX(-1 * deltaTime);
-    }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D)) {
-        camera.moveY(1 * deltaTime);
+        camera.moveRight(1 * deltaTime);
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A)) {
-        camera.moveY(-1 * deltaTime);
+        camera.moveLeft(1 * deltaTime);
+    }
+
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) {
+        camera.moveForward(1 * deltaTime);
+    }
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S)) {
+        camera.moveBackward(1 * deltaTime);
+    }
+
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
+        camera.moveUp(1 * deltaTime);
+    }
+
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) {
+        camera.moveDown(1 * deltaTime);
     }
 
     if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_1)) {

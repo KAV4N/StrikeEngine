@@ -5,6 +5,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <algorithm>
 #include <iostream>
+#include "Components/CameraComponent.h"
 
 namespace StrikeEngine {
 
@@ -351,25 +352,34 @@ namespace StrikeEngine {
 
     void SceneGraph::updateTransforms() {
         if (mRootNode.second) {
-            updateNodeTransforms(mRootNode.second);
+            updateNodeTransforms(mRootNode.second, false);
         }
     }
 
-    void SceneGraph::updateNodeTransforms(std::shared_ptr<GraphNode> node) {
-        if (!node) {
+    void SceneGraph::updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty) {
+        if (!node || !node->isActive()) {
             return;
         }
 
-        auto parent = node->getParent();
-        if (parent) {
-            node->updateWorldMatrix(parent->getWorldMatrix());
-        }
-        else {
-            node->updateWorldMatrix();
+        // Update if node is dirty or parent is dirty
+        if (node->isDirty() || parentDirty) {
+            auto parent = node->getParent();
+            glm::mat4 parentWorldMatrix = parent ? parent->getWorldMatrix() : glm::mat4(1.0f);
+            node->updateWorldMatrix(parentWorldMatrix);
+
+            auto& entity = node->getEntity();
+            if (entity.isValid() && mRegistry.all_of<CameraComponent>(entity.mHandle)) {
+                auto& camera = mRegistry.get<CameraComponent>(entity.mHandle);
+                camera.update(node->getPosition(), node->getRotation());
+            }
+
+            // Mark all children for update, regardless of their dirty state
+            parentDirty = true;
         }
 
+        // Recursively update all children
         for (auto& child : node->getChildren()) {
-            updateNodeTransforms(child);
+            updateNodeTransforms(child, parentDirty);
         }
     }
 

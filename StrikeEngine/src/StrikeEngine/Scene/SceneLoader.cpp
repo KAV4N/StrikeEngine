@@ -1,6 +1,7 @@
 #include "SceneLoader.h"
 #include "Entity.h"
 #include "StrikeEngine/Asset/Types/Template.h"
+#include "World.h"
 #include <iostream>
 #include <sstream>
 #include <glm/gtc/quaternion.hpp>
@@ -99,6 +100,12 @@ namespace StrikeEngine {
             loadAssetsFromXML(assetsNode, scene.get(), filePath.parent_path());
         }
 
+        // Load skybox
+        pugi::xml_node skyboxNode = sceneNode.child("skybox");
+        if (skyboxNode) {
+            loadSkybox(skyboxNode);
+        }
+
         // Process all entities
         pugi::xml_node entitiesNode = sceneNode.child("entities");
         if (entitiesNode) {
@@ -114,6 +121,25 @@ namespace StrikeEngine {
 
     void SceneLoader::loadAssetsFromXML(const pugi::xml_node& assetsNode, Scene* scene, const std::filesystem::path& basePath) {
         mAssetManager.deserialize(assetsNode, scene->getSceneAssets(), basePath);
+    }
+
+    void SceneLoader::loadSkybox(const pugi::xml_node& skyboxNode) {
+        std::string cubeMapId = skyboxNode.attribute("cubeMapId").as_string();
+        std::string shaderId = skyboxNode.attribute("shaderId").as_string("");
+
+        if (!cubeMapId.empty()) {
+            auto& world = World::get();
+            auto skybox = world.getSkybox();
+            skybox->setCubeMap(cubeMapId);
+            if (!shaderId.empty()) {
+                skybox->setShader(shaderId);
+            }
+            std::cout << "Loaded skybox with cubeMapId: " << cubeMapId
+                << (shaderId.empty() ? "" : " and shaderId: " + shaderId) << std::endl;
+        }
+        else {
+            std::cerr << "Skybox node missing required cubeMapId attribute" << std::endl;
+        }
     }
 
     // ========== Entity Data Parsing ==========
