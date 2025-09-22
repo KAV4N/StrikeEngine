@@ -61,24 +61,24 @@ namespace StrikeEngine {
         };
 
         std::array<GLuint, 36> indices = {
-            // Front face (towards the inside of the cube)
-            3, 2, 6,
-            6, 7, 3,
-            // Back face
-            0, 4, 5,
-            5, 1, 0,
-            // Left face
-            0, 3, 7,
-            7, 4, 0,
-            // Right face
-            1, 5, 6,
-            6, 2, 1,
-            // Top face
-            4, 7, 6,
-            6, 5, 4,
-            // Bottom face
-            0, 1, 2,
-            2, 3, 0
+            // Front face (z = +1)
+            0, 1, 5,
+            5, 4, 0,
+            // Back face (z = -1)
+            2, 3, 7,
+            7, 6, 2,
+            // Left face (x = -1)
+            3, 0, 4,
+            4, 7, 3,
+            // Right face (x = +1)
+            1, 2, 6,
+            6, 5, 1,
+            // Top face (y = +1)
+            4, 5, 6,
+            6, 7, 4,
+            // Bottom face (y = -1)
+            1, 0, 3,
+            3, 2, 1
         };
 
         glGenVertexArrays(1, &mVAO);
@@ -102,19 +102,5 @@ namespace StrikeEngine {
         glDeleteBuffers(1, &ebo);
     }
 
-    void Skybox::bind() const {
-        if (isShaderValid() && isCubeMapValid()) {
-            mShader->bind();
-            mCubeMap->bind(0);
-            glBindVertexArray(mVAO);
-        }
-    }
 
-    void Skybox::unbind() const {
-        if (isShaderValid() && isCubeMapValid()) {
-            glBindVertexArray(0);
-            mCubeMap->unbind();
-            mShader->unbind();
-        }
-    }
 }

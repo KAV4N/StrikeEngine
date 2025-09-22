@@ -1,15 +1,12 @@
 #include "SkyboxRenderPass.h"
-#include "Renderer.h"
-#include "StrikeEngine/Scene/Systems/RenderSystem.h"
 #include "StrikeEngine/Scene/World.h"
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace StrikeEngine {
 
     SkyboxRenderPass::SkyboxRenderPass(Renderer& renderer, const std::string& name)
-        : RenderPass(name), mRenderer(renderer) {
+        : RenderPass(name), mRenderer(renderer), mSkybox(World::get().getSkybox()) {
     }
 
     SkyboxRenderPass::~SkyboxRenderPass() {
@@ -17,26 +14,21 @@ namespace StrikeEngine {
     }
 
     void SkyboxRenderPass::setup() {
-        // Initialize any resources needed for the skybox pass
-        // The skybox geometry and resources are handled by the Skybox class itself
+        // Skybox resources are initialized in the Skybox class
     }
 
     void SkyboxRenderPass::cleanup() {
-        // Clean up any resources if necessary
-        // The skybox resources are managed by the World class
+        // Skybox cleanup is handled by the Skybox class
     }
 
     void SkyboxRenderPass::execute(const CameraRenderData& cameraData) {
-        if (!isEnabled()) return;
-
-        auto camera = cameraData.camera;
-        // Get the skybox from the world
-        Skybox* skybox = World::get().getSkybox();
-        if (!skybox || !skybox->isCubeMapValid() || !skybox->isShaderValid()) {
-            return; // No valid skybox to render
+        if (!isEnabled() || !mSkybox || !mSkybox->isCubeMapValid() || !mSkybox->isShaderValid()) {
+            return;
         }
 
-        // Setup viewport and scissor test using Renderer dimensions
+        auto camera = cameraData.camera;
+
+        // Setup viewport and scissor test
         const CameraComponent::Rect& viewportRect = camera.getViewportRect();
         GLint viewportX = static_cast<GLint>(viewportRect.x * mRenderer.getWidth());
         GLint viewportY = static_cast<GLint>(viewportRect.y * mRenderer.getHeight());
@@ -50,38 +42,54 @@ namespace StrikeEngine {
         setupOpenGLState();
 
 
-        skybox->bind();
-        auto shader = skybox->getShader();
-        if (shader && shader->isReady()) {
 
-            glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix()));
-            glm::mat4 skyboxViewProjection = camera.getProjectionMatrix() * view;
+        glm::mat4 view = camera.getViewMatrix();
+        view = glm::mat4(glm::mat3(view));
+        glm::mat4 projection = camera.getProjectionMatrix();
+        glm::mat4 viewProjection = projection * view;
 
-            shader->setMat4("uViewProjection", skyboxViewProjection);
-            shader->setInt("uSkybox", 0); // Cubemap texture unit
-        }
+        auto shader = mSkybox->getShader();
+        auto cubeMap = mSkybox->getCubeMap();
 
-        // Draw the skybox cube (36 indices for a cube)
+
+        
+        shader->bind();
+
+
+        shader->setMat4("uViewProjection", viewProjection);
+        shader->setInt("uSkybox", 0);
+
+        glBindVertexArray(mSkybox->getVAO());
+        cubeMap->bind(0);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
-        skybox->unbind();
+        cubeMap->unbind();
+        shader->unbind();
+        restoreOpenGLState();
 
         glDisable(GL_SCISSOR_TEST);
-
-        restoreOpenGLState();
     }
 
     void SkyboxRenderPass::setupOpenGLState() {
+        // Enable depth testing but disable depth writing
+        glDisable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL); // Skybox at max depth
+        glDepthMask(GL_FALSE);  // Disable depth writing
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-
-        glDisable(GL_CULL_FACE);
-
-        glDepthMask(GL_FALSE);
+        // Enable face culling
+        
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT); // Cull front faces for skybox (inside of cube)
+        glFrontFace(GL_CCW);
+        
     }
 
     void SkyboxRenderPass::restoreOpenGLState() {
+        glDepthMask(GL_TRUE); // Restore depth writing
+        glDepthFunc(GL_LESS); // Restore default depth function
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
     }
 
 }

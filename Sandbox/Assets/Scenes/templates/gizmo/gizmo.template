@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="gizmo" source="Assets/Scenes\../Objects/gizmo.obj">
+	<assets>
+		<mesh assetId="gizmo.gizmo" src="gizmo.mesh" />
+		<material assetId="gizmo.DefaultMaterial" src="DefaultMaterial.mat" />
+	</assets>
+	<entities>
+		<entity id="gizmo_1" name="gizmo" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<children>
+				<entity id="gizmo.gizmo" name="gizmo" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="gizmo.gizmo" materialId="gizmo.DefaultMaterial" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+	</entities>
+</template>

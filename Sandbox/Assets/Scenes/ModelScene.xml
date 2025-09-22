@@ -22,6 +22,12 @@
 		<texture2D textureId="grassTex" src="textures/grass.png" />
 
 
+		<template assetId="tankModel2" src="templates/tank3/tank.template"  srcModel="../Objects/Panzer/tank_low_poly.fbx" async="false"/>
+
+		<template assetId="panzer" src="templates/tank2/tank.template"  srcModel="../Objects/Panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj" async="false"/>
+		<template assetId="cubeTemplate" src="templates/Cube/cube.template"  srcModel="../Objects/cubeModel.fbx" async="false"/>
+
+
 	</assets>
 
 	<assets>

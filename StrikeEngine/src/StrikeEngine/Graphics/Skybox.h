@@ -29,8 +29,11 @@ namespace StrikeEngine {
         bool isCubeMapValid() const { return mCubeMap && mCubeMap->isReady(); }
         bool isShaderValid() const { return mShader && mShader->isReady(); }
 
+        GLuint getVAO() const { return mVAO; }
+
     private:
         void setupCube();
+
 
         std::string mShaderId;
         std::string mCubeMapId;

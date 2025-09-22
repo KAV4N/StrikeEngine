@@ -6,12 +6,7 @@ namespace StrikeEngine {
     Texture::Texture(const std::string& id, const std::filesystem::path& path, const std::string& name)
         : Asset(id, path, name),
         mRendererID(0),
-        mFormat(TextureFormat::RGBA),
-        mMinFilter(TextureFilter::Linear),
-        mMagFilter(TextureFilter::Linear),
-        mWrapS(TextureWrap::Repeat),
-        mWrapT(TextureWrap::Repeat),
-        mGenerateMipmaps(true)
+        mFormat(TextureFormat::RGBA)
     {
     }
 
@@ -52,18 +47,16 @@ namespace StrikeEngine {
         glGenTextures(1, &mRendererID);
         glBindTexture(GL_TEXTURE_2D, mRendererID);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(mMinFilter));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mMagFilter));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLint>(mWrapS));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<GLint>(mWrapT));
+        // Default texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(mFormat), mWidth, mHeight, 0,
             static_cast<GLenum>(mFormat), GL_UNSIGNED_BYTE, mData);
 
-        if (mGenerateMipmaps) {
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-
+        glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         if (mData) {
@@ -74,7 +67,8 @@ namespace StrikeEngine {
 
     void Texture2D::bind(uint32_t slot) const {
         if (mRendererID != 0) {
-            glBindTextureUnit(slot, mRendererID);
+            glActiveTexture(GL_TEXTURE0 + slot);
+            glBindTexture(GL_TEXTURE_2D, mRendererID);
         }
     }
 
@@ -109,7 +103,7 @@ namespace StrikeEngine {
 
     pugi::xml_node Texture2D::toNode() const {
         pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child(getTypeName());
+        pugi::xml_node node = doc.append_child(getTypeName().c_str());
         node.append_attribute("assetId") = getId().c_str();
         node.append_attribute("src") = getPath().string().c_str();
         return node;
@@ -123,6 +117,7 @@ namespace StrikeEngine {
         for (int i = 0; i < 6; ++i) {
             mData[i] = nullptr;
         }
+        mFormat = TextureFormat::RGB; // Default for cubemaps
     }
 
     CubeMap::~CubeMap() {
@@ -143,11 +138,13 @@ namespace StrikeEngine {
         glGenTextures(1, &mRendererID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
 
+        // Load all 6 faces
         for (unsigned int i = 0; i < 6; ++i) {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
-                mSize, mSize, 0, GL_RGB, GL_UNSIGNED_BYTE, mData[i]);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, static_cast<GLint>(mFormat),
+                mSize, mSize, 0, static_cast<GLenum>(mFormat), GL_UNSIGNED_BYTE, mData[i]);
         }
 
+        // Default cubemap parameters (same as your skybox)
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -156,6 +153,7 @@ namespace StrikeEngine {
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
+        // Clean up data after creating GPU texture
         for (int i = 0; i < 6; ++i) {
             if (mData[i]) {
                 delete[] mData[i];
@@ -166,6 +164,7 @@ namespace StrikeEngine {
 
     void CubeMap::bind(uint32_t slot) const {
         if (mRendererID != 0) {
+            glActiveTexture(GL_TEXTURE0 + slot);
             glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
         }
     }
@@ -175,12 +174,35 @@ namespace StrikeEngine {
     }
 
     void CubeMap::setTextureData(unsigned char* data[6], uint32_t size, uint32_t channels) {
+        for (int i = 0; i < 6; ++i) {
+            mData[i] = data[i];
+        }
+        mSize = size;
+        mChannels = channels;
 
+        // Set format based on channels
+        switch (channels) {
+        case 1:
+            mFormat = TextureFormat::RED;
+            break;
+        case 2:
+            mFormat = TextureFormat::RG;
+            break;
+        case 3:
+            mFormat = TextureFormat::RGB;
+            break;
+        case 4:
+            mFormat = TextureFormat::RGBA;
+            break;
+        default:
+            mFormat = TextureFormat::RGB; // Default for cubemaps
+            break;
+        }
     }
 
     pugi::xml_node CubeMap::toNode() const {
         pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child(getTypeName());
+        pugi::xml_node node = doc.append_child(getTypeName().c_str());
         node.append_attribute("assetId") = getId().c_str();
         node.append_attribute("src") = getPath().string().c_str();
         return node;

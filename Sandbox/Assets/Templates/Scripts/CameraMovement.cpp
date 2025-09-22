@@ -1,4 +1,8 @@
 #include "CameraMovement.h"
+#include <iostream>
+#include <cstdlib>
+#include <sstream>  // for std::stringstream
+#include <glm/gtx/quaternion.hpp>
 
 void CameraMovement::onStart() {
     mCameraEntity = getEntity();
@@ -7,12 +11,15 @@ void CameraMovement::onStart() {
 void CameraMovement::printStats(const std::string& state) {
     std::cout << "---- " << state << " ----" << std::endl;
 
+    // Position (glm::vec3)
     glm::vec3 pos = mCameraEntity.getPosition();
     std::cout << "Position: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << std::endl;
 
+    // Euler angles (glm::vec3, radians ? degrees if needed)
     glm::vec3 euler = mCameraEntity.getEulerRotation();
     std::cout << "Euler:    x=" << euler.x << ", y=" << euler.y << ", z=" << euler.z << std::endl;
 
+    // Rotation (glm::quat)
     glm::quat rot = mCameraEntity.getRotation();
     std::cout << "Quat:     x=" << rot.x << ", y=" << rot.y << ", z=" << rot.z << ", w=" << rot.w << std::endl;
 
@@ -40,30 +47,30 @@ void CameraMovement::onUpdate(float deltaTime) {
     }
 
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
-        mCameraEntity.moveUp(20 * deltaTime); 
+        mCameraEntity.moveUp(20 * deltaTime); // World-space up
         printStats("move UP:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) {
-        mCameraEntity.moveDown(20 * deltaTime);
+        mCameraEntity.moveDown(20 * deltaTime); // World-space down
         printStats("move DOWN:");
     }
 
     // Rotation controls
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT)) {
-        mCameraEntity.rotateY(90.0f * deltaTime); 
+        mCameraEntity.rotateY(90.0f * deltaTime); // Rotate left (positive yaw)
         printStats("rotate +Y:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_RIGHT)) {
-        mCameraEntity.rotateY(-90.0f * deltaTime);
+        mCameraEntity.rotateY(-90.0f * deltaTime); // Rotate right (negative yaw)
         printStats("rotate -Y:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_UP)) {
-        mCameraEntity.rotateX(-90.0f * deltaTime);
+        mCameraEntity.rotateX(-90.0f * deltaTime); // Rotate up (negative pitch)
         printStats("rotate -X:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_DOWN)) {
-        mCameraEntity.rotateX(90.0f * deltaTime); 
-        printStats("rotate +X:"); 
+        mCameraEntity.rotateX(90.0f * deltaTime); // Rotate down (positive pitch)
+        printStats("rotate +X:");  // <-- was mislabeled before
     }
 
     // Spawn test entities on left mouse click
@@ -90,7 +97,7 @@ void CameraMovement::onEvent(StrikeEngine::Event& event) {
 }
 
 bool CameraMovement::keyEventTest(StrikeEngine::KeyReleasedEvent& event) {
-
+    // For now, just consume and return true
     return true;
 }
 

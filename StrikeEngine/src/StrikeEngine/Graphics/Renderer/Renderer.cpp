@@ -17,7 +17,7 @@ namespace StrikeEngine {
     }
 
     void Renderer::init() {
-        //addPass(std::move(std::make_unique<SkyboxRenderPass>(*this, "SkyboxPass")));
+        addPass(std::move(std::make_unique<SkyboxRenderPass>(*this, "SkyboxPass")));
         addPass(std::move(std::make_unique<GeometryRenderPass>(*this, "GeometryPass")));
 
         setupScreenQuad();

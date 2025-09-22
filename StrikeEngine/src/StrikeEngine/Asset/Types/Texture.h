@@ -14,22 +14,6 @@ namespace StrikeEngine {
         RG = GL_RG
     };
 
-    enum class TextureFilter {
-        Linear = GL_LINEAR,
-        Nearest = GL_NEAREST,
-        LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,
-        LinearMipmapNearest = GL_LINEAR_MIPMAP_NEAREST,
-        NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,
-        NearestMipmapNearest = GL_NEAREST_MIPMAP_NEAREST
-    };
-
-    enum class TextureWrap {
-        Repeat = GL_REPEAT,
-        ClampToEdge = GL_CLAMP_TO_EDGE,
-        ClampToBorder = GL_CLAMP_TO_BORDER,
-        MirroredRepeat = GL_MIRRORED_REPEAT
-    };
-
     class Texture : public Asset {
     public:
         Texture(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
@@ -40,28 +24,14 @@ namespace StrikeEngine {
 
         GLuint getID() const { return mRendererID; }
         TextureFormat getFormat() const { return mFormat; }
-        TextureFilter getMinFilter() const { return mMinFilter; }
-        TextureFilter getMagFilter() const { return mMagFilter; }
-        TextureWrap getWrapS() const { return mWrapS; }
-        TextureWrap getWrapT() const { return mWrapT; }
 
         void setFormat(TextureFormat format) { mFormat = format; }
-        void setMinFilter(TextureFilter filter) { mMinFilter = filter; }
-        void setMagFilter(TextureFilter filter) { mMagFilter = filter; }
-        void setWrapS(TextureWrap wrap) { mWrapS = wrap; }
-        void setWrapT(TextureWrap wrap) { mWrapT = wrap; }
-        void setGenerateMipmaps(bool generate) { mGenerateMipmaps = generate; }
 
     protected:
         void cleanup();
 
         GLuint mRendererID;
         TextureFormat mFormat;
-        TextureFilter mMinFilter;
-        TextureFilter mMagFilter;
-        TextureWrap mWrapS;
-        TextureWrap mWrapT;
-        bool mGenerateMipmaps;
     };
 
     class Texture2D : public Texture {

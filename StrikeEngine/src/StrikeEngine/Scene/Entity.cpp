@@ -1,9 +1,9 @@
-
 #include "Entity.h"
 #include "Scene.h"
 #include "SceneGraph.h"
 #include <iostream>
 #include <stdexcept>
+#include <glm/gtx/quaternion.hpp>
 
 namespace StrikeEngine {
 
@@ -122,27 +122,59 @@ namespace StrikeEngine {
     }
 
     void Entity::moveUp(float distance) {
-        moveZ(distance);
+        move(glm::vec3(0.0f, distance, 0.0f));
     }
 
     void Entity::moveDown(float distance) {
-        moveZ(-distance);
+        move(glm::vec3(0.0f, -distance, 0.0f));
     }
 
     void Entity::moveLeft(float distance) {
-        moveX(-distance);
+        if (!isValid() || !mSceneGraph) {
+            return;
+        }
+        auto node = mSceneGraph->getNode(mId);
+        if (node) {
+            glm::quat rotation = node->getRotation();
+            glm::vec3 left = rotation * glm::vec3(-1.0f, 0.0f, 0.0f);
+            node->setPosition(node->getPosition() + left * distance);
+        }
     }
 
     void Entity::moveRight(float distance) {
-        moveX(distance);
+        if (!isValid() || !mSceneGraph) {
+            return;
+        }
+        auto node = mSceneGraph->getNode(mId);
+        if (node) {
+            glm::quat rotation = node->getRotation();
+            glm::vec3 right = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
+            node->setPosition(node->getPosition() + right * distance);
+        }
     }
 
     void Entity::moveForward(float distance) {
-        moveY(distance);
+        if (!isValid() || !mSceneGraph) {
+            return;
+        }
+        auto node = mSceneGraph->getNode(mId);
+        if (node) {
+            glm::quat rotation = node->getRotation();
+            glm::vec3 forward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
+            node->setPosition(node->getPosition() + forward * distance);
+        }
     }
 
     void Entity::moveBackward(float distance) {
-        moveY(-distance);
+        if (!isValid() || !mSceneGraph) {
+            return;
+        }
+        auto node = mSceneGraph->getNode(mId);
+        if (node) {
+            glm::quat rotation = node->getRotation();
+            glm::vec3 backward = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
+            node->setPosition(node->getPosition() + backward * distance);
+        }
     }
 
     glm::vec3 Entity::getPosition() const {
