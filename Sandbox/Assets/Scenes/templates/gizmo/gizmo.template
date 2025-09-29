@@ -5,14 +5,10 @@
 		<material assetId="gizmo.DefaultMaterial" src="DefaultMaterial.mat" />
 	</assets>
 	<entities>
-		<entity id="gizmo_1" name="gizmo" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-			<children>
-				<entity id="gizmo.gizmo" name="gizmo" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-					<components>
-						<renderer meshId="gizmo.gizmo" materialId="gizmo.DefaultMaterial" />
-					</components>
-				</entity>
-			</children>
+		<entity id="game_obj" name="gizmo" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+			<components>
+				<renderer meshId="gizmo.gizmo" materialId="gizmo.DefaultMaterial" />
+			</components>
 		</entity>
 	</entities>
 </template>

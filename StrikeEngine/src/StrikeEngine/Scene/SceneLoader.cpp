@@ -193,9 +193,13 @@ namespace StrikeEngine {
     }
 
     void SceneLoader::applyEntityTransform(Entity& entity, const EntityData& data) {
-        entity.setPosition(data.position);
-        entity.setEulerRotation(data.rotation);
-        entity.setScale(data.scale);
+        if (entity.isValid()) {
+            entity.setPosition(data.position);
+            entity.setRotationEuler(data.rotation);
+            entity.setScale(data.scale);
+        } else {
+            std::cerr << "Failed to apply transform to invalid entity: " << data.id << std::endl;
+        }
     }
 
     void SceneLoader::parseEntityComponents(Entity& entity, const pugi::xml_node& componentsNode) {

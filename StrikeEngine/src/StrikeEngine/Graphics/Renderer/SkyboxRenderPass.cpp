@@ -1,3 +1,4 @@
+// SkyboxRenderPass.cpp - Removed redundant viewport/scissor setup
 #include "SkyboxRenderPass.h"
 #include "StrikeEngine/Scene/World.h"
 #include <glad/glad.h>
@@ -14,11 +15,11 @@ namespace StrikeEngine {
     }
 
     void SkyboxRenderPass::setup() {
-        // Skybox resources are initialized in the Skybox class
+
     }
 
     void SkyboxRenderPass::cleanup() {
-        // Skybox cleanup is handled by the Skybox class
+
     }
 
     void SkyboxRenderPass::execute(const CameraRenderData& cameraData) {
@@ -28,34 +29,17 @@ namespace StrikeEngine {
 
         auto camera = cameraData.camera;
 
-        // Setup viewport and scissor test
-        const CameraComponent::Rect& viewportRect = camera.getViewportRect();
-        GLint viewportX = static_cast<GLint>(viewportRect.x * mRenderer.getWidth());
-        GLint viewportY = static_cast<GLint>(viewportRect.y * mRenderer.getHeight());
-        GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mRenderer.getWidth());
-        GLsizei viewportHeight = static_cast<GLsizei>(viewportRect.height * mRenderer.getHeight());
-
-        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(viewportX, viewportY, viewportWidth, viewportHeight);
-
         setupOpenGLState();
 
-
-
         glm::mat4 view = camera.getViewMatrix();
-        view = glm::mat4(glm::mat3(view));
+        view = glm::mat4(glm::mat3(view)); 
         glm::mat4 projection = camera.getProjectionMatrix();
         glm::mat4 viewProjection = projection * view;
 
         auto shader = mSkybox->getShader();
         auto cubeMap = mSkybox->getCubeMap();
 
-
-        
         shader->bind();
-
-
         shader->setMat4("uViewProjection", viewProjection);
         shader->setInt("uSkybox", 0);
 
@@ -66,28 +50,24 @@ namespace StrikeEngine {
 
         cubeMap->unbind();
         shader->unbind();
+        
         restoreOpenGLState();
-
-        glDisable(GL_SCISSOR_TEST);
     }
 
     void SkyboxRenderPass::setupOpenGLState() {
-        // Enable depth testing but disable depth writing
         glDisable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL); // Skybox at max depth
-        glDepthMask(GL_FALSE);  // Disable depth writing
+        glDepthFunc(GL_LEQUAL); 
+        glDepthMask(GL_FALSE);  
 
-        // Enable face culling
-        
+
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT); // Cull front faces for skybox (inside of cube)
+        glCullFace(GL_FRONT); 
         glFrontFace(GL_CCW);
-        
     }
 
     void SkyboxRenderPass::restoreOpenGLState() {
-        glDepthMask(GL_TRUE); // Restore depth writing
-        glDepthFunc(GL_LESS); // Restore default depth function
+        glDepthMask(GL_TRUE); 
+        glDepthFunc(GL_LESS); 
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
     }

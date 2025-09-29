@@ -58,15 +58,14 @@ void CameraMovement::onUpdate(float deltaTime) {
         printStats("rotate -Y:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_UP)) {
-        mCameraEntity.rotateX(-90.0f * deltaTime);
+        mCameraEntity.rotateX(90.0f * deltaTime);
         printStats("rotate -X:");
     }
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_DOWN)) {
-        mCameraEntity.rotateX(90.0f * deltaTime); 
+        mCameraEntity.rotateX(-90.0f * deltaTime); 
         printStats("rotate +X:"); 
     }
-
-    // Spawn test entities on left mouse click
+    /*
     if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_1)) {
         auto& assetManager = StrikeEngine::AssetManager::get();
         auto sceneGraph = mCameraEntity.getSceneGraph();
@@ -76,13 +75,12 @@ void CameraMovement::onUpdate(float deltaTime) {
         ss << "test" << idCounter;
         auto newEnt = sceneGraph->createEntity(ss.str());
 
-        newEnt.setPositionX((std::rand() % 201) - 100);
-        newEnt.setPositionY(-200);
+        newEnt.setPosition(glm::vec3(std::rand() % 201- 100, -200, 0.f));
 
         auto tankTemplate = assetManager.getTemplate("panzer");
         if (tankTemplate)
             tankTemplate->instantiate(newEnt);
-    }
+    }*/
 }
 
 void CameraMovement::onEvent(StrikeEngine::Event& event) {

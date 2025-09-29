@@ -12,6 +12,7 @@ namespace StrikeEngine {
         Scene* scene = World::get().getCurrentScene();
         if (!scene) return;
         collectCameras(scene);
+        collectLights(scene);
         collectRenderables(scene);
         cullRenderables();
         sortRenderables();
@@ -26,31 +27,90 @@ namespace StrikeEngine {
     }
 
     void RenderSystem::collectCameras(Scene* scene) {
-        if (!scene) return; 
+        if (!scene) return;
         mCameraRenderData.clear();
         auto sceneGraph = scene->getSceneGraph();
         auto entities = sceneGraph->getEntitiesWithComponent<CameraComponent>();
         for (auto entity : entities) {
             if (!entity.isActive()) continue;
             auto& camera = entity.getComponent<CameraComponent>();
-            glm::vec3 position = entity.getPosition();
-            glm::quat rotation = entity.getRotation();
+            glm::mat4 worldMatrix = entity.getWorldMatrix();
+            // Extract position from world matrix (translation component)
+            glm::vec3 cameraPosition = glm::vec3(worldMatrix[3]);
             CameraRenderData data{
                 camera,
+                cameraPosition, // Store camera position
+                {},
+                {},
+                {},
                 {}
             };
             mCameraRenderData.push_back(data);
         }
 
-        // Sort cameras by render order
         std::sort(mCameraRenderData.begin(), mCameraRenderData.end(),
             [](const CameraRenderData& a, const CameraRenderData& b) {
                 return a.camera.getRenderOrder() < b.camera.getRenderOrder();
             });
     }
 
+    void RenderSystem::collectLights(Scene* scene) {
+        if (!scene) return;
+        auto sceneGraph = scene->getSceneGraph();
+
+        // Collect point lights
+        auto pointLightEntities = sceneGraph->getEntitiesWithComponent<PointLightComponent>();
+        for (auto entity : pointLightEntities) {
+            if (!entity.isActive()) continue;
+            auto& light = entity.getComponent<PointLightComponent>();
+            glm::vec3 position = entity.getPosition();
+            
+            PointLightData data;
+            data.position = glm::vec4(position, 0.0f);  // w unused
+            data.color = glm::vec4(light.getColor(), light.getIntensity());  // rgb: color, w: intensity
+            data.attenuation = glm::vec4(light.getAttenuation(), light.getRadius());  // xyz: attenuation, w: radius
+            
+            for (auto& cameraData : mCameraRenderData) {
+                cameraData.pointLights.push_back(data);
+            }
+        }
+
+        // Collect directional lights
+        auto dirLightEntities = sceneGraph->getEntitiesWithComponent<DirectionalLightComponent>();
+        for (auto entity : dirLightEntities) {
+            if (!entity.isActive()) continue;
+            auto& light = entity.getComponent<DirectionalLightComponent>();
+            
+            DirectionalLightData data;
+            data.direction = glm::vec4(light.getDirection(), 0.0f);  // w unused
+            data.color = glm::vec4(light.getColor(), light.getIntensity());  // rgb: color, w: intensity
+            
+            for (auto& cameraData : mCameraRenderData) {
+                cameraData.directionalLights.push_back(data);
+            }
+        }
+
+        // Collect spot lights
+        auto spotLightEntities = sceneGraph->getEntitiesWithComponent<SpotLightComponent>();
+        for (auto entity : spotLightEntities) {
+            if (!entity.isActive()) continue;
+            auto& light = entity.getComponent<SpotLightComponent>();
+            glm::vec3 position = entity.getPosition();
+            
+            SpotLightData data;
+            data.position = glm::vec4(position, 0.0f);  // w unused
+            data.direction = glm::vec4(light.getDirection(), 0.0f);  // w unused
+            data.color = glm::vec4(light.getColor(), light.getIntensity());  // rgb: color, w: intensity
+            data.anglesRadius = glm::vec4(light.getRadius(), light.getInnerConeAngle(), light.getOuterConeAngle(), 0.0f);  // x: radius, y: innerCone, z: outerCone, w: unused
+            
+            for (auto& cameraData : mCameraRenderData) {
+                cameraData.spotLights.push_back(data);
+            }
+        }
+    }
+
     void RenderSystem::collectRenderables(Scene* scene) {
-        if (!scene) return; // Safety check
+        if (!scene) return;
         auto sceneGraph = scene->getSceneGraph();
         auto entities = sceneGraph->getEntitiesWithComponent<RendererComponent>();
         for (auto entity : entities) {
@@ -91,11 +151,10 @@ namespace StrikeEngine {
                         auto mesh = item.mesh;
                         const auto& subMesh = mesh->getSubMeshes()[item.subMeshIndex];
                         Bounds bounds = subMesh.bounds;
-                        // Transform AABB to world space
                         glm::mat4 worldMatrix = item.worldMatrix;
                         glm::vec3 corners[8];
                         boundsToCorners(bounds, worldMatrix, corners);
-                        return !isAABBInFrustum(cameraData.camera.getFrustum(), corners); // Updated to use camera.getFrustum()
+                        return !isAABBInFrustum(cameraData.camera.getFrustum(), corners);
                     }),
                 renderItems.end()
             );
@@ -106,7 +165,6 @@ namespace StrikeEngine {
         for (auto& cameraData : mCameraRenderData) {
             std::sort(cameraData.renderItems.begin(), cameraData.renderItems.end(),
                 [](const RenderItem& a, const RenderItem& b) {
-                    // Sort by shader ID to minimize shader switches
                     GLuint shaderA = a.material->getShader()->getID();
                     GLuint shaderB = b.material->getShader()->getID();
                     return shaderA < shaderB;
@@ -140,5 +198,4 @@ namespace StrikeEngine {
         }
         return true;
     }
-
 }

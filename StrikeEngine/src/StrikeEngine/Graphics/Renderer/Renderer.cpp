@@ -1,3 +1,6 @@
+// Renderer.h - No changes needed to header
+
+// Renderer.cpp - Updated render() method
 #include "Renderer.h"
 #include "StrikeEngine/Scene/Systems/RenderSystem.h"
 #include "GeometryRenderPass.h"
@@ -44,14 +47,32 @@ namespace StrikeEngine {
 
     void Renderer::render() {
         mFrameBuffer->bind();
+        
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (const auto& cameraData : mCameraRenderData) {
+            const CameraComponent::Rect& viewportRect = cameraData.camera.getViewportRect();
+            GLint viewportX = static_cast<GLint>(viewportRect.x * mWidth);
+            GLint viewportY = static_cast<GLint>(viewportRect.y * mHeight);
+            GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mWidth);
+            GLsizei viewportHeight = static_cast<GLsizei>(viewportRect.height * mHeight);
+
+            glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+
+          
             glClear(GL_DEPTH_BUFFER_BIT);
+
             for (auto& pass : mPasses) {
                 if (pass && pass->isEnabled()) {
                     pass->execute(cameraData);
                 }
+                
             }
+
+            glDisable(GL_SCISSOR_TEST);
         }
 
         mFrameBuffer->unBind();
@@ -60,6 +81,8 @@ namespace StrikeEngine {
 
     void Renderer::display() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        glViewport(0, 0, mWidth, mHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (mScreenShader && mScreenShader->isReady()) {
@@ -79,11 +102,11 @@ namespace StrikeEngine {
         return mFrameBuffer->getColorTextureID();
     }
 
-    uint32_t  Renderer::getWidth() const {
+    uint32_t Renderer::getWidth() const {
         return mWidth;
     }
 
-    uint32_t  Renderer::getHeight() const {
+    uint32_t Renderer::getHeight() const {
         return mHeight;
     }
 

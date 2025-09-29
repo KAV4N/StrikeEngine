@@ -1,6 +1,7 @@
 #include "Material.h"
 #include <iostream>
 #include <optional>
+#include <sstream>
 
 namespace StrikeEngine {
 
@@ -150,7 +151,7 @@ namespace StrikeEngine {
         }
 
         for (const auto& [name, value] : mUniforms) {
-            applyUniform(name, value);
+            applyUniform("uMaterial." + name, value);
         }
     }
 
@@ -192,7 +193,7 @@ namespace StrikeEngine {
             else if constexpr (std::is_same_v<T, std::vector<int>>) {
                 mShader->setIntArray(name, const_cast<int*>(val.data()), static_cast<uint32_t>(val.size()));
             }
-            }, value);
+        }, value);
     }
 
     void Material::clearUniforms() {
@@ -254,7 +255,7 @@ namespace StrikeEngine {
                         std::string vecStr = std::to_string(val.x) + "," + std::to_string(val.y) + "," + std::to_string(val.z) + "," + std::to_string(val.w);
                         propertyNode.append_attribute("value") = vecStr.c_str();
                     }
-                    }, value);
+                }, value);
             }
         }
 

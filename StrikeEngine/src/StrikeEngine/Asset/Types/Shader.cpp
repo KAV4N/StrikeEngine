@@ -58,7 +58,6 @@ namespace StrikeEngine {
         }
     }
 
-
     GLuint Shader::compileShader(GLenum type, const std::string& source) {
         GLuint shader = glCreateShader(type);
         const char* src = source.c_str();

@@ -51,7 +51,7 @@ namespace StrikeEngine {
         const std::unordered_map<uint32_t, std::shared_ptr<Material>>& getMaterialAssets() const;
 
     private:
-        std::string mMeshId;
+        std::optional<std::string> mMeshId;
         std::shared_ptr<Mesh> mMesh;
         std::unordered_map<uint32_t, std::string> mMaterials;
         std::unordered_map<uint32_t, std::shared_ptr<Material>> mMaterialAssets;

@@ -2,15 +2,15 @@
 #pragma once
 
 #include "Components/Component.h"
+#include "Entity.h"
 #include <entt/entt.hpp>
 #include <string>
 #include <functional>
 #include <unordered_map>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
 
-    class Entity;
+namespace StrikeEngine {
 
     class ComponentRegistry {
     public:

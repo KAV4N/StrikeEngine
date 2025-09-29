@@ -17,26 +17,17 @@ namespace StrikeEngine {
 
     class GraphNode : public std::enable_shared_from_this<GraphNode> {
     public:
-        GraphNode(Entity entity, bool isRoot = false);
+        GraphNode(Entity entity, bool isRoot = false, const std::string& nodeId = "", const std::string& nodeName = "");
 
         // Accessors
         Entity getEntity() const { return mEntity; }
+        const std::string& getNodeId() const { return mNodeId; }
+        const std::string& getNodeName() const { return mNodeName; }
 
         const glm::vec3& getPosition() const { return mPosition; }
-        float getPositionX() const { return mPosition.x; }
-        float getPositionY() const { return mPosition.y; }
-        float getPositionZ() const { return mPosition.z; }
-
         const glm::quat& getRotation() const { return mRotation; }
         glm::vec3 getEulerRotation();
-        float getRotationX() { return getEulerRotation().x; }
-        float getRotationY() { return getEulerRotation().y; }
-        float getRotationZ() { return getEulerRotation().z; }
-
         const glm::vec3& getScale() const { return mScale; }
-        float getScaleX() const { return mScale.x; }
-        float getScaleY() const { return mScale.y; }
-        float getScaleZ() const { return mScale.z; }
 
         const glm::mat4& getLocalMatrix() const { return mLocalMatrix; }
         const glm::mat4& getWorldMatrix() const { return mWorldMatrix; }
@@ -50,37 +41,14 @@ namespace StrikeEngine {
 
         // Mutators
         void setPosition(const glm::vec3& pos) { mPosition = pos; markDirty(); }
-        void setPositionX(float x) { mPosition.x = x; markDirty(); }
-        void setPositionY(float y) { mPosition.y = y; markDirty(); }
-        void setPositionZ(float z) { mPosition.z = z; markDirty(); }
-        void move(const glm::vec3& offset) { mPosition += offset; markDirty(); }
-        void moveX(float x) { mPosition.x += x; markDirty(); }
-        void moveY(float y) { mPosition.y += y; markDirty(); }
-        void moveZ(float z) { mPosition.z += z; markDirty(); }
-
         void setRotation(const glm::quat& rot) { mRotation = rot; markDirty(); }
         void setEulerRotation(const glm::vec3& eulerAngles);
-        void setRotationX(float angleDegrees);
-        void setRotationY(float angleDegrees);
-        void setRotationZ(float angleDegrees);
-        void rotate(const glm::quat& rotation) { mRotation = glm::normalize(rotation * mRotation); markDirty(); }
-        void rotateEuler(const glm::vec3& anglesDegrees);
-        void rotateX(float angleDegrees);
-        void rotateY(float angleDegrees);
-        void rotateZ(float angleDegrees);
-
+        void setQuaternionRotation(float angleDegrees, glm::vec3 axis);
         void setScale(const glm::vec3& scl) { mScale = scl; markDirty(); }
-        void setScaleX(float x) { mScale.x = x; markDirty(); }
-        void setScaleY(float y) { mScale.y = y; markDirty(); }
-        void setScaleZ(float z) { mScale.z = z; markDirty(); }
-        void scaleBy(const glm::vec3& factor) { mScale *= factor; markDirty(); }
-        void scaleByX(float x) { mScale.x *= x; markDirty(); }
-        void scaleByY(float y) { mScale.y *= y; markDirty(); }
-        void scaleByZ(float z) { mScale.z *= z; markDirty(); }
-
         void setActive(bool active) { mIsActive = active; }
+        void setNodeName(const std::string& name) { mNodeName = name; }
         void markDirty() { mIsDirty = true; }
-        const std::string& getEntityId() const { return mEntity.getId(); }
+        const std::string& getEntityId() const { return mNodeId; }
 
     private:
         friend class SceneGraph;
@@ -88,7 +56,6 @@ namespace StrikeEngine {
         void addChild(const std::shared_ptr<GraphNode>& child);
         void removeChild(const std::shared_ptr<GraphNode>& child);
 
-        float normalizeAngle(float angle);
         glm::vec3 normalizeEulerAngles(const glm::vec3& angles);
 
         void updateLocalMatrix();
@@ -96,6 +63,8 @@ namespace StrikeEngine {
 
     private:
         Entity mEntity;
+        std::string mNodeId;
+        std::string mNodeName;
 
         glm::vec3 mPosition;
         glm::quat mRotation;

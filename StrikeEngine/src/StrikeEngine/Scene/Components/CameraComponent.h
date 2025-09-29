@@ -11,12 +11,10 @@
 
 namespace StrikeEngine {
 
-
-
     class CameraComponent : public Component {
     public:
         CameraComponent();
-        CameraComponent(float fov, float aspectRatio, float nearPlane, float farPlane);
+        CameraComponent(float fov, float nearPlane, float farPlane);
 
         // Static type name for registration
         static const std::string& getStaticTypeName() {
@@ -45,11 +43,10 @@ namespace StrikeEngine {
         void serialize(pugi::xml_node& node) const override;
 
         // Projection settings
-        void setPerspective(float fov, float aspectRatio, float nearPlane, float farPlane);
+        void setPerspective(float fov, float nearPlane, float farPlane);
 
         // Getters
         float getFOV() { return mFOV; }
-        float getAspectRatio() { return mAspectRatio; }
         float getNearPlane() { return mNearPlane; }
         float getFarPlane() { return mFarPlane; }
         const Frustum& getFrustum() const { return mFrustum; }
@@ -60,7 +57,6 @@ namespace StrikeEngine {
 
         // Setters
         void setFOV(float fov);
-        void setAspectRatio(float aspectRatio);
         void setNearPlane(float nearPlane);
         void setFarPlane(float farPlane);
 
@@ -72,21 +68,17 @@ namespace StrikeEngine {
         int getRenderOrder() const { return mRenderOrder; }
         void setRenderOrder(int order) { mRenderOrder = order; }
 
-
-
     private:
         friend class SceneGraph;
 
-        void update(const glm::vec3& position, const glm::quat& rotation);
-        void updateProjectionMatrix(const glm::vec3& position, const glm::quat& rotation);
-        void updateViewMatrix(const glm::vec3& position, const glm::quat& rotation);
-        void updateViewProjectionMatrix(const glm::vec3& position, const glm::quat& rotation);
-        void calculateFrustum(const glm::vec3& position, const glm::quat& rotation);
+        void update(const glm::mat4& worldMatrix);
+        void updateProjectionMatrix();
+        void updateViewMatrix(const glm::mat4& worldMatrix);
+        void updateViewProjectionMatrix();
+        void calculateFrustum(const glm::mat4& worldMatrix);
 
     private:
         // Perspective parameters
-        float mAspectRatio = 16.0f / 9.0f;
-
         float mFOV = 45.0f;
         float mNearPlane = 0.1f;
         float mFarPlane = 1000.0f;

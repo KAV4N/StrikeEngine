@@ -15,50 +15,73 @@ namespace StrikeEngine {
     }
 
     void GeometryRenderPass::setup() {
-        // Initialize any resources needed for the geometry pass
-        // For now, we'll rely on OpenGL state setup in execute
     }
 
     void GeometryRenderPass::cleanup() {
-        // Clean up any resources if necessary
+    }
+
+    void GeometryRenderPass::bindPointLights(const std::vector<PointLightData>& pointLights, std::shared_ptr<Shader> shader) {
+        shader->setInt("uNumPointLights", static_cast<int>(pointLights.size()));
+        for (size_t i = 0; i < pointLights.size(); ++i) {
+            const auto& light = pointLights[i];
+            std::string base = "uPointLights[" + std::to_string(i) + "].";
+            
+            shader->setVec4(base + "position", light.position);        // xyz: position, w: unused
+            shader->setVec4(base + "color", light.color);              // rgb: color, w: intensity
+            shader->setVec4(base + "attenuation", light.attenuation);  // xyz: attenuation, w: radius
+        }
+    }
+
+    void GeometryRenderPass::bindDirectionalLights(const std::vector<DirectionalLightData>& directionalLights, std::shared_ptr<Shader> shader) {
+        shader->setInt("uNumDirLights", static_cast<int>(directionalLights.size()));
+        for (size_t i = 0; i < directionalLights.size(); ++i) {
+            const auto& light = directionalLights[i];
+            std::string base = "uDirLights[" + std::to_string(i) + "].";
+            
+            shader->setVec4(base + "direction", light.direction);  // xyz: direction, w: unused
+            shader->setVec4(base + "color", light.color);          // rgb: color, w: intensity
+        }
+    }
+
+    void GeometryRenderPass::bindSpotLights(const std::vector<SpotLightData>& spotLights, std::shared_ptr<Shader> shader) {
+        shader->setInt("uNumSpotLights", static_cast<int>(spotLights.size()));
+        for (size_t i = 0; i < spotLights.size(); ++i) {
+            const auto& light = spotLights[i];
+            std::string base = "uSpotLights[" + std::to_string(i) + "].";
+            
+            shader->setVec4(base + "position", light.position);        // xyz: position, w: unused
+            shader->setVec4(base + "direction", light.direction);      // xyz: direction, w: unused
+            shader->setVec4(base + "color", light.color);              // rgb: color, w: intensity
+            shader->setVec4(base + "anglesRadius", light.anglesRadius); // x: radius, y: innerCone, z: outerCone, w: unused
+        }
     }
 
     void GeometryRenderPass::execute(const CameraRenderData& cameraData) {
         if (!isEnabled()) return;
 
-
         auto camera = cameraData.camera;
-
-        // Setup viewport and scissor test using Renderer dimensions
-        const CameraComponent::Rect& viewportRect = camera.getViewportRect();
-        GLint viewportX = static_cast<GLint>(viewportRect.x * mRenderer.getWidth());
-        GLint viewportY = static_cast<GLint>(viewportRect.y * mRenderer.getHeight());
-        GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mRenderer.getWidth());
-        GLsizei viewportHeight = static_cast<GLsizei>(viewportRect.height * mRenderer.getHeight());
-
-        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+        glm::vec3 cameraPos = cameraData.cameraPosition; // Use stored camera position
 
         setupOpenGLState();
 
-        // Set view-projection matrix uniform
         for (const auto& renderItem : cameraData.renderItems) {
             if (!renderItem.mesh || !renderItem.material || !renderItem.mesh->isReady() || !renderItem.material->isReady()) {
                 continue;
             }
 
-            // Bind material and shader
             renderItem.material->bind();
 
-            // Set the view-projection matrix
             auto shader = renderItem.material->getShader();
-            if (shader) {
-                shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
-                shader->setMat4("uModel", renderItem.worldMatrix);
-            }
+ 
+            shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
+            shader->setMat4("uModel", renderItem.worldMatrix);
+            shader->setVec3("uViewPos", cameraPos);
 
-            // Bind vertex array object
+            // Bind all light types
+            bindPointLights(cameraData.pointLights, shader);
+            bindDirectionalLights(cameraData.directionalLights, shader);
+            bindSpotLights(cameraData.spotLights, shader);
+            
             GLuint vao = renderItem.mesh->getVAO();
             if (vao == 0) {
                 continue;
@@ -76,30 +99,22 @@ namespace StrikeEngine {
             renderItem.material->unbind();
         }
 
-        // Restore scissor test state
-        glDisable(GL_SCISSOR_TEST);
-
         restoreOpenGLState();
     }
 
     void GeometryRenderPass::setupOpenGLState() {
-        // Enable depth testing
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-
-        // Enable face culling
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
-
         glDepthFunc(GL_LESS);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void GeometryRenderPass::restoreOpenGLState() {
-        // Disable states to clean up
         glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
         glDisable(GL_CULL_FACE);
     }
-
 }

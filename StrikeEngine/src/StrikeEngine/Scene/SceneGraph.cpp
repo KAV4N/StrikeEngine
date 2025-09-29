@@ -10,8 +10,8 @@
 namespace StrikeEngine {
 
     // GraphNode Implementation
-    GraphNode::GraphNode(Entity entity, bool isRoot)
-        : mEntity(entity), mIsRootNode(isRoot),
+    GraphNode::GraphNode(Entity entity, bool isRoot, const std::string& nodeId, const std::string& nodeName)
+        : mEntity(entity), mIsRootNode(isRoot), mNodeId(nodeId), mNodeName(nodeName),
         mPosition(0.0f), mRotation(1.0f, 0.0f, 0.0f, 0.0f), mScale(1.0f),
         mLocalMatrix(1.0f), mWorldMatrix(1.0f) {
     }
@@ -28,39 +28,14 @@ namespace StrikeEngine {
         mIsDirty = true;
     }
 
-    void GraphNode::setRotationX(float angleDegrees) {
-        glm::vec3 euler = getEulerRotation();
-        euler.x = normalizeAngle(angleDegrees);
-        setEulerRotation(euler);
-    }
-
-    void GraphNode::setRotationY(float angleDegrees) {
-        glm::vec3 euler = getEulerRotation();
-        euler.y = normalizeAngle(angleDegrees);
-        setEulerRotation(euler);
-    }
-
-    void GraphNode::setRotationZ(float angleDegrees) {
-        glm::vec3 euler = getEulerRotation();
-        euler.z = normalizeAngle(angleDegrees);
-        setEulerRotation(euler);
-    }
-
-    void GraphNode::rotateEuler(const glm::vec3& anglesDegrees) {
-        glm::vec3 currentEuler = getEulerRotation();
-        setEulerRotation(currentEuler + anglesDegrees);
-    }
-
-    void GraphNode::rotateX(float angleDegrees) {
-        rotateEuler(glm::vec3(angleDegrees, 0.0f, 0.0f));
-    }
-
-    void GraphNode::rotateY(float angleDegrees) {
-        rotateEuler(glm::vec3(0.0f, angleDegrees, 0.0f));
-    }
-
-    void GraphNode::rotateZ(float angleDegrees) {
-        rotateEuler(glm::vec3(0.0f, 0.0f, angleDegrees));
+    void GraphNode::setQuaternionRotation(float angleDegrees, glm::vec3 axis) {
+        glm::quat angleQuat = glm::angleAxis(glm::radians(angleDegrees), axis);
+        if (axis.y == 1.0f) {
+            mRotation = angleQuat * mRotation;
+        } else {
+            mRotation = mRotation * angleQuat;
+        }
+        mIsDirty = true;
     }
 
     void GraphNode::setParent(const std::shared_ptr<GraphNode>& newParent) {
@@ -108,16 +83,11 @@ namespace StrikeEngine {
         mWorldMatrix = parentWorldMatrix * mLocalMatrix;
     }
 
-    float GraphNode::normalizeAngle(float angle) {
-        angle = fmod(angle, 360.0f);
-        return angle < 0.0f ? angle + 360.0f : angle;
-    }
-
     glm::vec3 GraphNode::normalizeEulerAngles(const glm::vec3& angles) {
         return glm::vec3(
-            normalizeAngle(angles.x),
-            normalizeAngle(angles.y),
-            normalizeAngle(angles.z)
+            fmod(angles.x, 360.0f) < 0.0f ? fmod(angles.x, 360.0f) + 360.0f : fmod(angles.x, 360.0f),
+            fmod(angles.y, 360.0f) < 0.0f ? fmod(angles.y, 360.0f) + 360.0f : fmod(angles.y, 360.0f),
+            fmod(angles.z, 360.0f) < 0.0f ? fmod(angles.z, 360.0f) + 360.0f : fmod(angles.z, 360.0f)
         );
     }
 
@@ -128,8 +98,7 @@ namespace StrikeEngine {
 
     void SceneGraph::createRootEntity(const std::string& rootId, const std::string& rootName) {
         Entity entity = createEntityInternal(rootId);
-        entity.setName(rootName);
-        auto rootNode = std::make_shared<GraphNode>(entity, true);
+        auto rootNode = std::make_shared<GraphNode>(entity, true, rootId, rootName);
         mNodes[rootId] = rootNode;
         mRootNode = std::make_pair(rootId, rootNode);
     }
@@ -148,7 +117,7 @@ namespace StrikeEngine {
             throw std::runtime_error("Failed to create entity with ID " + id);
         }
 
-        auto node = std::make_shared<GraphNode>(entity, false);
+        auto node = std::make_shared<GraphNode>(entity, false, id);
         mNodes[id] = node;
 
         if (!parentId.empty() && entityExists(parentId)) {
@@ -179,7 +148,7 @@ namespace StrikeEngine {
 
         for (const auto& pair : mNodes) {
             const auto& node = pair.second;
-            if (node && node->getEntity().getName() == name) {
+            if (node && node->getNodeName() == name) {
                 result.push_back(node->getEntity());
             }
         }
@@ -190,10 +159,8 @@ namespace StrikeEngine {
     Entity SceneGraph::createEntityInternal(const std::string& id) {
         Entity entity;
         entity.mHandle = mRegistry.create();
-        entity.mId = id;
         entity.mScene = mScene;
         entity.mSceneGraph = this;
-
         return entity;
     }
 
@@ -367,10 +334,10 @@ namespace StrikeEngine {
             glm::mat4 parentWorldMatrix = parent ? parent->getWorldMatrix() : glm::mat4(1.0f);
             node->updateWorldMatrix(parentWorldMatrix);
 
-            auto& entity = node->getEntity();
+            const Entity& entity = node->getEntity();
             if (entity.isValid() && mRegistry.all_of<CameraComponent>(entity.mHandle)) {
                 auto& camera = mRegistry.get<CameraComponent>(entity.mHandle);
-                camera.update(node->getPosition(), node->getRotation());
+                camera.update(node->getWorldMatrix());
             }
 
             // Mark all children for update, regardless of their dirty state

@@ -60,10 +60,6 @@ namespace StrikeEngine {
 
         void move(const glm::vec3& offset);
 
-        void moveX(float x);
-        void moveY(float y);
-        void moveZ(float z);
-
         void moveUp(float distance);
         void moveDown(float distance);
         void moveLeft(float distance);
@@ -71,41 +67,37 @@ namespace StrikeEngine {
         void moveForward(float distance);
         void moveBackward(float distance);
 
-        glm::vec3 getPosition() const;
-        float getPositionX() const;
-        float getPositionY() const;
-        float getPositionZ() const;
-
         // Rotation controls
         void setRotation(const glm::quat& rotation);
-        void setEulerRotation(const glm::vec3& rotation);
+        void setRotationEuler(const glm::vec3& rotation);
         void setRotationX(float angleDegrees);
         void setRotationY(float angleDegrees);
         void setRotationZ(float angleDegrees);
-        void rotate(const glm::quat& rotation);
+
         void rotateEuler(const glm::vec3& anglesDegrees);
+        //test
+        void rotateQuaternion(float angleDegrees, glm::vec3 axis);
         void rotateX(float angleDegrees);
         void rotateY(float angleDegrees);
         void rotateZ(float angleDegrees);
-        glm::quat getRotation() const;
-        glm::vec3 getEulerRotation() const;
-        float getRotationX() const;
-        float getRotationY() const;
-        float getRotationZ() const;
+
 
         // Scale controls
         void setScale(const glm::vec3& scale);
         void setScaleX(float x);
         void setScaleY(float y);
         void setScaleZ(float z);
-        void scaleBy(const glm::vec3& factor);
-        void scaleByX(float x);
-        void scaleByY(float y);
-        void scaleByZ(float z);
+
+        void scale(const glm::vec3& factor);
+        void scaleX(float x);
+        void scaleY(float y);
+        void scaleZ(float z);
+        
         glm::vec3 getScale() const;
-        float getScaleX() const;
-        float getScaleY() const;
-        float getScaleZ() const;
+        glm::vec3 getPosition() const;
+        glm::quat getRotation() const;
+        glm::vec3 getEulerRotation() const;
+
 
         glm::mat4 getLocalMatrix() const;
         glm::mat4 getWorldMatrix() const;
@@ -125,13 +117,13 @@ namespace StrikeEngine {
         operator bool() const { return isValid(); }
 
         bool operator!=(const Entity& other) const { return !(*this == other); }
-        bool operator==(const Entity& other) const { return mId == other.mId && mSceneGraph == other.mSceneGraph; }
+        bool operator==(const Entity& other) const { return mSceneGraph == other.mSceneGraph && mHandle == other.mHandle; }
 
         Scene* getScene() const;
         SceneGraph* getSceneGraph() const;
 
     private:
-        entt::registry& Entity::getRegistry() const;
+        entt::registry& getRegistry() const;
 
     private:
         friend class Scene;
@@ -140,8 +132,6 @@ namespace StrikeEngine {
 
         Scene* mScene = nullptr;
         SceneGraph* mSceneGraph = nullptr;
-        std::string mId;
-        std::string mName = "";
         entt::entity mHandle = entt::null;
     };
 
@@ -192,13 +182,4 @@ namespace StrikeEngine {
         }
         return addComponent<T>(std::forward<Args>(args)...);
     }
-}
-
-namespace std {
-    template<>
-    struct hash<StrikeEngine::Entity> {
-        std::size_t operator()(const StrikeEngine::Entity& e) const noexcept {
-            return std::hash<std::string>()(e.getId());
-        }
-    };
 }

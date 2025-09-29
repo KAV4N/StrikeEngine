@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scene sceneId="MainScene" position="0.0,0.0,0.0" rotation="0.0,0.0,0.0" scale="1.0,1.0,1.0">
+	
 	<components>
 		<script name="SceneController" />
 		<directionalLight color="1,1,1" intensity="0.8" />
 	</components>
 
 	<assets>
-
-		
 		<template assetId="gizmo" src="templates/gizmo/gizmo.template"  srcModel="../Objects/gizmo.obj" async="false"/>
 
 		<cubeMap assetId="skyboxMainScene" src="@/Assets/Textures/SkyboxTest"/>
@@ -17,6 +16,9 @@
 	<skybox cubeMapId ="skyboxMainScene"/>
 
 	<entities>
+
+
+
 		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
 			<components>
 				<camera
@@ -24,18 +26,35 @@
 					nearPlane="0.1"
 					farPlane="1000.0"
 					fov="60.0"
-					aspectRatio="1.777"
 					viewportX="0.0"
 					viewportY="0.0"
-					viewportWidth="1.0"
+					viewportWidth="0.5"
 					viewportHeight="1.0"
 				/>
 				<scriptComponent>
-					<script type="CameraMovement"  />
+					<script type="CameraMovement" />
 				</scriptComponent>
 			</components>
 		</entity>
 
+		<entity id="camer20" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
+			<components>
+				<camera
+					projectionType="perspective"
+					nearPlane="0.1"
+					farPlane="1000.0"
+					fov="60.0"
+					viewportX="0.5"
+					viewportY="0.0"
+					viewportWidth="0.5"
+					viewportHeight="1.0"
+					renderOrder="2"
+				/>
+				<scriptComponent>
+					<script type="CameraMovement" />
+				</scriptComponent>
+			</components>
+		</entity>
 		<entity id="gizmo" name="tanker" templateId="gizmo" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
 
 		<!-- Textures 

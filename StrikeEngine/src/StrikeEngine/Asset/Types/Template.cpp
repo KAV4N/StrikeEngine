@@ -58,7 +58,7 @@ namespace StrikeEngine {
             Entity entity = Entity::create(&scene, prefixedId);
             entity.setName(name);
             entity.setPosition(localPos);
-            entity.setEulerRotation(localRot);
+            entity.setRotationEuler(localRot);
             entity.setScale(localScale);
 
             if (parentEntity.isValid()) {

@@ -1,14 +1,11 @@
 #pragma once
 
 #include "glad/glad.h"
-
 #include "Asset.h"
-
 #include <string>
 #include <unordered_map>
 #include <memory>
 #include <glm/glm.hpp>
-
 
 namespace StrikeEngine {
     class GraphicsAsset;
@@ -48,7 +45,6 @@ namespace StrikeEngine {
 
         void setVertexSource(const std::string& source) { mVertexSource = source; }
         void setFragmentSource(const std::string& source) { mFragmentSource = source; }
-
     private:
         GLuint compileShader(GLenum type, const std::string& source);
         void linkProgram();
@@ -61,5 +57,4 @@ namespace StrikeEngine {
         std::string mFragmentSource;
         std::unordered_map<std::string, GLint> mUniformLocationCache;
     };
-
 }
