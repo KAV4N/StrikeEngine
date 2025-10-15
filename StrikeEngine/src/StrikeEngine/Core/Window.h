@@ -1,50 +1,39 @@
 #pragma once
 
 #include "strikepch.h"
-
 #include "StrikeEngine/Core/Core.h"
 #include "StrikeEngine/Events/Event.h"
 
-namespace StrikeEngine
-{
+namespace StrikeEngine {
 
-	struct WindowProps
-	{
-		std::string Title;
-		unsigned int Width;
-		unsigned int Height;
+    struct WindowProps {
+        std::string title;
+        unsigned int width;
+        unsigned int height;
 
-		WindowProps(const std::string& title = "StrikeEngine",
-			unsigned int width = 1280,
-			unsigned int height = 720)
-			: Title(title), Width(width), Height(height)
-		{}
-	};
+        WindowProps(const std::string& title = "StrikeEngine",
+            unsigned int width = 1280,
+            unsigned int height = 720)
+            : title(title), width(width), height(height) {
+        }
+    };
 
+    class Window {
+    public:
+        using EventCallbackFn = std::function<void(Event&)>;
 
-	class STRIKE_API Window
-	{
-	public:
-		using EventCallbackFn = std::function<void(Event&)>;
+        virtual ~Window() {}
 
-		virtual ~Window() {}
+        virtual void onUpdate() = 0;
+        virtual unsigned int getWidth() const = 0;
+        virtual unsigned int getHeight() const = 0;
+        virtual void setEventCallback(const EventCallbackFn& callback) = 0;
+        virtual void setVSync(bool enabled) = 0;
+        virtual void setWindowTitle(std::string title) = 0;
+        virtual bool isVSync() const = 0;
+        virtual double getTime() const = 0;
+        virtual void* getNativeWindow() const = 0;
 
-		virtual void OnUpdate() = 0;
-
-		virtual unsigned int GetWidth() const = 0;
-		virtual unsigned int GetHeight() const = 0;
-
-
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
-		virtual void SetVSync(bool enabled) = 0;
-		virtual void SetWindowTitle(std::string title) = 0;
-
-		virtual bool IsVSync() const = 0;
-		virtual double GetTime() const = 0;
-
-		virtual void* GetNativeWindow() const = 0;
-
-		static Window* Create(const WindowProps& props = WindowProps());
-	};
-
+        static Window* create(const WindowProps& props = WindowProps());
+    };
 }

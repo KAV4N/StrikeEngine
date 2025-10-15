@@ -10,24 +10,21 @@
 #include "StrikeEngine/Events/KeyCodes.h"
 #include "StrikeEngine/Events/Event.h"
 
+
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
+#include "StrikeEngine/Asset/Types/Mesh.h"
+#include "StrikeEngine/Asset/Types/Template.h"
+#include "StrikeEngine/Asset/Types/Texture.h"
+#include "StrikeEngine/Asset/Types/Shader.h"
+#include "StrikeEngine/Asset/Types/Material.h"
+
+#include "StrikeEngine/Asset/ModelParser.h"
 #include "StrikeEngine/Scene/World.h"
-#include "StrikeEngine/Scene/Scene.h"
-#include "StrikeEngine/Scene/Entity.h"
-#include "StrikeEngine/Scene/ScriptableEntity.h"
-#include "StrikeEngine/Scene/UI/ScreenPanel.h"
-#include <StrikeEngine/Scene/Camera.h>
-
-#include "StrikeEngine/Graphics/Managers/ModelManager.h"
-#include "StrikeEngine/Graphics/Managers/LightManager.h"
-#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
+#include "StrikeEngine/Asset/AssetManager.h"
 
 
-#include "StrikeEngine/Scene/Components/NativeScriptComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
-
-
-#include "StrikeEngine/Scene/Systems/TransformSystem.h"
+#include "StrikeEngine/Scene/ScriptRegistry.h"
+#include "StrikeEngine/Scene/Script.h"
 
 

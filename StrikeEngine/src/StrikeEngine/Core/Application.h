@@ -1,55 +1,61 @@
 #pragma once
-
 #include "Core.h"
-
 #include "Window.h"
-#include "StrikeEngine/Core/LayerStack.h"
+#include "Timer.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
+
+
+
 
 #include "StrikeEngine/ImGui/ImGuiLayer.h"
 
 
+namespace StrikeEngine {
+    class World;
 
-namespace StrikeEngine
-{
-
-
-    class STRIKE_API Application
-    {
+    class Application {
     public:
         friend class Renderer;
         Application();
         virtual ~Application();
+        void run();
+        void onEvent(Event& e);
+        void onUpdate();
 
-        void Run();
-        void OnEvent(Event& e);
+        // Timer access methods
+        void setTargetFPS(float fps) { mTimer.setTargetFPS(fps); }
+        float getTargetFPS() const { return mTimer.getTargetFPS(); }
+        float getCurrentFPS() const { return mTimer.getCurrentFPS(); }
+        float getDeltaTime() const { return mTimer.getDeltaTime(); }
+        double getElapsedTime() const { return mTimer.getElapsedTime(); }
 
-        void OnUpdate();
+        // Timer direct access
+        Timer& getTimer() { return mTimer; }
+        const Timer& getTimer() const { return mTimer; }
 
-        void PushLayer(Layer* layer);
-        void PushOverlay(Layer* overlay);
+        // World reference access
+        World& getWorld() { return *mWorld; }
+        const World& getWorld() const { return *mWorld; }
 
-        inline Window& GetWindow() { return *m_Window; }
-
-        inline static Application& Get() { return *s_Instance; }
-
-    private:
-        bool OnWindowClose(WindowCloseEvent& e);
-
-        bool OnWindowResize(WindowResizeEvent& e);
-
-        std::unique_ptr<Window> m_Window;
-        ImGuiLayer* m_ImGuiLayer;
-        bool m_Running = true;
-        LayerStack<Layer*> m_LayerStack;
-        std::chrono::high_resolution_clock::time_point m_LastFrameTime;
+        inline Window& getWindow() { return *mWindow; }
+        inline static Application& get() { return *sInstance; }
 
     private:
-        static Application* s_Instance;
+        bool onWindowClose(WindowCloseEvent& e);
+        bool onWindowResize(WindowResizeEvent& e);
+        void createManagers();
+
+        std::unique_ptr<Window> mWindow;
+        ImGuiLayer* mImGuiLayer;
+        World* mWorld; // Reference to World singleton
+        Timer mTimer; // Timer instance
+        bool mRunning = true;
+
+    private:
+        static Application* sInstance;
+
     };
 
-    // To be defined in CLIENT
-    Application* CreateApplication();
+    Application* createApplication();
 }
-

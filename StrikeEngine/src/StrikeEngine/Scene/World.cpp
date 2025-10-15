@@ -1,87 +1,108 @@
-#include "strikepch.h"
 #include "World.h"
-#include "StrikeEngine/Scene/Systems/TransformSystem.h"
 #include "StrikeEngine/Graphics/Renderer/Renderer.h"
+#include <iostream>
+#include <chrono>
 
 namespace StrikeEngine {
 
-    World* World::s_Instance = nullptr;
-
-    World::World(GLuint resX, GLuint resY)
-        : m_ActiveScene(nullptr),
-        m_FrameBuffer(new FrameBuffer(resX, resY))
-
+    World::World()
+        : mSceneLoader(std::make_unique<SceneLoader>())
+        , mRenderSystem(std::make_unique<RenderSystem>())
+        , mScriptSystem(std::make_unique<ScriptSystem>())
+        , mSkybox(std::make_unique<Skybox>())
     {
-        Renderer::Create();
-        Renderer::Get()->Init();
-
     }
 
-    World::~World() {
-        for (auto scene : m_Scenes) {
-            delete scene;
-        }
-        delete m_FrameBuffer;
-    }
-
-    void World::Create() {
-        if (s_Instance == nullptr) {
-            s_Instance = new World();
-        }
-    }
-
-
-    World* World::Get() {
-
-        return s_Instance;
-    }
-
-    void World::AddScene(Scene* scene) {
-        m_Scenes.push_back(scene);
-        if (m_ActiveScene == nullptr) {
-            m_ActiveScene = scene;
-        }
-    }
-
-    void World::AddScene() {
-        Scene* scene = new Scene();
-        m_Scenes.push_back(scene);
-        if (m_ActiveScene == nullptr) {
-            m_ActiveScene = scene;
-        }
-    }
-
-    void World::SetActiveScene(int index) {
-        if (index >= 0 && index < m_Scenes.size()) {
-            m_ActiveScene = m_Scenes[index];
-        }
-    }
-
-
-
-    void World::OnUpdate(float deltaTime) {
-        m_ActiveScene->OnUpdate(deltaTime);
-    }
-
-
-    void World::OnRender() {
-        if (m_ActiveScene) {
-
-            m_ActiveScene->RenderScene(m_FrameBuffer);
-            Renderer::Resize(m_Width, m_Height);
-            Renderer::BindDefaultFrameBuffer();
-            Renderer::Get()->DrawTexturedQuad(glm::vec2(0.0f, 0.0f), glm::vec2(1.f, 1.f), m_FrameBuffer->GetColorAttachment());
-        }
-
-    }
-
-    void World::OnEvent(Event& event)
+    void World::loadScene(const std::filesystem::path& path)
     {
-        m_ActiveScene->OnEvent(event);
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Scene file does not exist: " << path << std::endl;
+            return;
+        }
+
+        mCurrentScene = mSceneLoader->loadScene(path);
+
+        if (mCurrentScene) {
+            std::cout << "Successfully loaded scene from: " << path << std::endl;
+        }
+        else {
+            std::cerr << "Failed to load scene from: " << path << std::endl;
+        }
     }
 
-    Scene* World::GetActiveScene() {
-        return s_Instance->m_ActiveScene;
+    void World::loadSceneAsync(const std::filesystem::path& path)
+    {
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Scene file does not exist: " << path << std::endl;
+            return;
+        }
+
+        if (mPendingScene.valid()) {
+            std::cout << "Cancelling previous async scene loading operation" << std::endl;
+        }
+
+        mPendingScene = mSceneLoader->loadSceneAsync(path);
+
+        if (mPendingScene.valid()) {
+            std::cout << "Started async loading of scene from: " << path << std::endl;
+        }
+        else {
+            std::cerr << "Failed to start async loading of scene from: " << path << std::endl;
+        }
+    }
+
+    bool World::isSceneLoading() const
+    {
+        return mPendingScene.valid() && mPendingScene.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    }
+
+    void World::update(float dt)
+    {
+        mSceneLoader->update();
+        checkAndSwitchScene();
+        if (mCurrentScene && mCurrentScene->isActive()) {
+            mCurrentScene->onUpdate(dt);
+            mScriptSystem->onUpdate(dt);
+            mRenderSystem->onUpdate(dt);
+        }
+    }
+
+    void World::onRender()
+    {
+        auto& renderer = Renderer::get();
+        renderer.render();
+    }
+
+    void World::onImGuiRender()
+    {
+        if (mCurrentScene && mCurrentScene->isActive()) {
+        }
+    }
+
+    void World::onEvent(Event& e)
+    {
+        if (mCurrentScene && mCurrentScene->isActive()) {
+            mScriptSystem->onEvent(e);
+        }
+    }
+
+    void World::checkAndSwitchScene()
+    {
+        if (mPendingScene.valid() && mPendingScene.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            try {
+                auto newScene = mPendingScene.get();
+                if (newScene) {
+                    mCurrentScene = std::move(newScene);
+                    std::cout << "Successfully switched to new scene" << std::endl;
+                }
+                else {
+                    std::cerr << "Async scene loading failed" << std::endl;
+                }
+            }
+            catch (const std::exception& e) {
+                std::cerr << "Exception during scene switching: " << e.what() << std::endl;
+            }
+        }
     }
 
 }

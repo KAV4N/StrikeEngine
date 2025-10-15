@@ -1,20 +1,5 @@
 #pragma once
-
-#ifdef PLATFORM_WINDOWS
-	#if STRIKE_DYNAMIC_LINK
-		#ifdef BUILD_DLL
-			#define STRIKE_API __declspec(dllexport)
-		#else
-			#define STRIKE_API __declspec(dllimport)
-		#endif
-	#else
-		#define STRIKE_API
-	#endif
-#else
-	#error Only Windows OS is supported!
-#endif
-
-
+#define GLM_ENABLE_EXPERIMENTAL
 
 #ifdef STRIKE_DEBUG
 	#define STRIKE_ENABLE_ASSERTS

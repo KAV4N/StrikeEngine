@@ -1,72 +1,53 @@
 #pragma once
 #include <entt/entt.hpp>
 #include <memory>
-#include <vector>
-#include "Entity.h"
+#include <string>
+#include <filesystem>
+#include "StrikeEngine/Asset/Types/Asset.h"
+#include "StrikeEngine/Core/LayerStack.h"
+#include "StrikeEngine/Core/Layer.h"
 #include "SceneGraph.h"
+#include "Entity.h"
+
 #include "StrikeEngine/Events/Event.h"
-#include "StrikeEngine/Graphics/Core/Skybox.h"
-#include "StrikeEngine/Graphics/Core/Model.h"
-#include "UI/ScreenPanel.h"
-#include "Components/TransformComponent.h"
 
 namespace StrikeEngine {
+    class SceneGraph;
+    class Entity;
+    class Layer;
 
-    class Scene {
+    class Scene final {
     public:
-        Scene();
-        ~Scene();
-
-        Entity CreateEntity();
-        Entity CreateEmptyEntity();
-        Entity CreateRenderableEntity(Model* model, const std::string& name = "");
-        void DestroyEntity(Entity entity);
-
-        Entity CreateDirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity);
-        Entity CreatePointLight(const glm::vec3& position, const glm::vec3& color, float intensity, float radius);
-        Entity CreateSpotLight(const glm::vec3& position, const glm::vec3& direction, float cutoff, const glm::vec3& color, float intensity);
-        Entity CreateShadowCaster(Entity lightEntity);
-
-  
-        std::vector<Entity> GetDirectionalLights() const;
-        std::vector<Entity> GetPointLights() const;
-        std::vector<Entity> GetSpotLights() const;
-        std::vector<Entity> GetShadowCastingLights() const;
+        Scene(const std::string& id, const std::filesystem::path& path, const std::string& name = "Untitled");
+        ~Scene() = default;
 
 
-        void OnUpdate(float t_DeltaTime);
-        void OnEvent(Event& event);
-        void RenderScene(FrameBuffer* frameBuffer);
+        Entity getRootEntity() { return mSceneGraph->getRootEntity(); };
+        void reset();
 
+        // Update methods
+        void onUpdate(float dt);
+        void onRender();
 
-        ScreenPanel* GetActiveView() const { return m_ActiveView; }
-        std::vector<ScreenPanel*>& GetViewList() { return m_ViewList; }
-        Skybox* GetSkybox() const { return m_Skybox.get(); }
+        // Scene state
+        void setActive(bool active) { mActive = active; }
+        bool isActive() const { return mActive; }
 
-        SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-        const SceneGraph& GetSceneGraph() const { return m_SceneGraph; }
+        // Scene assets management
+        const std::unordered_map<std::string, std::shared_ptr<Asset>>& getSceneAssets() const { return mSceneAssets; }
+        std::unordered_map<std::string, std::shared_ptr<Asset>>& getSceneAssets() { return mSceneAssets; }
+        void clearSceneAssets() { mSceneAssets.clear(); }
 
-        template<typename... T>
-        auto GetAllEntitiesWith() {
-            return m_Registry.view<T...>();
-        }
+        SceneGraph* getSceneGraph() { return mSceneGraph.get(); }
+
 
     private:
-        void UpdateNodeTransforms(SceneNode* node, const glm::mat4& parentTransform);
-        void SubmitMesh(SceneNode* node, const glm::mat4& parentTransform);
-        void SubmitSkybox();
-        entt::registry& GetRegistry() { return m_Registry; }
-    private:
-        entt::registry m_Registry;
-        SceneGraph m_SceneGraph;
-
-        ScreenPanel* m_ActiveView;
-        std::vector<ScreenPanel*> m_ViewList;
-        std::unique_ptr<Skybox> m_Skybox;
-
         friend class Entity;
-        friend class SceneGraph;
-        friend class LightManager;
-    };
+        friend class SceneLoader;
 
+        std::unique_ptr<SceneGraph> mSceneGraph;
+        std::unordered_map<std::string, std::shared_ptr<Asset>> mSceneAssets;
+
+        bool mActive = true;
+    };
 }

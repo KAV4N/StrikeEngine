@@ -1,68 +1,101 @@
 #pragma once
+#include "Component.h"
+#include "StrikeEngine/Graphics/FrameBuffer.h"
+
+#include <string>
+#include <unordered_map>
+#include <pugixml.hpp>
+#include <memory>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <vector>
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
-#include "StrikeEngine/Graphics/Core/FrameBuffer.h"
 
 namespace StrikeEngine {
-  
-    struct CameraComponentV2 {
+
+    class CameraComponent : public Component {
     public:
-        GLuint resX, resY;
+        CameraComponent();
+        CameraComponent(float fov, float nearPlane, float farPlane);
 
-        glm::vec3 Right;
-        glm::vec3 Up;
-        glm::vec3 Forward;
-
-        glm::mat4 ProjectionMatrix;
-        glm::mat4 ViewMatrix;
-
-        const glm::vec3 WorldUp = glm::vec3(0, 1, 0);
-
-        float fov;
-        float nearPlane;
-        float farPlane;
-
-        CameraComponentV2(GLuint resX, GLuint resY, float fov, float nearPlane, float farPlane, int numClusters = 4)
-            : resX(resX), resY(resY), fov(fov), nearPlane(nearPlane), farPlane(farPlane)
-        {
-
-            ProjectionMatrix = glm::perspective(glm::radians(fov), (static_cast<float>(resX) / resY) , nearPlane, farPlane);
-            UpdateViewMatrix(glm::vec3(0.0f), glm::vec3(0.0f));
+        // Static type name for registration
+        static const std::string& getStaticTypeName() {
+            static const std::string typeName = "camera";
+            return typeName;
         }
 
-        ~CameraComponentV2() {
-
+        // Virtual method implementation
+        const std::string& getTypeName() const override {
+            return getStaticTypeName();
         }
 
-        void UpdateViewMatrix(const glm::vec3& position, const glm::vec3& rotation) {
-            Forward = glm::normalize(glm::vec3(
-                cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x)),
-                sin(glm::radians(rotation.x)),
-                sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x))
-            ));
-            Right = glm::normalize(glm::cross(Forward, WorldUp));
-            Up = glm::normalize(glm::cross(Right, Forward));
+        struct Frustum {
+            glm::vec4 planes[6];
+        };
 
-            ViewMatrix = glm::lookAt(position, position + Forward, Up);
-        }
+        struct Rect {
+            float x;
+            float y;
+            float width;
+            float height;
+        };
 
-        glm::vec3 GetForwardDirection() const {
-            return Forward;
-        }
+        // Serialization methods
+        void deserialize(const pugi::xml_node& node) override;
+        void serialize(pugi::xml_node& node) const override;
 
-        glm::vec3 GetRightDirection() const {
-            return Right;
-        }
+        // Projection settings
+        void setPerspective(float fov, float nearPlane, float farPlane);
 
-        glm::vec3 GetUpDirection() const {
-            return Up;
-        }
+        // Getters
+        float getFOV() { return mFOV; }
+        float getNearPlane() { return mNearPlane; }
+        float getFarPlane() { return mFarPlane; }
+        const Frustum& getFrustum() const { return mFrustum; }
 
-        float GetAspectRatio() const {
-            return (static_cast<float>(resX) / resY);
-        }
+        // Viewport rectangle (Unity-like)
+        void setViewportRect(float x, float y, float width, float height);
+        const Rect& getViewportRect() const { return mViewportRect; }
 
+        // Setters
+        void setFOV(float fov);
+        void setNearPlane(float nearPlane);
+        void setFarPlane(float farPlane);
+
+        // Matrix calculations
+        glm::mat4 getProjectionMatrix();
+        glm::mat4 getViewMatrix();
+        glm::mat4 getViewProjectionMatrix();
+
+        int getRenderOrder() const { return mRenderOrder; }
+        void setRenderOrder(int order) { mRenderOrder = order; }
+
+    private:
+        friend class SceneGraph;
+
+        void update(const glm::mat4& worldMatrix);
+        void updateProjectionMatrix();
+        void updateViewMatrix(const glm::mat4& worldMatrix);
+        void updateViewProjectionMatrix();
+        void calculateFrustum(const glm::mat4& worldMatrix);
+
+    private:
+        // Perspective parameters
+        float mFOV = 45.0f;
+        float mNearPlane = 0.1f;
+        float mFarPlane = 1000.0f;
+
+        int mRenderOrder = 0;
+
+        Rect mViewportRect = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+        Frustum mFrustum;
+
+        glm::vec3 mRight;
+        glm::vec3 mUp;
+        glm::vec3 mForward;
+
+        glm::mat4 mProjectionMatrix;
+        glm::mat4 mViewMatrix;
+        glm::mat4 mViewProjectionMatrix;
     };
+
 }

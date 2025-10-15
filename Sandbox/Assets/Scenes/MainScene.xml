@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene sceneId="MainScene" position="0.0,0.0,0.0" rotation="0.0,0.0,0.0" scale="1.0,1.0,1.0">
+	
+	<components>
+		<script name="SceneController" />
+		<directionalLight color="1,1,1" intensity="0.8" />
+	</components>
+
+	<assets>
+		<template assetId="gizmo" src="templates/gizmo/gizmo.template"  srcModel="../Objects/gizmo.obj" async="false"/>
+
+		<cubeMap assetId="skyboxMainScene" src="@/Assets/Textures/SkyboxTest"/>
+		<!--<template assetId="penguin" src="templates/penguin/penguin.template"  srcModel="../Objects/penguin/PenguinBaseMesh.obj"/>-->
+	</assets>
+
+	<skybox cubeMapId ="skyboxMainScene"/>
+
+	<entities>
+
+
+
+		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
+			<components>
+				<camera
+					projectionType="perspective"
+					nearPlane="0.1"
+					farPlane="1000.0"
+					fov="60.0"
+					viewportX="0.0"
+					viewportY="0.0"
+					viewportWidth="0.5"
+					viewportHeight="1.0"
+				/>
+				<scriptComponent>
+					<script type="CameraMovement" />
+				</scriptComponent>
+			</components>
+		</entity>
+
+		<entity id="camer20" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
+			<components>
+				<camera
+					projectionType="perspective"
+					nearPlane="0.1"
+					farPlane="1000.0"
+					fov="60.0"
+					viewportX="0.5"
+					viewportY="0.0"
+					viewportWidth="0.5"
+					viewportHeight="1.0"
+					renderOrder="2"
+				/>
+				<scriptComponent>
+					<script type="CameraMovement" />
+				</scriptComponent>
+			</components>
+		</entity>
+		<entity id="gizmo" name="tanker" templateId="gizmo" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
+
+		<!-- Textures 
+		
+		
+		<entity id="tank4" name="tanker" templateId="tankModel2" position="500.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5">
+			<components>
+				<scriptComponent>
+					<script type="TestScript"  />
+				</scriptComponent>
+			</components>
+		</entity>
+
+
+		<entity id="tank" name="tanker" templateId="panzer" position="50.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
+		
+				<entity id="cube" name="tanker" templateId="cubeTemplate" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5"/>
+	
+		<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
+			<components>
+				<renderer meshId="cubeModel.Cube">
+					<material slot="0" materialId="cubeModel.Material_001" />
+					<material slot="1" materialId="cubeModel.Material" />
+				</renderer>
+			</components>
+		</entity>
+
+		<entity id="Body" name="Body" position="0.000,0.000,-7.889" rotation="0.000,-0.000,-90.000" scale="1.000,1.000,1.000">
+			<components>
+				<renderer meshId="tank_low_poly.Cube" materialId="tank_low_poly.Body" />
+			</components>
+			<children>
+
+				<entity id="Turret" name="Turret" position="0.439,-0.000,52.973" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Cube_001" materialId="tank_low_poly.Body" />
+					</components>
+					<children>
+						<entity id="Barrel" name="Barrel" position="32.227,-0.000,-6.563" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+							<components>
+								<renderer meshId="tank_low_poly.Cube_003" materialId="tank_low_poly.Body" />
+							</components>
+						</entity>
+					</children>
+				</entity>
+				<entity id="Wheel_L06" name="Wheel_L06" position="-140.960,82.782,-4.681" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+					<components>
+						<renderer meshId="tank_low_poly.Cylinder_012" materialId="tank_low_poly.Body" />
+					</components>
+				</entity>
+			</children>
+		</entity>
+		-->
+	</entities>
+</scene>

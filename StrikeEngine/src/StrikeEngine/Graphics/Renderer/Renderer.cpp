@@ -1,262 +1,171 @@
+// Renderer.h - No changes needed to header
 
-#include "strikepch.h"
+// Renderer.cpp - Updated render() method
 #include "Renderer.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
-#include "StrikeEngine/Graphics/Managers/ModelManager.h"
-#include "StrikeEngine/Graphics/Managers/LightManager.h"
-#include "StrikeEngine/Scene/Components/ModelComponent.h"
-#include "StrikeEngine/Graphics/Core/VisibilityCuller.h"
-
-//#include "StrikeEngine/Graphics/Renderer/ShadowRenderer.h"
-// TODO: REMOVE AFTER TESTING
-#include <StrikeEngine/Scene/Systems/TransformSystem.h>
-#include <imgui.h>
-#include <StrikeEngine/Core/Application.h>
-// ---------------------------------------------
+#include "StrikeEngine/Scene/Systems/RenderSystem.h"
+#include "GeometryRenderPass.h"
+#include "SkyboxRenderPass.h"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace StrikeEngine {
 
-    Renderer* Renderer::s_Instance = nullptr;
-
-    Renderer::Renderer()
-        : m_Skybox(nullptr),
-        m_QuadShader(nullptr),
-        m_QuadScreenShader(nullptr)
-    {
+    Renderer::Renderer() : mScreenVAO(0), mScreenVBO(0), mScreenEBO(0) {
+        mFrameBuffer = std::make_unique<FrameBuffer>(mWidth, mHeight);
+        init();
     }
 
     Renderer::~Renderer() {
+        cleanup();
     }
 
-    void Renderer::Create() {
-        if (!s_Instance) {
-            s_Instance = new Renderer();
+    void Renderer::init() {
+        addPass(std::move(std::make_unique<SkyboxRenderPass>(*this, "SkyboxPass")));
+        addPass(std::move(std::make_unique<GeometryRenderPass>(*this, "GeometryPass")));
+
+        setupScreenQuad();
+        mScreenShader = AssetManager::get().loadShader(
+            "EngineResources.finalPassShader",
+            "EngineResources/Shaders/FinalPass.vert",
+            "EngineResources/Shaders/FinalPass.frag"
+        );
+    }
+
+    void Renderer::submit(const CameraRenderData& cameraData) {
+        mCameraRenderData.push_back(cameraData);
+    }
+
+    void Renderer::addPass(std::unique_ptr<RenderPass> pass) {
+        if (pass) {
+            mPasses.push_back(std::move(pass));
         }
     }
 
-    Renderer* Renderer::Get() {
-        return s_Instance;
+    void Renderer::clearPasses() {
+        mPasses.clear();
     }
 
-    void Renderer::Destroy() {
-        if (s_Instance) {
-            delete s_Instance;
-            s_Instance = nullptr;
+    void Renderer::render() {
+        mFrameBuffer->bind();
+        
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        for (const auto& cameraData : mCameraRenderData) {
+            const CameraComponent::Rect& viewportRect = cameraData.camera.getViewportRect();
+            GLint viewportX = static_cast<GLint>(viewportRect.x * mWidth);
+            GLint viewportY = static_cast<GLint>(viewportRect.y * mHeight);
+            GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mWidth);
+            GLsizei viewportHeight = static_cast<GLsizei>(viewportRect.height * mHeight);
+
+            glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+
+          
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            for (auto& pass : mPasses) {
+                if (pass && pass->isEnabled()) {
+                    pass->execute(cameraData);
+                }
+                
+            }
+
+            glDisable(GL_SCISSOR_TEST);
+        }
+
+        mFrameBuffer->unBind();
+        mCameraRenderData.clear();
+    }
+
+    void Renderer::display() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        glViewport(0, 0, mWidth, mHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (mScreenShader && mScreenShader->isReady()) {
+            mScreenShader->bind();
+            mScreenShader->setInt("screenTexture", 0);
+            mFrameBuffer->bindFramebufferTexture(0);
+
+            glBindVertexArray(mScreenVAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            glBindVertexArray(0);
+
+            mScreenShader->unbind();
         }
     }
 
-
-
-    void Renderer::Init() {
-        ModelManager::Create();
-        ShaderManager::Create();
-        LightManager::Create();
-        //ShadowRenderer::Create();
-
-        LightManager::Get()->BindLights();
-
-        m_QuadShader = ShaderManager::Get()->GetShader("ScreenShader");
-        //m_QuadScreenShader = ShaderManager::Get()->GetShader("QuadScreen");
-        InitQuad();
-        //InitScreenQuad();
-        //glViewport(0, 0, 1280, 720);
-
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GLuint Renderer::getFinalTexture() const {
+        return mFrameBuffer->getColorTextureID();
     }
 
-
-    void Renderer::InitQuad() {
-        float vertices[] = {
-            // positions   // texture Coords
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            -1.0f, -1.0f,  0.0f, 0.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
-            -1.0f,  1.0f,  0.0f, 1.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
-             1.0f,  1.0f,  1.0f, 1.0f
-        };
-
-        glGenVertexArrays(1, &m_QuadVAO);
-        glGenBuffers(1, &m_QuadVBO);
-        glBindVertexArray(m_QuadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-        glBindVertexArray(0);
-    
+    uint32_t Renderer::getWidth() const {
+        return mWidth;
     }
 
-    void Renderer::InitScreenQuad()
-    {
-        float aspect_ratio = 16.0f / 9.0f;
-        float quad_height = 1.0f;
-        float quad_width = quad_height * aspect_ratio;
+    uint32_t Renderer::getHeight() const {
+        return mHeight;
+    }
+
+    void Renderer::resize(uint32_t width, uint32_t height) {
+        mWidth = width;
+        mHeight = height;
+        mFrameBuffer->resize(width, height);
+        glViewport(0, 0, width, height);
+    }
+
+    void Renderer::setupScreenQuad() {
+        // Full-screen quad vertices
         float vertices[] = {
-            // positions        // texture coords
-            -quad_width / 2, -quad_height / 2, 0.0f,  0.0f, 0.0f,
-             quad_width / 2, -quad_height / 2, 0.0f,  1.0f, 0.0f,
-             quad_width / 2,  quad_height / 2, 0.0f,  1.0f, 1.0f,
-            -quad_width / 2,  quad_height / 2, 0.0f,  0.0f, 1.0f
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f, // Top-right
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f  // Top-left
         };
-        unsigned int indices[] = {
+
+        uint32_t indices[] = {
             0, 1, 2,
             2, 3, 0
         };
 
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
+        // Generate and bind Vertex Array Object (VAO)
+        glGenVertexArrays(1, &mScreenVAO);
+        glBindVertexArray(mScreenVAO);
 
-        glBindVertexArray(VAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        // Generate and bind Vertex Buffer Object (VBO)
+        glGenBuffers(1, &mScreenVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, mScreenVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        // Generate and bind Element Buffer Object (EBO)
+        glGenBuffers(1, &mScreenEBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mScreenEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         // Set vertex attribute pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-    }
-    
-
-    void Renderer::SubmitMesh(Shader* shader,RenderItem renderItem) {
-        s_Instance->m_ShaderBatch[shader].push_back(renderItem);
+        // Unbind VAO to prevent accidental modification
+        glBindVertexArray(0);
     }
 
-
-    void Renderer::SubmitSkybox(Skybox* skybox) {
-        s_Instance->m_Skybox = skybox;
-    }
-
-    void Renderer::Present(Camera* camera)
-    {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        LightManager::Get()->UpdateSSBOs();
-
-        const glm::mat4 cameraView = camera->GetViewMatrix();
-        const glm::mat4 cameraProjection = camera->GetProjectionMatrix();
-        const glm::vec3 cameraPosition = camera->GetPosition();
-        const glm::mat4 viewProjection = cameraProjection * cameraView;
-
-
-        RenderSkybox(cameraView, cameraProjection);
-        RenderScene(viewProjection, cameraPosition);
-
-    }
-
-
-    void Renderer::RenderScene(const glm::mat4& viewProjection, const glm::vec3& cameraPosition) {
-        glDepthFunc(GL_LESS);
-        glEnable(GL_DEPTH_TEST);
-        for (const auto& [shader, renderItems] : m_ShaderBatch) {
-            shader->Bind();
-            shader->LoadUniform("u_ViewProjection", viewProjection);
-            shader->LoadUniform("u_CameraPosition", cameraPosition);
-
-            shader->LoadUniform("u_NumSpotLights", LightManager::Get()->GetSpotCount());
-            shader->LoadUniform("u_NumDirLights", LightManager::Get()->GetDirectionalCount());
-            shader->LoadUniform("u_NumPointLights", LightManager::Get()->GetPointCount());
-
-            for (const auto& rendItem : renderItems) {
-                shader->LoadUniform("u_Model", rendItem.Transform);
-
-                rendItem.MeshObj->Draw(shader);
-            }
+    void Renderer::cleanup() {
+        if (mScreenVAO) {
+            glDeleteVertexArrays(1, &mScreenVAO);
         }
-        glUseProgram(0);
+        if (mScreenVBO) {
+            glDeleteBuffers(1, &mScreenVBO);
+        }
+        if (mScreenEBO) {
+            glDeleteBuffers(1, &mScreenEBO);
+        }
+        mScreenShader.reset();
     }
-
-    void Renderer::RenderSkybox(const glm::mat4& cameraView, const glm::mat4& cameraProjection) {
-        glDepthFunc(GL_LEQUAL);
-        glDisable(GL_DEPTH_TEST);
-            
-        Shader* skyboxShader = m_Skybox->GetShader();
-
-        skyboxShader->Bind();
-        glm::mat4 view = glm::mat4(glm::mat3(cameraView));
-        skyboxShader->LoadUniform("u_ViewProjection", cameraProjection * view);
-        m_Skybox->Draw();
-        skyboxShader->Unbind();
-
-    }
-
-    void Renderer::DrawTexturedQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture) {
-
-        glDisable(GL_DEPTH_TEST);
-        glm::mat4 model = glm::mat4(1.0f);        
-        model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
-        model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
-        
-        m_QuadShader->Bind();
-      
-        m_QuadShader->LoadUniform("u_Model", model);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        m_QuadShader->LoadUniform("u_DiffuseTexture", 0);
-
-        glBindVertexArray(m_QuadVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-        m_QuadShader->Unbind();
-    }
-    /*
-    void Renderer::DrawScreenQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture)
-    {
-
-        m_QuadScreenShader->Bind();
-        float aspect = (float)m_Width / (float)m_Height;
-        glm::mat4 projection = glm::ortho(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
-        m_QuadScreenShader->LoadUniform("projection", projection);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        m_QuadScreenShader->LoadUniform("model", model);
-
-
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        m_QuadShader->LoadUniform("texture", 0);
-
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glBindVertexArray(0);
-
-
-        m_QuadScreenShader->Unbind();
-
-    }*/
-
-    void Renderer::BindDefaultFrameBuffer() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    void Renderer::Flush()
-    {
-        s_Instance->m_ShaderBatch.clear();
-    }
-
-    void Renderer::Resize(GLuint width, GLuint height) {
-        glViewport(0, 0, width, height);
-    }
-
 
 }

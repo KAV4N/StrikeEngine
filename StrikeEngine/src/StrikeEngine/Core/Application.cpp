@@ -1,121 +1,105 @@
 #include "strikepch.h"
 #include "Application.h"
-
 #include "StrikeEngine/Core/Log.h"
-
-#include "StrikeEngine/Graphics/Managers/ModelManager.h"
-#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
-#include "StrikeEngine/Graphics/Managers/LightManager.h"
-#include "StrikeEngine/Graphics/Renderer/Renderer.h"
-
+#include "StrikeEngine/Asset/AssetManager.h"
 #include "Input.h"
 #include <glad/glad.h>
-#include <StrikeEngine/Scene/World.h>
-
-//TODO: REMOVE AFTER TESTING
-#include <StrikeEngine/Scene/Systems/TransformSystem.h> 
 #include <chrono>
-#include <imgui.h>
-//---------------------------------------------
+
+
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
+#include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Graphics/FrameBuffer.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-namespace StrikeEngine
-{
-    Application* Application::s_Instance = nullptr;
+namespace StrikeEngine {
+    Application* Application::sInstance = nullptr;
 
-    Application::Application()
-    {
-        STRIKE_CORE_ASSERT(!s_Instance, "Application already exists!");
-        s_Instance = this;
-        m_Window = std::unique_ptr<Window>(Window::Create());
-        m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+    Application::Application() {
+        STRIKE_CORE_ASSERT(!sInstance, "Application already exists!");
+        sInstance = this;
 
-        World::Create();
+        mWindow = std::unique_ptr<Window>(Window::create());
+        mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 
-        m_ImGuiLayer = new ImGuiLayer();
+        createManagers();
 
-        PushLayer((Layer*)World::Get());
-        PushOverlay(m_ImGuiLayer);
+        // Store reference to World singleton
+        mWorld = &World::get();
 
-        World::Get()->AddScene();
+        mImGuiLayer = new ImGuiLayer();
+        mImGuiLayer->onAttach();
+
+        Renderer::get().resize(mWindow.get()->getWidth(), mWindow.get()->getHeight());
+
+        // Initialize timer with default values
+        mTimer.setTargetFPS(60.0f);
     }
 
-    Application::~Application()
-    {
-    }
-
-    void Application::PushLayer(Layer* layer)
-    {
-        m_LayerStack.PushLayer(layer);
-        layer->OnAttach();
-    }
-
-    void Application::PushOverlay(Layer* overlay)
-    {
-        m_LayerStack.PushOverlay(overlay);
-        overlay->OnAttach();
-    }
-
-    void Application::OnEvent(Event& e)
-    {
-        EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-        dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
-
-        for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
-        {
-            (*--it)->OnEvent(e);
-            if (e.Handled)
-                break;
+    Application::~Application() {
+        if (mImGuiLayer) {
+            delete mImGuiLayer;
         }
     }
 
-    void Application::OnUpdate() {
-        
+    void Application::createManagers() {
+    }
+
+    void Application::onEvent(Event& e) {
+        EventDispatcher dispatcher(e);
+
+        dispatcher.dispatch<WindowCloseEvent>(std::bind(&Application::onWindowClose, this, std::placeholders::_1));
+
+        dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
+        // Let the World handle events
+        mWorld->onEvent(e);
+    }
+
+    void Application::onUpdate() {
+
+
+        mTimer.updateFrame();
+        float deltaTime = mTimer.getDeltaTime();
+
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        AssetManager::get().update();
+
+        // Update world
+        mWorld->update(deltaTime);
+
+        // Render the World and imgui
+        mImGuiLayer->begin();
+        mWorld->onRender();
+        Renderer::get().display();
+        mWorld->onImGuiRender();
+        mImGuiLayer->end();
+
+        mWindow->onUpdate();      
+        // Limit frame rate
+        mTimer.limitFrameRate();
+    }
+
+    void Application::run() {
+        mTimer.reset();
+
+        while (mRunning) {
+            onUpdate();
+        }
+    }
+
+    bool Application::onWindowClose(WindowCloseEvent& e) {
+        mRunning = false;
+        return true;
+    }
+
+    bool Application::onWindowResize(WindowResizeEvent& e) {
         
-        auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> deltaTimeDuration = now - m_LastFrameTime;
-        m_LastFrameTime = now;
-        float deltaTime = deltaTimeDuration.count();
-
-        for (Layer* layer : m_LayerStack)
-            layer->OnUpdate(deltaTime);
-
-
-        m_ImGuiLayer->Begin();
-        for (Layer* layer : m_LayerStack) {
-            layer->OnRender();
-            layer->OnImGuiRender();
-        }
-        m_ImGuiLayer->End();
-
-        Renderer::Flush();
-
-        m_Window->OnUpdate();
-    }
-
-    void Application::Run() {
-        //Renderer::Get()->Resize(m_Window->GetWidth(), m_Window->GetHeight());
-        m_LastFrameTime = std::chrono::high_resolution_clock::now();
-        while (m_Running) {
-            OnUpdate();
-        }
-    }
-
-    bool Application::OnWindowClose(WindowCloseEvent& e)
-    {
-        m_Running = false;
+        Renderer::get().resize(e.getWidth(), e.getHeight());
         return true;
     }
-
-    bool Application::OnWindowResize(WindowResizeEvent& e)
-    {
-        World::Resize(e.GetWidth(), e.GetHeight());
-       // Renderer::Get()->Resize(e.GetWidth(), e.GetHeight());
-        return true;
-    }
-
 }

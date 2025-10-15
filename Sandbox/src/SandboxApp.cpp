@@ -1,71 +1,50 @@
 #include "strikepch.h"
 #include <StrikeEngine.h>
-
-// ENTRY POINT ---------------------
 #include "StrikeEngine/Core/EntryPoint.h"
-//----------------------------------
-
-#include "Sandbox3D.h"
-#include "imgui.h"
-
-class TestLayer : public StrikeEngine::Layer
-{
-public:
-	TestLayer()
-		: Layer("Test")
-	{
-
-	}
-	void OnUpdate(float deltaTime) override
-	{
-		if (StrikeEngine::Input::IsKeyPressed(STRIKE_KEY_TAB))
-			STRIKE_TRACE("Tab key is pressed (poll)!");
-	}
-	
-	
-	void OnImGuiRender() override
-	{
-		ImGui::Begin("Test2");
-		ImGui::Text("aasdasda");
-		ImGui::End();
-	}
-	
-	
-	void OnEvent(StrikeEngine::Event& event) override
-	{
-		if (event.GetEventType() == StrikeEngine::EventType::KeyPressed)
-		{
-			StrikeEngine::KeyPressedEvent& e = (StrikeEngine::KeyPressedEvent&)event;
-			
-			if (e.GetKeyCode() == STRIKE_KEY_TAB)
-				STRIKE_TRACE("Tab key is pressed (event)!");
-			STRIKE_TRACE("{0}", (char)e.GetKeyCode());
-			
-		}
-	}
-};
 
 
+namespace StrikeEngine {
 
 
+    class Sandbox : public Application {
+    public:
+        Sandbox() {
+            /*
+            std::string modelPath = "assets/objects/panzer/tank_low_poly.fbx";
+            std::string templateDir = "scenes/templates/tank";
+
+            ModelParser parser;
+            parser.parseModel("assets/objects/panzer/tank_low_poly.fbx", "scenes/templates/tank");
+            parser.parseModel("assets/cubeModel.fbx", "scenes/templates/cubeModel");
+            */
+            /*
+            ModelParser parser;
+            parser.parseModel("Assets/objects/panzer/tank_low_poly.fbx", "Assets/scenes/templates/tank2");
+            */
+            //AssetManager& manager = AssetManager::get();
+            //mesh = manager.loadMeshAsync("mesh1", "Assets/Scenes/templates/tank/Cube.mesh");
+            //texture = manager.loadTexture("material1", "Assets/Objects/panzer/14077_WWII_Tank_Germany_Panzer_III_hull_diff.jpg");
+            //material = manager.loadMaterialAsync("material1", "Assets/Scenes/templates/tank/Material.mat");
+            //shader = manager.loadShader("shader3", "Assets/Shaders/testShader.vert", "Assets/Shaders/testShader.frag");
+            
+            auto& world = World::get();
+            world.loadScene("Assets/Scenes/MainScene.xml");
+            //AssetManager::get();
+        }
+
+        ~Sandbox() {
+        }
+        /*
+        std::shared_ptr<StrikeEngine::Mesh> mesh;
+        std::shared_ptr<StrikeEngine::Shader> shader;
+        std::shared_ptr<StrikeEngine::Texture2D> texture;
+        std::shared_ptr<StrikeEngine::Material> material;
+        */
+    };
+
+    Application* createApplication() {
+        return new Sandbox();
+    }
 
 
-class Sandbox : public StrikeEngine::Application 
-{
-
-public:
-	Sandbox() 
-	{
-		PushLayer(new Sandbox3D());
-		PushOverlay(new TestLayer());
-	}
-	~Sandbox() 
-	{
-
-	}
-};
-
-StrikeEngine::Application* StrikeEngine::CreateApplication() 
-{
-	return new Sandbox();
 }

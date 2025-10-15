@@ -1,42 +1,59 @@
 #pragma once
 
-#include <vector>
+#include <entt/entt.hpp>
 #include <memory>
+#include <string>
+#include <filesystem>
+#include <future>
 #include "Scene.h"
-#include <StrikeEngine/Events/Event.h>
-#include "StrikeEngine/Core/Layer.h"
+#include "SceneLoader.h"
+#include "StrikeEngine/Events/Event.h"
+#include "Systems/RenderSystem.h"
+#include "Systems/ScriptSystem.h"
+#include "StrikeEngine/Graphics/Skybox.h"
 
 namespace StrikeEngine {
 
-    class World : Layer {
+    class RenderSystem;
+    class ScriptSystem;
+
+    class World final {
     public:
-        static void Create();
-        static World* Get();
-        static Scene* GetActiveScene();
+        static World& get() {
+            static World instance;
+            return instance;
+        }
 
+        void loadScene(const std::filesystem::path& path);
+        void loadSceneAsync(const std::filesystem::path& path);
+        Scene* getCurrentScene() const { return mCurrentScene.get(); }
+        bool isSceneLoading() const;
 
-        void OnUpdate(float deltaTime) override;
-        void OnRender() override;
-        void OnEvent(Event& event) override;
+        void update(float dt);
+        void onRender();
+        void onImGuiRender();
+        void onEvent(Event& e);
 
-        void AddScene(Scene* scene);
-        void AddScene();
-        void SetActiveScene(int index);
-        static void Resize(unsigned int width, unsigned int height) {
-            s_Instance->m_Width = width;
-            s_Instance->m_Height = height;
-        };
+        Skybox* getSkybox() const { return mSkybox.get(); }
+
     private:
-        World(GLuint resX = 1920, GLuint resY = 1080);
-        ~World();
+        World();
+        ~World() = default;
+        World(const World&) = delete;
+        World& operator=(const World&) = delete;
+        World(World&&) = delete;
+        World& operator=(World&&) = delete;
 
-        static World* s_Instance;
+        void checkAndSwitchScene();
 
-        unsigned int m_Width = 1920, m_Height = 1080;
+    private:
+        std::unique_ptr<Scene> mCurrentScene;
+        std::future<std::unique_ptr<Scene>> mPendingScene;
+        std::unique_ptr<SceneLoader> mSceneLoader;
 
-        std::vector<Scene*> m_Scenes;
-        Scene* m_ActiveScene;
-        FrameBuffer* m_FrameBuffer;
+        std::unique_ptr<RenderSystem> mRenderSystem;
+        std::unique_ptr<ScriptSystem> mScriptSystem;
+
+        std::unique_ptr<Skybox> mSkybox;
     };
-
 }

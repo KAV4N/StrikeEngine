@@ -1,69 +1,56 @@
 #pragma once
-
-#include <glm/glm.hpp>
+#include <memory>
 #include <vector>
-#include <unordered_map>
-#include <entt/entt.hpp>
-#include "StrikeEngine/Scene/Camera.h"
-#include "StrikeEngine/Graphics/Core/Shader.h"
-#include "StrikeEngine/Graphics/Core/Model.h"
-#include "StrikeEngine/Graphics/Core/Texture.h"
-#include "StrikeEngine/Scene/Entity.h"
-#include "StrikeEngine/Scene/Components/CameraComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
-#include <StrikeEngine/Scene/Components/ModelComponent.h>
-#include "StrikeEngine/Graphics/Core/Skybox.h"
-#include "StrikeEngine/Scene/RenderCommand.h"
-#include <queue>
-#include <StrikeEngine/Graphics/Core/FrameBuffer.h>
+#include "RenderPass.h"
+#include "StrikeEngine/Asset/AssetManager.h"
+#include "StrikeEngine/Asset/Types/Shader.h"
+#include "StrikeEngine/Graphics/FrameBuffer.h"
+#include <GL/gl.h>
 
 namespace StrikeEngine {
 
-
+    struct CameraRenderData;
 
     class Renderer {
     public:
-        friend class LightManager;
+        static Renderer& get() {
+            static Renderer instance;
+            return instance;
+        }
 
-        static void Create();
-        static Renderer* Get();
-        static void Destroy();
-        static void SubmitSkybox(Skybox* skybox);
-        static void SubmitMesh(Shader* shader, RenderItem renderItem);
-        static void Flush(); //Clear batch
+        void init();
+        void submit(const CameraRenderData& cameraData);
+        void addPass(std::unique_ptr<RenderPass> pass);
+        void clearPasses();
+        void render();
+        void display();
+        GLuint getFinalTexture() const;
+        uint32_t getWidth() const;
+        uint32_t getHeight() const;
+        void resize(uint32_t width, uint32_t height);
 
-        static void BindDefaultFrameBuffer();
-
-    public:
-        void Init();
-        static void Resize(GLuint width, GLuint height);
-        void Present(Camera* camera);
-        void DrawTexturedQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture);
-        void DrawScreenQuad(const glm::vec2& position, const glm::vec2& size, const GLuint& texture);
     private:
         Renderer();
         ~Renderer();
+        Renderer(const Renderer&) = delete;
+        Renderer& operator=(const Renderer&) = delete;
+        Renderer(Renderer&&) = delete;
+        Renderer& operator=(Renderer&&) = delete;
 
-        void InitQuad();
-        void InitScreenQuad();
+        void setupScreenQuad();
+        void cleanup();
 
-        void RenderSkybox(const glm::mat4& cameraView, const glm::mat4& cameraProjection);
-        void RenderScene(const glm::mat4& viewProjection, const glm::vec3& cameraPosition);
     private:
-        static Renderer* s_Instance;
-        
-        std::unordered_map<Shader*, std::vector<RenderItem>> m_ShaderBatch;
-        Skybox* m_Skybox;
+        std::vector<std::unique_ptr<RenderPass>> mPasses;
+        std::vector<CameraRenderData> mCameraRenderData;
+        std::unique_ptr<FrameBuffer> mFrameBuffer;
 
-        GLuint m_QuadVAO, m_QuadVBO, m_QuadIBO;
-        Shader* m_QuadShader;
-
-
-        GLuint VAO, VBO, EBO;
-        Shader* m_QuadScreenShader;
-
-
-        GLuint m_Width = 1280;
-        GLuint m_Height = 720;
+        std::shared_ptr<Shader> mScreenShader;
+        GLuint mScreenVAO; // Vertex Array Object
+        GLuint mScreenVBO; // Vertex Buffer Object
+        GLuint mScreenEBO; // Element Buffer Object
+        uint32_t mWidth = 1920;
+        uint32_t mHeight = 1080;
     };
+
 }
