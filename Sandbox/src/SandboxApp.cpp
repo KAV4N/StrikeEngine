@@ -1,6 +1,11 @@
 #include "strikepch.h"
 #include <StrikeEngine.h>
 
+// ENTRY POINT ---------------------
+#include "StrikeEngine/Core/EntryPoint.h"
+//----------------------------------
+
+#include "Sandbox3D.h"
 #include "imgui.h"
 
 class TestLayer : public StrikeEngine::Layer
@@ -11,7 +16,7 @@ public:
 	{
 
 	}
-	void OnUpdate() override
+	void OnUpdate(float deltaTime) override
 	{
 		if (StrikeEngine::Input::IsKeyPressed(STRIKE_KEY_TAB))
 			STRIKE_TRACE("Tab key is pressed (poll)!");
@@ -40,14 +45,19 @@ public:
 	}
 };
 
+
+
+
+
+
 class Sandbox : public StrikeEngine::Application 
 {
 
 public:
 	Sandbox() 
 	{
-		PushLayer(new TestLayer());
-		//PushOverlay(new StrikeEngine::ImGuiLayer());
+		PushLayer(new Sandbox3D());
+		PushOverlay(new TestLayer());
 	}
 	~Sandbox() 
 	{

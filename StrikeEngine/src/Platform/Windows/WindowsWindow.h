@@ -3,7 +3,8 @@
 #include "StrikeEngine/Core/Window.h"
 
 #include <GLFW/glfw3.h>
-#include <StrikeEngine/Renderer/Renderer.h>
+
+#include <StrikeEngine/Graphics/Renderer/Renderer.h>
 
 
 namespace StrikeEngine {
@@ -24,6 +25,11 @@ namespace StrikeEngine {
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
+		inline double GetTime() const override { return glfwGetTime(); };
+		
+		void SetWindowTitle(std::string title) override;
+
+
 		inline virtual void* GetNativeWindow() const { return m_Window; };
 
 	private:
@@ -42,5 +48,7 @@ namespace StrikeEngine {
 		};
 		WindowData m_Data;
 	};
+
+	
 
 }

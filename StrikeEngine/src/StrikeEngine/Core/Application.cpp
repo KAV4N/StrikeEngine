@@ -1,18 +1,22 @@
-
 #include "strikepch.h"
 #include "Application.h"
 
 #include "StrikeEngine/Core/Log.h"
-#include "StrikeEngine/Renderer/Renderer.h"
-#include "StrikeEngine/Renderer/ModelManager.h"
-#include "StrikeEngine/Renderer/ShaderManager.h"
-#include "StrikeEngine/Renderer/LightManager.h"
+
+#include "StrikeEngine/Graphics/Managers/ModelManager.h"
+#include "StrikeEngine/Graphics/Managers/ShaderManager.h"
+#include "StrikeEngine/Graphics/Managers/LightManager.h"
+#include "StrikeEngine/Graphics/Renderer/Renderer.h"
 
 #include "Input.h"
 #include <glad/glad.h>
-#include <StrikeEngine/Scene/Scene.h>
 #include <StrikeEngine/Scene/World.h>
 
+//TODO: REMOVE AFTER TESTING
+#include <StrikeEngine/Scene/Systems/TransformSystem.h> 
+#include <chrono>
+#include <imgui.h>
+//---------------------------------------------
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -27,44 +31,18 @@ namespace StrikeEngine
         m_Window = std::unique_ptr<Window>(Window::Create());
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-        Renderer::Create();
-        Renderer::Init();
-        Renderer::Get()->SetDefaultTexture(DEFAULT_TEXTURE);
+        World::Create();
 
         m_ImGuiLayer = new ImGuiLayer();
+
+        PushLayer((Layer*)World::Get());
         PushOverlay(m_ImGuiLayer);
 
-        Scene* scene = new Scene();
-        //TODO: CREATE WORLD ON STACK
-        m_World = new World();
-        m_World->AddScene(scene);
-
-        // Load models
-        Model* model = ModelManager::Get()->LoadModel("assets/objects/panzer/14077_WWII_Tank_Germany_Panzer_III_v1_L2.obj");
-        model->SetShader(ShaderManager::Get()->GetShader("ShinyShader"));
-        
-        Entity* entity = m_World->GetActiveScene()->CreateEntity(model);
-        entity->IncreaseRotation(glm::uvec3(270.f, 0.f, 0.f));
-
-        Model* model2 = ModelManager::Get()->LoadModel("assets/objects/penguin/PenguinBaseMesh.obj");
-        model2->SetShader(ShaderManager::Get()->GetShader("ComicShader"));
-        Entity* entity2 = m_World->GetActiveScene()->CreateEntity(model2);
-        entity2->SetPosition(glm::vec3(5.f, 0.f, 0.f));
-
-
-       Light light1 = { glm::vec3(0.0f, 10.f, 0.0f), 0.f, glm::vec3(1.0f, 1.0f, 1.0f), 3.f };
-       Light light2 = { glm::vec3(5.0f, 5.f, 0.0f),0.f, glm::vec3(1.0f, 0.0f, 0.0f), 2.5f };
- 
-
-        
-        LightManager::Get()->AddLight(light1);
-        LightManager::Get()->AddLight(light2);
+        World::Get()->AddScene();
     }
-
 
     Application::~Application()
     {
-        delete m_World;
     }
 
     void Application::PushLayer(Layer* layer)
@@ -83,6 +61,7 @@ namespace StrikeEngine
     {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+        dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
         for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
         {
@@ -92,34 +71,51 @@ namespace StrikeEngine
         }
     }
 
-    void Application::Run() {
+    void Application::OnUpdate() {
+        
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> deltaTimeDuration = now - m_LastFrameTime;
+        m_LastFrameTime = now;
+        float deltaTime = deltaTimeDuration.count();
+
+        for (Layer* layer : m_LayerStack)
+            layer->OnUpdate(deltaTime);
 
 
-        while (m_Running) {
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-            m_World->Update();
-            m_World->Render();
-
-
-            for (Layer* layer : m_LayerStack)
-                layer->OnUpdate();
-
-            m_ImGuiLayer->Begin();
-            for (Layer* layer : m_LayerStack)
-                layer->OnImGuiRender();
-            m_ImGuiLayer->End();
-
-            m_Window->OnUpdate();
+        m_ImGuiLayer->Begin();
+        for (Layer* layer : m_LayerStack) {
+            layer->OnRender();
+            layer->OnImGuiRender();
         }
+        m_ImGuiLayer->End();
+
+        Renderer::Flush();
+
+        m_Window->OnUpdate();
     }
 
+    void Application::Run() {
+        //Renderer::Get()->Resize(m_Window->GetWidth(), m_Window->GetHeight());
+        m_LastFrameTime = std::chrono::high_resolution_clock::now();
+        while (m_Running) {
+            OnUpdate();
+        }
+    }
 
     bool Application::OnWindowClose(WindowCloseEvent& e)
     {
         m_Running = false;
         return true;
     }
+
+    bool Application::OnWindowResize(WindowResizeEvent& e)
+    {
+        World::Resize(e.GetWidth(), e.GetHeight());
+       // Renderer::Get()->Resize(e.GetWidth(), e.GetHeight());
+        return true;
+    }
+
 }

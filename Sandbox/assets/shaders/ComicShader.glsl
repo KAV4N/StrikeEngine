@@ -1,31 +1,3 @@
-#RootSignature
-{
-  "RootSignature": [
-    {
-      "name": "transform",
-      "type": "matrix4"
-    },
-    {
-      "name": "projection",
-      "type": "matrix4"
-    },
-    {
-      "name": "view",
-      "type": "matrix4"
-    },
-    {
-      "name": "viewPosition",
-      "type": "vec3"
-    },
-    {
-      "name": "lights",
-      "type": "ssbo",
-      "binding": 0
-    }
-  ]
-}
-
-#end
 
 #type vertex
 #version 430 core
@@ -35,8 +7,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord; 
 
 uniform mat4 transform;
-uniform mat4 projection;
-uniform mat4 view;
+uniform mat4 MVP;
 
 out vec2 TexCoord;
 out vec3 FragPos;
@@ -47,7 +18,7 @@ void main() {
     Normal = mat3(transpose(inverse(transform))) * aNormal;
     TexCoord = aTexCoord;
 
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+    gl_Position = MVP * vec4(FragPos, 1.0);
 }
 
 
