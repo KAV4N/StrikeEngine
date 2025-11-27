@@ -5,10 +5,7 @@
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
 
-
-
-
-#include "StrikeEngine/ImGui/ImGuiLayer.h"
+#include "StrikeEngine/Events/KeyEvent.h"
 
 
 namespace StrikeEngine {
@@ -34,21 +31,17 @@ namespace StrikeEngine {
         Timer& getTimer() { return mTimer; }
         const Timer& getTimer() const { return mTimer; }
 
-        // World reference access
-        World& getWorld() { return *mWorld; }
-        const World& getWorld() const { return *mWorld; }
 
         inline Window& getWindow() { return *mWindow; }
         inline static Application& get() { return *sInstance; }
 
     private:
+        bool printProfiler(KeyPressedEvent& e);
+
         bool onWindowClose(WindowCloseEvent& e);
         bool onWindowResize(WindowResizeEvent& e);
-        void createManagers();
 
         std::unique_ptr<Window> mWindow;
-        ImGuiLayer* mImGuiLayer;
-        World* mWorld; // Reference to World singleton
         Timer mTimer; // Timer instance
         bool mRunning = true;
 

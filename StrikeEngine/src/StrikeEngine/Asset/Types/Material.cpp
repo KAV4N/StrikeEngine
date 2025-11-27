@@ -1,296 +1,217 @@
 #include "Material.h"
+#include "StrikeEngine/Graphics/Shader.h"
 #include <iostream>
-#include <optional>
-#include <sstream>
+#include <pugixml.hpp>
 
 namespace StrikeEngine {
 
-    Material::Material(const std::string& id, const std::filesystem::path& path, const std::string& name)
-        : Asset(id, path, name)
+    Material::Material(const std::string& id, const std::filesystem::path& path)
+        : Asset(id, path),
+        mShader(nullptr),
+        mBaseColor(255, 255, 255),  // White
+        mMetallic(0.0f),             // Non-metallic
+        mRoughness(0.5f)             // Medium roughness
     {
+        mShader = ShaderManager::get().getShader("defaultPBR.glsl");
     }
 
-    void Material::setInt(const std::string& name, int value) {
-        mUniforms[name] = value;
+    const std::string& Material::getStaticTypeName() {
+        static const std::string typeName = "material";
+        return typeName;
     }
 
-    void Material::setIntArray(const std::string& name, int* values, uint32_t count) {
-        std::vector<int> intArray(values, values + count);
-        mUniforms[name] = intArray;
+    const std::string& Material::getTypeName() const {
+        return getStaticTypeName();
     }
 
-    void Material::setFloat(const std::string& name, float value) {
-        mUniforms[name] = value;
+    // PBR Property setters
+    void Material::setBaseColor(const glm::vec3& baseColor) {
+        mBaseColor = glm::clamp(baseColor, glm::vec3(0), glm::vec3(255));
     }
 
-    void Material::setVec2(const std::string& name, const glm::vec2& value) {
-        mUniforms[name] = value;
+    void Material::setMetallic(float metallic) {
+        mMetallic = glm::clamp(metallic, 0.0f, 1.0f);
     }
 
-    void Material::setVec3(const std::string& name, const glm::vec3& value) {
-        mUniforms[name] = value;
+    void Material::setRoughness(float roughness) {
+        mRoughness = glm::clamp(roughness, 0.0f, 1.0f);
     }
 
-    void Material::setVec4(const std::string& name, const glm::vec4& value) {
-        mUniforms[name] = value;
+    // PBR Property getters
+    glm::vec3 Material::getBaseColor() const {
+        return mBaseColor;
     }
 
-    void Material::setMat4(const std::string& name, const glm::mat4& value) {
-        mUniforms[name] = value;
+    float Material::getMetallic() const {
+        return mMetallic;
     }
 
-    std::optional<int> Material::getInt(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<int>(it->second)) {
-            return std::get<int>(it->second);
-        }
-        return std::nullopt;
+    float Material::getRoughness() const {
+        return mRoughness;
     }
 
-    std::optional<std::vector<int>> Material::getIntArray(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<std::vector<int>>(it->second)) {
-            return std::get<std::vector<int>>(it->second);
-        }
-        return std::nullopt;
+    // Texture setters
+    void Material::setBaseColorTexture(std::shared_ptr<Texture> texture) {
+        setTexture(TextureSlot::BaseColor, texture);
     }
 
-    std::optional<float> Material::getFloat(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<float>(it->second)) {
-            return std::get<float>(it->second);
-        }
-        return std::nullopt;
+    void Material::setNormalTexture(std::shared_ptr<Texture> texture) {
+        setTexture(TextureSlot::Normal, texture);
     }
 
-    std::optional<glm::vec2> Material::getVec2(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<glm::vec2>(it->second)) {
-            return std::get<glm::vec2>(it->second);
-        }
-        return std::nullopt;
+    void Material::setMetallicTexture(std::shared_ptr<Texture> texture) {
+        setTexture(TextureSlot::Metallic, texture);
     }
 
-    std::optional<glm::vec3> Material::getVec3(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<glm::vec3>(it->second)) {
-            return std::get<glm::vec3>(it->second);
-        }
-        return std::nullopt;
+    void Material::setRoughnessTexture(std::shared_ptr<Texture> texture) {
+        setTexture(TextureSlot::Roughness, texture);
     }
 
-    std::optional<glm::vec4> Material::getVec4(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<glm::vec4>(it->second)) {
-            return std::get<glm::vec4>(it->second);
-        }
-        return std::nullopt;
+    // Texture getters
+    std::shared_ptr<Texture> Material::getBaseColorTexture() const {
+        return getTexture(TextureSlot::BaseColor);
     }
 
-    std::optional<glm::mat4> Material::getMat4(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end() && std::holds_alternative<glm::mat4>(it->second)) {
-            return std::get<glm::mat4>(it->second);
-        }
-        return std::nullopt;
+    std::shared_ptr<Texture> Material::getNormalTexture() const {
+        return getTexture(TextureSlot::Normal);
     }
 
-    void Material::addTexture(uint32_t slot, std::shared_ptr<Texture2D> texture) {
-        mTextures[slot] = texture;
+    std::shared_ptr<Texture> Material::getMetallicTexture() const {
+        return getTexture(TextureSlot::Metallic);
     }
 
-    void Material::setTextures(const std::vector<std::pair<uint32_t, std::shared_ptr<Texture2D>>>& textures) {
-        for (const auto& [slot, texture] : textures) {
-            if (texture) {
-                mTextures[slot] = texture;
-            }
-            else {
-                mTextures.erase(slot);
-            }
-        }
+    std::shared_ptr<Texture> Material::getRoughnessTexture() const {
+        return getTexture(TextureSlot::Roughness);
     }
 
-    void Material::removeTexture(uint32_t slot) {
-        auto it = mTextures.find(slot);
-        if (it != mTextures.end()) {
-            mTextures.erase(it);
+    // Texture existence checks
+    bool Material::hasBaseColorTexture() const {
+        return hasTexture(TextureSlot::BaseColor);
+    }
+
+    bool Material::hasNormalTexture() const {
+        return hasTexture(TextureSlot::Normal);
+    }
+
+    bool Material::hasMetallicTexture() const {
+        return hasTexture(TextureSlot::Metallic);
+    }
+
+    bool Material::hasRoughnessTexture() const {
+        return hasTexture(TextureSlot::Roughness);
+    }
+
+    // Shader management
+    std::shared_ptr<Shader> Material::getShader() const {
+        return mShader;
+    }
+
+    // Private texture management
+    void Material::setTexture(TextureSlot slot, std::shared_ptr<Texture> texture) {
+        uint32_t slotIndex = static_cast<uint32_t>(slot);
+        if (texture) {
+            mTextures[slotIndex] = texture;
+        } else {
+            mTextures.erase(slotIndex);
         }
     }
 
-    void Material::setTextureSlot(uint32_t oldSlot, uint32_t newSlot) {
-        auto it = mTextures.find(oldSlot);
-        if (it != mTextures.end()) {
-            auto texture = it->second;
-            mTextures.erase(it);
-            mTextures[newSlot] = texture;
-        }
-    }
-
-    std::shared_ptr<Texture2D> Material::getTexture(uint32_t slot) const {
-        auto it = mTextures.find(slot);
+    std::shared_ptr<Texture> Material::getTexture(TextureSlot slot) const {
+        uint32_t slotIndex = static_cast<uint32_t>(slot);
+        auto it = mTextures.find(slotIndex);
         return it != mTextures.end() ? it->second : nullptr;
     }
 
-    void Material::setShader(std::shared_ptr<Shader> shader) {
-        mShader = shader;
+    bool Material::hasTexture(TextureSlot slot) const {
+        uint32_t slotIndex = static_cast<uint32_t>(slot);
+        return mTextures.find(slotIndex) != mTextures.end();
     }
 
     void Material::bind() const {
-        if (!mShader || !mShader->isReady()) {
-            std::cerr << "Warning: Material '" << mName << "' has no shader assigned or is loading" << std::endl;
-            return;
+        if (!mShader) {
+            throw std::runtime_error("Material '" + mId + "' has no shader assigned or is loading");
         }
-
+        
         mShader->bind();
-
+        
+        // Bind textures to their predefined slots
         for (const auto& [slot, texture] : mTextures) {
             if (texture) {
-                glActiveTexture(GL_TEXTURE0 + slot);
-                texture->bind();
+                texture->bind(slot);
             }
         }
 
-        for (const auto& [name, value] : mUniforms) {
-            applyUniform("uMaterial." + name, value);
-        }
+        // Set PBR material properties (convert baseColor to 0-1 range for shader)
+        mShader->setVec3("uMaterial.baseColor", glm::vec3(mBaseColor) / 255.0f);
+        mShader->setFloat("uMaterial.metallic", mMetallic);
+        mShader->setFloat("uMaterial.roughness", mRoughness);
+
+        // Set texture presence flags
+        mShader->setInt("uMaterial.hasBaseColorMap", hasBaseColorTexture() ? 1 : 0);
+        mShader->setInt("uMaterial.hasNormalMap", hasNormalTexture() ? 1 : 0);
+        mShader->setInt("uMaterial.hasMetallicMap", hasMetallicTexture() ? 1 : 0);
+        mShader->setInt("uMaterial.hasRoughnessMap", hasRoughnessTexture() ? 1 : 0);
+
+        // Set texture samplers
+        mShader->setInt("uMaterial.baseColorMap", static_cast<int>(TextureSlot::BaseColor));
+        mShader->setInt("uMaterial.normalMap", static_cast<int>(TextureSlot::Normal));
+        mShader->setInt("uMaterial.metallicMap", static_cast<int>(TextureSlot::Metallic));
+        mShader->setInt("uMaterial.roughnessMap", static_cast<int>(TextureSlot::Roughness));
+        
     }
 
     void Material::unbind() const {
+        /*
         for (const auto& [slot, texture] : mTextures) {
             if (texture) {
-                glActiveTexture(GL_TEXTURE0 + slot);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                texture->unbind();
             }
         }
-
+        */
         if (mShader) {
             mShader->unbind();
         }
-    }
-
-    void Material::applyUniform(const std::string& name, const UniformValue& value) const {
-        std::visit([this, &name](const auto& val) {
-            using T = std::decay_t<decltype(val)>;
-
-            if constexpr (std::is_same_v<T, int>) {
-                mShader->setInt(name, val);
-            }
-            else if constexpr (std::is_same_v<T, float>) {
-                mShader->setFloat(name, val);
-            }
-            else if constexpr (std::is_same_v<T, glm::vec2>) {
-                mShader->setVec2(name, val);
-            }
-            else if constexpr (std::is_same_v<T, glm::vec3>) {
-                mShader->setVec3(name, val);
-            }
-            else if constexpr (std::is_same_v<T, glm::vec4>) {
-                mShader->setVec4(name, val);
-            }
-            else if constexpr (std::is_same_v<T, glm::mat4>) {
-                mShader->setMat4(name, val);
-            }
-            else if constexpr (std::is_same_v<T, std::vector<int>>) {
-                mShader->setIntArray(name, const_cast<int*>(val.data()), static_cast<uint32_t>(val.size()));
-            }
-        }, value);
-    }
-
-    void Material::clearUniforms() {
-        mUniforms.clear();
-    }
-
-    void Material::clearTextures() {
-        mTextures.clear();
+        
     }
 
     void Material::serialize(const std::filesystem::path& path) const {
         pugi::xml_document doc;
-
-        // Add XML declaration
+        
         pugi::xml_node declaration = doc.prepend_child(pugi::node_declaration);
         declaration.append_attribute("version") = "1.0";
 
         pugi::xml_node materialNode = doc.append_child("material");
 
-        // Serialize shader
-        if (mShader) {
-            pugi::xml_node shaderNode = materialNode.append_child("shader");
-            shaderNode.append_attribute("assetId") = mShader->getId().c_str();
-            shaderNode.append_attribute("srcVert") = mShader->getPath().string().c_str();
-            shaderNode.append_attribute("srcFrag") = mShader->getFragmentPath().string().c_str();
+        pugi::xml_node baseColorNode = materialNode.append_child("baseColor");
+        baseColorNode.append_attribute("r") = mBaseColor.r;
+        baseColorNode.append_attribute("g") = mBaseColor.g;
+        baseColorNode.append_attribute("b") = mBaseColor.b;
+        
+        if (hasBaseColorTexture()) {
+            pugi::xml_node textureData = getBaseColorTexture()->toNode();
+            baseColorNode.append_copy(textureData);
         }
 
-        // Serialize properties
-        if (!mUniforms.empty()) {
-            pugi::xml_node propertiesNode = materialNode.append_child("properties");
-
-            for (const auto& [name, value] : mUniforms) {
-                pugi::xml_node propertyNode = propertiesNode.append_child("property");
-                propertyNode.append_attribute("name") = name.c_str();
-
-                std::visit([&propertyNode](const auto& val) {
-                    using T = std::decay_t<decltype(val)>;
-
-                    if constexpr (std::is_same_v<T, int>) {
-                        propertyNode.append_attribute("type") = "int";
-                        propertyNode.append_attribute("value") = val;
-                    }
-                    else if constexpr (std::is_same_v<T, float>) {
-                        propertyNode.append_attribute("type") = "float";
-                        propertyNode.append_attribute("value") = val;
-                    }
-                    else if constexpr (std::is_same_v<T, glm::vec2>) {
-                        propertyNode.append_attribute("type") = "vec2";
-                        std::string vecStr = std::to_string(val.x) + "," + std::to_string(val.y);
-                        propertyNode.append_attribute("value") = vecStr.c_str();
-                    }
-                    else if constexpr (std::is_same_v<T, glm::vec3>) {
-                        propertyNode.append_attribute("type") = "vec3";
-                        std::string vecStr = std::to_string(val.x) + "," + std::to_string(val.y) + "," + std::to_string(val.z);
-                        propertyNode.append_attribute("value") = vecStr.c_str();
-                    }
-                    else if constexpr (std::is_same_v<T, glm::vec4>) {
-                        propertyNode.append_attribute("type") = "vec4";
-                        std::string vecStr = std::to_string(val.x) + "," + std::to_string(val.y) + "," + std::to_string(val.z) + "," + std::to_string(val.w);
-                        propertyNode.append_attribute("value") = vecStr.c_str();
-                    }
-                }, value);
-            }
+        pugi::xml_node normalNode = materialNode.append_child("normal");
+        if (hasNormalTexture()) {
+            pugi::xml_node textureData = getNormalTexture()->toNode();
+            normalNode.append_copy(textureData);
         }
 
-        // Serialize textures
-        if (!mTextures.empty()) {
-            pugi::xml_node texturesNode = materialNode.append_child("textures");
+        pugi::xml_node metallicNode = materialNode.append_child("metallic");
+        metallicNode.append_attribute("value") = mMetallic;
+        if (hasMetallicTexture()) {
+            pugi::xml_node textureData = getMetallicTexture()->toNode();
+            metallicNode.append_copy(textureData);
+        }
 
-            for (const auto& [slot, texture] : mTextures) {
-                if (texture) {
-                    pugi::xml_node textureNode = texturesNode.append_child("texture2D");
-                    textureNode.append_attribute("name") = ("texture_" + std::to_string(slot)).c_str();
-                    textureNode.append_attribute("src") = texture->getPath().string().c_str();
-                }
-            }
+        pugi::xml_node roughnessNode = materialNode.append_child("roughness");
+        roughnessNode.append_attribute("value") = mRoughness;
+        if (hasRoughnessTexture()) {
+            pugi::xml_node textureData = getRoughnessTexture()->toNode();
+            roughnessNode.append_copy(textureData);
         }
 
         doc.save_file(path.c_str());
-    }
-
-    std::optional<Material::UniformValue> Material::getUniform(const std::string& name) const {
-        auto it = mUniforms.find(name);
-        if (it != mUniforms.end()) {
-            return it->second;
-        }
-        return std::nullopt;
-    }
-
-    std::vector<std::string> Material::getUniformNames() const {
-        std::vector<std::string> names;
-        names.reserve(mUniforms.size());
-
-        for (const auto& [name, value] : mUniforms) {
-            names.push_back(name);
-        }
-
-        return names;
     }
 }

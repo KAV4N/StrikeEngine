@@ -24,8 +24,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DIST    "${CMAKE_BINARY_DIR}/Sandbox/Dist"
 )
 
-# Setup StrikeEngine resources using the function from StrikeEngine
-strike_engine_setup_resources(${PROJECT_NAME})
 
 # Setup Sandbox-specific assets
 if(WIN32)

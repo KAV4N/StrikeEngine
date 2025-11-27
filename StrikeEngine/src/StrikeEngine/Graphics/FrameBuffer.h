@@ -12,6 +12,7 @@ namespace StrikeEngine {
         GLuint getDepthTextureID() const { return mDepthTexture; }
         uint32_t getWidth() const { return mWidth; }
         uint32_t getHeight() const { return mHeight; }
+        void clear();
         void bind();
         void unBind();
         void resize(uint32_t width, uint32_t height);

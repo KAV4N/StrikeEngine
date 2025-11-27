@@ -1,7 +1,7 @@
 #include "Script.h"
 #include "StrikeEngine/Events/Event.h"
-#include "StrikeEngine/Events/UserEvent.h"
-#include "StrikeEngine/Core/Application.h"
+#include "StrikeEngine/Events/KeyEvent.h"
+#include "StrikeEngine/Events/MouseEvent.h"
 #include "Entity.h"
 
 namespace StrikeEngine {
@@ -16,11 +16,33 @@ namespace StrikeEngine {
     void Script::onStart() {}
     void Script::onUpdate(float deltaTime) {}
     void Script::onDestroy() {}
-    void Script::onEvent(Event& event) {  }
-
-    void Script::sendUserEvent(const std::string& eventName, std::any data) {
-        UserEvent event(eventName, data);
-        Application::get().onEvent(event);
+    
+    void Script::onEvent(Event& event) {
+        switch (event.getEventType()) {
+            case EventType::KeyPressed:
+                onKeyPressed(static_cast<KeyPressedEvent&>(event));
+                break;
+            case EventType::KeyReleased:
+                onKeyReleased(static_cast<KeyReleasedEvent&>(event));
+                break;
+            case EventType::KeyTyped:
+                onKeyTyped(static_cast<KeyTypedEvent&>(event));
+                break;
+            case EventType::MouseMoved:
+                onMouseMoved(static_cast<MouseMovedEvent&>(event));
+                break;
+            case EventType::MouseScrolled:
+                onMouseScrolled(static_cast<MouseScrolledEvent&>(event));
+                break;
+            case EventType::MouseButtonPressed:
+                onMouseButtonPressed(static_cast<MouseButtonPressedEvent&>(event));
+                break;
+            case EventType::MouseButtonReleased:
+                onMouseButtonReleased(static_cast<MouseButtonReleasedEvent&>(event));
+                break;
+            default:
+                break;
+        }
     }
 
     const Entity& Script::getEntity() const {
@@ -49,7 +71,4 @@ namespace StrikeEngine {
         mStarted = true;
     }
 
-    void Script::setEventDispatcher(EventDispatcher* dispatcher) {
-        mEventDispatcher = dispatcher;
-    }
 }

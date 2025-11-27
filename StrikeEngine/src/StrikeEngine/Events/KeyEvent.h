@@ -8,8 +8,6 @@ namespace StrikeEngine {
     public:
         int getKeyCode() const { return mKeyCode; }
 
-        EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-
     protected:
         KeyEvent(int keycode) : mKeyCode(keycode) {}
 
@@ -31,7 +29,7 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(KeyPressed)
-            Event* clone() const override { return new KeyPressedEvent(mKeyCode, mRepeatCount); }
+          
 
     private:
         int mRepeatCount;
@@ -48,7 +46,7 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(KeyReleased)
-            Event* clone() const override { return new KeyReleasedEvent(mKeyCode); }
+       
     };
 
     class KeyTypedEvent : public KeyEvent {
@@ -62,6 +60,6 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(KeyTyped)
-            Event* clone() const override { return new KeyTypedEvent(mKeyCode); }
+           
     };
 }

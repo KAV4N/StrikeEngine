@@ -1,30 +1,50 @@
 #pragma once
+
+#include "Entity.h"
+#include <StrikeEngine/Events/Event.h>
+
 #include <string>
 #include <memory>
 #include <functional>
-#include "Entity.h"
-#include <any>
-#include <StrikeEngine/Events/Event.h>
+#include <vector>
+#include <typeindex>
+#include <unordered_map>
 
 namespace StrikeEngine {
-    class Entity;
     class Event;
-    class UserEvent;
-    class EventDispatcher;
+    class KeyPressedEvent;
+    class KeyReleasedEvent;
+    class KeyTypedEvent;
+    class MouseMovedEvent;
+    class MouseScrolledEvent;
+    class MouseButtonPressedEvent;
+    class MouseButtonReleasedEvent;
 
     class Script {
     public:
         Script();
         virtual ~Script();
 
-        // Core script lifecycle methods
+        Script(const Script&) = delete;
+        Script& operator=(const Script&) = delete;
+        Script(Script&&) = delete;
+        Script& operator=(Script&&) = delete;
+
         virtual void onCreate();
         virtual void onStart();
         virtual void onUpdate(float deltaTime);
         virtual void onDestroy();
-        virtual void onEvent(Event& event); // Now returns void
+        
+        void onEvent(Event& event);
 
-        void sendUserEvent(const std::string& eventName, std::any data = {});
+        // Override these to handle specific events 
+        virtual void onKeyPressed(KeyPressedEvent& event) {}
+        virtual void onKeyReleased(KeyReleasedEvent& event) {}
+        virtual void onKeyTyped(KeyTypedEvent& event) {}
+        virtual void onMouseMoved(MouseMovedEvent& event) {}
+        virtual void onMouseScrolled(MouseScrolledEvent& event) {}
+        virtual void onMouseButtonPressed(MouseButtonPressedEvent& event) {}
+        virtual void onMouseButtonReleased(MouseButtonReleasedEvent& event) {}
 
         const Entity& getEntity() const;
 
@@ -63,12 +83,6 @@ namespace StrikeEngine {
             return mEntity.getOrAddComponent<T>(std::forward<Args>(args)...);
         }
 
-        template<typename EventT, typename T>
-        void bindEvent(T& obj, bool (T::* method)(EventT&)) {
-            auto boundHandler = std::bind(method, &obj, std::placeholders::_1);
-            mEventDispatcher->dispatch<EventT>(boundHandler);
-        }
-
     protected:
         bool mActive = true;
 
@@ -78,11 +92,9 @@ namespace StrikeEngine {
 
         void setEntity(const Entity& entity);
         void markStarted();
-        void setEventDispatcher(EventDispatcher* dispatcher);
 
     private:
         bool mStarted = false;
         Entity mEntity;
-        EventDispatcher* mEventDispatcher = nullptr;
     };
 }

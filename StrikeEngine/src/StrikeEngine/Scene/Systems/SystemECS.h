@@ -1,8 +1,8 @@
 #pragma once
 #include <entt/entt.hpp>
-#include "StrikeEngine/Scene/Scene.h"
 
 namespace StrikeEngine {
+
 
     class SystemECS {
     public:

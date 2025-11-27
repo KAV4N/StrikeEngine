@@ -1,69 +1,73 @@
 #include "ScriptSystem.h"
-#include "StrikeEngine/Scene/Components/ScriptComponent.h"
+#include "StrikeEngine/Scene/Scene.h"
+#include "StrikeEngine/Scene/Entity.h"
+#include "StrikeEngine/Scene/Components/LogicComponent.h"
 #include "StrikeEngine/Scene/World.h"
-#include "StrikeEngine/Events/Event.h"
 
 namespace StrikeEngine {
 
-    void ScriptSystem::onEvent(Event& e) {
-        Scene* scene = World::get().getCurrentScene();
-        if (!scene) return;
-
-        auto sceneGraph = scene->getSceneGraph();
-        auto entities = sceneGraph->getEntitiesWithComponent<ScriptComponent>();
-
-        for (auto entity : entities) {
-            auto& scriptComponent = entity.getComponent<ScriptComponent>();
-            validateComponent(entity, scriptComponent);
-
-            auto& scriptInstances = scriptComponent.getScriptInstances();
-            for (auto& [scriptId, script] : scriptInstances) {
-                // Create dispatcher for this script and event
-                EventDispatcher dispatcher(e);
-
-                script->setEventDispatcher(&dispatcher);
-                script->onEvent(e);
-                script->setEventDispatcher(nullptr);
-
-                if (e.handled) {
-                    break;
-                }
-            }
-        }
-    }
-
     void ScriptSystem::onUpdate(float dt) {
-        Scene* scene = World::get().getCurrentScene();
+        Scene* scene = World::get().getScene();
         if (!scene) return;
 
-        auto sceneGraph = scene->getSceneGraph();
-        auto entities = sceneGraph->getEntitiesWithComponent<ScriptComponent>();
+        auto view = scene->view<LogicComponent>();
+        
+        for (auto entity : view) {
+            auto& logic = view.get<LogicComponent>(entity);
+            
+            if (!logic.isActive()) {
+                continue;
+            }
 
-        for (auto entity : entities) {
-            auto& scriptComponent = entity.getComponent<ScriptComponent>();
-            validateComponent(entity, scriptComponent);
+            Entity entityWrapper(entity, scene);
 
-            auto& scriptInstances = scriptComponent.getScriptInstances();
+            for (auto& script : logic.getScripts()) {
+                if (!script || !script->isActive()) {
+                    continue;
+                }
 
-            for (auto& [scriptId, script] : scriptInstances) {
-                if (script) {
-                    if (!script->isStarted()) {
-                        script->onCreate();
-                        script->onStart();
-                        script->markStarted();
-                    }
-                    if (script->isActive()) {
-                        script->onUpdate(dt);
+                // Set entity if not already set
+                if (!script->getEntity().isValid()) {
+                    script->setEntity(entityWrapper);
+                    script->onCreate();
+                }
+
+                // Call onStart once
+                if (!script->isStarted()) {
+                    script->onStart();
+                    script->markStarted();
+                }
+
+                // Call onUpdate every frame
+                script->onUpdate(dt);
+            }
+        }
+    }
+
+    void ScriptSystem::onEvent(Event& event) {
+        Scene* scene = World::get().getScene();
+        if (!scene) return;
+
+        auto view = scene->view<LogicComponent>();
+        
+        for (auto entity : view) {
+            if (event.handled){
+                break;
+            }
+            auto& logic = view.get<LogicComponent>(entity);
+            
+            if (!logic.isActive()) {
+                continue;
+            }
+
+            for (auto& script : logic.getScripts()) {
+                if (script && script->isActive() && script->isStarted()) {
+                    script->onEvent(event);
+                    if (event.handled){
+                        break;
                     }
                 }
             }
         }
     }
-
-    void ScriptSystem::validateComponent(Entity entity, ScriptComponent& scriptComponent) {
-        if (!scriptComponent.isValid()) {
-            scriptComponent.mEntity = entity;
-            scriptComponent.asignEntityToScripts(entity);
-        }
-    }
-}
+} 

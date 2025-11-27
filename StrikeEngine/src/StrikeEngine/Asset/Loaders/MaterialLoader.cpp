@@ -1,4 +1,6 @@
 #include "MaterialLoader.h"
+
+#include "StrikeEngine/Asset/Loaders/AssetLoader.h"
 #include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 #include <stdexcept>
@@ -10,9 +12,7 @@ namespace StrikeEngine {
     MaterialLoader::MaterialLoader() : AssetLoader(Material::getStaticTypeName()) {
     }
 
-    std::shared_ptr<Asset> MaterialLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        
-
+    std::shared_ptr<Asset> MaterialLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
 
@@ -24,27 +24,21 @@ namespace StrikeEngine {
         if (!materialNode) {
             throw std::runtime_error("Invalid material format: no material node found in " + path.string());
         }
-        auto material = std::make_shared<Material>(id, addRootPrefix(path), path.stem().string());
+
+        auto material = std::make_shared<Material>(id, addRootPrefix(path));
         loadMaterialFromXml(material, materialNode, path.parent_path());
-
-
-        material->setLoadingState(AssetLoadingState::Loaded);
-        if (!async) {
-            material->setLoadingState(AssetLoadingState::Ready);
-        }
 
         return material;
     }
 
     std::shared_ptr<Asset> MaterialLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string assetId = node.attribute("assetId").as_string();
+        std::string assetId = node.attribute("id").as_string();
         std::filesystem::path src = node.attribute("src").as_string();
 
         src = resolvePath(src, basePath);
 
         if (assetId.empty() || src.empty()) {
-            std::cerr << "Invalid material node: missing assetId or src attribute" << std::endl;
-            return nullptr;
+            throw std::runtime_error("Invalid material node: missing assetId or src attribute");
         }
 
         bool async = node.attribute("async").as_bool();
@@ -55,127 +49,97 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Asset> MaterialLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        return std::make_shared<Material>(id, path, path.stem().string());
+        return std::make_shared<Material>(id, path);
     }
 
     void MaterialLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
         auto placeholderMaterial = std::dynamic_pointer_cast<Material>(placeholder);
         auto loadedMaterial = std::dynamic_pointer_cast<Material>(loaded);
         *placeholderMaterial = std::move(*loadedMaterial);
-      
     }
 
     void MaterialLoader::loadMaterialFromXml(std::shared_ptr<Material> material, const pugi::xml_node& materialNode, const std::filesystem::path& basePath) {
-        // Load shader
-        pugi::xml_node shaderNode = materialNode.child("shader");
-        if (shaderNode) {
-            std::string shaderAssetId = shaderNode.attribute("assetId").as_string();
-            std::filesystem::path vertSrc = shaderNode.attribute("srcVert").as_string();
-            std::filesystem::path fragSrc = shaderNode.attribute("srcFrag").as_string();
-
-            if (!shaderAssetId.empty() && !vertSrc.empty() && !fragSrc.empty()) {
-                
-                vertSrc = resolvePath(vertSrc, basePath);
-                fragSrc = resolvePath(fragSrc, basePath);
-
-                auto shader = AssetManager::get().loadShader(shaderAssetId,vertSrc,fragSrc);
-                material->setShader(shader);
-            }
-        }
-
-        // Load properties
-        pugi::xml_node propertiesNode = materialNode.child("properties");
-        if (propertiesNode) {
-            loadProperties(material, propertiesNode);
-        }
+        // Load PBR properties
+        loadProperties(material, materialNode);
 
         // Load textures
-        pugi::xml_node texturesNode = materialNode.child("textures");
-        if (texturesNode) {
-            loadTextures(material, texturesNode, basePath);
+        loadTextures(material, materialNode, basePath);
+    }
+
+    void MaterialLoader::loadProperties(std::shared_ptr<Material> material, const pugi::xml_node& materialNode) {
+        // Load baseColor from baseColor node
+        if (auto baseColorNode = materialNode.child("baseColor")) {
+            material->setBaseColor(parseVec3(baseColorNode));
+        }
+
+        // Load metallic from metallic node
+        if (auto metallicNode = materialNode.child("metallic")) {
+            material->setMetallic(metallicNode.attribute("value").as_float());
+        }
+
+        // Load roughness from roughness node
+        if (auto roughnessNode = materialNode.child("roughness")) {
+            material->setRoughness(roughnessNode.attribute("value").as_float());
         }
     }
 
-    void MaterialLoader::loadProperties(std::shared_ptr<Material> material, const pugi::xml_node& propertiesNode) {
-        for (pugi::xml_node propertyNode : propertiesNode.children("property")) {
-            std::string name = propertyNode.attribute("name").as_string();
-            std::string type = propertyNode.attribute("type").as_string();
-            std::string value = propertyNode.attribute("value").as_string();
-
-            if (name.empty() || type.empty() || value.empty()) {
-                continue;
-            }
-
-            if (type == "float") {
-                material->setFloat(name, std::stof(value));
-            }
-            else if (type == "int") {
-                material->setInt(name, std::stoi(value));
-            }
-            else if (type == "vec2") {
-                // Parse vec2 format: "x,y"
-                std::istringstream ss(value);
-                std::string token;
-                glm::vec2 vec;
-                int i = 0;
-                while (std::getline(ss, token, ',') && i < 2) {
-                    vec[i++] = std::stof(token);
+    void MaterialLoader::loadTextures(std::shared_ptr<Material> material, const pugi::xml_node& materialNode, const std::filesystem::path& basePath) {
+        // Load base color texture from baseColor node
+        if (auto baseColorNode = materialNode.child("baseColor")) {
+            if (auto textureNode = baseColorNode.child("texture")) {
+                std::filesystem::path src = textureNode.attribute("src").as_string();
+                std::string id = textureNode.attribute("id").as_string();
+                src = resolvePath(src, basePath);
+                auto texture = AssetManager::get().loadTexture(id, src);
+                if (texture) {
+                    material->setBaseColorTexture(std::dynamic_pointer_cast<Texture>(texture));
                 }
-                material->setVec2(name, vec);
             }
-            else if (type == "vec3") {
-                material->setVec3(name, parseVec3(value));
+        }
+
+        // Load normal texture from normal node
+        if (auto normalNode = materialNode.child("normal")) {
+            if (auto textureNode = normalNode.child("texture")) {
+                std::filesystem::path src = textureNode.attribute("src").as_string();
+                std::string id = textureNode.attribute("id").as_string();
+                src = resolvePath(src, basePath);
+                auto texture = AssetManager::get().loadTexture(id, src);
+                if (texture) {
+                    material->setNormalTexture(std::dynamic_pointer_cast<Texture>(texture));
+                }
             }
-            else if (type == "vec4") {
-                material->setVec4(name, parseVec4(value));
+        }
+
+        if (auto metallicNode = materialNode.child("metallic")) {
+            if (auto textureNode = metallicNode.child("texture")) {
+                std::filesystem::path src = textureNode.attribute("src").as_string();
+                std::string id = textureNode.attribute("id").as_string();
+                src = resolvePath(src, basePath);
+                auto texture = AssetManager::get().loadTexture(id, src);
+                if (texture) {
+                    material->setMetallicTexture(std::dynamic_pointer_cast<Texture>(texture));
+                }
+            }
+        }
+
+        if (auto roughnessNode = materialNode.child("roughness")) {
+            if (auto textureNode = roughnessNode.child("texture")) {
+                std::filesystem::path src = textureNode.attribute("src").as_string();
+                std::string id = textureNode.attribute("id").as_string();
+                src = resolvePath(src, basePath);
+                auto texture = AssetManager::get().loadTexture(id, src);
+                if (texture) {
+                    material->setRoughnessTexture(std::dynamic_pointer_cast<Texture>(texture));
+                }
             }
         }
     }
 
-    void MaterialLoader::loadTextures(std::shared_ptr<Material> material, const pugi::xml_node& texturesNode, const std::filesystem::path& basePath) {
-        uint32_t slot = 0;
-
-        for (pugi::xml_node textureNode : texturesNode.children("texture2D")) {
-            std::string name = textureNode.attribute("name").as_string();
-            std::filesystem::path src = textureNode.attribute("src").as_string();
-
-            if (name.empty() || src.empty()) {
-                continue;
-            }
-
-            src = resolvePath(src, basePath);
-          
-            auto texture = AssetManager::get().loadTexture(src.string(), src);
-            if (texture) {
-                material->addTexture(slot, texture);
-
-                material->setInt(name, static_cast<int>(slot));
-            }
-
-            slot++;
-        }
-    }
-
-    glm::vec3 MaterialLoader::parseVec3(const std::string& value) {
-        std::istringstream ss(value);
-        std::string token;
-        glm::vec3 vec(0.0f);
-        int i = 0;
-        while (std::getline(ss, token, ',') && i < 3) {
-            vec[i++] = std::stof(token);
-        }
+    glm::ivec3 MaterialLoader::parseVec3(const pugi::xml_node& node) {
+        glm::ivec3 vec(0);
+        vec.r = node.attribute("r").as_int();
+        vec.g = node.attribute("g").as_int();
+        vec.b = node.attribute("b").as_int();
         return vec;
     }
-
-    glm::vec4 MaterialLoader::parseVec4(const std::string& value) {
-        std::istringstream ss(value);
-        std::string token;
-        glm::vec4 vec(0.0f);
-        int i = 0;
-        while (std::getline(ss, token, ',') && i < 4) {
-            vec[i++] = std::stof(token);
-        }
-        return vec;
-    }
-
 }

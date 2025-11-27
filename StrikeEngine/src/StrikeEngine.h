@@ -7,24 +7,32 @@
 #include "StrikeEngine/Core/Log.h"
 
 #include "StrikeEngine/Core/Input.h"
+
 #include "StrikeEngine/Events/KeyCodes.h"
 #include "StrikeEngine/Events/Event.h"
+#include "StrikeEngine/Events/ApplicationEvent.h"
+#include "StrikeEngine/Events/KeyEvent.h"
+#include "StrikeEngine/Events/MouseEvent.h"
 
 
-#include "StrikeEngine/ImGui/ImGuiLayer.h"
-
-#include "StrikeEngine/Asset/Types/Mesh.h"
-#include "StrikeEngine/Asset/Types/Template.h"
-#include "StrikeEngine/Asset/Types/Texture.h"
-#include "StrikeEngine/Asset/Types/Shader.h"
-#include "StrikeEngine/Asset/Types/Material.h"
+#include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Scene/Scene.h"
 
 #include "StrikeEngine/Asset/ModelParser.h"
-#include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
+#include "StrikeEngine/Scene/Components/CameraComponent.h"
+#include "StrikeEngine/Scene/Components/HierarchyComponent.h"
+#include "StrikeEngine/Scene/Components/LightComponent.h"
+#include "StrikeEngine/Scene/Components/LogicComponent.h"
+#include "StrikeEngine/Scene/Components/PhysicsComponent.h"
+#include "StrikeEngine/Scene/Components/RendererComponent.h"
+#include "StrikeEngine/Scene/Components/TagComponent.h"
+#include "StrikeEngine/Scene/Components/TransformComponent.h"
 
+#include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Scene/ScriptRegistry.h"
 #include "StrikeEngine/Scene/Script.h"
+
 
 

@@ -1,187 +1,178 @@
 #include "TextureLoader.h"
-#include "StrikeEngine/Asset/Types/Texture.h"
-#include "StrikeEngine/Asset/AssetManager.h"
 #include <iostream>
-#include <stdexcept>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 namespace StrikeEngine {
 
-    Texture2DLoader::Texture2DLoader() : AssetLoader(Texture2D::getStaticTypeName()) {
+    // ============ TextureLoader ============
+
+    TextureLoader::TextureLoader() : AssetLoader("Texture") {}
+
+    unsigned char* TextureLoader::loadImageData(const std::filesystem::path& path, int& width, int& height, int& channels) {
+        stbi_set_flip_vertically_on_load(true);
+        return stbi_load(path.string().c_str(), &width, &height, &channels, 0);
     }
 
-    std::shared_ptr<Asset> Texture2DLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto texture = std::make_shared<Texture2D>(id, addRootPrefix(path), path.stem().string());
+    void TextureLoader::freeImageData(unsigned char* data) {
+        if (data) {
+            stbi_image_free(data);
+        }
+    }
+
+    std::shared_ptr<Asset> TextureLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
+        auto texture = std::make_shared<Texture>(id, path);
+        texture->setLoadingState(AssetLoadingState::Loading);
 
         int width, height, channels;
         unsigned char* data = loadImageData(path, width, height, channels);
 
         if (!data) {
-            throw std::runtime_error("Failed to load texture: " + path.string());
+            std::cerr << "Failed to load texture: " << path << std::endl;
+            texture->setLoadingState(AssetLoadingState::FAILED);
+            return texture;
         }
 
-        texture->setTextureData(data, width, height, channels);
-        texture->setLoadingState(AssetLoadingState::Loaded);
-        if (!async) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            LoadingTask task;
-            task.id = texture->getId();
-            task.path = texture->getPath();
-            task.placeholderAsset = texture;
-            task.flagOnlyPostLoad = true;
-            mLoadingTasks.emplace(task.id, std::move(task));
-        }
+        texture->setTextureData(width, height, channels, data);
+        freeImageData(data);
 
         return texture;
     }
 
-    std::shared_ptr<Asset> Texture2DLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string assetId = node.attribute("assetId").as_string();
-        std::filesystem::path src = node.attribute("src").as_string();
-        bool async = node.attribute("async").as_bool();
-
-        if (assetId.empty() || src.empty()) {
-            std::cerr << "Invalid texture2D node: missing assetId or src attribute" << std::endl;
+    std::shared_ptr<Asset> TextureLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
+        std::string id = node.attribute("id").as_string();
+        std::string srcStr = node.attribute("src").as_string();
+        
+        if (id.empty() || srcStr.empty()) {
+            std::cerr << "Invalid texture node: missing id or src" << std::endl;
             return nullptr;
         }
 
-        src = resolvePath(src, basePath);
+        std::filesystem::path path = resolvePath(srcStr, basePath);
+        return load(id, path);
+    }
 
-        if (async) {
-            return AssetManager::get().loadTextureAsync(assetId, src);
-        }
-        else {
-            return AssetManager::get().loadTexture(assetId, src);
+    std::shared_ptr<Asset> TextureLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
+        auto placeholder = std::make_shared<Texture>(id, path);
+        placeholder->setLoadingState(AssetLoadingState::Loading);
+        return placeholder;
+    }
+
+    void TextureLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
+        auto placeholderTexture = std::static_pointer_cast<Texture>(placeholder);
+        auto loadedTexture = std::static_pointer_cast<Texture>(loaded);
+
+        if (loadedTexture && placeholderTexture) {
+            int width = loadedTexture->getWidth();
+            int height = loadedTexture->getHeight();
+            int channels = loadedTexture->getChannels();
+            
+            std::vector<unsigned char> tempData(static_cast<size_t>(width) * height * channels);
+            placeholderTexture->setTextureData(width, height, channels, tempData.data());
         }
     }
 
-    void Texture2DLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
-        auto placeholderTexture = std::dynamic_pointer_cast<Texture2D>(placeholder);
-        auto loadedTexture = std::dynamic_pointer_cast<Texture2D>(loaded);
-        *placeholderTexture = std::move(*loadedTexture);
+    // ============ CubeMapLoader ============
+
+    CubeMapLoader::CubeMapLoader() : AssetLoader("CubeMap") {}
+
+    unsigned char* CubeMapLoader::loadImageData(const std::filesystem::path& path, int& width, int& height, int& channels) {
+        stbi_set_flip_vertically_on_load(false);
+        return stbi_load(path.string().c_str(), &width, &height, &channels, 0);
     }
 
-    std::shared_ptr<Asset> Texture2DLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        return std::make_shared<Texture2D>(id, path, path.stem().string());
+    void CubeMapLoader::freeImageData(unsigned char* data) {
+        if (data) {
+            stbi_image_free(data);
+        }
     }
 
-    unsigned char* Texture2DLoader::loadImageData(const std::filesystem::path& path, int& width, int& height, int& channels) {
-        stbi_set_flip_vertically_on_load(true);
-        unsigned char* data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
+    std::shared_ptr<Asset> CubeMapLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
+        auto cubemap = std::make_shared<CubeMap>(id, path);
+        cubemap->setLoadingState(AssetLoadingState::Loading);
 
-        if (!data) {
-            std::cerr << "Failed to load image: " << path.string() << " - " << stbi_failure_reason() << std::endl;
-            return nullptr;
+        std::array<std::string, 6> faceNames = {
+            "right", "left", "top", "bottom", "front", "back"
+        };
+
+        std::array<std::vector<unsigned char>, 6> faceData;
+        int width = 0, height = 0, channels = 0;
+        bool loadSuccess = true;
+
+        std::filesystem::path parentPath = path.parent_path();
+        
+        std::string baseName = path.stem().string();
+        std::string extension = path.extension().string();
+
+        for (size_t i = 0; i < 6; i++) {
+            std::filesystem::path facePath = parentPath / (baseName + "_" + faceNames[i] + extension);
+            
+            int w, h, c;
+            unsigned char* data = loadImageData(facePath, w, h, c);
+
+            if (!data) {
+                std::cerr << "Failed to load cubemap face: " << facePath << std::endl;
+                loadSuccess = false;
+                break;
+            }
+
+            if (i == 0) {
+                width = w;
+                height = h;
+                channels = c;
+            } else if (w != width || h != height || c != channels) {
+                std::cerr << "Cubemap face dimensions mismatch: " << facePath << std::endl;
+                freeImageData(data);
+                loadSuccess = false;
+                break;
+            }
+
+            size_t dataSize = static_cast<size_t>(w) * h * c;
+            faceData[i].resize(dataSize);
+            std::memcpy(faceData[i].data(), data, dataSize);
+            freeImageData(data);
         }
 
-        size_t dataSize = width * height * channels;
-        unsigned char* dataCopy = new unsigned char[dataSize];
-        std::memcpy(dataCopy, data, dataSize);
-        stbi_image_free(data);
-        return dataCopy;
-    }
-
-    CubeMapLoader::CubeMapLoader() : AssetLoader(CubeMap::getStaticTypeName()) {
-    }
-
-    std::shared_ptr<Asset> CubeMapLoader::load(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto cubemap = std::make_shared<CubeMap>(id, addRootPrefix(path), path.stem().string());
-
-        unsigned char* data[6];
-        int size, channels;
-        if (!loadCubeMapData(path, data, size, channels)) {
-            throw std::runtime_error("Failed to load cubemap: " + path.string());
+        if (!loadSuccess) {
+            cubemap->setLoadingState(AssetLoadingState::FAILED);
+            return cubemap;
         }
 
-        cubemap->setTextureData(data, size, channels);
-        cubemap->setLoadingState(AssetLoadingState::Loaded);
-        if (!async) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            LoadingTask task;
-            task.id = cubemap->getId();
-            task.path = cubemap->getPath();
-            task.placeholderAsset = cubemap;
-            task.flagOnlyPostLoad = true;
-            mLoadingTasks.emplace(task.id, std::move(task));
-        }
-
+        cubemap->setCubeMapData(width, height, channels, faceData);
         return cubemap;
     }
 
     std::shared_ptr<Asset> CubeMapLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string assetId = node.attribute("assetId").as_string();
-        std::filesystem::path src = node.attribute("src").as_string();
-        bool async = node.attribute("async").as_bool();
-
-        if (assetId.empty() || src.empty()) {
-            std::cerr << "Invalid cubemap node: missing assetId or src attribute" << std::endl;
+        std::string id = node.attribute("id").as_string();
+        std::string srcStr = node.attribute("src").as_string();
+        
+        if (id.empty() || srcStr.empty()) {
+            std::cerr << "Invalid cubemap node: missing id or src" << std::endl;
             return nullptr;
         }
 
-        src = resolvePath(src, basePath);
-
-        if (async) {
-            return AssetManager::get().loadCubeMapAsync(assetId, src);
-        }
-        else {
-            return AssetManager::get().loadCubeMap(assetId, src);
-        }
-    }
-
-    void CubeMapLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
-        auto placeholderCubeMap = std::dynamic_pointer_cast<CubeMap>(placeholder);
-        auto loadedCubeMap = std::dynamic_pointer_cast<CubeMap>(loaded);
-        *placeholderCubeMap = std::move(*loadedCubeMap);
+        std::filesystem::path path = resolvePath(srcStr, basePath);
+        return load(id, path);
     }
 
     std::shared_ptr<Asset> CubeMapLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        return std::make_shared<CubeMap>(id, path, path.stem().string());
+        auto placeholder = std::make_shared<CubeMap>(id, path);
+        placeholder->setLoadingState(AssetLoadingState::Loading);
+        return placeholder;
     }
 
-    bool CubeMapLoader::loadCubeMapData(const std::filesystem::path& path, unsigned char* data[6], int& size, int& channels) {
-        stbi_set_flip_vertically_on_load(false); // Important for cubemaps
-        std::string faces[6] = { "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "front.jpg", "back.jpg" };
+    void CubeMapLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
+        auto placeholderCubemap = std::static_pointer_cast<CubeMap>(placeholder);
+        auto loadedCubemap = std::static_pointer_cast<CubeMap>(loaded);
 
-        int width, height;
-        for (int i = 0; i < 6; ++i) {
-            std::filesystem::path facePath = path / faces[i];
-            data[i] = stbi_load(facePath.string().c_str(), &width, &height, &channels, 0);
-            if (!data[i]) {
-                std::cerr << "Failed to load cubemap face: " << facePath.string() << " - " << stbi_failure_reason() << std::endl;
-                // Clean up already loaded faces
-                for (int j = 0; j < i; ++j) {
-                    stbi_image_free(data[j]);
-                    data[j] = nullptr;
-                }
-                return false;
-            }
-
-            // Validate dimensions
-            if (i == 0) {
-                size = width;
-            }
-            else if (width != size || height != size) {
-                std::cerr << "Cubemap face " << facePath.string() << " has different dimensions" << std::endl;
-                // Clean up all loaded faces
-                for (int j = 0; j <= i; ++j) {
-                    stbi_image_free(data[j]);
-                    data[j] = nullptr;
-                }
-                return false;
-            }
+        if (loadedCubemap && placeholderCubemap) {
+            int width = loadedCubemap->getWidth();
+            int height = loadedCubemap->getHeight();
+            
+            std::array<std::vector<unsigned char>, 6> emptyFaces;
+            placeholderCubemap->setCubeMapData(width, height, 0, emptyFaces);
         }
-
-        // Create data copies to match the memory management pattern
-        for (int i = 0; i < 6; ++i) {
-            size_t dataSize = size * size * channels;
-            unsigned char* dataCopy = new unsigned char[dataSize];
-            std::memcpy(dataCopy, data[i], dataSize);
-            stbi_image_free(data[i]);
-            data[i] = dataCopy;
-        }
-
-        return true;
     }
+
 }

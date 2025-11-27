@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef PLATFORM_WINDOWS
-
 #include "Application.h"
 #include "StrikeEngine/Core/Log.h"
 
@@ -15,5 +13,3 @@ int main(int argc, char** argv) {
     delete app;
     return 0;
 }
-
-#endif

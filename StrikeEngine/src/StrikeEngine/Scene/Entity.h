@@ -6,34 +6,30 @@
 #include <string>
 #include <vector>
 
+
+#include "Scene.h"
+
 namespace StrikeEngine {
 
-    class SceneGraph;
     class Scene;
+    class HierarchyComponent;
+    class TransformComponent;
 
     class Entity final {
     public:
-        static Entity create(Scene* scene, const std::string& id, const std::string& parentId = "");
-        static Entity get(Scene* scene, const std::string& id);
-
         Entity() = default;
-        ~Entity() = default;
+        Entity(entt::entity handle, Scene* scene);
 
-        // Copy constructor and assignment
+        // Copy and move
         Entity(const Entity&) = default;
         Entity& operator=(const Entity&) = default;
-
-        // Move constructor and assignment
         Entity(Entity&&) = default;
         Entity& operator=(Entity&&) = default;
 
         // Validity
         bool isValid() const;
 
-        void setName(const std::string& name);
-        std::string getName() const;
-        std::string getId() const;
-
+        // Core component operations
         template<typename T, typename... Args>
         T& addComponent(Args&&... args);
 
@@ -52,134 +48,121 @@ namespace StrikeEngine {
         template<typename T, typename... Args>
         T& getOrAddComponent(Args&&... args);
 
-        // Position controls
-        void setPosition(const glm::vec3& position);
-        void setPositionX(float x);
-        void setPositionY(float y);
-        void setPositionZ(float z);
+        // Essential transform shortcuts
+        TransformComponent& getTransform();
+        const TransformComponent& getTransform() const;
 
-        void move(const glm::vec3& offset);
-
-        void moveUp(float distance);
-        void moveDown(float distance);
-        void moveLeft(float distance);
-        void moveRight(float distance);
-        void moveForward(float distance);
-        void moveBackward(float distance);
-
-        // Rotation controls
-        void setRotation(const glm::quat& rotation);
-        void setRotationEuler(const glm::vec3& rotation);
-        void setRotationX(float angleDegrees);
-        void setRotationY(float angleDegrees);
-        void setRotationZ(float angleDegrees);
-
-        void rotateEuler(const glm::vec3& anglesDegrees);
-        //test
-        void rotateQuaternion(float angleDegrees, glm::vec3 axis);
-        void rotateX(float angleDegrees);
-        void rotateY(float angleDegrees);
-        void rotateZ(float angleDegrees);
-
-
-        // Scale controls
-        void setScale(const glm::vec3& scale);
-        void setScaleX(float x);
-        void setScaleY(float y);
-        void setScaleZ(float z);
-
-        void scale(const glm::vec3& factor);
-        void scaleX(float x);
-        void scaleY(float y);
-        void scaleZ(float z);
+        // Essential component accessors
+        HierarchyComponent& getHierarchy();
+        const HierarchyComponent& getHierarchy() const;
         
-        glm::vec3 getScale() const;
-        glm::vec3 getPosition() const;
-        glm::quat getRotation() const;
-        glm::vec3 getEulerRotation() const;
+        void setTag(const std::string& tag);
+        const std::string& getTag() const;
 
+        // Consolidated transform controls
+        void setPosition(const glm::vec3& position) { getTransform().setPosition(position); }
+        void move(const glm::vec3& offset) { getTransform().move(offset); }
+        
+        void setRotation(const glm::quat& rotation) { getTransform().setRotation(rotation); }
+        void setRotationEuler(const glm::vec3& rotation) { getTransform().setRotationEuler(rotation); }
+        void rotateEuler(const glm::vec3& anglesDegrees) { getTransform().rotateEuler(anglesDegrees); }
+        
+        void setScale(const glm::vec3& scale) { getTransform().setScale(scale); }
+        void scaleBy(const glm::vec3& factor) { getTransform().scale(factor); }
 
-        glm::mat4 getLocalMatrix() const;
-        glm::mat4 getWorldMatrix() const;
+        // Essential getters
+        glm::vec3 getPosition() const { return getTransform().getPosition(); }
+        glm::quat getRotation() const { return getTransform().getRotation(); }
+        glm::vec3 getEulerRotation() const { return getTransform().getRotationEuler(); }
+        glm::vec3 getScale() const { return getTransform().getScale(); }
+        glm::mat4 getWorldMatrix() const { return getTransform().getWorldMatrix(); }
+
+        // Essential hierarchy operations
+        bool isRoot() const;
+        Entity getParent() const;
 
         void setParent(Entity parent);
-        Entity getParent() const;
-        std::vector<Entity> getChildren() const;
-
         void addChild(Entity child);
-        void removeChild(Entity child);
+        void destroyChildren(); 
 
-        bool isAncestorOf(Entity other) const;
-        bool isDescendantOf(Entity other) const;
-        bool isRoot() const;
-        bool isActive() const;
+        std::vector<Entity> getChildren() const;
+        size_t getChildCount() const;
+        bool hasChildren() const;
 
+        // Operators
+        bool operator==(const Entity& other) const { return mHandle == other.mHandle && mScene == other.mScene; }
+        bool operator!=(const Entity& other) const { return !(*this == other); }
         operator bool() const { return isValid(); }
 
-        bool operator!=(const Entity& other) const { return !(*this == other); }
-        bool operator==(const Entity& other) const { return mSceneGraph == other.mSceneGraph && mHandle == other.mHandle; }
-
-        Scene* getScene() const;
-        SceneGraph* getSceneGraph() const;
-
-    private:
-        entt::registry& getRegistry() const;
+        // Accessors
+        entt::entity getHandle() const { return mHandle; }
+        Scene* getScene() const { return mScene; }
 
     private:
         friend class Scene;
-        friend class SceneGraph;
         friend struct std::hash<Entity>;
 
-        Scene* mScene = nullptr;
-        SceneGraph* mSceneGraph = nullptr;
         entt::entity mHandle = entt::null;
+        Scene* mScene = nullptr;
     };
 
+    // Entity method implementations
     template<typename T, typename... Args>
-    T& Entity::addComponent(Args&&... args) {
+    inline T& Entity::addComponent(Args&&... args) {
         if (!isValid()) {
-            throw std::runtime_error("Invalid entity or scene graph");
+            throw std::runtime_error("Invalid entity or scene");
         }
-        return getRegistry().emplace<T>(mHandle, std::forward<Args>(args)...);
+        return mScene->addComponent<T>(mHandle, std::forward<Args>(args)...);
     }
 
     template<typename T>
-    void Entity::removeComponent() {
+    inline void Entity::removeComponent() {
         if (!isValid()) {
             return;
         }
-        getRegistry().remove<T>(mHandle);
+        mScene->removeComponent<T>(mHandle);
     }
 
     template<typename T>
-    T& Entity::getComponent() {
+    inline T& Entity::getComponent() {
         if (!isValid()) {
-            throw std::runtime_error("Invalid entity or scene graph");
+            throw std::runtime_error("Invalid entity or scene");
         }
-        return getRegistry().get<T>(mHandle);
+        return mScene->getComponent<T>(mHandle);
     }
 
     template<typename T>
-    const T& Entity::getComponent() const {
+    inline const T& Entity::getComponent() const {
+        std::string name = T::getStaticTypeName();
         if (!isValid()) {
-            throw std::runtime_error("Invalid entity or scene graph");
+            throw std::runtime_error("Invalid entity or scene");
         }
-        return getRegistry().get<T>(mHandle);
+        return mScene->getComponent<T>(mHandle);
     }
 
     template<typename T>
-    bool Entity::hasComponent() const {
+    inline bool Entity::hasComponent() const {
         if (!isValid()) {
             return false;
         }
-        return getRegistry().all_of<T>(mHandle);
+        return mScene->hasComponent<T>(mHandle);
     }
 
     template<typename T, typename... Args>
-    T& Entity::getOrAddComponent(Args&&... args) {
+    inline T& Entity::getOrAddComponent(Args&&... args) {
         if (hasComponent<T>()) {
             return getComponent<T>();
         }
         return addComponent<T>(std::forward<Args>(args)...);
     }
+
+} // namespace StrikeEngine
+
+namespace std {
+    template<>
+    struct hash<StrikeEngine::Entity> {
+        std::size_t operator()(const StrikeEngine::Entity& e) const noexcept {
+            return std::hash<entt::entity>()(e.getHandle());
+        }
+    };
 }

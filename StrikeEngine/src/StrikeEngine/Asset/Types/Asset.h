@@ -17,7 +17,7 @@ namespace StrikeEngine {
 
     class Asset {
     public:
-        Asset(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
+        Asset(const std::string& id, const std::filesystem::path& path);
         virtual ~Asset();
 
         virtual const std::string& getTypeName() const = 0;
@@ -25,8 +25,6 @@ namespace StrikeEngine {
         const std::string& getId() const;
         AssetLoadingState getLoadingState() const;
         const std::filesystem::path& getPath() const;
-        const std::string& getName() const;
-        void setName(const std::string& name);
 
         virtual void postLoad();
 
@@ -42,10 +40,12 @@ namespace StrikeEngine {
         virtual pugi::xml_node toNode() const;
 
     protected:
+        friend class AssetLoader;
         std::string mId;
-        std::string mName;
         std::filesystem::path mPath;
         AssetLoadingState mLoadingState;
         bool mLoadAsync;
+        bool mNeedsPostLoad;
+
     };
 }

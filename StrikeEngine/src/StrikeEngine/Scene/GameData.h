@@ -13,10 +13,6 @@ namespace StrikeEngine {
     // Type-safe variant for different data types
     using DataValue = std::variant<int, float, double, bool, std::string>;
 
-    /**
-     * Provides thread-safe access to persistent game data that survives scene changes
-     * and can be saved/loaded to/from disk using JSON format
-     */
     class GameData final {
     public:
         // Singleton access

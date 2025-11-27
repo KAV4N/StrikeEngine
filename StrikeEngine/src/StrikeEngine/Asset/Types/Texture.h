@@ -1,98 +1,67 @@
 #pragma once
+#include "StrikeEngine/Asset/Types/Asset.h"
 #include <glad/glad.h>
-#include "Asset.h"
-#include <string>
-#include <filesystem>
-#include <pugixml.hpp>
+#include <vector>
+#include <array>
 
 namespace StrikeEngine {
 
-    enum class TextureFormat {
-        RGB = GL_RGB,
-        RGBA = GL_RGBA,
-        RED = GL_RED,
-        RG = GL_RG
-    };
-
     class Texture : public Asset {
     public:
-        Texture(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
+        Texture(const std::string& id, const std::filesystem::path& path);
         virtual ~Texture();
 
-        virtual void bind(uint32_t slot = 0) const = 0;
-        virtual void unbind() const = 0;
+        static const std::string& getStaticTypeName();
 
-        GLuint getID() const { return mRendererID; }
-        TextureFormat getFormat() const { return mFormat; }
-
-        void setFormat(TextureFormat format) { mFormat = format; }
-
-    protected:
-        void cleanup();
-
-        GLuint mRendererID;
-        TextureFormat mFormat;
-    };
-
-    class Texture2D : public Texture {
-    public:
-        Texture2D(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
-        ~Texture2D() override;
-
-        static const std::string& getStaticTypeName() {
-            static const std::string typeName = "texture2D";
-            return typeName;
-        }
-
-        const std::string& getTypeName() const override {
-            return getStaticTypeName();
-        }
-
+        const std::string& getTypeName() const override;
         void postLoad() override;
-        void bind(uint32_t slot = 0) const override;
-        void unbind() const override;
-
-        uint32_t getWidth() const { return mWidth; }
-        uint32_t getHeight() const { return mHeight; }
-        uint32_t getChannels() const { return mChannels; }
-
-        void setTextureData(unsigned char* data, uint32_t width, uint32_t height, uint32_t channels);
         pugi::xml_node toNode() const override;
 
+        GLuint getTextureID() const { return mTextureID; }
+        int getWidth() const { return mWidth; }
+        int getHeight() const { return mHeight; }
+        int getChannels() const { return mChannels; }
+
+        void bind(unsigned int slot = 0) const;
+        void unbind() const;
+
+        void setTextureData(int width, int height, int channels, unsigned char* data);
+
     private:
-        unsigned char* mData;
-        uint32_t mWidth;
-        uint32_t mHeight;
-        uint32_t mChannels;
+        GLuint mTextureID;
+        int mWidth;
+        int mHeight;
+        int mChannels;
+        std::vector<unsigned char> mData;
     };
 
-    class CubeMap : public Texture {
+    class CubeMap : public Asset {
     public:
-        CubeMap(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
-        ~CubeMap() override;
+        CubeMap(const std::string& id, const std::filesystem::path& path);
+        virtual ~CubeMap();
 
-        static const std::string& getStaticTypeName() {
-            static const std::string typeName = "cubeMap";
-            return typeName;
-        }
+        static const std::string& getStaticTypeName();
 
-        const std::string& getTypeName() const override {
-            return getStaticTypeName();
-        }
-
+        const std::string& getTypeName() const override;
         void postLoad() override;
-        void bind(uint32_t slot = 0) const override;
-        void unbind() const override;
-
-        uint32_t getSize() const { return mSize; }
-        uint32_t getChannels() const { return mChannels; }
-
-        void setTextureData(unsigned char* data[6], uint32_t size, uint32_t channels);
         pugi::xml_node toNode() const override;
 
+        GLuint getTextureID() const { return mTextureID; }
+        int getWidth() const { return mWidth; }
+        int getHeight() const { return mHeight; }
+
+        void bind(unsigned int slot = 0) const;
+        void unbind() const;
+
+        void setCubeMapData(int width, int height, int channels, 
+                           const std::array<std::vector<unsigned char>, 6>& faces);
+
     private:
-        unsigned char* mData[6];
-        uint32_t mSize;
-        uint32_t mChannels;
+        GLuint mTextureID;
+        int mWidth;
+        int mHeight;
+        int mChannels;
+        std::array<std::vector<unsigned char>, 6> mFaceData;
     };
+
 }

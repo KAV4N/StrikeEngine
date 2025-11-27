@@ -1,6 +1,5 @@
 #pragma once
 #include "Component.h"
-#include "StrikeEngine/Graphics/FrameBuffer.h"
 
 #include <string>
 #include <unordered_map>
@@ -11,18 +10,18 @@
 
 namespace StrikeEngine {
 
+    class FrameBuffer;
+
     class CameraComponent : public Component {
     public:
         CameraComponent();
         CameraComponent(float fov, float nearPlane, float farPlane);
-
-        // Static type name for registration
+        
         static const std::string& getStaticTypeName() {
             static const std::string typeName = "camera";
             return typeName;
         }
 
-        // Virtual method implementation
         const std::string& getTypeName() const override {
             return getStaticTypeName();
         }
@@ -49,6 +48,10 @@ namespace StrikeEngine {
         float getFOV() { return mFOV; }
         float getNearPlane() { return mNearPlane; }
         float getFarPlane() { return mFarPlane; }
+
+        float getNearPlane() const { return mNearPlane; }
+        float getFarPlane() const { return mFarPlane; }
+
         const Frustum& getFrustum() const { return mFrustum; }
 
         // Viewport rectangle (Unity-like)
@@ -65,17 +68,20 @@ namespace StrikeEngine {
         glm::mat4 getViewMatrix();
         glm::mat4 getViewProjectionMatrix();
 
+        glm::mat4 getProjectionMatrix() const;
+        glm::mat4 getViewMatrix() const;
+        glm::mat4 getViewProjectionMatrix() const;
+
         int getRenderOrder() const { return mRenderOrder; }
         void setRenderOrder(int order) { mRenderOrder = order; }
 
-    private:
-        friend class SceneGraph;
+        void update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height);
 
-        void update(const glm::mat4& worldMatrix);
-        void updateProjectionMatrix();
+    private:
+        void updateProjectionMatrix(uint32_t width, uint32_t height);
         void updateViewMatrix(const glm::mat4& worldMatrix);
         void updateViewProjectionMatrix();
-        void calculateFrustum(const glm::mat4& worldMatrix);
+        void calculateFrustum();
 
     private:
         // Perspective parameters

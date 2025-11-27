@@ -1,43 +1,43 @@
 #include "CameraComponent.h"
-#include "StrikeEngine/Graphics/Renderer/Renderer.h"
+#include "StrikeEngine/Scene/ComponentRegistry.h"
+#include "StrikeEngine/Graphics/FrameBuffer.h"
+#include "StrikeEngine/Graphics/Renderer.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <algorithm>
 #include <sstream>
 
+
 namespace StrikeEngine {
 
+    REGISTER_COMPONENT(CameraComponent);
+
     CameraComponent::CameraComponent() {
-        updateProjectionMatrix();
+        
     }
 
     CameraComponent::CameraComponent(float fov, float nearPlane, float farPlane)
         : mFOV(fov)
         , mNearPlane(nearPlane)
         , mFarPlane(farPlane) {
-        updateProjectionMatrix();
     }
 
     void CameraComponent::setPerspective(float fov, float nearPlane, float farPlane) {
         mFOV = fov;
         mNearPlane = nearPlane;
         mFarPlane = farPlane;
-        updateProjectionMatrix();
     }
 
     void CameraComponent::setFOV(float fov) {
         mFOV = std::clamp(fov, 1.0f, 179.0f);
-        updateProjectionMatrix();
     }
 
     void CameraComponent::setNearPlane(float nearPlane) {
         mNearPlane = std::max(nearPlane, 0.001f);
-        updateProjectionMatrix();
     }
 
     void CameraComponent::setFarPlane(float farPlane) {
         mFarPlane = std::max(farPlane, mNearPlane + 0.001f);
-        updateProjectionMatrix();
     }
 
     void CameraComponent::setViewportRect(float x, float y, float width, float height) {
@@ -45,7 +45,6 @@ namespace StrikeEngine {
         mViewportRect.y = std::clamp(y, 0.0f, 1.0f);
         mViewportRect.width = std::clamp(width, 0.0f, 1.0f - mViewportRect.x);
         mViewportRect.height = std::clamp(height, 0.0f, 1.0f - mViewportRect.y);
-        updateProjectionMatrix();
     }
 
     glm::mat4 CameraComponent::getProjectionMatrix() {
@@ -60,11 +59,23 @@ namespace StrikeEngine {
         return mViewProjectionMatrix;
     }
 
-    void CameraComponent::update(const glm::mat4& worldMatrix) {
+    glm::mat4 CameraComponent::getProjectionMatrix() const {
+        return mProjectionMatrix;
+    }
+
+    glm::mat4 CameraComponent::getViewMatrix() const {
+        return mViewMatrix;
+    }
+
+    glm::mat4 CameraComponent::getViewProjectionMatrix() const {
+        return mViewProjectionMatrix;
+    }
+
+    void CameraComponent::update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height) {
         updateViewMatrix(worldMatrix);
-        updateProjectionMatrix();
+        updateProjectionMatrix(width, height);
         updateViewProjectionMatrix();
-        calculateFrustum(worldMatrix);
+        calculateFrustum();
 
         glm::quat rotation = glm::toQuat(worldMatrix);
         mForward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
@@ -72,12 +83,13 @@ namespace StrikeEngine {
         mRight = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
     }
 
-    void CameraComponent::updateProjectionMatrix() {
+    void CameraComponent::updateProjectionMatrix(uint32_t width, uint32_t height) {
         // Calculate aspect ratio based on viewport size
-        float viewportWidth = mViewportRect.width * Renderer::get().getWidth();
-        float viewportHeight = mViewportRect.height * Renderer::get().getHeight();
+        float viewportWidth = mViewportRect.width * width;
+        float viewportHeight = mViewportRect.height * height;
         float aspectRatio = (viewportHeight > 0.0f) ? (viewportWidth / viewportHeight) : 1.0f;
         mProjectionMatrix = glm::perspective(glm::radians(mFOV), aspectRatio, mNearPlane, mFarPlane);
+
     }
 
     void CameraComponent::updateViewMatrix(const glm::mat4& worldMatrix) {
@@ -88,7 +100,7 @@ namespace StrikeEngine {
         mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
     }
 
-    void CameraComponent::calculateFrustum(const glm::mat4& worldMatrix) {
+    void CameraComponent::calculateFrustum() {
         glm::mat4 viewProj = mViewProjectionMatrix;
 
         mFrustum.planes[0] = glm::vec4(
@@ -177,7 +189,6 @@ namespace StrikeEngine {
 
         // Final setup
         setViewportRect(mViewportRect.x, mViewportRect.y, mViewportRect.width, mViewportRect.height);
-        updateProjectionMatrix();
     }
 
     void CameraComponent::serialize(pugi::xml_node& node) const {
@@ -195,4 +206,7 @@ namespace StrikeEngine {
         node.append_attribute("viewportWidth") = mViewportRect.width;
         node.append_attribute("viewportHeight") = mViewportRect.height;
     }
+    
 }
+
+    

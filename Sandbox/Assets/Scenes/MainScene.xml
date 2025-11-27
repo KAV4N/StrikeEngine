@@ -1,112 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<scene sceneId="MainScene" position="0.0,0.0,0.0" rotation="0.0,0.0,0.0" scale="1.0,1.0,1.0">
-	
-	<components>
-		<script name="SceneController" />
-		<directionalLight color="1,1,1" intensity="0.8" />
-	</components>
-
+<scene sceneId="MainScene" position="0,0,0" rotation="0,0,0" scale="1,1,1">
 	<assets>
-		<template assetId="gizmo" src="templates/gizmo/gizmo.template"  srcModel="../Objects/gizmo.obj" async="false"/>
+		<!-- template entries removed, only non-template assets remain -->
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/skybox.jpg" async="false"/>
+		<audio id="shot" src="../Sounds/shot.mp3" async="false"/>
+		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" async="false"/>
+		<material id="gizmo_DefaultMaterial" name="DefaultMaterial" src="../Objects/gizmo/gizmo_DefaultMaterial.mat" async="false"/>
 
-		<cubeMap assetId="skyboxMainScene" src="@/Assets/Textures/SkyboxTest"/>
-		<!--<template assetId="penguin" src="templates/penguin/penguin.template"  srcModel="../Objects/penguin/PenguinBaseMesh.obj"/>-->
+
+
+		<model id="box" src="../Objects/box/box.obj" async="true" />
+		<template id="portalBox" src="../Objects/CCP2.fbx" async="true" />
+
+		<material id="box_DefaultMaterial" name="DefaultMaterial" src="../Objects/box/box_DefaultMaterial.mat" async="true"/>
+		<material id="box_Material" name="Material" src="../Objects/box/box_Material.mat" async="true"/>
 	</assets>
 
-	<skybox cubeMapId ="skyboxMainScene"/>
+	<skybox cubeMapId="skyboxMainScene"/>
+
+	<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="true"/>
+
+
 
 	<entities>
-
-
-
-		<entity id="camera" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
+		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">
 			<components>
 				<camera
 					projectionType="perspective"
 					nearPlane="0.1"
-					farPlane="1000.0"
+					farPlane="500.0"
 					fov="60.0"
 					viewportX="0.0"
 					viewportY="0.0"
-					viewportWidth="0.5"
-					viewportHeight="1.0"
-				/>
-				<scriptComponent>
-					<script type="CameraMovement" />
-				</scriptComponent>
-			</components>
-		</entity>
-
-		<entity id="camer20" name="Cube" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1">
-			<components>
-				<camera
-					projectionType="perspective"
-					nearPlane="0.1"
-					farPlane="1000.0"
-					fov="60.0"
-					viewportX="0.5"
-					viewportY="0.0"
-					viewportWidth="0.5"
+					viewportWidth="1"
 					viewportHeight="1.0"
 					renderOrder="2"
 				/>
-				<scriptComponent>
+				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/> 
+				<logic>
 					<script type="CameraMovement" />
-				</scriptComponent>
+					<script type="SunMovement" />
+					<script type="CubeSpawn" />
+				</logic>
+				<audiolistener/>
+				<light color="255, 245, 200" intensity="8" radius="100.0" fallOff="25" />
 			</components>
 		</entity>
-		<entity id="gizmo" name="tanker" templateId="gizmo" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
-
-		<!-- Textures 
 		
-		
-		<entity id="tank4" name="tanker" templateId="tankModel2" position="500.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5">
+
+		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
 			<components>
-				<scriptComponent>
-					<script type="TestScript"  />
-				</scriptComponent>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="true" canCollide="true" mass="1.0"/>
+			</components>
+		</entity>
+
+		<entity template="portalBox" position="0,-20,0" scale="5,5,5">
+			<components>
+              <physics anchored="true" canCollide="true" mass="1"/>
+          </components>
+		</entity>
+
+		<entity position="0,-20,0" rotation="0,0,0" scale="5,5,5">
+			<components>
+				<renderer model="CCP2" material="CCP2_CCP2" />
+			</components>
+		</entity>
+		 
+
+		<entity tag="gizmo2" position="0,100,0" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="false" canCollide="true" mass="1"/>
+			</components>
+		</entity>
+
+		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
+			<components>
+				<renderer model="box" material="box_Material" />
+				<physics anchored="true" canCollide="true" mass="1.0"/>
+				<audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
 			</components>
 		</entity>
 
 
-		<entity id="tank" name="tanker" templateId="panzer" position="50.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1,1,1"/>
-		
-				<entity id="cube" name="tanker" templateId="cubeTemplate" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale=".5,.5,.5"/>
-	
-		<entity id="Cube" name="Cube" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="0.100,0.100,0.100">
-			<components>
-				<renderer meshId="cubeModel.Cube">
-					<material slot="0" materialId="cubeModel.Material_001" />
-					<material slot="1" materialId="cubeModel.Material" />
-				</renderer>
-			</components>
+		<entity template="portalBox" tag="portalGizmo" position="50,150,0" rotation="0,0,0" scale="5,5,5">
 		</entity>
 
-		<entity id="Body" name="Body" position="0.000,0.000,-7.889" rotation="0.000,-0.000,-90.000" scale="1.000,1.000,1.000">
-			<components>
-				<renderer meshId="tank_low_poly.Cube" materialId="tank_low_poly.Body" />
-			</components>
-			<children>
-
-				<entity id="Turret" name="Turret" position="0.439,-0.000,52.973" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-					<components>
-						<renderer meshId="tank_low_poly.Cube_001" materialId="tank_low_poly.Body" />
-					</components>
-					<children>
-						<entity id="Barrel" name="Barrel" position="32.227,-0.000,-6.563" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-							<components>
-								<renderer meshId="tank_low_poly.Cube_003" materialId="tank_low_poly.Body" />
-							</components>
-						</entity>
-					</children>
-				</entity>
-				<entity id="Wheel_L06" name="Wheel_L06" position="-140.960,82.782,-4.681" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-					<components>
-						<renderer meshId="tank_low_poly.Cylinder_012" materialId="tank_low_poly.Body" />
-					</components>
-				</entity>
-			</children>
+		<entity template="portalBox" tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="5,5,5">
 		</entity>
-		-->
+
+
+
 	</entities>
 </scene>

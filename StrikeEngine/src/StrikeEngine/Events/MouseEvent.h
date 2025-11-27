@@ -18,9 +18,7 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(MouseMoved)
-            EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
-            Event* clone() const override { return new MouseMovedEvent(mMouseX, mMouseY); }
 
     private:
         float mMouseX, mMouseY;
@@ -40,9 +38,6 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(MouseScrolled)
-            EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
-
-            Event* clone() const override { return new MouseScrolledEvent(mXOffset, mYOffset); }
 
     private:
         float mXOffset, mYOffset;
@@ -51,8 +46,6 @@ namespace StrikeEngine {
     class MouseButtonEvent : public Event {
     public:
         int getMouseButton() const { return mButton; }
-
-        EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
     protected:
         MouseButtonEvent(int button) : mButton(button) {}
@@ -71,7 +64,7 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(MouseButtonPressed)
-            Event* clone() const override { return new MouseButtonPressedEvent(mButton); }
+
     };
 
     class MouseButtonReleasedEvent : public MouseButtonEvent {
@@ -85,6 +78,6 @@ namespace StrikeEngine {
         }
 
         EVENT_CLASS_TYPE(MouseButtonReleased)
-            Event* clone() const override { return new MouseButtonReleasedEvent(mButton); }
+            
     };
 }

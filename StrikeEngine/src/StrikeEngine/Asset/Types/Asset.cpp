@@ -3,12 +3,12 @@
 #include <mutex>
 
 namespace StrikeEngine {
-    Asset::Asset(const std::string& id, const std::filesystem::path& path, const std::string& name)
+    Asset::Asset(const std::string& id, const std::filesystem::path& path)
         : mId(id),
         mPath(path),
-        mName(name),
         mLoadingState(AssetLoadingState::Uninitialized),
-        mLoadAsync(false)
+        mLoadAsync(false),
+        mNeedsPostLoad(false)
     {
     }
 
@@ -30,13 +30,7 @@ namespace StrikeEngine {
         return mPath;
     }
 
-    const std::string& Asset::getName() const {
-        return mName;
-    }
 
-    void Asset::setName(const std::string& name) {
-        mName = name;
-    }
 
     bool Asset::isReady() const {
         return mLoadingState == AssetLoadingState::Ready;
@@ -69,8 +63,7 @@ namespace StrikeEngine {
     pugi::xml_node Asset::toNode() const {
         pugi::xml_document doc;
         pugi::xml_node node = doc.append_child(getTypeName().c_str());
-        node.append_attribute("assetId") = mId.c_str();
-        node.append_attribute("name") = mName.c_str();
+        node.append_attribute("id") = mId.c_str();
         node.append_attribute("src") = mPath.string().c_str();
         return node;
     }

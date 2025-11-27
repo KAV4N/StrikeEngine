@@ -1,8 +1,9 @@
 #pragma once
 
 #include "StrikeEngine/Core/Window.h"
-#include "StrikeEngine/Graphics/Renderer/GraphicsContext.h"
+#include "StrikeEngine/Graphics/GraphicsContext.h"
 #include <GLFW/glfw3.h>
+#include <chrono>
 
 namespace StrikeEngine {
 
@@ -26,6 +27,7 @@ namespace StrikeEngine {
     private:
         void init(const WindowProps& props);
         void shutdown();
+        void checkResizeTimeout();
 
         GLFWwindow* mWindow;
         std::unique_ptr<GraphicsContext> mGraphicsContext;
@@ -36,7 +38,15 @@ namespace StrikeEngine {
             unsigned int height;
             bool vSync;
             EventCallbackFn eventCallback;
+            
+            // Resize throttling
+            bool isResizing;
+            unsigned int pendingWidth;
+            unsigned int pendingHeight;
+            std::chrono::steady_clock::time_point lastResizeTime;
         };
         WindowData mData;
+        
+        static constexpr int RESIZE_DELAY_MS = 150; // Delay in milliseconds
     };
 }

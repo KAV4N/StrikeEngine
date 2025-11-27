@@ -16,56 +16,61 @@
 
 #include <pugixml.hpp>
 
-#include "StrikeEngine/Asset/Types/Mesh.h"
-#include "StrikeEngine/Asset/Types/Material.h"
+
 
 namespace StrikeEngine {
 
+    class Model;
+    class Material;
+
     struct EntityData {
-        std::string name;
-        std::string id;
-        glm::vec3 position;
-        glm::vec3 rotation;
-        glm::vec3 scale;
-        std::string meshId;
-        std::vector<std::string> materialIds;
+        std::string tag;
+
+        glm::vec3 position{ 0.0f };
+        glm::vec3 rotation{ 0.0f };
+        glm::vec3 scale{ 1.0f };
+
+        std::string modelId;
+        uint32_t meshIdx = 0;
+        std::string materialId;
+
         std::vector<std::shared_ptr<EntityData>> children;
     };
 
     class ModelParser {
-
     public:
         ModelParser();
         ~ModelParser();
-        bool parseModel(const std::filesystem::path& modelPath, const std::filesystem::path& templateSrc);
+
+        // Main function: parse model and generate template + material files
+        bool parseModel(const std::filesystem::path& modelPath);
+
     private:
+        // Process Assimp scene
+        void processScene(const aiScene* scene, const std::filesystem::path& modelDir);
+        void processMaterials(const aiScene* scene, const std::filesystem::path& modelDir);
+        void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr, const glm::mat4& parentTransform = glm::mat4(1.0f));
 
-        std::string generateUniqueId(const std::string& baseId);
+        // Helpers
+        glm::mat4 aiMatrixToGlm(const aiMatrix4x4& from);
+        void decomposeTransform(const glm::mat4& transform, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
 
-        void processMaterials(const aiScene* scene);
-        void processMeshes(const aiScene* scene);
-        void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr);
-        glm::vec3 aiVector3dToGlm(const aiVector3D& vec);
-        glm::vec3 aiColor3dToGlm(const aiColor3D& color);
-        glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& mat);
-        void decomposeTransform(const glm::mat4& transform, glm::vec3& position, glm::vec3& rotation, glm::vec3& scale);
-        void saveMeshToXml(const Mesh& mesh, const std::filesystem::path& templateDir);
-        void saveMaterialToXml(const Material& material, const std::filesystem::path& templateDir);
-        void saveTemplateXml(const std::string& templateName, const std::filesystem::path& sourceFile, const std::filesystem::path& templateSrc);
-        void writeEntityToXml(pugi::xml_node& parent, const std::shared_ptr<EntityData>& entity);
-        float normalizeAngle(float angle);
-        void calculateMeshBounds(Mesh& mesh);
-        void calculateSubMeshBounds(const Mesh& mesh, SubMeshData& subMeshData);
-        void combineMeshes(const std::vector<unsigned int>& meshIndices, const aiScene* scene, Mesh& combinedMesh);
-        void reset();
+        // Output
+        void saveMaterialToFile(const std::shared_ptr<Material>& material, const std::filesystem::path& matPath);
+        void saveTemplateXml(const std::filesystem::path& templatePath);
+
+        void writeEntityToXml(pugi::xml_node& parentNode, const std::shared_ptr<EntityData>& entity);
+
     private:
         Assimp::Importer mImporter;
-        std::vector<std::shared_ptr<Mesh>> mMeshes;
+
+        std::shared_ptr<Model> mModel;
         std::vector<std::shared_ptr<Material>> mMaterials;
-        std::vector<std::shared_ptr<EntityData>> mTopLevelEntities;
-        std::string mIdPrefix;
-        std::unordered_set<std::string> mUsedIds;
+        std::vector<std::shared_ptr<EntityData>> mRootEntities;
 
-
+        std::filesystem::path mModelDirectory;
+        std::string mModelName;
+        std::string mModelId;
     };
-}
+
+} // namespace StrikeEngine

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene sceneId="SecondScene" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+	<assets>
+		<template id="gizmoTemplate" src="../Objects/gizmo/gizmo.obj"  async="false"/>
+		<template id="boxTemplate" src="../Objects/box/box.obj"  async="false"/>
+	</assets>
+
+	<entities>
+		<entity position="10,10,10" rotation="-45,0,0" scale="1,1,1">
+			<components>
+				<camera
+					projectionType="perspective"
+					nearPlane="0.1"
+					farPlane="1000.0"
+					fov="60.0"
+					viewportX="0.0"
+					viewportY="0.0"
+					viewportWidth="0.5"
+					viewportHeight="1.0"
+				/>
+				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/>
+			</components>
+		</entity>
+
+		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<camera
+					projectionType="perspective"
+					nearPlane="0.1"
+					farPlane="500.0"
+					fov="60.0"
+					viewportX="0.5"
+					viewportY="0.0"
+					viewportWidth="0.5"
+					viewportHeight="1.0"
+					renderOrder="2"
+				/>
+				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/> 
+				<logic>
+					<script type="CameraMovement" />
+					<script type="SunMovement" />
+					<script type="CubeSpawn" />
+				</logic>
+				<audiolistener/>
+				<light color="255, 245, 200" intensity="8" radius="100.0" fallOff="25" />
+			</components>
+		</entity>
+
+		<entity templateId="gizmoTemplate" tag="HUUUUUUUUUUUUUUUUUUUH" position="0,20,0" rotation="45,0,0" scale="1,1,1"/>
+				<entity tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="false" canCollide="true" mass="1"/>
+			</components>
+		</entity>
+		<entity tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="false" canCollide="true" mass="1"/>
+			</components>
+		</entity>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</entities>
+</scene>

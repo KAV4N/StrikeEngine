@@ -1,126 +1,109 @@
 #include "RendererComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
+#include "StrikeEngine/Asset/Types/Model.h"
+#include "StrikeEngine/Asset/Types/Material.h"
+#include "StrikeEngine/Asset/AssetManager.h"
+
 
 namespace StrikeEngine {
+    REGISTER_COMPONENT(RendererComponent)
 
-    // RendererComponent implementation
     RendererComponent::RendererComponent() {}
 
-    RendererComponent::RendererComponent(const std::string& meshId) {
-        setMeshId(meshId);
+    void RendererComponent::setModel(const std::string& modelId) {
+        mModel = AssetManager::get().getModel(modelId);
+        mMeshIdx.reset(); // Reset specific mesh when setting entire model
     }
 
-    RendererComponent::RendererComponent(const std::string& meshId, const std::string& materialId) {
-        setMeshId(meshId);
-        setMaterial(0, materialId);
+
+    void RendererComponent::removeModel() {
+        mModel.reset();
+        mMeshIdx.reset();
     }
 
-    // Mesh management
-    void RendererComponent::setMeshId(const std::string& meshId) {
-        mMeshId = meshId;
-        mMesh = AssetManager::get().getMesh(meshId);
+    bool RendererComponent::hasModel() const {
+        return mModel != nullptr;
     }
 
-    void RendererComponent::removeMesh() {
-        mMeshId.clear();
-        mMesh.reset();
+    std::shared_ptr<Model> RendererComponent::getModel() const {
+        return mModel;
     }
 
-    bool RendererComponent::hasMesh() const {
-        return !mMeshId.empty() && mMesh != nullptr;
+    void RendererComponent::setMaterial(const std::string& materialId) {
+        mMaterial = AssetManager::get().getMaterial(materialId);
     }
 
-    const std::string& RendererComponent::getMeshId() const {
-        return mMeshId;
+
+    void RendererComponent::removeMaterial() {
+        mMaterial.reset();
     }
 
-    std::shared_ptr<Mesh> RendererComponent::getMesh() const {
-        return mMesh;
+    bool RendererComponent::hasMaterial() const {
+        return mMaterial != nullptr;
     }
 
-    // Material management
-    void RendererComponent::setMaterial(uint32_t slot, const std::string& materialId) {
-        mMaterials[slot] = materialId;
-        mMaterialAssets[slot] = AssetManager::get().getMaterial(materialId);
+    std::shared_ptr<Material> RendererComponent::getMaterial() const {
+        return mMaterial;
     }
 
-    void RendererComponent::addMaterials(const std::unordered_map<uint32_t, std::string>& materials) {
-        for (const auto& [slot, materialId] : materials) {
-            setMaterial(slot, materialId);
+    void RendererComponent::setMesh(const std::string& modelId, uint32_t meshIndex, const std::string& materialId) {
+        mModel = AssetManager::get().getModel(modelId);        
+        if (!materialId.empty()) {
+            mMaterial = AssetManager::get().getMaterial(materialId);
         }
+        mMeshIdx = meshIndex;
     }
 
-    void RendererComponent::removeMaterial(uint32_t slot) {
-        mMaterials.erase(slot);
-        mMaterialAssets.erase(slot);
-    }
-
-    void RendererComponent::clearMaterials() {
-        mMaterials.clear();
-        mMaterialAssets.clear();
-    }
-
-    bool RendererComponent::hasMaterial(uint32_t slot) const {
-        return mMaterials.find(slot) != mMaterials.end() && mMaterialAssets.find(slot) != mMaterialAssets.end();
-    }
-
-    const std::string& RendererComponent::getMaterial(uint32_t slot) const {
-        static const std::string empty;
-        auto it = mMaterials.find(slot);
-        return (it != mMaterials.end()) ? it->second : empty;
-    }
-
-    const std::unordered_map<uint32_t, std::string>& RendererComponent::getMaterials() const {
-        return mMaterials;
-    }
-
-    std::shared_ptr<Material> RendererComponent::getMaterialAsset(uint32_t slot) const {
-        auto it = mMaterialAssets.find(slot);
-        return (it != mMaterialAssets.end()) ? it->second : nullptr;
-    }
-
-    const std::unordered_map<uint32_t, std::shared_ptr<Material>>& RendererComponent::getMaterialAssets() const {
-        return mMaterialAssets;
+   
+    std::shared_ptr<Mesh> RendererComponent::getMesh() const {
+        if (!mModel || !mMeshIdx.has_value()) {
+            return nullptr;
+        }
+        return mModel->getMesh(mMeshIdx.value());
     }
 
     void RendererComponent::deserialize(const pugi::xml_node& node) {
-        // Mesh ID
-        if (auto attr = node.attribute("meshId")) {
-            setMeshId(attr.as_string());
+        // Clear previous state
+        mModel.reset();
+        mMaterial.reset();
+        mMeshIdx.reset();
+
+        // Load model
+        if (auto attr = node.attribute("model")) {
+            setModel(attr.as_string());
         }
 
-        // Default material ID
-        if (auto attr = node.attribute("materialId")) {
-            setMaterial(0, attr.as_string());
+        // Load material
+        if (auto attr = node.attribute("material")) {
+            setMaterial(attr.as_string());
         }
 
-        // Material slots
-        for (pugi::xml_node materialNode : node.children("material")) {
-            int slot = materialNode.attribute("slot").as_int(0); // default to slot 0 if missing
-            std::string matId = materialNode.attribute("materialId").as_string();
-            if (!matId.empty()) {
-                setMaterial(slot, matId);
+        // Load specific mesh index if specified
+        if (auto attr = node.attribute("meshIdx")) {
+            uint32_t meshIndex = attr.as_uint();
+            mMeshIdx = meshIndex;
+            
+            // Validate the mesh index
+            if (mModel && meshIndex >= mModel->getMeshes().size()) {
+                mMeshIdx.reset();
             }
         }
     }
 
-
     void RendererComponent::serialize(pugi::xml_node& node) const {
-        if (!mMeshId.empty()) {
-            node.append_attribute("meshId") = mMeshId.c_str();
+        // Serialize model
+        if (mModel) {
+            node.append_attribute("model") = mModel->getId().c_str();
         }
 
-        const auto& materials = mMaterials;
-        if (materials.find(0) != materials.end()) {
-            node.append_attribute("materialId") = getMaterial(0).c_str();
+        // Serialize material
+        if (mMaterial) {
+            node.append_attribute("material") = mMaterial->getId().c_str();
         }
 
-        for (const auto& [slot, materialId] : materials) {
-            if (slot != 0) {
-                pugi::xml_node materialNode = node.append_child("material");
-                materialNode.append_attribute("slot") = slot;
-                materialNode.append_attribute("materialId") = materialId.c_str();
-            }
+        // Serialize specific mesh index if set
+        if (mMeshIdx.has_value()) {
+            node.append_attribute("meshIdx") = mMeshIdx.value();
         }
     }
 

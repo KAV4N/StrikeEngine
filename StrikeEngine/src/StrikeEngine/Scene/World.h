@@ -5,36 +5,35 @@
 #include <string>
 #include <filesystem>
 #include <future>
-#include "Scene.h"
-#include "SceneLoader.h"
-#include "StrikeEngine/Events/Event.h"
-#include "Systems/RenderSystem.h"
-#include "Systems/ScriptSystem.h"
-#include "StrikeEngine/Graphics/Skybox.h"
+
+#include <glm/glm.hpp>
 
 namespace StrikeEngine {
 
+    class Scene;
+    class SceneLoader;
     class RenderSystem;
     class ScriptSystem;
+    class PhysicsSystem;
+    class AudioSystem;
+    class Skybox;
+    class Sun;
+    struct Event;
 
     class World final {
     public:
-        static World& get() {
-            static World instance;
-            return instance;
-        }
+        static World& get();
 
         void loadScene(const std::filesystem::path& path);
         void loadSceneAsync(const std::filesystem::path& path);
-        Scene* getCurrentScene() const { return mCurrentScene.get(); }
-        bool isSceneLoading() const;
+        
+        Scene* getScene() const;
+        bool isLoading() const;
 
-        void update(float dt);
+        void onUpdate(float dt);
         void onRender();
-        void onImGuiRender();
         void onEvent(Event& e);
-
-        Skybox* getSkybox() const { return mSkybox.get(); }
+        void resize(uint32_t width, uint32_t height);
 
     private:
         World();
@@ -45,15 +44,18 @@ namespace StrikeEngine {
         World& operator=(World&&) = delete;
 
         void checkAndSwitchScene();
+        void clearPhysicsWorld();  
 
     private:
         std::unique_ptr<Scene> mCurrentScene;
         std::future<std::unique_ptr<Scene>> mPendingScene;
+
         std::unique_ptr<SceneLoader> mSceneLoader;
 
         std::unique_ptr<RenderSystem> mRenderSystem;
         std::unique_ptr<ScriptSystem> mScriptSystem;
-
-        std::unique_ptr<Skybox> mSkybox;
+        std::unique_ptr<PhysicsSystem> mPhysicsSystem;
+        std::unique_ptr<AudioSystem> mAudioSystem;
     };
+
 }

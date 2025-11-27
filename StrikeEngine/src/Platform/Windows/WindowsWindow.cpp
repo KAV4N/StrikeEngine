@@ -29,6 +29,9 @@ namespace StrikeEngine {
         mData.title = props.title;
         mData.width = props.width;
         mData.height = props.height;
+        mData.isResizing = false;
+        mData.pendingWidth = props.width;
+        mData.pendingHeight = props.height;
 
         STRIKE_CORE_INFO("Creating window {0} ({1}, {2})", props.title, props.width, props.height);
 
@@ -49,18 +52,23 @@ namespace StrikeEngine {
 
         glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            
+            // Store pending dimensions and mark as resizing
+            data.pendingWidth = width;
+            data.pendingHeight = height;
+            data.isResizing = true;
+            data.lastResizeTime = std::chrono::steady_clock::now();
+            
+            // Update window data immediately for getWidth/getHeight calls
             data.width = width;
             data.height = height;
-
-            WindowResizeEvent event(width, height);
-            data.eventCallback(event);
-            });
+        });
 
         glfwSetWindowCloseCallback(mWindow, [](GLFWwindow* window) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             WindowCloseEvent event;
             data.eventCallback(event);
-            });
+        });
 
         glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -82,7 +90,7 @@ namespace StrikeEngine {
                 break;
             }
             }
-            });
+        });
 
         glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -99,25 +107,25 @@ namespace StrikeEngine {
                 break;
             }
             }
-            });
+        });
 
         glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             MouseScrolledEvent event((float)xOffset, (float)yOffset);
             data.eventCallback(event);
-            });
+        });
 
         glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             MouseMovedEvent event((float)xPos, (float)yPos);
             data.eventCallback(event);
-            });
+        });
 
         glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int keycode) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             KeyTypedEvent event(keycode);
             data.eventCallback(event);
-            });
+        });
     }
 
     void WindowsWindow::shutdown() {
@@ -126,7 +134,26 @@ namespace StrikeEngine {
 
     void WindowsWindow::onUpdate() {
         glfwPollEvents();
+        checkResizeTimeout();
         glfwSwapBuffers(mWindow);
+    }
+
+    void WindowsWindow::checkResizeTimeout() {
+        if (mData.isResizing) {
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                now - mData.lastResizeTime).count();
+            
+            if (elapsed >= RESIZE_DELAY_MS) {
+                // User has stopped resizing, trigger the resize event
+                mData.isResizing = false;
+                
+                WindowResizeEvent event(mData.pendingWidth, mData.pendingHeight);
+                mData.eventCallback(event);
+                
+                STRIKE_CORE_INFO("Framebuffer resized to: {0}x{1}", mData.pendingWidth, mData.pendingHeight);
+            }
+        }
     }
 
     void WindowsWindow::setVSync(bool enabled) {

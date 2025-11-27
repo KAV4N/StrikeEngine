@@ -16,10 +16,15 @@ namespace StrikeEngine {
         glDeleteTextures(1, &mDepthTexture);
     }
 
+
+    void FrameBuffer::clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     void FrameBuffer::bind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, mRendererID);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void FrameBuffer::unBind()

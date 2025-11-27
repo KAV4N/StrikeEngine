@@ -1,34 +1,49 @@
 #include "World.h"
-#include "StrikeEngine/Graphics/Renderer/Renderer.h"
+
+#include "Scene.h"
+#include "SceneLoader.h"
+#include "StrikeEngine/Events/Event.h"
+#include "Systems/RenderSystem.h"
+#include "Systems/ScriptSystem.h"
+#include "Systems/PhysicsSystem.h"
+#include "Systems/AudioSystem.h"
+
+
+#include "StrikeEngine/Graphics/Skybox.h"
+#include "StrikeEngine/Graphics/Renderer.h"
+#include "StrikeEngine/Scene/Components/PhysicsComponent.h"
+
 #include <iostream>
 #include <chrono>
+#include <thread>
+
+#include "StrikeEngine/Core/Profiler.h"
 
 namespace StrikeEngine {
+
+
+    World& World::get()
+    {
+        static World instance;
+        return instance;
+    }
 
     World::World()
         : mSceneLoader(std::make_unique<SceneLoader>())
         , mRenderSystem(std::make_unique<RenderSystem>())
         , mScriptSystem(std::make_unique<ScriptSystem>())
-        , mSkybox(std::make_unique<Skybox>())
+        , mPhysicsSystem(std::make_unique<PhysicsSystem>())
+        , mAudioSystem(std::make_unique<AudioSystem>())
     {
+        mAudioSystem->initialize();
     }
+
 
     void World::loadScene(const std::filesystem::path& path)
     {
-        if (!std::filesystem::exists(path)) {
-            std::cerr << "Scene file does not exist: " << path << std::endl;
-            return;
-        }
-
-        mCurrentScene = mSceneLoader->loadScene(path);
-
-        if (mCurrentScene) {
-            std::cout << "Successfully loaded scene from: " << path << std::endl;
-        }
-        else {
-            std::cerr << "Failed to load scene from: " << path << std::endl;
-        }
+        mPendingScene = mSceneLoader->loadScene(path);
     }
+
 
     void World::loadSceneAsync(const std::filesystem::path& path)
     {
@@ -37,8 +52,9 @@ namespace StrikeEngine {
             return;
         }
 
-        if (mPendingScene.valid()) {
-            std::cout << "Cancelling previous async scene loading operation" << std::endl;
+        if (mSceneLoader->isLoading()) {
+            std::cout << "Cannot load scene: another scene is currently being loaded";
+            return;
         }
 
         mPendingScene = mSceneLoader->loadSceneAsync(path);
@@ -51,58 +67,115 @@ namespace StrikeEngine {
         }
     }
 
-    bool World::isSceneLoading() const
+
+    Scene* World::getScene() const
     {
-        return mPendingScene.valid() && mPendingScene.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+        return mCurrentScene.get();
     }
 
-    void World::update(float dt)
+    bool World::isLoading() const
     {
+        return mPendingScene.valid() && 
+               mPendingScene.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    }
+
+
+
+    void World::onUpdate(float dt)
+    {
+        PROFILE_SCOPE("world");
         mSceneLoader->update();
         checkAndSwitchScene();
-        if (mCurrentScene && mCurrentScene->isActive()) {
-            mCurrentScene->onUpdate(dt);
-            mScriptSystem->onUpdate(dt);
-            mRenderSystem->onUpdate(dt);
+
+        if (mCurrentScene) {
+
+            {
+                PROFILE_SCOPE("Scene::onUpdate");
+                mCurrentScene->onUpdate(dt);
+            }
+
+            {
+                PROFILE_SCOPE("ScriptSystem::onUpdate");
+                mScriptSystem->onUpdate(dt);
+            }
+
+            {
+                PROFILE_SCOPE("PhysicsSystem::onUpdate");
+                mPhysicsSystem->onUpdate(dt);
+            }
+
+            {
+                PROFILE_SCOPE("AudioSystem::onUpdate");
+                mAudioSystem->onUpdate(dt);
+            }
+
+            {
+                PROFILE_SCOPE("RenderSystem::onUpdate");
+                mRenderSystem->onUpdate(dt);
+            }
         }
+
     }
 
     void World::onRender()
     {
-        auto& renderer = Renderer::get();
-        renderer.render();
-    }
-
-    void World::onImGuiRender()
-    {
-        if (mCurrentScene && mCurrentScene->isActive()) {
-        }
+        
     }
 
     void World::onEvent(Event& e)
     {
-        if (mCurrentScene && mCurrentScene->isActive()) {
+        if (mCurrentScene) {
             mScriptSystem->onEvent(e);
         }
     }
 
+    void World::resize(uint32_t width, uint32_t height)
+    {
+        mRenderSystem->resize(width, height);
+    }
+
+
     void World::checkAndSwitchScene()
     {
-        if (mPendingScene.valid() && mPendingScene.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            try {
-                auto newScene = mPendingScene.get();
-                if (newScene) {
-                    mCurrentScene = std::move(newScene);
-                    std::cout << "Successfully switched to new scene" << std::endl;
-                }
-                else {
-                    std::cerr << "Async scene loading failed" << std::endl;
-                }
+        if (!mPendingScene.valid())
+            return;
+
+        auto status = mPendingScene.wait_for(std::chrono::seconds(0));
+        if (status != std::future_status::ready)
+            return;
+
+        try {
+            auto newScene = mPendingScene.get();
+            if (newScene) {
+                clearPhysicsWorld();
+                if (mCurrentScene)
+                    mCurrentScene->shutdown();
+                mCurrentScene = std::move(newScene);
+                mCurrentScene->setPhysicsSystem(mPhysicsSystem.get());
+                std::cout << "Successfully switched to new scene (sync or async)" << std::endl;
             }
-            catch (const std::exception& e) {
-                std::cerr << "Exception during scene switching: " << e.what() << std::endl;
+            else {
+                mCurrentScene = nullptr;
+                std::cerr << "Scene loading returned null pointer" << std::endl;
+            }
+        }
+        catch (const std::exception& e) {
+            mCurrentScene = nullptr;
+            std::cerr << "Exception during scene switching: " << e.what() << std::endl;
+        }
+        mPendingScene = std::future<std::unique_ptr<Scene>>();
+    }
+
+
+    void World::clearPhysicsWorld()
+    {
+        if (mPhysicsSystem && mCurrentScene) {
+            auto& registry = mCurrentScene->getRegistry();
+            auto view = registry.view<PhysicsComponent>();
+            for (auto entity : view) {
+                mPhysicsSystem->removePhysics(entity);
             }
         }
     }
 
-}
+} 

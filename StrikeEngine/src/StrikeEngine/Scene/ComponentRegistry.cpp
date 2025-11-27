@@ -1,29 +1,33 @@
 #include "ComponentRegistry.h"
-#include "Components/RendererComponent.h"
-#include "Components/CameraComponent.h"
-#include "Components/ScriptComponent.h"
-#include "Components/LightComponents.h"
-#include "Entity.h"
 
 namespace StrikeEngine {
 
-    ComponentRegistry::ComponentRegistry() {
-        registerComponent<RendererComponent>();
-        registerComponent<CameraComponent>();
-        registerComponent<ScriptComponent>();
-        registerComponent<PointLightComponent>();
-        registerComponent<SpotLightComponent>();
-        registerComponent<DirectionalLightComponent>();
+    std::unordered_map<std::string, ComponentRegistry::ComponentFactory>& ComponentRegistry::getFactories() {
+        static std::unordered_map<std::string, ComponentFactory> sFactories;
+        return sFactories;
     }
 
-    bool ComponentRegistry::isRegistered(const std::string& typeName) const {
-        return mAdders.find(typeName) != mAdders.end();
+    void ComponentRegistry::registerComponentFactory(const std::string& typeName, ComponentFactory factory) {
+        getFactories()[typeName] = factory;
     }
 
-    void ComponentRegistry::addComponentToEntity(Entity& entity, const std::string& typeName, const pugi::xml_node& node) const {
-        auto it = mAdders.find(typeName);
-        if (it != mAdders.end()) {
+    bool ComponentRegistry::hasComponentFactory(const std::string& typeName) {
+        return getFactories().find(typeName) != getFactories().end();
+    }
+
+    void ComponentRegistry::addComponentToEntity(Entity& entity, const std::string& typeName, const pugi::xml_node& node) {
+        auto it = getFactories().find(typeName);
+        if (it != getFactories().end()) {
             it->second(entity, node);
         }
     }
-}
+
+    std::vector<std::string> ComponentRegistry::getRegisteredComponents() {
+        std::vector<std::string> components;
+        for (const auto& pair : getFactories()) {
+            components.push_back(pair.first);
+        }
+        return components;
+    }
+
+} // namespace StrikeEngine

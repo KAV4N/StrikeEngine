@@ -1,95 +1,75 @@
 #pragma once
-#include "StrikeEngine/Core/UUID.h"
+#include "Asset.h"
+#include "Texture.h"
 #include <string>
 #include <memory>
-#include <variant>
-#include <unordered_map>
-#include <vector>
-#include <optional>
 #include <glm/glm.hpp>
-#include "Asset.h"
-#include "Shader.h"
-#include "Texture.h"
+#include <unordered_map>
 
 namespace StrikeEngine {
+    class Shader;
+
     class Material : public Asset {
     public:
-        using UniformValue = std::variant<
-            int,
-            float,
-            glm::vec2,
-            glm::vec3,
-            glm::vec4,
-            glm::mat4,
-            std::vector<int>
-        >;
+        // PBR Texture slots (predefined to match shader)
+        enum class TextureSlot : uint32_t {
+            BaseColor = 2,
+            Normal = 3,
+            Metallic = 4,
+            Roughness = 5
+        };
 
-        Material(const std::string& id, const std::filesystem::path& path, const std::string& name = "");
+        Material(const std::string& id, const std::filesystem::path& path);
 
-        static const std::string& getStaticTypeName() {
-            static const std::string typeName = "material";
-            return typeName;
-        }
+        static const std::string& getStaticTypeName();
+        const std::string& getTypeName() const override;
 
-        const std::string& getTypeName() const override {
-            return getStaticTypeName();
-        }
+        // PBR Property setters
+        void setBaseColor(const glm::vec3& baseColor);  // Changed to vec3 [0,1] range
+        void setMetallic(float metallic);
+        void setRoughness(float roughness);
 
-        // Uniform setters
-        void setInt(const std::string& name, int value);
-        void setIntArray(const std::string& name, int* values, uint32_t count);
-        void setFloat(const std::string& name, float value);
-        void setVec2(const std::string& name, const glm::vec2& value);
-        void setVec3(const std::string& name, const glm::vec3& value);
-        void setVec4(const std::string& name, const glm::vec4& value);
-        void setMat4(const std::string& name, const glm::mat4& value);
-
-        // Individual uniform getters
-        std::optional<int> getInt(const std::string& name) const;
-        std::optional<std::vector<int>> getIntArray(const std::string& name) const;
-        std::optional<float> getFloat(const std::string& name) const;
-        std::optional<glm::vec2> getVec2(const std::string& name) const;
-        std::optional<glm::vec3> getVec3(const std::string& name) const;
-        std::optional<glm::vec4> getVec4(const std::string& name) const;
-        std::optional<glm::mat4> getMat4(const std::string& name) const;
-
-        // Get all uniforms
-        const std::unordered_map<std::string, UniformValue>& getUniforms() const { return mUniforms; }
-
-        // Get uniform by name (returns the variant directly)
-        std::optional<UniformValue> getUniform(const std::string& name) const;
-
-        // Check if uniform exists
-        bool hasUniform(const std::string& name) const { return mUniforms.find(name) != mUniforms.end(); }
-
-        // Get uniform names
-        std::vector<std::string> getUniformNames() const;
+        // PBR Property getters
+        glm::vec3 getBaseColor() const;
+        float getMetallic() const;
+        float getRoughness() const;
 
         // Texture management
-        void addTexture(uint32_t slot, std::shared_ptr<Texture2D> texture);
-        void setTextures(const std::vector<std::pair<uint32_t, std::shared_ptr<Texture2D>>>& textures);
-        void removeTexture(uint32_t slot);
-        void setTextureSlot(uint32_t oldSlot, uint32_t newSlot);
-        const std::unordered_map<uint32_t, std::shared_ptr<Texture2D>>& getTextures() const { return mTextures; }
-        std::shared_ptr<Texture2D> getTexture(uint32_t slot) const;
+        void setBaseColorTexture(std::shared_ptr<Texture> texture);
+        void setNormalTexture(std::shared_ptr<Texture> texture);
+        void setMetallicTexture(std::shared_ptr<Texture> texture);
+        void setRoughnessTexture(std::shared_ptr<Texture> texture);
+
+        std::shared_ptr<Texture> getBaseColorTexture() const;
+        std::shared_ptr<Texture> getNormalTexture() const;
+        std::shared_ptr<Texture> getMetallicTexture() const;
+        std::shared_ptr<Texture> getRoughnessTexture() const;
+
+        // Check if textures are present
+        bool hasBaseColorTexture() const;
+        bool hasNormalTexture() const;
+        bool hasMetallicTexture() const;
+        bool hasRoughnessTexture() const;
 
         // Shader management
-        void setShader(std::shared_ptr<Shader> shader);
-        std::shared_ptr<Shader> getShader() const { return mShader; }
+        std::shared_ptr<Shader> getShader() const;
 
         // Utility methods
         void serialize(const std::filesystem::path& path) const;
         void bind() const;
         void unbind() const;
-        void clearUniforms();
-        void clearTextures();
 
     private:
-        void applyUniform(const std::string& name, const UniformValue& value) const;
+        void setTexture(TextureSlot slot, std::shared_ptr<Texture> texture);
+        std::shared_ptr<Texture> getTexture(TextureSlot slot) const;
+        bool hasTexture(TextureSlot slot) const;
 
     private:
         std::shared_ptr<Shader> mShader;
-        std::unordered_map<uint32_t, std::shared_ptr<Texture2D>> mTextures;
-        std::unordered_map<std::string, UniformValue> mUniforms;
+        std::unordered_map<uint32_t, std::shared_ptr<Texture>> mTextures;
+
+        glm::vec3 mBaseColor;  
+        float mMetallic;
+        float mRoughness;
     };
 }

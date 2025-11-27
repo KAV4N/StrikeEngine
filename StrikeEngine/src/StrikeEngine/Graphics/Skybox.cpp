@@ -1,29 +1,16 @@
 #include "Skybox.h"
 #include <glad/glad.h>
 #include <array>
-#include "StrikeEngine/Asset/AssetManager.h"
+#include "StrikeEngine/Graphics/Shader.h"
 
 namespace StrikeEngine {
 
     Skybox::Skybox()
         : mVAO(0)
         , mVBO(0)
-        , mShaderId("EngineResources.DefaultSkyboxShader")
-        , mCubeMapId("")
-        , mCubeMap(nullptr)
         , mShader(nullptr)
     {
-
-        //load default skybox Shader
-        mShader = AssetManager::get().loadShader(
-            mShaderId,
-            "EngineResources/Shaders/Skybox.vert",
-            "EngineResources/Shaders/Skybox.frag"
-        );
-        if (mShader) {
-            mShader->postLoad();
-        }
-        
+        mShader = ShaderManager::get().getShader("skybox.glsl");
         setupCube();
     }
 
@@ -36,16 +23,7 @@ namespace StrikeEngine {
         }
     }
 
-    void Skybox::setCubeMap(const std::string& cubeMapId) {
-        mCubeMapId = cubeMapId;
-        mCubeMap = AssetManager::get().getCubeMap(mCubeMapId);
 
-    }
-
-    void Skybox::setShader(const std::string& shaderId) {
-        mShaderId = shaderId;
-        mShader = AssetManager::get().getShader(mShaderId);
-    }
 
     void Skybox::setupCube() {
         std::array<float, 24> vertices = {
@@ -101,6 +79,5 @@ namespace StrikeEngine {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glDeleteBuffers(1, &ebo);
     }
-
 
 }

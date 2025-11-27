@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<material>
+	<baseColor r="204" g="204" b="204" />
+	<normal />
+	<metallic value="0" />
+	<roughness value="0.5" />
+</material>

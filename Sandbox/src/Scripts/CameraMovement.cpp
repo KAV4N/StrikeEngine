@@ -2,6 +2,8 @@
 
 void CameraMovement::onStart() {
     mCameraEntity = getEntity();
+    
+
 }
 
 void CameraMovement::printStats(const std::string& state) {
@@ -19,77 +21,82 @@ void CameraMovement::printStats(const std::string& state) {
     std::cout << std::endl;
 }
 
+void CameraMovement::onUpdate(float deltaTime)
+{
+    // --------------------------------------------------------------------
+    // 1. Gather input → speed per axis (local space)
+    // --------------------------------------------------------------------
+    glm::vec3 move(0.0f);               // local‑space movement (right, up, forward)
+    const float speed = 20.0f * deltaTime;
 
-void CameraMovement::onUpdate(float deltaTime) {
-    // Movement controls
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D)) {
-        mCameraEntity.moveRight(20 * deltaTime);
-        printStats("move RIGHT:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A)) {
-        mCameraEntity.moveLeft(20 * deltaTime);
-        printStats("move LEFT:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) {
-        mCameraEntity.moveForward(20 * deltaTime);
-        printStats("move FORW:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S)) {
-        mCameraEntity.moveBackward(20 * deltaTime);
-        printStats("move BACK:");
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D))      move.x += speed;   // right
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A))      move.x -= speed;   // left
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W))      move.z -= speed;   // forward
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S))      move.z += speed;   // back
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE))  move.y += speed;   // up
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed; // down
+
+    // --------------------------------------------------------------------
+    // 2. Transform local movement into world space
+    // --------------------------------------------------------------------
+    if (glm::length(move) > 0.0f)
+    {
+        const glm::quat rot = mCameraEntity.getRotation();
+
+        // local axes in world space
+        const glm::vec3 right   = rot * glm::vec3(1,0,0);
+        const glm::vec3 up      = rot * glm::vec3(0,1,0);
+        const glm::vec3 forward = rot * glm::vec3(0,0,1);
+
+        const glm::vec3 worldMove = right * move.x + up * move.y + forward * move.z;
+        mCameraEntity.move(worldMove);
     }
 
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
-        mCameraEntity.moveUp(20 * deltaTime); 
-        printStats("move UP:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) {
-        mCameraEntity.moveDown(20 * deltaTime);
-        printStats("move DOWN:");
-    }
+    // --------------------------------------------------------------------
+    // 3. Rotation (unchanged, only a little cleanup)
+    // --------------------------------------------------------------------
+    glm::vec3 rotation(0.0f);
+    const float rotSpeed = 90.0f * deltaTime;   // degrees per second
 
-    // Rotation controls
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT)) {
-        mCameraEntity.rotateY(90.0f * deltaTime); 
-        printStats("rotate +Y:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_RIGHT)) {
-        mCameraEntity.rotateY(-90.0f * deltaTime);
-        printStats("rotate -Y:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_UP)) {
-        mCameraEntity.rotateX(90.0f * deltaTime);
-        printStats("rotate -X:");
-    }
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_DOWN)) {
-        mCameraEntity.rotateX(-90.0f * deltaTime); 
-        printStats("rotate +X:"); 
-    }
-    /*
-    if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_1)) {
-        auto& assetManager = StrikeEngine::AssetManager::get();
-        auto sceneGraph = mCameraEntity.getSceneGraph();
-        idCounter++;
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT))   rotation.y += rotSpeed;
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_RIGHT))  rotation.y -= rotSpeed;
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_UP))     rotation.x += rotSpeed;
+    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_DOWN))   rotation.x -= rotSpeed;
 
-        std::stringstream ss;
-        ss << "test" << idCounter;
-        auto newEnt = sceneGraph->createEntity(ss.str());
-
-        newEnt.setPosition(glm::vec3(std::rand() % 201- 100, -200, 0.f));
-
-        auto tankTemplate = assetManager.getTemplate("panzer");
-        if (tankTemplate)
-            tankTemplate->instantiate(newEnt);
-    }*/
+    if (glm::length(rotation) > 0.0f)
+        mCameraEntity.rotateEuler(rotation);
 }
 
-void CameraMovement::onEvent(StrikeEngine::Event& event) {
-    bindEvent<StrikeEngine::KeyReleasedEvent>(*this, &CameraMovement::keyEventTest);
+void CameraMovement::onMouseButtonPressed(StrikeEngine::MouseButtonPressedEvent& event){
+    if (event.getMouseButton() == STRIKE_MOUSE_BUTTON_1){
+        swapScene();
+    }
+    if (event.getMouseButton() == STRIKE_MOUSE_BUTTON_2){
+        spawnLight();
+    }
 }
 
-bool CameraMovement::keyEventTest(StrikeEngine::KeyReleasedEvent& event) {
+void CameraMovement::spawnLight(){
+    auto scene = mCameraEntity.getScene();
+    auto newEnt = scene->createEntity();
+    
+    newEnt.setPosition(mCameraEntity.getPosition());
+    auto& pointLight = newEnt.addComponent<StrikeEngine::LightComponent>();
+    pointLight.setFallOff(25);
+    pointLight.setColor(glm::vec3(255, 245, 200));
+    pointLight.setRadius(100);
+    pointLight.setIntensity(8);
+}
 
-    return true;
+void CameraMovement::swapScene() {
+    auto& world = StrikeEngine::World::get();
+    auto scene = world.getScene();
+
+    if (scene->getId() == "SecondScene"){
+        StrikeEngine::World::get().loadSceneAsync("Assets/Scenes/MainScene.xml");
+    }else{
+        StrikeEngine::World::get().loadSceneAsync("Assets/Scenes/SecondScene.xml");
+    }
 }
 
 REGISTER_SCRIPT(CameraMovement);

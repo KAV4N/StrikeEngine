@@ -7,11 +7,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
     add_compile_options(/W4)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
+   add_compile_options(
+        -Wall
+        -Wextra
+        -Wno-unknown-pragmas
+        -Wno-deprecated-copy
+        -Wno-unused-parameter
+)
 endif()
-
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Dist" CACHE STRING "" FORCE)
 
 add_subdirectory(StrikeEngine)
-add_subdirectory(Sandbox)   
+add_subdirectory(Sandbox)  
+
+
+
+
