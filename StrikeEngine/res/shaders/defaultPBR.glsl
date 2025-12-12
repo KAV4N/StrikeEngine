@@ -6,6 +6,7 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
 layout (location = 3) in vec3 aTangent;
 
+// 4,5,6
 layout (location = 4) in mat4 aInstanceModel;
 
 
@@ -26,7 +27,7 @@ void main() {
     vec4 worldPos = aInstanceModel * vec4(aPosition, 1.0);
     
     // Calculate normal matrix (for non-uniform scaling)
-    mat3 normalMatrix = mat3(transpose(inverse(aInstanceModel)));
+    mat3 normalMatrix = transpose(inverse(mat3(aInstanceModel)));
     
     vs_out.FragPos = worldPos.xyz;
     vs_out.Normal = normalize(normalMatrix * aNormal);
@@ -85,16 +86,34 @@ struct PointLight {
     float fallOff;
 };
 
-layout(std430, binding = 2) buffer lightSSBO {
+struct Cluster {
+    vec4 minPoint;
+    vec4 maxPoint;
+    uint count;
+    uint lightIndices[100];
+};
+
+layout(std430, binding = 1) readonly buffer clusterSSBO {
+    Cluster clusters[];
+};
+
+layout(std430, binding = 2) readonly buffer lightSSBO {
     PointLight pointLight[];
 };
 
+
 uniform Material uMaterial;
 uniform Sun uSun;
+
 uniform int uCastShadows;
 uniform sampler2D uShadowMap;
-uniform int uNumPointLights;
 uniform vec3 uViewPos;
+
+// light uniforms for clustered forward rendeirng
+uniform float uNear;
+uniform float uFar;
+uniform uvec3 uGridSize;
+uniform uvec2 uScreenDimensions;
 
 const float PI = 3.14159265359;
 
@@ -254,8 +273,21 @@ void main() {
     }
     Lo += calculateSunLight(uSun, N, V, albedo, metallic, roughness, shadow);
     
-    for (int i = 0; i < uNumPointLights; ++i) {
-        Lo += calculatePointLight(pointLight[i], fs_in.FragPos, N, V, albedo, metallic, roughness);
+
+    //tile calculation clustered forward rendering
+    uint zTile = uint((log(abs(fs_in.FragPos.z) / uNear) * uGridSize.z) / log(uFar / uNear));
+    vec2 tileSize = uScreenDimensions / uGridSize.xy;
+    uvec3 tile = uvec3(gl_FragCoord.xy / tileSize, zTile);
+    uint tileIndex =
+        tile.x + (tile.y * uGridSize.x) + (tile.z * uGridSize.x * uGridSize.y);
+
+    uint lightCount = clusters[tileIndex].count;
+
+
+    for (int i = 0; i < lightCount; ++i) {
+        uint lightIndex = clusters[tileIndex].lightIndices[i];
+        PointLight light = pointLight[lightIndex];
+        Lo += calculatePointLight(light, fs_in.FragPos, N, V, albedo, metallic, roughness);
     }
 
     vec3 ambient = vec3(0.03) * albedo;

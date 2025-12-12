@@ -20,17 +20,15 @@ void CubeSpawn::onMouseButtonPressed(StrikeEngine::MouseButtonPressedEvent& even
 void CubeSpawn::spawnCube(){
     StrikeEngine::Scene* scene = getEntity().getScene();
     
-    auto& myTransform = getEntity().getComponent<StrikeEngine::TransformComponent>();
     
-    glm::mat4 myWorld = myTransform.getWorldMatrix();
+    glm::mat4 myWorld = getEntity().getWorldMatrix();
     glm::vec3 forward = -glm::vec3(myWorld[2]);
     
     StrikeEngine::Entity entity = scene->createEntity();
-    auto& transform = entity.getComponent<StrikeEngine::TransformComponent>();
     auto& renderer = entity.addComponent<StrikeEngine::RendererComponent>();
 
 
-    transform.setPosition(myTransform.getPosition() + forward * 10.0f);
+    entity.setPosition(getEntity().getPosition() + forward * 10.0f);
     renderer.setMesh("box", 0, "CCP2_CCP2");
 
 

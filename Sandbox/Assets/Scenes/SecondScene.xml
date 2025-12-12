@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<scene sceneId="SecondScene" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+<scene sceneId="SecondScene">
 	<assets>
 		<template id="gizmoTemplate" src="../Objects/gizmo/gizmo.obj"  async="false"/>
 		<template id="boxTemplate" src="../Objects/box/box.obj"  async="false"/>
@@ -67,6 +67,45 @@
 
 
 
+		
+		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
+			<components>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="true" canCollide="true" mass="1.0"/>
+			</components>
+		</entity>
+
+		<entity template="portalBox" position="0,-20,0" scale="5,5,5">
+			<components>
+              <physics anchored="true" canCollide="true" mass="1"/>
+          </components>
+		</entity>
+
+		<entity position="0,-20,0" rotation="0,0,0" scale="5,5,5">
+			<components>
+				<renderer model="CCP2" material="CCP2_CCP2" />
+			</components>
+		</entity>
+		 
+
+		<entity tag="gizmo2" position="0,100,0" rotation="0,0,0" scale="1,1,1">
+			<components>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<physics anchored="false" canCollide="true" mass="1"/>
+			</components>
+		</entity>
+
+		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
+			<components>
+				<renderer model="box" material="box_Material" />
+				<physics anchored="true" canCollide="true" mass="1.0"/>
+				<audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
+			</components>
+		</entity>
+
+
+		<entity template="portalBox" tag="portalGizmo" position="50,150,0" rotation="0,0,0" scale="5,5,5">
+		</entity>
 
 
 

@@ -145,7 +145,6 @@ namespace StrikeEngine {
             viewProj[3][3] - viewProj[3][2]
         );
 
-        // Normalize frustum planes
         for (int i = 0; i < 6; i++) {
             float length = glm::length(glm::vec3(mFrustum.planes[i]));
             if (length > 0.0f) {

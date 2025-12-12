@@ -26,6 +26,6 @@ namespace StrikeEngine {
     private:
         Renderer& mRenderer;
         std::unique_ptr<FrameBuffer> mShadowMap;
-        uint32_t mShadowMapSize = 2048;
+        uint32_t mShadowMapSize = 1024;
     };
 }

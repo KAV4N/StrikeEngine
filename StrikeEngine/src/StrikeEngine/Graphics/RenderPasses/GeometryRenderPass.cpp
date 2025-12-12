@@ -7,6 +7,8 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/Types/Material.h"
 
+#include "LightCullingPass.h"
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -57,8 +59,12 @@ namespace StrikeEngine {
         shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
         shader->setVec3("uViewPos", cameraPos);
 
-        
-        shader->setInt("uNumPointLights", static_cast<int>(cameraData.pointLights.size()));
+        // light clusters
+        auto lightPass = mRenderer.getPass<LightCullingPass>();
+        shader->setFloat("uNear", cameraData.camera.getNearPlane());
+        shader->setFloat("uFar", cameraData.camera.getFarPlane());
+        shader->setVec3("uGridSize", glm::vec3(lightPass->CLUSTER_X, lightPass->CLUSTER_Y, lightPass->CLUSTER_Z));
+        shader->setVec2("uScreenDimensions", glm::vec2(mRenderer.getWidth(), mRenderer.getHeight()));
 
         if (sun) {
             shader->setVec3("uSun.direction", sun->getDirection());

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<scene sceneId="MainScene" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+<scene sceneId="MainScene">
 	<assets>
 		<!-- template entries removed, only non-template assets remain -->
 		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/skybox.jpg" async="false"/>
@@ -19,8 +19,6 @@
 	<skybox cubeMapId="skyboxMainScene"/>
 
 	<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="true"/>
-
-
 
 	<entities>
 		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">

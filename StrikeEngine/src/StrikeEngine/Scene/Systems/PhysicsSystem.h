@@ -17,8 +17,8 @@ class btCollisionShape;
 namespace StrikeEngine {
 
     class Scene;
+    class Entity;
     class PhysicsComponent;
-    class TransformComponent;
 
     class PhysicsSystem : public SystemECS {
     public:
@@ -30,14 +30,13 @@ namespace StrikeEngine {
         void setGravity(const glm::vec3& gravity);
         glm::vec3 getGravity() const;
 
-        
     private:
         friend class World;
         friend class Scene;
 
         void recreatePhysicsBody(entt::entity entity);
-        void syncTransformFromPhysics(entt::entity entity, PhysicsComponent& physics, TransformComponent& transform);
-        void syncTransformToPhysics(entt::entity entity, PhysicsComponent& physics, TransformComponent& transform);
+        void syncTransformFromPhysics(entt::entity entity, PhysicsComponent& physics, Entity& ent);
+        void syncTransformToPhysics(entt::entity entity, PhysicsComponent& physics, Entity& ent);
 
         void createPhysicsWorld();
         void cleanupPhysicsWorld();
@@ -58,4 +57,5 @@ namespace StrikeEngine {
 
         glm::vec3 mGravity = glm::vec3(0.0f, -9.81f, 0.0f);
     };
-}
+
+} // namespace StrikeEngine

@@ -1,8 +1,6 @@
 #include "PhysicsSystem.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include "StrikeEngine/Scene/Components/RendererComponent.h"
-#include "StrikeEngine/Scene/Components/HierarchyComponent.h"
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/World.h"
@@ -76,7 +74,7 @@ namespace StrikeEngine {
         if (!mDynamicsWorld || !scene) return;
 
         auto& registry = scene->getRegistry();
-        auto view = registry.view<PhysicsComponent, TransformComponent>();
+        auto view = registry.view<PhysicsComponent>();
 
         // Initialize or update physics bodies
         for (auto entity : view) {
@@ -90,8 +88,8 @@ namespace StrikeEngine {
             }
 
             if (physics.isAnchored()) {
-                auto& transform = view.get<TransformComponent>(entity);
-                syncTransformToPhysics(entity, physics, transform);
+                Entity ent(entity, scene);
+                syncTransformToPhysics(entity, physics, ent);
             }
         }
 
@@ -100,14 +98,13 @@ namespace StrikeEngine {
         // Sync physics results back to transforms
         for (auto entity : view) {
             auto& physics = view.get<PhysicsComponent>(entity);
-            auto& transform = view.get<TransformComponent>(entity);
             
             if (!physics.isAnchored()) {
-                syncTransformFromPhysics(entity, physics, transform);
+                Entity ent(entity, scene);
+                syncTransformFromPhysics(entity, physics, ent);
             }
         }
     }
-
 
     void PhysicsSystem::removePhysics(entt::entity entity) {
         Scene* scene = World::get().getScene();
@@ -139,11 +136,11 @@ namespace StrikeEngine {
         if (!scene) return;
 
         auto& registry = scene->getRegistry();
-        auto& transform = registry.get<TransformComponent>(entity);
+        Entity ent(entity, scene);
         auto& physics = registry.get<PhysicsComponent>(entity);
         
-        // Use TransformComponent's world matrix
-        const glm::mat4& worldMatrix = transform.getWorldMatrix();
+        // Use Entity's world matrix
+        const glm::mat4& worldMatrix = ent.getWorldMatrix();
 
         glm::vec3 worldPosition, worldScale, skew;
         glm::quat worldRotation;
@@ -275,14 +272,9 @@ namespace StrikeEngine {
         }
     }
 
-    void PhysicsSystem::syncTransformFromPhysics(entt::entity entity, PhysicsComponent& physics, TransformComponent& transform) {
-
+    void PhysicsSystem::syncTransformFromPhysics(entt::entity entity, PhysicsComponent& physics, Entity& ent) {
         btRigidBody* body = physics.getRigidBody();
         if (!body) return;
-
-        auto& registry =  World::get().getScene()->getRegistry();
-        auto& hierarchy = registry.get<HierarchyComponent>(entity);
-
 
         btTransform trans;
         if (body->getMotionState()) {
@@ -299,7 +291,7 @@ namespace StrikeEngine {
 
         // Remove mesh center offset to get actual world position
         glm::vec3 offset = physics.getBulletCenterOffset();
-        glm::vec3 scale = transform.getScale();
+        glm::vec3 scale = ent.getScale();
         glm::vec3 rotatedOffset = physRot * (offset * scale);
         glm::vec3 worldPos = physPos - rotatedOffset;
 
@@ -309,7 +301,8 @@ namespace StrikeEngine {
                                 glm::scale(glm::mat4(1.0f), scale);
 
         // Get parent's world matrix
-        glm::mat4 parentWorld = hierarchy.getParent().getWorldMatrix();
+        Entity parent = ent.getParent();
+        glm::mat4 parentWorld = parent.isValid() ? parent.getWorldMatrix() : glm::mat4(1.0f);
 
         // Convert world transform to local space
         glm::mat4 localMatrix = glm::inverse(parentWorld) * worldMatrix;
@@ -320,16 +313,16 @@ namespace StrikeEngine {
         glm::vec4 perspective;
         glm::decompose(localMatrix, localScale, localRot, localPos, skew, perspective);
 
-        // Update local transform
-        transform.setPosition(localPos);
-        transform.setRotation(localRot);
+        // Update local transform via Entity API
+        ent.setPosition(localPos);
+        ent.setRotation(localRot);
     }
 
-    void PhysicsSystem::syncTransformToPhysics(entt::entity entity, PhysicsComponent& physics, TransformComponent& transform) {
+    void PhysicsSystem::syncTransformToPhysics(entt::entity entity, PhysicsComponent& physics, Entity& ent) {
         btRigidBody* body = physics.getRigidBody();
         if (!body) return;
 
-        const glm::mat4& worldMatrix = transform.getWorldMatrix();
+        const glm::mat4& worldMatrix = ent.getWorldMatrix();
 
         glm::vec3 worldPosition, worldScale, skew;
         glm::quat worldRotation;
@@ -353,4 +346,4 @@ namespace StrikeEngine {
         body->setAngularVelocity(btVector3(0,0,0));
     }
 
-}
+} // namespace StrikeEngine

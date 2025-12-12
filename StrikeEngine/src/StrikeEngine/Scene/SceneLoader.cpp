@@ -6,6 +6,7 @@
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
+#include "StrikeEngine/Scene/Components/TagComponent.h"
 #include <stdexcept>
 #include <sstream>
 
@@ -42,7 +43,7 @@ namespace StrikeEngine {
         
         
         return std::async(std::launch::async, [this, path]() {
-            auto scene = loadSceneInternal(path,true);
+            auto scene = loadSceneInternal(path, true);
             mIsLoading = false;
             return scene;
         });
@@ -81,10 +82,10 @@ namespace StrikeEngine {
         setupSkybox(*scene, sceneNode);
         setupSun(*scene, sceneNode);
 
-        // Step 4: Create entities
+        // Step 4: Create entities (pass empty Entity() as root - entities without parent become roots)
         pugi::xml_node entitiesNode = sceneNode.child("entities");
         if (entitiesNode) {
-            createEntities(*scene, entitiesNode, scene->getRoot());
+            createEntities(*scene, entitiesNode, Entity());
         }
 
         return scene;
@@ -109,8 +110,8 @@ namespace StrikeEngine {
 
         // WAIT FOR ASYNC ASSETS TO BE READY
         while (!loadingAssetIds.empty()) {  
-            if (!async){
-                assetManager.update(); // UPDATE SYNC METHODS REQURED TO INIT LIKE MESH OR MODEL TO BE FULLY READY
+            if (!async) {
+                assetManager.update(); // UPDATE SYNC METHODS REQUIRED TO INIT LIKE MESH OR MODEL TO BE FULLY READY
             }
             for (auto it = loadingAssetIds.begin(); it != loadingAssetIds.end(); ) {
                 auto asset = assetManager.getAssetBase(*it);
@@ -126,7 +127,8 @@ namespace StrikeEngine {
 
     void SceneLoader::createEntities(Scene& scene, const pugi::xml_node& entitiesNode, Entity parentEntity) {
         for (pugi::xml_node entityNode : entitiesNode.children("entity")) {
-            Entity entity = scene.createEntity(parentEntity);
+            // Create entity - if parentEntity is invalid, it becomes a root entity
+            Entity entity = parentEntity.isValid() ? scene.createEntity(parentEntity) : scene.createEntity();
 
             // Parse transform
             std::string posStr = entityNode.attribute("position").as_string("0,0,0");
@@ -140,7 +142,7 @@ namespace StrikeEngine {
             // Parse tag
             std::string tag = entityNode.attribute("tag").as_string("");
             if (!tag.empty()) {
-                entity.setTag(tag);
+                entity.addComponent<TagComponent>(tag);
             }
 
             // Check for template instantiation
@@ -206,4 +208,4 @@ namespace StrikeEngine {
         return result;
     }
 
-} 
+} // namespace StrikeEngine

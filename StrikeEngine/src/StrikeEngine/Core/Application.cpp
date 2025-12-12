@@ -43,13 +43,15 @@ namespace StrikeEngine {
 
 
     void Application::onEvent(Event& e) {
-        EventDispatcher dispatcher(e);
+        if (mRunning){
+            EventDispatcher dispatcher(e);
 
-        dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
-        dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
-        dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::printProfiler));
-        // Let the World handle events
-        World::get().onEvent(e);
+            dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
+            dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
+            dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::printProfiler));
+            // Let the World handle events
+            World::get().onEvent(e);
+        }
     }
 
     bool Application::printProfiler(KeyPressedEvent& e){

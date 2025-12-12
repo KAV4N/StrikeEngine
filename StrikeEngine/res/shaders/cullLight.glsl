@@ -1,3 +1,4 @@
+// Thanks to DaveH355 for https://github.com/DaveH355/clustered-shading tutorial
 #type COMPUTE
 #version 430 core
 

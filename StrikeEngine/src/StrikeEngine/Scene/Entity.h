@@ -6,14 +6,11 @@
 #include <string>
 #include <vector>
 
-
 #include "Scene.h"
 
 namespace StrikeEngine {
 
     class Scene;
-    class HierarchyComponent;
-    class TransformComponent;
 
     class Entity final {
     public:
@@ -48,51 +45,53 @@ namespace StrikeEngine {
         template<typename T, typename... Args>
         T& getOrAddComponent(Args&&... args);
 
-        // Essential transform shortcuts
-        TransformComponent& getTransform();
-        const TransformComponent& getTransform() const;
-
-        // Essential component accessors
-        HierarchyComponent& getHierarchy();
-        const HierarchyComponent& getHierarchy() const;
-        
+        // Tag operations
         void setTag(const std::string& tag);
         const std::string& getTag() const;
 
-        // Consolidated transform controls
-        void setPosition(const glm::vec3& position) { getTransform().setPosition(position); }
-        void move(const glm::vec3& offset) { getTransform().move(offset); }
-        
-        void setRotation(const glm::quat& rotation) { getTransform().setRotation(rotation); }
-        void setRotationEuler(const glm::vec3& rotation) { getTransform().setRotationEuler(rotation); }
-        void rotateEuler(const glm::vec3& anglesDegrees) { getTransform().rotateEuler(anglesDegrees); }
-        
-        void setScale(const glm::vec3& scale) { getTransform().setScale(scale); }
-        void scaleBy(const glm::vec3& factor) { getTransform().scale(factor); }
+        // Transform controls (via internal GraphNode)
+        void setPosition(const glm::vec3& position);
+        void move(const glm::vec3& offset);
 
-        // Essential getters
-        glm::vec3 getPosition() const { return getTransform().getPosition(); }
-        glm::quat getRotation() const { return getTransform().getRotation(); }
-        glm::vec3 getEulerRotation() const { return getTransform().getRotationEuler(); }
-        glm::vec3 getScale() const { return getTransform().getScale(); }
-        glm::mat4 getWorldMatrix() const { return getTransform().getWorldMatrix(); }
+        void setRotation(const glm::quat& rotation);
+        void setRotationEuler(const glm::vec3& rotation);
+        void rotateEuler(const glm::vec3& anglesDegrees);
+        void rotateX(float angleDegrees);
+        void rotateY(float angleDegrees);
+        void rotateZ(float angleDegrees);
 
-        // Essential hierarchy operations
+        void setScale(const glm::vec3& scale);
+        void scaleBy(const glm::vec3& factor);
+
+        // Transform getters
+        glm::vec3 getPosition() const;
+        glm::quat getRotation() const;
+        glm::vec3 getEulerRotation() const;
+        glm::vec3 getScale() const;
+        glm::mat4 getLocalMatrix() const;
+        glm::mat4 getWorldMatrix() const;
+
+        // Hierarchy operations (via internal GraphNode)
         bool isRoot() const;
         Entity getParent() const;
 
         void setParent(Entity parent);
         void addChild(Entity child);
-        void destroyChildren(); 
 
         std::vector<Entity> getChildren() const;
         size_t getChildCount() const;
         bool hasChildren() const;
 
         // Operators
-        bool operator==(const Entity& other) const { return mHandle == other.mHandle && mScene == other.mScene; }
-        bool operator!=(const Entity& other) const { return !(*this == other); }
-        operator bool() const { return isValid(); }
+        bool operator==(const Entity& other) const { 
+            return mHandle == other.mHandle && mScene == other.mScene; 
+        }
+        bool operator!=(const Entity& other) const { 
+            return !(*this == other); 
+        }
+        operator bool() const { 
+            return isValid(); 
+        }
 
         // Accessors
         entt::entity getHandle() const { return mHandle; }
@@ -133,7 +132,6 @@ namespace StrikeEngine {
 
     template<typename T>
     inline const T& Entity::getComponent() const {
-        std::string name = T::getStaticTypeName();
         if (!isValid()) {
             throw std::runtime_error("Invalid entity or scene");
         }

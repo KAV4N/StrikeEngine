@@ -143,7 +143,10 @@ namespace StrikeEngine {
     void ComputeShader::dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t numGroupsZ) {
         bind();
         glDispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    }
+
+    void ComputeShader::waitFinish(){
+         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
     // ShaderManager Implementation
@@ -276,7 +279,7 @@ namespace StrikeEngine {
         auto it = mShaders.find(id);
         if (it != mShaders.end()) {
             auto shader = std::dynamic_pointer_cast<Shader>(it->second);
-            if (shader && shader->getTypeName() == Shader::getStaticTypeName()) {
+            if (shader) {
                 return shader;
             }
         }
@@ -287,7 +290,7 @@ namespace StrikeEngine {
         auto it = mShaders.find(id);
         if (it != mShaders.end()) {
             auto shader = std::dynamic_pointer_cast<ComputeShader>(it->second);
-            if (shader && shader->getTypeName() == ComputeShader::getStaticTypeName()) {
+            if (shader) {
                 return shader;
             }
         }

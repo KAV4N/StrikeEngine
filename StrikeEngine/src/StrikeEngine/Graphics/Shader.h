@@ -25,15 +25,6 @@ namespace StrikeEngine {
         void setVec4(const std::string& name, const glm::vec4& value);
         void setMat4(const std::string& name, const glm::mat4& value);
 
-        static const std::string& getStaticTypeName() {
-            static const std::string typeName = "shader";
-            return typeName;
-        }
-
-        virtual const std::string& getTypeName() const {
-            return getStaticTypeName();
-        }
-
         GLuint getRendererId() const { return mRendererId; }
         const std::string& getId() const { return mId; }
 
@@ -55,15 +46,7 @@ namespace StrikeEngine {
         ~ComputeShader() = default;
 
         void dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t numGroupsZ);
-
-        static const std::string& getStaticTypeName() {
-            static const std::string typeName = "computeShader";
-            return typeName;
-        }
-
-        const std::string& getTypeName() const override {
-            return getStaticTypeName();
-        }
+        void waitFinish();
     };
 
     class ShaderManager {

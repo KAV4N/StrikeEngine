@@ -4,7 +4,6 @@
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/AudioSourceComponent.h"
 #include "StrikeEngine/Scene/Components/AudioListenerComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
 #include "StrikeEngine/Asset/Types/Audio.h"
 #include <glm/glm.hpp>
 #include <iostream>
@@ -77,7 +76,7 @@ namespace StrikeEngine {
         auto& registry = scene->getRegistry();
 
         glm::vec3 listenerPos(0.0f);
-        auto listenerView = registry.view<AudioListenerComponent, TransformComponent>();
+        auto listenerView = registry.view<AudioListenerComponent>();
         if (listenerView.begin() != listenerView.end()) {
             auto listenerEntity = *listenerView.begin();
             Entity listener(listenerEntity, scene);
@@ -86,7 +85,7 @@ namespace StrikeEngine {
 
         memset(pOutput, 0, frameCount * 2 * sizeof(float));
 
-        auto view = registry.view<AudioSourceComponent, TransformComponent>();
+        auto view = registry.view<AudioSourceComponent>();
         for (auto entity : view) {
             Entity ent(entity, scene);
             auto& source = registry.get<AudioSourceComponent>(entity);
@@ -134,4 +133,4 @@ namespace StrikeEngine {
         }
     }
 
-}
+} // namespace StrikeEngine

@@ -3,8 +3,6 @@
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
-#include "StrikeEngine/Scene/Components/TransformComponent.h"
-
 #include "StrikeEngine/Graphics/Shader.h"
 
 #include <glad/glad.h>
@@ -48,12 +46,11 @@ namespace StrikeEngine {
         mShader->setMat4("uViewProjection", cameraData.camera.getViewProjectionMatrix());
         mShader->setVec4("uColor", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)); // Green wireframe
         
-        auto view = registry.view<PhysicsComponent, TransformComponent>();
+        auto view = registry.view<PhysicsComponent>();
         for (auto entity : view) {
             Entity ent(entity, scene);
 
             auto& physics = registry.get<PhysicsComponent>(entity);
-            auto& transform = registry.get<TransformComponent>(entity);
 
             // Get the full world matrix including position, rotation, and scale
             glm::mat4 entWorldMatrix = ent.getWorldMatrix();
@@ -72,7 +69,6 @@ namespace StrikeEngine {
             renderBox(model, cameraData.camera.getViewProjectionMatrix());
         }
         restoreOpenGLState();
-        
     }
 
     void CollisionRenderPass::setupBoxGeometry() {
@@ -131,4 +127,4 @@ namespace StrikeEngine {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-}
+} // namespace StrikeEngine
