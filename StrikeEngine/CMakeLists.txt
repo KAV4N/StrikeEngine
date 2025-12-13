@@ -35,6 +35,8 @@ set(USE_GLUT OFF CACHE BOOL "" FORCE)
 set(USE_GRAPHICAL_BENCHMARK OFF CACHE BOOL "" FORCE)
 set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
 
+
+
 # External dependencies
 add_subdirectory(${INCLUDE_DIR}/GLFW)
 add_subdirectory(${INCLUDE_DIR}/Glad)

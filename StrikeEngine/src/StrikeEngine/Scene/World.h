@@ -36,6 +36,9 @@ namespace StrikeEngine {
         void resize(uint32_t width, uint32_t height);
 
     private:
+        friend class Entity;
+        friend class Scene;
+        
         World();
         ~World() = default;
         World(const World&) = delete;

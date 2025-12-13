@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 #include <entt/entt.hpp>
 
 class btDiscreteDynamicsWorld;
@@ -30,9 +31,16 @@ namespace StrikeEngine {
         void setGravity(const glm::vec3& gravity);
         glm::vec3 getGravity() const;
 
+        // Get all entities that the given entity is currently colliding with
+        std::vector<Entity> getCollidingEntities(const Entity& entity) const;
+
+        // Check if two entities are currently colliding
+        bool isColliding(const Entity& entityA, const Entity& entityB) const;
+
     private:
         friend class World;
         friend class Scene;
+        friend class Entity;
 
         void recreatePhysicsBody(entt::entity entity);
         void syncTransformFromPhysics(entt::entity entity, PhysicsComponent& physics, Entity& ent);
@@ -56,6 +64,7 @@ namespace StrikeEngine {
         std::unordered_map<entt::entity, btCollisionShape*> mCollisionShapes;
 
         glm::vec3 mGravity = glm::vec3(0.0f, -9.81f, 0.0f);
+        
     };
 
 } // namespace StrikeEngine

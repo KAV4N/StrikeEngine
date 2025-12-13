@@ -35,6 +35,8 @@ namespace StrikeEngine {
         virtual void onUpdate(float deltaTime);
         virtual void onDestroy();
         
+
+        
         void onEvent(Event& event);
 
         // Override these to handle specific events 
@@ -52,6 +54,9 @@ namespace StrikeEngine {
         void setActive(bool active);
 
         bool isStarted() const;
+
+        // Timing utility - returns true every N seconds
+        bool tick(float seconds);
 
         template<typename T, typename... Args>
         T& addComponent(Args&&... args) {
@@ -90,11 +95,16 @@ namespace StrikeEngine {
         friend class ScriptComponent;
         friend class ScriptSystem;
 
+        void internalUpdate(float deltaTime);
+
         void setEntity(const Entity& entity);
         void markStarted();
+        void updateTimers(float deltaTime);
 
     private:
         bool mStarted = false;
         Entity mEntity;
+        
+        std::unordered_map<float, float> mTimers;
     };
 }

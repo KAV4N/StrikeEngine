@@ -1,7 +1,8 @@
 #include "Entity.h"
-#include "Components/TagComponent.h"
 #include "GraphNode.h"
 #include "Scene.h"
+#include "World.h"
+#include "Systems/PhysicsSystem.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
@@ -16,12 +17,20 @@ namespace StrikeEngine {
         return mScene && mScene->getRegistry().valid(mHandle);
     }
 
+    // Tag operations now use GraphNode directly
     void Entity::setTag(const std::string& tag) {
-        getOrAddComponent<TagComponent>().setTag(tag);
+        if (!isValid()) return;
+        auto node = mScene->getGraphNode(mHandle);
+        if (node) {
+            node->setTag(tag);
+        }
     }
 
     const std::string& Entity::getTag() const {
-        return getComponent<TagComponent>().getTag();
+        static const std::string empty = "";
+        if (!isValid()) return empty;
+        auto node = mScene->getGraphNode(mHandle);
+        return node ? node->getTag() : empty;
     }
 
     // Transform operations
@@ -194,6 +203,39 @@ namespace StrikeEngine {
         if (!isValid()) return false;
         auto node = mScene->getGraphNode(mHandle);
         return node ? node->hasChildren() : false;
+    }
+
+    std::vector<Entity> Entity::getCollidingEntities() const {
+        if (!isValid()) {
+            return std::vector<Entity>();
+        }
+
+        PhysicsSystem* physicsSystem = World::get().mPhysicsSystem.get();
+        if (!physicsSystem) {
+            return std::vector<Entity>();
+        }
+
+        return physicsSystem->getCollidingEntities(*this);
+    }
+
+    bool Entity::isCollidingWith(const Entity& other) const {
+        if (!isValid() || !other.isValid()) {
+            return false;
+        }
+
+        PhysicsSystem* physicsSystem = World::get().mPhysicsSystem.get();
+        if (!physicsSystem) {
+            return false;
+        }
+
+        return physicsSystem->isColliding(*this, other);
+    }
+
+    void Entity::destroy() const {
+        if (!isValid()) {
+            return;
+        }
+        mScene->destroy(mHandle);
     }
 
 } // namespace StrikeEngine

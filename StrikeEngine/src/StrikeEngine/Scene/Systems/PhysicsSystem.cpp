@@ -106,6 +106,110 @@ namespace StrikeEngine {
         }
     }
 
+    std::vector<Entity> PhysicsSystem::getCollidingEntities(const Entity& entity) const {
+        std::vector<Entity> collidingEntities;
+
+        if (!entity.isValid()) return collidingEntities;
+
+        Scene* scene = entity.getScene();
+        if (!scene || !mDynamicsWorld) return collidingEntities;
+
+        entt::entity handle = entity.getHandle();
+        auto& registry = scene->getRegistry();
+        auto* physics = registry.try_get<PhysicsComponent>(handle);
+        if (!physics) return collidingEntities;
+
+        btRigidBody* body = physics->getRigidBody();
+        if (!body) return collidingEntities;
+
+        // Iterate through all contact manifolds in the dispatcher
+        int numManifolds = mDispatcher->getNumManifolds();
+        for (int i = 0; i < numManifolds; i++) {
+            btPersistentManifold* contactManifold = mDispatcher->getManifoldByIndexInternal(i);
+            
+            // Check if there are any actual contact points
+            int numContacts = contactManifold->getNumContacts();
+            if (numContacts == 0) continue;
+
+            const btCollisionObject* objA = contactManifold->getBody0();
+            const btCollisionObject* objB = contactManifold->getBody1();
+
+            const btRigidBody* bodyA = btRigidBody::upcast(objA);
+            const btRigidBody* bodyB = btRigidBody::upcast(objB);
+
+            // Check if our body is involved in this collision
+            const btRigidBody* otherBody = nullptr;
+            if (bodyA == body) {
+                otherBody = bodyB;
+            } else if (bodyB == body) {
+                otherBody = bodyA;
+            } else {
+                continue; // This collision doesn't involve our entity
+            }
+
+            if (!otherBody) continue;
+
+            // Find the entity that has this rigid body in its PhysicsComponent
+            auto view = registry.view<PhysicsComponent>();
+            for (auto otherEntity : view) {
+                auto& otherPhysics = view.get<PhysicsComponent>(otherEntity);
+                if (otherPhysics.getRigidBody() == otherBody) {
+                    collidingEntities.emplace_back(otherEntity, scene);
+                    break;
+                }
+            }
+        }
+
+        return collidingEntities;
+    }
+
+    bool PhysicsSystem::isColliding(const Entity& entityA, const Entity& entityB) const {
+        if (!entityA.isValid() || !entityB.isValid()) return false;
+        if (!mDynamicsWorld) return false;
+        if (entityA == entityB) return false;
+
+        Scene* scene = entityA.getScene();
+
+        auto& registry = scene->getRegistry();
+        
+        entt::entity handleA = entityA.getHandle();
+        entt::entity handleB = entityB.getHandle();
+
+        auto* physicsA = registry.try_get<PhysicsComponent>(handleA);
+        auto* physicsB = registry.try_get<PhysicsComponent>(handleB);
+        
+        if (!physicsA || !physicsB) return false;
+
+        btRigidBody* bodyA = physicsA->getRigidBody();
+        btRigidBody* bodyB = physicsB->getRigidBody();
+        
+        if (!bodyA || !bodyB) return false;
+
+        // Iterate through all contact manifolds in the dispatcher
+        int numManifolds = mDispatcher->getNumManifolds();
+        for (int i = 0; i < numManifolds; i++) {
+            btPersistentManifold* contactManifold = mDispatcher->getManifoldByIndexInternal(i);
+            
+            // Check if there are any actual contact points
+            int numContacts = contactManifold->getNumContacts();
+            if (numContacts == 0) continue;
+
+            const btCollisionObject* objA = contactManifold->getBody0();
+            const btCollisionObject* objB = contactManifold->getBody1();
+
+            const btRigidBody* manifoldBodyA = btRigidBody::upcast(objA);
+            const btRigidBody* manifoldBodyB = btRigidBody::upcast(objB);
+
+            // Check if both bodies are involved in this collision
+            if ((manifoldBodyA == bodyA && manifoldBodyB == bodyB) ||
+                (manifoldBodyA == bodyB && manifoldBodyB == bodyA)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void PhysicsSystem::removePhysics(entt::entity entity) {
         Scene* scene = World::get().getScene();
         if (!scene) return;
@@ -204,12 +308,14 @@ namespace StrikeEngine {
 
         if (physics.isAnchored()) {
             body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-            body->setActivationState(DISABLE_DEACTIVATION);
+            
         }
 
         if (!physics.canCollide()) {
             body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
         }
+
+        body->setActivationState(DISABLE_DEACTIVATION);
 
         physics.setRigidBody(body);
         mDynamicsWorld->addRigidBody(body);

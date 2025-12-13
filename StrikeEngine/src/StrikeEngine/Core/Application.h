@@ -4,9 +4,7 @@
 #include "Timer.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
-
 #include "StrikeEngine/Events/KeyEvent.h"
-
 
 namespace StrikeEngine {
     class World;
@@ -18,36 +16,28 @@ namespace StrikeEngine {
         virtual ~Application();
         void run();
         void onEvent(Event& e);
-        void onUpdate();
-
-        // Timer access methods
-        void setTargetFPS(float fps) { mTimer.setTargetFPS(fps); }
-        float getTargetFPS() const { return mTimer.getTargetFPS(); }
-        float getCurrentFPS() const { return mTimer.getCurrentFPS(); }
-        float getDeltaTime() const { return mTimer.getDeltaTime(); }
-        double getElapsedTime() const { return mTimer.getElapsedTime(); }
-
-        // Timer direct access
-        Timer& getTimer() { return mTimer; }
-        const Timer& getTimer() const { return mTimer; }
-
+        void onUpdate(float deltaTime);
 
         inline Window& getWindow() { return *mWindow; }
         inline static Application& get() { return *sInstance; }
+        
+        inline void setTargetFPS(int fps) { mTargetFPS = fps; }
+        inline int getTargetFPS() const { return mTargetFPS; }
+        inline float getCurrentFPS() const { return mCurrentFPS; }
 
     private:
         bool printProfiler(KeyPressedEvent& e);
-
         bool onWindowClose(WindowCloseEvent& e);
         bool onWindowResize(WindowResizeEvent& e);
 
         std::unique_ptr<Window> mWindow;
-        Timer mTimer; // Timer instance
         bool mRunning = true;
+
+        int mTargetFPS = 0;
+        float mCurrentFPS = 0.0f;
 
     private:
         static Application* sInstance;
-
     };
 
     Application* createApplication();

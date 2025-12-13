@@ -45,7 +45,7 @@ namespace StrikeEngine {
         template<typename T, typename... Args>
         T& getOrAddComponent(Args&&... args);
 
-        // Tag operations
+        // Tag operations — now use GraphNode directly
         void setTag(const std::string& tag);
         const std::string& getTag() const;
 
@@ -82,6 +82,13 @@ namespace StrikeEngine {
         size_t getChildCount() const;
         bool hasChildren() const;
 
+        // Physics collision queries
+        std::vector<Entity> getCollidingEntities() const;
+        bool isCollidingWith(const Entity& other) const;
+
+        //destroy method
+        void destroy() const;
+
         // Operators
         bool operator==(const Entity& other) const { 
             return mHandle == other.mHandle && mScene == other.mScene; 
@@ -105,7 +112,7 @@ namespace StrikeEngine {
         Scene* mScene = nullptr;
     };
 
-    // Entity method implementations
+    // Entity method implementations (templates remain unchanged)
     template<typename T, typename... Args>
     inline T& Entity::addComponent(Args&&... args) {
         if (!isValid()) {

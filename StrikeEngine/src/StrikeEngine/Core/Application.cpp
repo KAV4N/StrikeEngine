@@ -5,16 +5,13 @@
 #include "Input.h"
 #include <glad/glad.h>
 #include <chrono>
+#include <thread>
 
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 
-
-
-
 #include "Profiler.h"
-
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -32,15 +29,12 @@ namespace StrikeEngine {
         Renderer& renderer = Renderer::get();
         renderer.init();
         renderer.resize(mWindow.get()->getWidth(), mWindow.get()->getHeight());
-
-        // Initialize timer with default values
-        //mTimer.setTargetFPS(60.0f);
+        mWindow->setVSync(false);
     }
 
     Application::~Application() {
 
     }
-
 
     void Application::onEvent(Event& e) {
         if (mRunning){
@@ -49,7 +43,6 @@ namespace StrikeEngine {
             dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
             dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
             dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::printProfiler));
-            // Let the World handle events
             World::get().onEvent(e);
         }
     }
@@ -59,38 +52,42 @@ namespace StrikeEngine {
         return true;
     }
 
-    void Application::onUpdate() {
-
-
-        mTimer.updateFrame();
-        float deltaTime = mTimer.getDeltaTime();
+    void Application::onUpdate(float deltaTime) {
+        World& world = World::get();
+        world.onUpdate(deltaTime);
+        world.onRender();
+        
+        Renderer::get().display();
+        AssetManager::get().update();       
 
        
-        World& world = World::get();
-
-        world.onUpdate(deltaTime);
-        
-        world.onRender();
-        Renderer::get().display();
-
-        AssetManager::get().update();   
-
-        mWindow->onUpdate();      
-
-        std::stringstream titleStream;
-        titleStream << mTimer.getCurrentFPS();
-
-        mWindow->setWindowTitle(titleStream.str());
-        // Limit frame rate
-        //mTimer.limitFrameRate();
+        mWindow->setWindowTitle("StrikeEngine - FPS: " + std::to_string(static_cast<int>(mCurrentFPS)));
+    
+        mWindow->onUpdate();
     }
 
     void Application::run() {
-        PROFILE_SCOPE("AppRUn");
-        mTimer.reset();
+        PROFILE_SCOPE("AppRun");
+
+        auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
         while (mRunning) {
-            onUpdate();
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = currentTime - lastFrameTime;
+            double deltaTime = elapsed.count();
+            mCurrentFPS = 1.0 / deltaTime;
+            
+            if (mTargetFPS <= 0) {
+                onUpdate(static_cast<float>(deltaTime));
+                lastFrameTime = currentTime;
+            } else {
+                const double targetFrameTime = 1.0 / mTargetFPS;
+                
+                if (deltaTime >= targetFrameTime) {
+                    onUpdate(static_cast<float>(deltaTime));
+                    lastFrameTime = currentTime;
+                }
+            }
         }
     }
 
@@ -101,7 +98,6 @@ namespace StrikeEngine {
 
     bool Application::onWindowResize(WindowResizeEvent& e) {
         Renderer::get().resize(e.getWidth(), e.getHeight());
-        STRIKE_CORE_INFO("RESIZEDASSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
         return true;
     }
 }

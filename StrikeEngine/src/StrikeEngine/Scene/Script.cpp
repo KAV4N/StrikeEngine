@@ -17,6 +17,14 @@ namespace StrikeEngine {
     void Script::onUpdate(float deltaTime) {}
     void Script::onDestroy() {}
     
+    void Script::internalUpdate(float deltaTime) {
+        for (auto& [interval, timer] : mTimers) {
+            timer += deltaTime;
+        }
+
+        onUpdate(deltaTime);
+    }
+    
     void Script::onEvent(Event& event) {
         switch (event.getEventType()) {
             case EventType::KeyPressed:
@@ -69,6 +77,19 @@ namespace StrikeEngine {
 
     void Script::markStarted() {
         mStarted = true;
+    }
+
+    bool Script::tick(float seconds) {
+        // Get or create timer for this interval
+        auto& timer = mTimers[seconds];
+        
+        // Check if the interval has passed
+        if (timer >= seconds) {
+            timer = 0.0f;  // Reset the timer
+            return true;
+        }
+        
+        return false;
     }
 
 }

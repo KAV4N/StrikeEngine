@@ -38,8 +38,7 @@ namespace StrikeEngine {
                     script->markStarted();
                 }
 
-                // Call onUpdate every frame
-                script->onUpdate(dt);
+                script->internalUpdate(dt);
             }
         }
     }
@@ -70,4 +69,4 @@ namespace StrikeEngine {
             }
         }
     }
-} 
+}

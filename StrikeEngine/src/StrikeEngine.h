@@ -27,7 +27,6 @@
 #include "StrikeEngine/Scene/Components/LogicComponent.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 #include "StrikeEngine/Scene/Components/RendererComponent.h"
-#include "StrikeEngine/Scene/Components/TagComponent.h"
 
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Scene/ScriptRegistry.h"

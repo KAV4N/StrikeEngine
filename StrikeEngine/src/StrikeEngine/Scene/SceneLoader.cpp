@@ -6,7 +6,6 @@
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
-#include "StrikeEngine/Scene/Components/TagComponent.h"
 #include <stdexcept>
 #include <sstream>
 
@@ -142,7 +141,7 @@ namespace StrikeEngine {
             // Parse tag
             std::string tag = entityNode.attribute("tag").as_string("");
             if (!tag.empty()) {
-                entity.addComponent<TagComponent>(tag);
+                entity.setTag(tag);
             }
 
             // Check for template instantiation

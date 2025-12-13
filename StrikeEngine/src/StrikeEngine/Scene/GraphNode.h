@@ -5,6 +5,7 @@
 #include <entt/entt.hpp>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace StrikeEngine {
 
@@ -62,12 +63,18 @@ namespace StrikeEngine {
         void markDirty();
         void clearDirty() { mIsDirty = false; }
 
+        // Tag operations (now stored directly in GraphNode)
+        const std::string& getTag() const { return mTag; }
+        void setTag(const std::string& tag) { mTag = tag; }
+
     private:
         friend class Scene;
         void updateLocalMatrix() const;
 
     private:
         entt::entity mEntityId;
+
+        std::string mTag;  // Tag is now part of the graph node itself
 
         // Transform data
         glm::vec3 mLocalPosition{0.0f};

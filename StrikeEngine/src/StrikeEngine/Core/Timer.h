@@ -1,41 +1,35 @@
 #pragma once
 #include <chrono>
-#include <functional>
 
 namespace StrikeEngine {
+
     class Timer {
     public:
         Timer();
-        ~Timer() = default;
-
-        // FPS Control
-        void setTargetFPS(float fps);
-        float getTargetFPS() const { return mTargetFPS; }
-        float getCurrentFPS() const { return mCurrentFPS; }
-        float getDeltaTime() const { return mDeltaTime; }
-        double getElapsedTime() const;
-
-        // Update methods
-        void updateFrame();
-        void limitFrameRate();
-        void reset();
-
-    private:
-        void calculateFPS();
-
-        // Timing variables
-        std::chrono::high_resolution_clock::time_point mStartTime;
-        std::chrono::high_resolution_clock::time_point mLastFrameTime;
-
-        float mTargetFPS = 60.0f;
-        float mCurrentFPS = 0.0f;
-        float mDeltaTime = 0.0f;
-
-        // FPS calculation
-        float mFrameTimeAccumulator = 0.0f;
-        int mFrameCount = 0;
-
+        
+        // Core timing functions
+        void tick();                    // Call this at the start of each frame
+        float getDeltaTime() const;     // Get time since last frame in seconds
+        
+        // FPS control
+        void setTargetFPS(float fps);   // Set desired FPS (0 = unlimited)
+        float getTargetFPS() const;     // Get target FPS
+        float getCurrentFPS() const;    // Get actual FPS
+        
         // Frame limiting
-        std::chrono::nanoseconds mTargetFrameTime;
+        void limitFrameRate();          // Call at end of frame to enforce target FPS
+        
+    private:
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = std::chrono::time_point<Clock>;
+        
+        TimePoint mLastFrameTime;
+        TimePoint mCurrentFrameTime;
+        
+        float mDeltaTime;               // Time between frames in seconds
+        float mTargetFPS;               // Desired FPS (0 = unlimited)
+        float mTargetFrameTime;         // Target frame time in seconds
+        float mCurrentFPS;              // Actual FPS
     };
+
 }

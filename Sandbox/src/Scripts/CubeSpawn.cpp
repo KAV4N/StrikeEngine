@@ -1,4 +1,5 @@
 #include "CubeSpawn.h"
+#include "DeathTimer.h"
 #include <glm/glm.hpp>
 
 void CubeSpawn::onStart() {
@@ -33,6 +34,8 @@ void CubeSpawn::spawnCube(){
 
 
     auto& physics = entity.addComponent<StrikeEngine::PhysicsComponent>();
+    auto& logic = entity.addComponent<StrikeEngine::LogicComponent>();
+    logic.addScript<DeathTimer>();
 
 
     counter++;

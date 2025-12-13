@@ -65,6 +65,13 @@ void CameraMovement::onUpdate(float deltaTime)
 
     if (glm::length(rotation) > 0.0f)
         mCameraEntity.rotateEuler(rotation);
+
+
+     std::vector<StrikeEngine::Entity> collidingEntities = mCameraEntity.getCollidingEntities();
+    
+    if (!collidingEntities.empty()) {
+        std::cout << "Camera is colliding with " << collidingEntities.size() << " entities:" << std::endl;
+    }
 }
 
 void CameraMovement::onMouseButtonPressed(StrikeEngine::MouseButtonPressedEvent& event){
