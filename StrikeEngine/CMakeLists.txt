@@ -43,6 +43,7 @@ add_subdirectory(${INCLUDE_DIR}/Glad)
 add_subdirectory(${INCLUDE_DIR}/assimp)
 add_subdirectory(${INCLUDE_DIR}/pugixml)
 add_subdirectory(${INCLUDE_DIR}/bullet3)
+add_subdirectory(${INCLUDE_DIR}/freetype)
 
 # ============================================================================
 # SHADER STRINGIFICATION
@@ -170,6 +171,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     BulletCollision 
     LinearMath
     opengl32
+    freetype
 )
 
 # Compile defs
@@ -183,5 +185,36 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Dist>:STRIKE_DIST>
 )
 
+
 # Export engine resources path for dependent projects
 set(STRIKE_ENGINE_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources CACHE PATH "StrikeEngine resources directory")
+
+# ============================================================================
+# FUNCTION TO SETUP ENGINE FONTS FOR GAME PROJECTS
+# ============================================================================
+set(STRIKE_ENGINE_FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res/fonts CACHE PATH "StrikeEngine fonts directory")
+
+function(strike_setup_fonts TARGET_NAME)
+    if(WIN32)
+        # Debug: Create junction link for fast development
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
+            COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/fonts\" \"${STRIKE_ENGINE_FONTS_DIR}\"">
+            COMMENT "Setting up engine fonts link for Debug configuration"
+        )
+    else()
+        # Debug: Create symlink 
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink ${STRIKE_ENGINE_FONTS_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
+            COMMENT "Setting up engine fonts link for Debug"
+        )
+    endif()
+
+    # Release: Copy fonts
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory ${STRIKE_ENGINE_FONTS_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
+        COMMENT "Copying engine fonts for Release/Dist configuration"
+    )
+endfunction()

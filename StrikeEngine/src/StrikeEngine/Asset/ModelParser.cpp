@@ -1,12 +1,8 @@
+#include "strikepch.h"
 #include "ModelParser.h"
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Asset/AssetManager.h"
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
-#include <cctype>
 
 namespace StrikeEngine {
 

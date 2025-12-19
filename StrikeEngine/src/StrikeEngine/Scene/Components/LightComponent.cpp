@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "LightComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include <glm/gtc/type_ptr.hpp>

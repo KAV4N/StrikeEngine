@@ -1,6 +1,7 @@
+#include "strikepch.h"
 #include "Asset.h"
 #include "StrikeEngine/Asset/AssetManager.h"
-#include <mutex>
+
 
 namespace StrikeEngine {
     Asset::Asset(const std::string& id, const std::filesystem::path& path)

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "AudioListenerComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 

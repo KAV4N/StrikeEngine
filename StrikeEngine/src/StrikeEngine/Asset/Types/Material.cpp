@@ -1,6 +1,6 @@
+#include "strikepch.h"
 #include "Material.h"
 #include "StrikeEngine/Graphics/Shader.h"
-#include <iostream>
 #include <pugixml.hpp>
 
 namespace StrikeEngine {

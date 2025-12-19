@@ -1,5 +1,6 @@
+#include "strikepch.h"
 #include "TextureLoader.h"
-#include <iostream>
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

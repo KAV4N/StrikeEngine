@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <iomanip>
-#define ENABLE_PROFILER
+
 
 
 #ifdef ENABLE_PROFILER

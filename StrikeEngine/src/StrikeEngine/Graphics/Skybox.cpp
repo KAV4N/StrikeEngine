@@ -1,6 +1,7 @@
+#include "strikepch.h"
 #include "Skybox.h"
 #include <glad/glad.h>
-#include <array>
+
 #include "StrikeEngine/Graphics/Shader.h"
 
 namespace StrikeEngine {

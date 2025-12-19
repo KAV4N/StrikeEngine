@@ -1,7 +1,7 @@
+#include "strikepch.h"
 #include "Shader.h"
 #include "GenShaders.h"
-#include <iostream>
-#include <sstream>
+
 #include <glm/gtc/type_ptr.hpp>
 
 namespace StrikeEngine {

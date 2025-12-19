@@ -1,6 +1,5 @@
 #include "strikepch.h"
 #include "FrameBuffer.h"
-#include "StrikeEngine/Core/Log.h"
 
 namespace StrikeEngine {
     FrameBuffer::FrameBuffer(uint32_t width, uint32_t height)

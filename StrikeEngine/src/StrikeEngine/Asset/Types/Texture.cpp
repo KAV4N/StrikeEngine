@@ -1,5 +1,5 @@
+#include "strikepch.h"
 #include "Texture.h"
-#include <iostream>
 
 namespace StrikeEngine {
 

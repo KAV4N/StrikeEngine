@@ -1,8 +1,8 @@
+#include "strikepch.h"
 #include "AudioLoader.h"
 #include "StrikeEngine/Asset/Types/Audio.h"
 #include "StrikeEngine/Asset/AssetManager.h"
-#include <stdexcept>
-#include <iostream>
+
 
 #include <miniaudio.h>
 

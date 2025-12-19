@@ -1,5 +1,5 @@
+#include "strikepch.h"
 #include "Model.h"
-#include <limits>
 #include "StrikeEngine/Graphics/Renderer.h"
 
 namespace StrikeEngine {

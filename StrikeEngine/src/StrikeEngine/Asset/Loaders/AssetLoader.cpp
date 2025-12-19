@@ -1,5 +1,5 @@
+#include "strikepch.h"
 #include "AssetLoader.h"
-#include <algorithm>
 #include "StrikeEngine/Asset/AssetManager.h"
 #include "StrikeEngine/Asset/Types/Model.h"
 

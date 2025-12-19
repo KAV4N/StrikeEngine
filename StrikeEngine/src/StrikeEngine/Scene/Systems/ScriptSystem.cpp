@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "ScriptSystem.h"
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Entity.h"

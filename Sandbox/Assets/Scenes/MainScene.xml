@@ -46,6 +46,12 @@
 		</entity>
 		
 
+		<entity tag="textEntity" position="300,300,0" rotation="0,0,0" scale="2,1,1">
+			<components>
+				<text text="Strike Engine Demo" color="255,255,255"/>
+			</components>
+		</entity>
+
 		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
 			<components>
 				<renderer model="gizmo" material="gizmo_DefaultMaterial" />

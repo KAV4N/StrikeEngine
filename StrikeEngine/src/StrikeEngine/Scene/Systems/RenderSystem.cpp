@@ -1,8 +1,10 @@
+#include "strikepch.h"
 #include "RenderSystem.h"
 
 #include "StrikeEngine/Scene/Components/RendererComponent.h"
 #include "StrikeEngine/Scene/Components/LightComponent.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
+#include "StrikeEngine/Scene/Components/TextComponent.h"
 
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/World.h"
@@ -12,9 +14,8 @@
 #include "StrikeEngine/Asset/Types/Material.h"
 
 #include "StrikeEngine/Graphics/Renderer.h"
+#include "StrikeEngine/Graphics/FontRenderer.h"
 #include "StrikeEngine/Core/Profiler.h"
-
-#include <algorithm>
 
 namespace StrikeEngine {
 
@@ -29,8 +30,32 @@ namespace StrikeEngine {
         // Process all cameras and render them
         processScene(scene);
         
-        // Display final framebuffer to screen with post-processing
+      
+    }
+
+    void RenderSystem::onRender() {
+        Scene* scene = World::get().getScene();
+        if (!scene) return;
+        
         Renderer::get().display();
+
+        auto view = scene->view<TextComponent>();
+        for (auto entity : view) {
+            auto& textComp = view.get<TextComponent>(entity);
+            Entity ent(entity, scene);
+            glm::vec3 position = ent.getPosition();
+            glm::vec3 scale = ent.getScale();
+            if (!textComp.isActive()) continue;
+
+            FontRenderer::get().renderText(
+                textComp.getText(),
+                position.x,
+                position.y,
+                scale.x,
+                textComp.getColor()
+            );
+        }
+
     }
 
     void RenderSystem::resize(uint32_t width, uint32_t height)
@@ -57,9 +82,6 @@ namespace StrikeEngine {
     void RenderSystem::processScene(Scene* scene)
     {
         PROFILE_SCOPE("RenderSystem::processScene");
-
-        auto& renderer = Renderer::get();
-
         // Process cameras in render order
         processCameras(scene);
     }

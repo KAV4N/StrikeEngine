@@ -1,11 +1,9 @@
+#include "strikepch.h"
 #include "MaterialLoader.h"
 
 #include "StrikeEngine/Asset/Loaders/AssetLoader.h"
 #include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Asset/AssetManager.h"
-#include <stdexcept>
-#include <iostream>
-#include <sstream>
 
 namespace StrikeEngine {
 

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Renderer.h"
 
 #include "RenderPasses/GeometryRenderPass.h"
@@ -12,6 +13,7 @@
 #include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Graphics/Shader.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
+
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -42,6 +44,7 @@ namespace StrikeEngine {
         setupScreenQuad();
         
         mScreenShader = ShaderManager::get().getShader("finalPass.glsl");
+
     }
 
     void Renderer::beginCamera(const CameraComponent& camera, const glm::vec3& position)

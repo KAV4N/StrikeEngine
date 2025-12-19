@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "LightCullingPass.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Graphics/Shader.h"

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Scene.h"
 #include "Entity.h"
 #include "World.h"
@@ -12,7 +13,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <stdexcept>
+
 
 namespace StrikeEngine {
 
@@ -41,8 +42,17 @@ namespace StrikeEngine {
         return mSkyboxCubeMap;
     }
 
-    Entity Scene::getEntity(entt::entity handle) {
+    Entity Scene::getEntityFromHandle(entt::entity handle) {
         return Entity(handle, this);
+    }
+
+    Entity Scene::getEntity(std::string tag) {
+        for (const auto& [entity, node] : mGraphNodes) {
+            if (node->getTag() == tag) {
+                return Entity(entity, this);
+            }
+        }
+        return Entity(); 
     }
 
     std::shared_ptr<GraphNode> Scene::getGraphNode(entt::entity entity) {

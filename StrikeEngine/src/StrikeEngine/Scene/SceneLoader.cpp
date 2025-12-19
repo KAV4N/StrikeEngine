@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "SceneLoader.h"
 #include "Scene.h"
 #include "Entity.h"
@@ -6,8 +7,7 @@
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
-#include <stdexcept>
-#include <sstream>
+
 
 namespace StrikeEngine {
 

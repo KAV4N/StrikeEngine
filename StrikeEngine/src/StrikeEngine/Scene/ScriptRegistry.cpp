@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "ScriptRegistry.h"
 
 namespace StrikeEngine {

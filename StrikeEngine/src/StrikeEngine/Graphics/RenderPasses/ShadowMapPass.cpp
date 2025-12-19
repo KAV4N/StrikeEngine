@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "ShadowMapPass.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"

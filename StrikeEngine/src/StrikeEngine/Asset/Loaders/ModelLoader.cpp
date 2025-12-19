@@ -1,6 +1,6 @@
+#include "strikepch.h"
+
 #include "ModelLoader.h"
-#include <sstream>
-#include <algorithm>
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 

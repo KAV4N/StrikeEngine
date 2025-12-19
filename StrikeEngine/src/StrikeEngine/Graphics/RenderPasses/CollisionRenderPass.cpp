@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "CollisionRenderPass.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/World.h"
@@ -9,7 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <vector>
+
 
 namespace StrikeEngine {
 

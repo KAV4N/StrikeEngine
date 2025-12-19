@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Sun.h"
 #include <glm/gtx/euler_angles.hpp>
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "strikepch.h"
 #include "StrikeEngine/Core/Core.h"
 #include "StrikeEngine/Events/Event.h"
 

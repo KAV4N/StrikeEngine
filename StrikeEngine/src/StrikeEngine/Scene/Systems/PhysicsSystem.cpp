@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "PhysicsSystem.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 #include "StrikeEngine/Scene/Components/RendererComponent.h"

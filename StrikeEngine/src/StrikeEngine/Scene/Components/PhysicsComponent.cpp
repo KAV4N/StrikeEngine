@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "PhysicsComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include <btBulletDynamicsCommon.h>

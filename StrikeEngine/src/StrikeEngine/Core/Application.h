@@ -1,7 +1,7 @@
 #pragma once
+
 #include "Core.h"
 #include "Window.h"
-#include "Timer.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
 #include "StrikeEngine/Events/KeyEvent.h"
@@ -12,8 +12,10 @@ namespace StrikeEngine {
     class Application {
     public:
         friend class Renderer;
+
         Application();
         virtual ~Application();
+
         void run();
         void onEvent(Event& e);
         void onUpdate(float deltaTime);
@@ -32,13 +34,9 @@ namespace StrikeEngine {
 
         std::unique_ptr<Window> mWindow;
         bool mRunning = true;
-
         int mTargetFPS = 0;
         float mCurrentFPS = 0.0f;
 
-    private:
         static Application* sInstance;
     };
-
-    Application* createApplication();
 }

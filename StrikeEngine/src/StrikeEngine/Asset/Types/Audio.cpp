@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Audio.h"
 
 #define MINIAUDIO_IMPLEMENTATION

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Script.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/KeyEvent.h"

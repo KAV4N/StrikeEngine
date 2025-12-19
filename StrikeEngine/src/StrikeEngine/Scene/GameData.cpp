@@ -1,5 +1,5 @@
+#include "strikepch.h"
 #include "GameData.h"
-#include <iostream>
 #include <fstream>
 
 namespace StrikeEngine {

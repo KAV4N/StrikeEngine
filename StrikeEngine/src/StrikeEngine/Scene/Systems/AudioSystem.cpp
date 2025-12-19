@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "AudioSystem.h"
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Scene/Scene.h"
@@ -6,7 +7,7 @@
 #include "StrikeEngine/Scene/Components/AudioListenerComponent.h"
 #include "StrikeEngine/Asset/Types/Audio.h"
 #include <glm/glm.hpp>
-#include <iostream>
+
 
 namespace StrikeEngine {
 

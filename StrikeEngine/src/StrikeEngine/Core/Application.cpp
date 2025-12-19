@@ -3,15 +3,17 @@
 #include "StrikeEngine/Core/Log.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 #include "Input.h"
+
 #include <glad/glad.h>
-#include <chrono>
-#include <thread>
 
 #include "StrikeEngine/Graphics/Renderer.h"
+#include "StrikeEngine/Graphics/FontRenderer.h"
+
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
-
 #include "Profiler.h"
+
+#include <chrono>
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -29,17 +31,18 @@ namespace StrikeEngine {
         Renderer& renderer = Renderer::get();
         renderer.init();
         renderer.resize(mWindow.get()->getWidth(), mWindow.get()->getHeight());
+
+        FontRenderer::get().init();
+
         mWindow->setVSync(false);
     }
 
     Application::~Application() {
-
     }
 
     void Application::onEvent(Event& e) {
         if (mRunning){
             EventDispatcher dispatcher(e);
-
             dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
             dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
             dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::printProfiler));
@@ -55,11 +58,10 @@ namespace StrikeEngine {
     void Application::onUpdate(float deltaTime) {
         World& world = World::get();
         world.onUpdate(deltaTime);
-        world.onRender();
-        
-        Renderer::get().display();
-        AssetManager::get().update();       
 
+        world.onRender();
+
+        AssetManager::get().update();
        
         mWindow->setWindowTitle("StrikeEngine - FPS: " + std::to_string(static_cast<int>(mCurrentFPS)));
     
@@ -68,7 +70,6 @@ namespace StrikeEngine {
 
     void Application::run() {
         PROFILE_SCOPE("AppRun");
-
         auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
         while (mRunning) {

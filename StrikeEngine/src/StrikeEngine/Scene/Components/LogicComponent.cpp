@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "LogicComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 

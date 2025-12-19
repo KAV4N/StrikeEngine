@@ -1,7 +1,8 @@
+#include "strikepch.h"
 #include "GraphNode.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <algorithm>
+
 
 namespace StrikeEngine {
 

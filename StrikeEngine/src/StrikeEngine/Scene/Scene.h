@@ -33,7 +33,8 @@ namespace StrikeEngine {
         // Entity creation and retrieval
         Entity createEntity();
         Entity createEntity(const Entity& parent);
-        Entity getEntity(entt::entity handle);
+        Entity getEntityFromHandle(entt::entity handle);
+        Entity getEntity(std::string tag);
 
         // Hierarchy operations
         void setParent(const Entity& child, const Entity& parent);

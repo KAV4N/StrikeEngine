@@ -1,10 +1,10 @@
+#include "strikepch.h"
 #include "Template.h"
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
-#include <stdexcept>
-#include <iostream>
+
 
 namespace StrikeEngine {
 

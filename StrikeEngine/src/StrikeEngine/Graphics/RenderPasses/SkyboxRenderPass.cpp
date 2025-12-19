@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "SkyboxRenderPass.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/World.h"

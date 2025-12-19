@@ -2,8 +2,6 @@
 
 #include "StrikeEngine/Core/Application.h"
 
-#include "StrikeEngine/Core/LayerStack.h"
-#include "StrikeEngine/Core/Layer.h"
 #include "StrikeEngine/Core/Log.h"
 
 #include "StrikeEngine/Core/Input.h"
@@ -27,6 +25,7 @@
 #include "StrikeEngine/Scene/Components/LogicComponent.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 #include "StrikeEngine/Scene/Components/RendererComponent.h"
+#include "StrikeEngine/Scene/Components/TextComponent.h"
 
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Scene/ScriptRegistry.h"

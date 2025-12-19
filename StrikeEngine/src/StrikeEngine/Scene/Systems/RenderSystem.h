@@ -18,6 +18,7 @@ namespace StrikeEngine {
         RenderSystem();
 
         void onUpdate(float dt) override;
+        void onRender() override;
         void resize(uint32_t width, uint32_t height);
 
         // Submission API

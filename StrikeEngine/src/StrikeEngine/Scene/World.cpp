@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "World.h"
 
 #include "Scene.h"
@@ -13,7 +14,6 @@
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 
-#include <iostream>
 #include <chrono>
 #include <thread>
 
@@ -119,7 +119,7 @@ namespace StrikeEngine {
 
     void World::onRender()
     {
-        
+        mRenderSystem->onRender();
     }
 
     void World::onEvent(Event& e)

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "Entity.h"
 #include "GraphNode.h"
 #include "Scene.h"
@@ -6,7 +7,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <stdexcept>
+
 
 namespace StrikeEngine {
 

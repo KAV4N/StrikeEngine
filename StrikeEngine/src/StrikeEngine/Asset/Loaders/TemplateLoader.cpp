@@ -1,9 +1,10 @@
+#include "strikepch.h"
+
 #include "TemplateLoader.h"
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 #include "StrikeEngine/Asset/ModelParser.h"
-#include <stdexcept>
-#include <iostream>
+
 
 namespace StrikeEngine {
 

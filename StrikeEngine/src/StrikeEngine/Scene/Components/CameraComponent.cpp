@@ -1,11 +1,11 @@
+#include "strikepch.h"
 #include "CameraComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include <algorithm>
-#include <sstream>
+
 
 
 namespace StrikeEngine {

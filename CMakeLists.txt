@@ -16,8 +16,6 @@ else()
 )
 endif()
 
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Dist" CACHE STRING "" FORCE)
-
 add_subdirectory(StrikeEngine)
 add_subdirectory(Sandbox)  
 

@@ -1,3 +1,4 @@
+#include "strikepch.h"
 #include "RendererComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Asset/Types/Model.h"
