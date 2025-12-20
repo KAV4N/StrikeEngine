@@ -26,7 +26,6 @@ namespace StrikeEngine {
             return;
         }
 
-
         loadFont("fonts/ARIAL.ttf", 48);
 
         // Get shader
@@ -93,13 +92,36 @@ namespace StrikeEngine {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void FontRenderer::renderText(const std::string& text, float x, float y, float fontScale, const glm::vec3& color) {
+    glm::vec2 FontRenderer::calculateTextSize(const std::string& text, float fontScale) {
+        float width = 0.0f;
+        float maxHeight = 0.0f;
+
+        for (char c : text) {
+            Character ch = mCharacters[c];
+            width += (ch.advance >> 6) * fontScale;
+            float height = ch.size.y * fontScale;
+            if (height > maxHeight) {
+                maxHeight = height;
+            }
+        }
+
+        return glm::vec2(width, maxHeight);
+    }
+
+    void FontRenderer::renderText(const std::string& text, float x, float y, float fontScale, const glm::vec3& color, const glm::vec2& pivot) {
         if (!mInitialized) return;
 
         auto& window = Application::get().getWindow();
-        float screenX = x;
-        float screenY = y;
-        float scale = fontScale; 
+
+        // Calculate text size
+        glm::vec2 textSize = calculateTextSize(text, fontScale);
+
+        // Apply pivot offset
+        float offsetX = textSize.x * pivot.x;
+        float offsetY = textSize.y * pivot.y;
+
+        float screenX = x - offsetX;
+        float screenY = y - offsetY;
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -109,7 +131,7 @@ namespace StrikeEngine {
         // Orthographic projection
         glm::mat4 projection = glm::ortho(0.0f, (float)window.getWidth(), 0.0f, (float)window.getHeight());
         mShader->setMat4("projection", projection);
-        mShader->setVec3("textColor", color / 255.0f); // Convert from 0-255 to 0-1
+        mShader->setVec3("textColor", color / 255.0f);
 
         glActiveTexture(GL_TEXTURE0);
         glBindVertexArray(mVAO);
@@ -117,11 +139,11 @@ namespace StrikeEngine {
         for (char c : text) {
             Character ch = mCharacters[c];
 
-            float xpos = screenX + ch.bearing.x * scale;
-            float ypos = screenY - (ch.size.y - ch.bearing.y) * scale;
+            float xpos = screenX + ch.bearing.x * fontScale;
+            float ypos = screenY - (ch.size.y - ch.bearing.y) * fontScale;
 
-            float w = ch.size.x * scale;
-            float h = ch.size.y * scale;
+            float w = ch.size.x * fontScale;
+            float h = ch.size.y * fontScale;
 
             float vertices[6][4] = {
                 { xpos,     ypos + h,   0.0f, 0.0f },
@@ -140,7 +162,7 @@ namespace StrikeEngine {
 
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            screenX += (ch.advance >> 6) * scale;
+            screenX += (ch.advance >> 6) * fontScale;
         }
 
         glBindVertexArray(0);

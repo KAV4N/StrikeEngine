@@ -27,7 +27,7 @@ namespace StrikeEngine {
         void init();
         void cleanup();
 
-        void renderText(const std::string& text, float x, float y, float fontScale, const glm::vec3& color);
+        void renderText(const std::string& text, float x, float y, float fontScale, const glm::vec3& color, const glm::vec2& pivot = glm::vec2(0.0f));
 
     private:
         FontRenderer() = default;
@@ -38,6 +38,7 @@ namespace StrikeEngine {
         FontRenderer& operator=(FontRenderer&&) = delete;
 
         void loadFont(const std::string& fontPath, unsigned int fontSize);
+        glm::vec2 calculateTextSize(const std::string& text, float fontScale);
 
         std::unordered_map<char, Character> mCharacters;
         std::shared_ptr<Shader> mShader;

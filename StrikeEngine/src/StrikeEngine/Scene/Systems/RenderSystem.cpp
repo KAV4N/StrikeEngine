@@ -29,8 +29,6 @@ namespace StrikeEngine {
 
         // Process all cameras and render them
         processScene(scene);
-        
-      
     }
 
     void RenderSystem::onRender() {
@@ -42,20 +40,21 @@ namespace StrikeEngine {
         auto view = scene->view<TextComponent>();
         for (auto entity : view) {
             auto& textComp = view.get<TextComponent>(entity);
+            if (!textComp.isActive()) continue;
+
             Entity ent(entity, scene);
             glm::vec3 position = ent.getPosition();
             glm::vec3 scale = ent.getScale();
-            if (!textComp.isActive()) continue;
 
             FontRenderer::get().renderText(
                 textComp.getText(),
                 position.x,
                 position.y,
                 scale.x,
-                textComp.getColor()
+                textComp.getColor(),
+                textComp.getPivot()
             );
         }
-
     }
 
     void RenderSystem::resize(uint32_t width, uint32_t height)

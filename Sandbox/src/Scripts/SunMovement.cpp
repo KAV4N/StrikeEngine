@@ -16,11 +16,13 @@ void SunMovement::onUpdate(float deltaTime) {
 
     int width = StrikeEngine::Application::get().getWindow().getWidth();
     int height = StrikeEngine::Application::get().getWindow().getHeight();
-
-    entity.setPosition(glm::vec3(width/2, height/2, 0.0f)); 
-    entity.getComponent<StrikeEngine::TextComponent>().setText( 
-        "Time of Day: " + std::to_string(static_cast<int>(mTimeOfDay)) + ":00"
-    );
+    
+    if (entity.isValid()){
+        entity.setPosition(glm::vec3(width/2, height/2, 0.0f)); 
+        entity.getComponent<StrikeEngine::TextComponent>().setText( 
+            "Time of Day: " + std::to_string(static_cast<int>(mTimeOfDay)) + ":00"
+        );
+    }
 
     // Rotate the sun
     float rotationSpeed = 10.0f;
