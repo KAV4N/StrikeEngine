@@ -60,8 +60,6 @@ void LightCullingPass::initClusterBuffers()
 void LightCullingPass::execute(const CameraRenderData& cameraData)
 {
     const auto& camera = cameraData.camera;
-    const uint32_t width  = mRenderer.getWidth();
-    const uint32_t height = mRenderer.getHeight();
 
     // Update light SSBO
     if (!cameraData.pointLights.empty())
@@ -87,22 +85,30 @@ void LightCullingPass::execute(const CameraRenderData& cameraData)
 void LightCullingPass::buildClusters(const CameraRenderData& cameraData)
 {
     const auto& cam = cameraData.camera;
+    const auto& viewport = cam.getViewportRect();
+    
+
+    float viewportWidth = viewport.width * mRenderer.getWidth();
+    float viewportHeight = viewport.height * mRenderer.getHeight();
+    
     const glm::mat4 invProj = glm::inverse(cam.getProjectionMatrix());
     const float zNear = cam.getNearPlane();
-    const float zFar  = cam.getFarPlane();
-
+    const float zFar = cam.getFarPlane();
+    
     mClusterBuildShader->bind();
-
     mClusterBuildShader->setFloat("zNear", zNear);
-    mClusterBuildShader->setFloat("zFar",  zFar);
+    mClusterBuildShader->setFloat("zFar", zFar);
     mClusterBuildShader->setMat4("inverseProjection", invProj);
-    mClusterBuildShader->setVec2("screenDimensions", glm::vec2(mRenderer.getWidth(), mRenderer.getHeight()));
+    
+    mClusterBuildShader->setVec2("screenDimensions", 
+                                  glm::vec2(viewportWidth, viewportHeight));
+    
     mClusterBuildShader->setInt("gridSize.x", CLUSTER_X);
     mClusterBuildShader->setInt("gridSize.y", CLUSTER_Y);
     mClusterBuildShader->setInt("gridSize.z", CLUSTER_Z);
-
+    
     mClusterBuildShader->dispatch(CLUSTER_X, CLUSTER_Y, CLUSTER_Z);
-    mClusterBuildShader->waitFinish(); // memory barrier inside
+    mClusterBuildShader->waitFinish();
 }
 
 void LightCullingPass::cullLights(const CameraRenderData& cameraData)

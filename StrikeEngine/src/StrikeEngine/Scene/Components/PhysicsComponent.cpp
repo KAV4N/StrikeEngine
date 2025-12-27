@@ -6,8 +6,6 @@
 namespace StrikeEngine {
     REGISTER_COMPONENT(PhysicsComponent)
 
-    PhysicsComponent::~PhysicsComponent() = default;
-
     void PhysicsComponent::deserialize(const pugi::xml_node& node) {
         mAnchored = node.attribute("anchored").as_bool(false);
         mCanCollide = node.attribute("canCollide").as_bool(true);
@@ -44,7 +42,6 @@ namespace StrikeEngine {
     void PhysicsComponent::setAnchored(bool anchored) {
         if (mAnchored != anchored) {
             mAnchored = anchored;
-            // Changing anchored state requires recreating the body and clearing forces
             mNeedsRecreate = true;
         }
     }
@@ -63,11 +60,11 @@ namespace StrikeEngine {
     void PhysicsComponent::setMass(float mass) {
         mMass = mass;
         if (mRigidBody && !mAnchored) {
-            btVector3 localInertia(0, 0, 0);
+            btVector3 inertia(0,0,0);
             if (mass > 0.0f && mCollisionShape) {
-                mCollisionShape->calculateLocalInertia(mass, localInertia);
+                mCollisionShape->calculateLocalInertia(mass, inertia);
             }
-            mRigidBody->setMassProps(mass, localInertia);
+            mRigidBody->setMassProps(mass, inertia);
             mRigidBody->updateInertiaTensor();
         }
     }
@@ -75,7 +72,6 @@ namespace StrikeEngine {
     void PhysicsComponent::setSize(const glm::vec3& size) {
         if (mSize != size) {
             mSize = size;
-            // Size change requires recreating the collision shape
             mNeedsRecreate = true;
         }
     }
@@ -83,12 +79,10 @@ namespace StrikeEngine {
     void PhysicsComponent::setCenter(const glm::vec3& center) {
         if (mCenter != center) {
             mCenter = center;
-            // Center change requires recreating the body
             mNeedsRecreate = true;
         }
     }
 
-    // Linear velocity
     void PhysicsComponent::setVelocity(const glm::vec3& velocity) {
         mPendingVelocity = velocity;
         if (mRigidBody && !mAnchored) {
@@ -105,7 +99,6 @@ namespace StrikeEngine {
         return mPendingVelocity;
     }
 
-    // Angular velocity
     void PhysicsComponent::setAngularVelocity(const glm::vec3& angularVel) {
         mPendingAngularVelocity = angularVel;
         if (mRigidBody && !mAnchored) {
@@ -132,29 +125,21 @@ namespace StrikeEngine {
 
     void PhysicsComponent::setFriction(float friction) {
         mFriction = friction;
-        if (mRigidBody) {
-            mRigidBody->setFriction(friction);
-        }
+        if (mRigidBody) mRigidBody->setFriction(friction);
     }
 
     void PhysicsComponent::setBounciness(float restitution) {
         mRestitution = restitution;
-        if (mRigidBody) {
-            mRigidBody->setRestitution(restitution);
-        }
+        if (mRigidBody) mRigidBody->setRestitution(restitution);
     }
 
     void PhysicsComponent::setLinearDamping(float damping) {
         mLinearDamping = damping;
-        if (mRigidBody) {
-            mRigidBody->setDamping(mLinearDamping, mAngularDamping);
-        }
+        if (mRigidBody) mRigidBody->setDamping(mLinearDamping, mAngularDamping);
     }
 
     void PhysicsComponent::setAngularDamping(float damping) {
         mAngularDamping = damping;
-        if (mRigidBody) {
-            mRigidBody->setDamping(mLinearDamping, mAngularDamping);
-        }
+        if (mRigidBody) mRigidBody->setDamping(mLinearDamping, mAngularDamping);
     }
 }

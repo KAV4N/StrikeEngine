@@ -58,7 +58,7 @@ namespace StrikeEngine {
             
             // Get the collider's local size and center
             glm::vec3 size = physics.getSize();
-            glm::vec3 center = physics.getBulletCenterOffset();
+            glm::vec3 center = physics.getCenter();
 
             // Create model matrix incorporating the entity's world transform and collider offset
             glm::mat4 model = entWorldMatrix;

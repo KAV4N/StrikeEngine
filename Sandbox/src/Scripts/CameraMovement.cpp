@@ -2,8 +2,6 @@
 
 void CameraMovement::onStart() {
     mCameraEntity = getEntity();
-    
-
 }
 
 void CameraMovement::printStats(const std::string& state) {
@@ -26,7 +24,7 @@ void CameraMovement::onUpdate(float deltaTime)
     // --------------------------------------------------------------------
     // 1. Gather input → speed per axis (local space)
     // --------------------------------------------------------------------
-    glm::vec3 move(0.0f);               // local‑space movement (right, up, forward)
+    glm::vec3 move(0.0f);               // local-space movement (right, up, forward)
     const float speed = 20.0f * deltaTime;
 
     if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D))      move.x += speed;   // right
@@ -46,14 +44,14 @@ void CameraMovement::onUpdate(float deltaTime)
         // local axes in world space
         const glm::vec3 right   = rot * glm::vec3(1,0,0);
         const glm::vec3 up      = rot * glm::vec3(0,1,0);
-        const glm::vec3 forward = rot * glm::vec3(0,0,1);
+        const glm::vec3 forward = rot * glm::vec3(0,0,1);   
 
         const glm::vec3 worldMove = right * move.x + up * move.y + forward * move.z;
         mCameraEntity.move(worldMove);
     }
 
     // --------------------------------------------------------------------
-    // 3. Rotation (unchanged, only a little cleanup)
+    // 3. Rotation
     // --------------------------------------------------------------------
     glm::vec3 rotation(0.0f);
     const float rotSpeed = 90.0f * deltaTime;   // degrees per second
@@ -66,11 +64,46 @@ void CameraMovement::onUpdate(float deltaTime)
     if (glm::length(rotation) > 0.0f)
         mCameraEntity.rotateEuler(rotation);
 
+    // --------------------------------------------------------------------
+    // 4. Raycast test – print hit entity tag
+    // --------------------------------------------------------------------
+    {
+        glm::vec3 camPos = mCameraEntity.getPosition();
+        glm::quat camRot = mCameraEntity.getRotation();
 
-     std::vector<StrikeEngine::Entity> collidingEntities = mCameraEntity.getCollidingEntities();
-    
+        // Forward direction in world space (-Z local)
+        glm::vec3 forwardDir = camRot * glm::vec3(0.0f, 0.0f, -1.0f);
+
+        // Raycast far enough to be useful for testing
+        const float maxDist = 500.0f;
+
+        StrikeEngine::RayHit hit = StrikeEngine::World::get().rayCast(camPos, forwardDir, maxDist);
+
+        std::cout << "Raycast: ";
+        if (hit.hasHit()) {
+            std::string tag = hit.entity.getTag();
+            if (tag.empty()) tag = "<no tag>";
+
+            std::cout << "HIT -> Tag: \"" << tag
+                      << "\" | Distance: " << hit.distance
+                      << " | Normal: (" << hit.normal.x << ", " << hit.normal.y << ", " << hit.normal.z << ")"
+                      << std::endl;
+        } else {
+            std::cout << "no hit" << std::endl;
+        }
+    }
+
+    // --------------------------------------------------------------------
+    // 5. Existing collision debug (kept for reference)
+    // --------------------------------------------------------------------
+    std::vector<StrikeEngine::Entity> collidingEntities = mCameraEntity.getCollidingEntities();
     if (!collidingEntities.empty()) {
         std::cout << "Camera is colliding with " << collidingEntities.size() << " entities:" << std::endl;
+        for (const auto& ent : collidingEntities) {
+            std::string tag = ent.getTag();
+            if (tag.empty()) tag = "<no tag>";
+            std::cout << "  - Tag: \"" << tag << "\"" << std::endl;
+        }
     }
 }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <future>
+#include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 
 #include <glm/glm.hpp>
 
@@ -35,6 +36,13 @@ namespace StrikeEngine {
         void onEvent(Event& e);
         void resize(uint32_t width, uint32_t height);
 
+        // Raycast functionality - user-facing API
+        RayHit rayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance = 1000.0f) const;
+        std::vector<RayHit> rayCastAll(const glm::vec3& origin, const glm::vec3& direction, float maxDistance = 1000.0f) const;
+
+        void setGravity(const glm::vec3& gravity);
+        glm::vec3 getGravity() const;
+
     private:
         friend class Entity;
         friend class Scene;
@@ -47,7 +55,7 @@ namespace StrikeEngine {
         World& operator=(World&&) = delete;
 
         void checkAndSwitchScene();
-        void clearPhysicsWorld();  
+        void clearPhysicsWorld();
 
     private:
         std::unique_ptr<Scene> mCurrentScene;

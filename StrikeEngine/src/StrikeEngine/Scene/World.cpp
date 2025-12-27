@@ -117,6 +117,26 @@ namespace StrikeEngine {
 
     }
 
+    RayHit World::rayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const
+    {       
+        return mPhysicsSystem->rayCast(origin, direction, maxDistance);
+    }
+
+    std::vector<RayHit> World::rayCastAll(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const
+    {
+        return mPhysicsSystem->rayCastAll(origin, direction, maxDistance);
+    }
+    
+    void World::setGravity(const glm::vec3& gravity)
+    {
+        mPhysicsSystem->setGravity(gravity);
+    }
+
+    glm::vec3 World::getGravity() const
+    {
+        return mPhysicsSystem->getGravity();
+    }
+
     void World::onRender()
     {
         mRenderSystem->onRender();
