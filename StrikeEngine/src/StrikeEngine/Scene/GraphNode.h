@@ -67,13 +67,16 @@ namespace StrikeEngine {
         const std::string& getTag() const { return mTag; }
         void setTag(const std::string& tag) { mTag = tag; }
 
+        bool isActive() const { return mIsActive; }
+        void setActive(bool active) { mIsActive = active; }
+
     private:
         friend class Scene;
         void updateLocalMatrix() const;
 
     private:
         entt::entity mEntityId;
-
+        bool mIsActive = true;
         std::string mTag;  // Tag is now part of the graph node itself
 
         // Transform data

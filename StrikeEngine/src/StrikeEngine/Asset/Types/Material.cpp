@@ -1,6 +1,7 @@
 #include "strikepch.h"
 #include "Material.h"
 #include "StrikeEngine/Graphics/Shader.h"
+#include "StrikeEngine/Asset/AssetManager.h"
 #include <pugixml.hpp>
 
 namespace StrikeEngine {
@@ -8,9 +9,9 @@ namespace StrikeEngine {
     Material::Material(const std::string& id, const std::filesystem::path& path)
         : Asset(id, path),
         mShader(nullptr),
-        mBaseColor(255, 255, 255),  // White
-        mMetallic(0.0f),             // Non-metallic
-        mRoughness(0.5f)             // Medium roughness
+        mBaseColor(255, 255, 255),
+        mMetallic(0.0f),
+        mRoughness(0.5f)
     {
         mShader = ShaderManager::get().getShader("defaultPBR.glsl");
     }
@@ -50,47 +51,35 @@ namespace StrikeEngine {
         return mRoughness;
     }
 
-    // Texture setters
-    void Material::setBaseColorTexture(std::shared_ptr<Texture> texture) {
-        setTexture(TextureSlot::BaseColor, texture);
+    // Texture ID setters
+    bool Material::setBaseColorTextureById(const std::string& textureId) {
+        return setTextureById(TextureSlot::BaseColor, textureId);
     }
 
-    void Material::setNormalTexture(std::shared_ptr<Texture> texture) {
-        setTexture(TextureSlot::Normal, texture);
+    bool Material::setMetallicTextureById(const std::string& textureId) {
+        return setTextureById(TextureSlot::Metallic, textureId);
     }
 
-    void Material::setMetallicTexture(std::shared_ptr<Texture> texture) {
-        setTexture(TextureSlot::Metallic, texture);
-    }
-
-    void Material::setRoughnessTexture(std::shared_ptr<Texture> texture) {
-        setTexture(TextureSlot::Roughness, texture);
+    bool Material::setRoughnessTextureById(const std::string& textureId) {
+        return setTextureById(TextureSlot::Roughness, textureId);
     }
 
     // Texture getters
-    std::shared_ptr<Texture> Material::getBaseColorTexture() const {
+    const std::shared_ptr<Texture> Material::getBaseColorTexture() const {
         return getTexture(TextureSlot::BaseColor);
     }
 
-    std::shared_ptr<Texture> Material::getNormalTexture() const {
-        return getTexture(TextureSlot::Normal);
-    }
-
-    std::shared_ptr<Texture> Material::getMetallicTexture() const {
+    const std::shared_ptr<Texture> Material::getMetallicTexture() const {
         return getTexture(TextureSlot::Metallic);
     }
 
-    std::shared_ptr<Texture> Material::getRoughnessTexture() const {
+    const std::shared_ptr<Texture> Material::getRoughnessTexture() const {
         return getTexture(TextureSlot::Roughness);
     }
 
     // Texture existence checks
     bool Material::hasBaseColorTexture() const {
         return hasTexture(TextureSlot::BaseColor);
-    }
-
-    bool Material::hasNormalTexture() const {
-        return hasTexture(TextureSlot::Normal);
     }
 
     bool Material::hasMetallicTexture() const {
@@ -107,6 +96,22 @@ namespace StrikeEngine {
     }
 
     // Private texture management
+    bool Material::setTextureById(TextureSlot slot, const std::string& textureId) {
+        if (textureId.empty()) {
+            uint32_t slotIndex = static_cast<uint32_t>(slot);
+            mTextures.erase(slotIndex);
+            return true;
+        }
+
+        auto texture = AssetManager::get().getTexture(textureId);
+        if (!texture) {
+            return false;
+        }
+
+        setTexture(slot, texture);
+        return true;
+    }
+
     void Material::setTexture(TextureSlot slot, std::shared_ptr<Texture> texture) {
         uint32_t slotIndex = static_cast<uint32_t>(slot);
         if (texture) {
@@ -141,37 +146,26 @@ namespace StrikeEngine {
             }
         }
 
-        // Set PBR material properties (convert baseColor to 0-1 range for shader)
+        // Set PBR material properties
         mShader->setVec3("uMaterial.baseColor", glm::vec3(mBaseColor) / 255.0f);
         mShader->setFloat("uMaterial.metallic", mMetallic);
         mShader->setFloat("uMaterial.roughness", mRoughness);
 
         // Set texture presence flags
         mShader->setInt("uMaterial.hasBaseColorMap", hasBaseColorTexture() ? 1 : 0);
-        mShader->setInt("uMaterial.hasNormalMap", hasNormalTexture() ? 1 : 0);
         mShader->setInt("uMaterial.hasMetallicMap", hasMetallicTexture() ? 1 : 0);
         mShader->setInt("uMaterial.hasRoughnessMap", hasRoughnessTexture() ? 1 : 0);
 
         // Set texture samplers
         mShader->setInt("uMaterial.baseColorMap", static_cast<int>(TextureSlot::BaseColor));
-        mShader->setInt("uMaterial.normalMap", static_cast<int>(TextureSlot::Normal));
         mShader->setInt("uMaterial.metallicMap", static_cast<int>(TextureSlot::Metallic));
         mShader->setInt("uMaterial.roughnessMap", static_cast<int>(TextureSlot::Roughness));
-        
     }
 
     void Material::unbind() const {
-        /*
-        for (const auto& [slot, texture] : mTextures) {
-            if (texture) {
-                texture->unbind();
-            }
-        }
-        */
         if (mShader) {
             mShader->unbind();
         }
-        
     }
 
     void Material::serialize(const std::filesystem::path& path) const {
@@ -188,30 +182,31 @@ namespace StrikeEngine {
         baseColorNode.append_attribute("b") = mBaseColor.b;
         
         if (hasBaseColorTexture()) {
-            pugi::xml_node textureData = getBaseColorTexture()->toNode();
-            baseColorNode.append_copy(textureData);
-        }
-
-        pugi::xml_node normalNode = materialNode.append_child("normal");
-        if (hasNormalTexture()) {
-            pugi::xml_node textureData = getNormalTexture()->toNode();
-            normalNode.append_copy(textureData);
+            auto texture = getBaseColorTexture();
+            if (texture) {
+                texture->toNode(baseColorNode);
+            }
         }
 
         pugi::xml_node metallicNode = materialNode.append_child("metallic");
         metallicNode.append_attribute("value") = mMetallic;
         if (hasMetallicTexture()) {
-            pugi::xml_node textureData = getMetallicTexture()->toNode();
-            metallicNode.append_copy(textureData);
+            auto texture = getMetallicTexture();
+            if (texture) {
+                texture->toNode(metallicNode);
+            }
         }
 
         pugi::xml_node roughnessNode = materialNode.append_child("roughness");
         roughnessNode.append_attribute("value") = mRoughness;
         if (hasRoughnessTexture()) {
-            pugi::xml_node textureData = getRoughnessTexture()->toNode();
-            roughnessNode.append_copy(textureData);
+            auto texture = getRoughnessTexture();
+            if (texture) {
+                texture->toNode(roughnessNode);
+            }
         }
 
         doc.save_file(path.c_str());
     }
+
 }

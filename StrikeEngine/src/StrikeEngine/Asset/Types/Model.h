@@ -65,18 +65,19 @@ namespace StrikeEngine {
         GLuint getVAO() const;
         GLuint getInstanceVBO() const;
 
-        void setVertices(const std::vector<Vertex>& vertices);
-        void setIndices(const std::vector<uint32_t>& indices);
-        void setBounds(const Bounds& bounds);
-        
         void updateInstanceBuffer(const glm::mat4* matrices, size_t count);
 
         void setupGPUResources();
     private:
+        friend class ModelLoader;
+
+        friend class GeometryRenderPass;
+
+        void setVertices(const std::vector<Vertex>& vertices);
+        void setIndices(const std::vector<uint32_t>& indices);
+        void setBounds(const Bounds& bounds);
         void setupInstanceBuffer();
     private:
-        friend class GeometryRenderPass;
-        
         // CPU data
         std::vector<Vertex> mVertices;
         std::vector<uint32_t> mIndices;
@@ -109,9 +110,12 @@ namespace StrikeEngine {
         const Bounds& getBounds() const;
         
         // Mesh access methods
-        std::shared_ptr<Mesh> getMesh(uint32_t index) const;
+        const std::shared_ptr<Mesh> getMesh(uint32_t index) const;
         uint32_t getMeshCount() const;
         
+    private:
+        friend class ModelParser;
+        friend class ModelLoader;
         void addMesh(const std::shared_ptr<Mesh>& mesh);
         void clearMeshes();
         

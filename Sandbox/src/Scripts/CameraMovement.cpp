@@ -79,7 +79,6 @@ void CameraMovement::onUpdate(float deltaTime)
 
         StrikeEngine::RayHit hit = StrikeEngine::World::get().rayCast(camPos, forwardDir, maxDist);
 
-        std::cout << "Raycast: ";
         if (hit.hasHit()) {
             std::string tag = hit.entity.getTag();
             if (tag.empty()) tag = "<no tag>";
@@ -88,9 +87,7 @@ void CameraMovement::onUpdate(float deltaTime)
                       << "\" | Distance: " << hit.distance
                       << " | Normal: (" << hit.normal.x << ", " << hit.normal.y << ", " << hit.normal.z << ")"
                       << std::endl;
-        } else {
-            std::cout << "no hit" << std::endl;
-        }
+        } 
     }
 
     // --------------------------------------------------------------------
@@ -123,9 +120,16 @@ void CameraMovement::spawnLight(){
     newEnt.setPosition(mCameraEntity.getPosition());
     auto& pointLight = newEnt.addComponent<StrikeEngine::LightComponent>();
     pointLight.setFallOff(25);
-    pointLight.setColor(glm::vec3(255, 245, 200));
+
+    // Random color (0-255 for each channel)
+    float r = static_cast<float>(rand() % 256);
+    float g = static_cast<float>(rand() % 256);
+    float b = static_cast<float>(rand() % 256);
+
+    pointLight.setColor(glm::vec3(r, g, b));
+
     pointLight.setRadius(100);
-    pointLight.setIntensity(8);
+    pointLight.setIntensity(20);
 }
 
 void CameraMovement::swapScene() {

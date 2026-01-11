@@ -38,7 +38,6 @@ namespace StrikeEngine {
 
     private:
         void processScene(Scene* scene);
-        void processCameras(Scene* scene);
         void processRenderables(Scene* scene);
         void processLights(Scene* scene);
     };

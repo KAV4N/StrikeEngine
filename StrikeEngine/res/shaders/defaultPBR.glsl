@@ -4,43 +4,28 @@
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in vec3 aTangent;
 
-// 4,5,6
 layout (location = 4) in mat4 aInstanceModel;
-
 
 uniform mat4 uViewProjection;
 uniform mat4 uLightSpaceMatrix;
-
 
 out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
-    mat3 TBN;
 } vs_out;
 
 void main() {
-    // Transform position to world space
     vec4 worldPos = aInstanceModel * vec4(aPosition, 1.0);
     
-    // Calculate normal matrix (for non-uniform scaling)
     mat3 normalMatrix = transpose(inverse(mat3(aInstanceModel)));
     
     vs_out.FragPos = worldPos.xyz;
     vs_out.Normal = normalize(normalMatrix * aNormal);
     vs_out.TexCoords = aTexCoord;
     vs_out.FragPosLightSpace = uLightSpaceMatrix * worldPos;
-    
-    // Calculate TBN matrix for normal mapping
-    vec3 T = normalize(normalMatrix * aTangent);
-    vec3 N = normalize(normalMatrix * aNormal);
-    // Re-orthogonalize T with respect to N (Gram-Schmidt process)
-    T = normalize(T - dot(T, N) * N);
-    vec3 B = cross(N, T);
-    vs_out.TBN = mat3(T, B, N);
     
     gl_Position = uViewProjection * worldPos;
 }
@@ -55,7 +40,6 @@ in VS_OUT {
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
-    mat3 TBN;
 } fs_in;
 
 struct Material {
@@ -63,11 +47,9 @@ struct Material {
     float metallic;
     float roughness;
     int hasBaseColorMap;
-    int hasNormalMap;
     int hasMetallicMap;
     int hasRoughnessMap;
     sampler2D baseColorMap;
-    sampler2D normalMap;
     sampler2D metallicMap;
     sampler2D roughnessMap;
 };
@@ -101,7 +83,6 @@ layout(std430, binding = 2) readonly buffer lightSSBO {
     PointLight pointLight[];
 };
 
-
 uniform Material uMaterial;
 uniform Sun uSun;
 
@@ -109,7 +90,6 @@ uniform int uCastShadows;
 uniform sampler2D uShadowMap;
 uniform vec3 uViewPos;
 
-// light uniforms for clustered forward rendeirng
 uniform float uNear;
 uniform float uFar;
 uniform uvec3 uGridSize;
@@ -122,15 +102,6 @@ vec3 getBaseColor() {
         return texture(uMaterial.baseColorMap, fs_in.TexCoords).rgb;
     }
     return uMaterial.baseColor;
-}
-
-vec3 getNormal() {
-    if (uMaterial.hasNormalMap == 1) {
-        vec3 normal = texture(uMaterial.normalMap, fs_in.TexCoords).rgb;
-        normal = normal * 2.0 - 1.0;
-        return normalize(fs_in.TBN * normal);
-    }
-    return normalize(fs_in.Normal);
 }
 
 float getMetallic() {
@@ -174,38 +145,35 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
     return shadow;
 }
 
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a      = roughness*roughness;
-    float a2     = a*a;
-    float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-	
-    float num   = a2;
+float DistributionGGX(vec3 N, vec3 H, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+    
+    float num = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
-	
+    
     return num / denom;
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
+float GeometrySchlickGGX(float NdotV, float roughness) {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
-    float num   = NdotV;
+    float num = NdotV;
     float denom = NdotV * (1.0 - k) + k;
-	
+    
     return num / denom;
 }
 
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
-    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-	
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+    
     return ggx1 * ggx2;
 }
 
@@ -259,7 +227,7 @@ vec3 calculateSunLight(Sun sun, vec3 normal, vec3 viewDir, vec3 albedo, float me
 }
 
 void main() {
-    vec3 N = getNormal();
+    vec3 N = normalize(fs_in.Normal);
     vec3 V = normalize(uViewPos - fs_in.FragPos);
     vec3 albedo = getBaseColor();
     float metallic = getMetallic();
@@ -273,16 +241,12 @@ void main() {
     }
     Lo += calculateSunLight(uSun, N, V, albedo, metallic, roughness, shadow);
     
-
-    //tile calculation clustered forward rendering
     uint zTile = uint((log(abs(fs_in.FragPos.z) / uNear) * uGridSize.z) / log(uFar / uNear));
     vec2 tileSize = uScreenDimensions / uGridSize.xy;
     uvec3 tile = uvec3(gl_FragCoord.xy / tileSize, zTile);
-    uint tileIndex =
-        tile.x + (tile.y * uGridSize.x) + (tile.z * uGridSize.x * uGridSize.y);
+    uint tileIndex = tile.x + (tile.y * uGridSize.x) + (tile.z * uGridSize.x * uGridSize.y);
 
     uint lightCount = clusters[tileIndex].count;
-
 
     for (int i = 0; i < lightCount; ++i) {
         uint lightIndex = clusters[tileIndex].lightIndices[i];
@@ -292,9 +256,9 @@ void main() {
 
     vec3 ambient = vec3(0.03) * albedo;
     vec3 color = ambient + Lo;
-	
+    
     color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0/2.2));  
+    color = pow(color, vec3(1.0/2.2));
     
     FragColor = vec4(Lo, 1.0);
 }

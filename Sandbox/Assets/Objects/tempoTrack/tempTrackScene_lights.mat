@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<material>
+	<baseColor r="0" g="0" b="0" />
+	<metallic value="1" />
+	<roughness value="1" />
+</material>

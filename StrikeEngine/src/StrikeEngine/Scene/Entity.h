@@ -25,6 +25,9 @@ namespace StrikeEngine {
 
         // Validity
         bool isValid() const;
+        bool isActive() const;
+
+        void setActive(bool active);
 
         // Core component operations
         template<typename T, typename... Args>

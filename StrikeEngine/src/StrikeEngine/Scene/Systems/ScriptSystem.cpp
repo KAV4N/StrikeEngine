@@ -15,12 +15,11 @@ namespace StrikeEngine {
         
         for (auto entity : view) {
             auto& logic = view.get<LogicComponent>(entity);
-            
-            if (!logic.isActive()) {
+            Entity entityWrapper(entity, scene);
+
+            if (!logic.isActive() || !entityWrapper.isActive()) {
                 continue;
             }
-
-            Entity entityWrapper(entity, scene);
 
             for (auto& script : logic.getScripts()) {
                 if (!script || !script->isActive()) {

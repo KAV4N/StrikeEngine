@@ -14,7 +14,6 @@
 #include "StrikeEngine/Graphics/Shader.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 
-
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -39,7 +38,7 @@ namespace StrikeEngine {
         addPass<LightCullingPass>(PassStage::PreRender, *this);
         addPass<SkyboxRenderPass>(PassStage::MainRender, *this);
         addPass<GeometryRenderPass>(PassStage::MainRender, *this);
-        addPass<CollisionRenderPass>(PassStage::MainRender, *this);
+        //addPass<CollisionRenderPass>(PassStage::MainRender, *this);
         
         setupScreenQuad();
         
@@ -57,7 +56,6 @@ namespace StrikeEngine {
         // Initialize camera data
         mCurrentCameraData.camera = camera;
         mCurrentCameraData.cameraPosition = position;
-        mCurrentCameraData.sunData.castShadows = false;
         
         mCameraActive = true;
     }
@@ -102,7 +100,7 @@ namespace StrikeEngine {
         batch.worldMatrices.push_back(transform);
 
         // Add to shadow batch if needed
-        if (mCurrentCameraData.sunData.castShadows) {
+        if (mCurrentCameraData.sunData.sun) {
             addToShadowBatch(mesh, transform);
         }
     }
@@ -144,17 +142,13 @@ namespace StrikeEngine {
         mCurrentCameraData.pointLights.push_back(light);
     }
 
-    void Renderer::submitSun(std::shared_ptr<Sun>  sun)
+    void Renderer::submitSun(Sun* sun)
     {
         if (!mCameraActive || !sun) return;
 
         PROFILE_SCOPE("Renderer::submitSun");
-
-        sun->updateFrustum(mCurrentCameraData.cameraPosition);
-        mCurrentCameraData.sunData.lightSpaceMatrix = 
-            sun->calculateLightSpaceMatrix(mCurrentCameraData.cameraPosition);
-        mCurrentCameraData.sunData.shadowDistance = sun->getShadowDistance();
-        mCurrentCameraData.sunData.castShadows = sun->getCastShadows();
+        mCurrentCameraData.sunData.sun = sun;
+        mCurrentCameraData.sunData.lightSpaceMatrix = sun->calculateLightSpaceMatrix(mCurrentCameraData.cameraPosition);
     }
 
     void Renderer::submitSkybox(const std::shared_ptr<CubeMap>& skybox)
@@ -195,9 +189,8 @@ namespace StrikeEngine {
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PreRender)];
         for (auto& pass : passes) {
-            if (pass && pass->isEnabled()) {
-                pass->execute(cameraData);
-            }
+            pass->execute(cameraData);
+            
         }
     }
 
@@ -221,9 +214,8 @@ namespace StrikeEngine {
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::MainRender)];
         for (auto& pass : passes) {
-            if (pass && pass->isEnabled()) {
-                pass->execute(cameraData);
-            }
+            pass->execute(cameraData);
+            
         }
 
         glDisable(GL_SCISSOR_TEST);
@@ -235,9 +227,8 @@ namespace StrikeEngine {
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PostRender)];
         for (auto& pass : passes) {
-            if (pass && pass->isEnabled()) {
-                pass->execute(cameraData);
-            }
+            pass->execute(cameraData);
+            
         }
     }
 

@@ -4,6 +4,7 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Types/Material.h"
+#include "StrikeEngine/Scene/Sun.h"
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -12,12 +13,6 @@
 #include <memory>
 
 namespace StrikeEngine {
-
-    class Mesh;
-    class Material;
-    class CameraComponent;
-    class CubeMap;
-
     // ===== Instance Keys =====
     
     struct InstanceKey {
@@ -71,9 +66,8 @@ namespace StrikeEngine {
     };
 
     struct SunRenderData {
+        Sun* sun;
         glm::mat4 lightSpaceMatrix;
-        float shadowDistance;
-        bool castShadows;
         std::unordered_map<ShadowInstanceKey, InstanceBatch, ShadowInstanceKeyHash> shadowBatches;
 
         void clear() {
@@ -84,6 +78,7 @@ namespace StrikeEngine {
     struct CameraRenderData {
         CameraComponent camera;
         glm::vec3 cameraPosition;
+        
         SunRenderData sunData;
         std::shared_ptr<CubeMap> mSkyboxTexture;
         

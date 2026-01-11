@@ -40,7 +40,7 @@ namespace StrikeEngine {
         void setParent(const Entity& child, const Entity& parent);
         void addChild(const Entity& parent, const Entity& child);
 
-        void setSkyboxCubeMap(const std::string& cubeMapId);
+        bool setSkyboxCubeMap(const std::string& cubeMapId);
         std::shared_ptr<CubeMap> getSkyboxCubeMap() const;
 
         // Update operations
@@ -94,13 +94,15 @@ namespace StrikeEngine {
         void onUpdate(float dt);
         void onRender();
 
-        std::shared_ptr<Sun> getSun() const { return mSun; }
+        Sun& getSun() { return mSun; }
+        const Sun& getSun() const { return mSun; }
         const std::string& getId() { return mId; }
 
     private:
         friend class Entity;
         friend class World;
-         // Internal graph node access (for Entity class only)
+        
+        // Internal graph node access (for Entity class only)
         std::shared_ptr<GraphNode> getGraphNode(entt::entity entity);
         const std::shared_ptr<GraphNode> getGraphNode(entt::entity entity) const;
 
@@ -115,9 +117,10 @@ namespace StrikeEngine {
     private:
         std::string mId;
         entt::registry mRegistry;
+        Sun mSun; 
 
         std::shared_ptr<CubeMap> mSkyboxCubeMap;
-        std::shared_ptr<Sun> mSun;
+
 
         // Graph node storage
         std::unordered_map<entt::entity, std::shared_ptr<GraphNode>> mGraphNodes;

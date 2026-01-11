@@ -26,6 +26,11 @@ namespace StrikeEngine {
         if (auto attr = node.attribute("fallOff")) {
             setFallOff(attr.as_float());
         }
+
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
+        }
+
     }
 
     void LightComponent::serialize(pugi::xml_node& node) const {
@@ -35,5 +40,6 @@ namespace StrikeEngine {
         node.append_attribute("intensity") = mIntensity;
         node.append_attribute("radius") = mRadius;
         node.append_attribute("fallOff") = mFallOff;
+        node.append_attribute("active") = isActive();
     }
 }

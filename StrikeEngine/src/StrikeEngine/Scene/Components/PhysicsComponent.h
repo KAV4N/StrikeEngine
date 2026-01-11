@@ -99,6 +99,7 @@ namespace StrikeEngine {
         glm::vec3 mPendingImpulse = glm::vec3(0.0f);
 
         bool mNeedsRecreate = true;
+        bool mInPhysicsWorld = false; 
 
         btRigidBody* mRigidBody = nullptr;
         btCollisionShape* mCollisionShape = nullptr;

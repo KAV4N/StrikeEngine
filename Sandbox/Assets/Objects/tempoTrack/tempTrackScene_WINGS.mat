@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<material>
+	<baseColor r="255" g="255" b="255">
+		<texture id="tempTrackScene_BaseColor_0" src="@\Assets\Objects\tempoTrack\WINGS_baseColor.png" />
+	</baseColor>
+	<metallic value="1">
+		<texture id="tempTrackScene_Metallic_0" src="@\Assets\Objects\tempoTrack\WINGS_metallicRoughness.png" />
+	</metallic>
+	<roughness value="0.7351228">
+		<texture id="tempTrackScene_Roughness_0" src="@\Assets\Objects\tempoTrack\WINGS_metallicRoughness.png" />
+	</roughness>
+</material>

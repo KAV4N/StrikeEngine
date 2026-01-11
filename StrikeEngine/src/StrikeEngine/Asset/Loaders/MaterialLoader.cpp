@@ -57,77 +57,63 @@ namespace StrikeEngine {
     }
 
     void MaterialLoader::loadMaterialFromXml(std::shared_ptr<Material> material, const pugi::xml_node& materialNode, const std::filesystem::path& basePath) {
-        // Load PBR properties
         loadProperties(material, materialNode);
-
-        // Load textures
         loadTextures(material, materialNode, basePath);
     }
 
     void MaterialLoader::loadProperties(std::shared_ptr<Material> material, const pugi::xml_node& materialNode) {
-        // Load baseColor from baseColor node
         if (auto baseColorNode = materialNode.child("baseColor")) {
             material->setBaseColor(parseVec3(baseColorNode));
         }
 
-        // Load metallic from metallic node
         if (auto metallicNode = materialNode.child("metallic")) {
             material->setMetallic(metallicNode.attribute("value").as_float());
         }
 
-        // Load roughness from roughness node
         if (auto roughnessNode = materialNode.child("roughness")) {
             material->setRoughness(roughnessNode.attribute("value").as_float());
         }
     }
 
     void MaterialLoader::loadTextures(std::shared_ptr<Material> material, const pugi::xml_node& materialNode, const std::filesystem::path& basePath) {
-        // Load base color texture from baseColor node
+        // Base Color Texture
         if (auto baseColorNode = materialNode.child("baseColor")) {
             if (auto textureNode = baseColorNode.child("texture")) {
                 std::filesystem::path src = textureNode.attribute("src").as_string();
                 std::string id = textureNode.attribute("id").as_string();
                 src = resolvePath(src, basePath);
-                auto texture = AssetManager::get().loadTexture(id, src);
-                if (texture) {
-                    material->setBaseColorTexture(std::dynamic_pointer_cast<Texture>(texture));
+                
+                AssetManager::get().loadTexture(id, src);
+                if (!material->setBaseColorTextureById(id)) {
+                    throw std::runtime_error("Failed to assign base color texture with id: " + id);
                 }
             }
         }
 
-        // Load normal texture from normal node
-        if (auto normalNode = materialNode.child("normal")) {
-            if (auto textureNode = normalNode.child("texture")) {
-                std::filesystem::path src = textureNode.attribute("src").as_string();
-                std::string id = textureNode.attribute("id").as_string();
-                src = resolvePath(src, basePath);
-                auto texture = AssetManager::get().loadTexture(id, src);
-                if (texture) {
-                    material->setNormalTexture(std::dynamic_pointer_cast<Texture>(texture));
-                }
-            }
-        }
-
+        // Metallic Texture
         if (auto metallicNode = materialNode.child("metallic")) {
             if (auto textureNode = metallicNode.child("texture")) {
                 std::filesystem::path src = textureNode.attribute("src").as_string();
                 std::string id = textureNode.attribute("id").as_string();
                 src = resolvePath(src, basePath);
-                auto texture = AssetManager::get().loadTexture(id, src);
-                if (texture) {
-                    material->setMetallicTexture(std::dynamic_pointer_cast<Texture>(texture));
+                
+                AssetManager::get().loadTexture(id, src);
+                if (!material->setMetallicTextureById(id)) {
+                    throw std::runtime_error("Failed to assign metallic texture with id: " + id);
                 }
             }
         }
 
+        // Roughness Texture
         if (auto roughnessNode = materialNode.child("roughness")) {
             if (auto textureNode = roughnessNode.child("texture")) {
                 std::filesystem::path src = textureNode.attribute("src").as_string();
                 std::string id = textureNode.attribute("id").as_string();
                 src = resolvePath(src, basePath);
-                auto texture = AssetManager::get().loadTexture(id, src);
-                if (texture) {
-                    material->setRoughnessTexture(std::dynamic_pointer_cast<Texture>(texture));
+                
+                AssetManager::get().loadTexture(id, src);
+                if (!material->setRoughnessTextureById(id)) {
+                    throw std::runtime_error("Failed to assign roughness texture with id: " + id);
                 }
             }
         }
@@ -140,4 +126,5 @@ namespace StrikeEngine {
         vec.b = node.attribute("b").as_int();
         return vec;
     }
+
 }

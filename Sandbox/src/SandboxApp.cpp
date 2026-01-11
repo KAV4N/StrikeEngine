@@ -1,5 +1,5 @@
 #include "strikepch.h"
-#define ENABLE_PROFILER
+
 
 #include <StrikeEngine.h>
 #include "StrikeEngine/Core/Log.h"
@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     StrikeEngine::Application app;
 
     auto& world = StrikeEngine::World::get();
-    world.loadScene("Assets/Scenes/MainScene.xml");
+    world.loadScene("Assets/Scenes/SecondScene.xml");
 
     app.run();
 

@@ -61,11 +61,9 @@ namespace StrikeEngine {
         mLoadingState = state;
     }
 
-    pugi::xml_node Asset::toNode() const {
-        pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child(getTypeName().c_str());
+    void Asset::toNode(pugi::xml_node parent) const {
+        pugi::xml_node node = parent.append_child(getTypeName().c_str());
         node.append_attribute("id") = mId.c_str();
         node.append_attribute("src") = mPath.string().c_str();
-        return node;
     }
 }

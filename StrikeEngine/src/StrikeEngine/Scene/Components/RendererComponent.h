@@ -33,19 +33,19 @@ namespace StrikeEngine {
         void serialize(pugi::xml_node& node) const override;
 
         // Model management - render entire model with single material
-        void setModel(const std::string& modelId);
+        bool setModel(const std::string& modelId);
         void removeModel();
         bool hasModel() const;
         std::shared_ptr<Model> getModel() const;
 
         // Material management
-        void setMaterial(const std::string& materialId);
+        bool setMaterial(const std::string& materialId);
         void removeMaterial();
         bool hasMaterial() const;
         std::shared_ptr<Material> getMaterial() const;
 
         // Specific mesh rendering - render only one mesh from the model
-        void setMesh(const std::string& modelId, uint32_t meshIndex, const std::string& materialId = "");
+        bool setMesh(const std::string& modelId, uint32_t meshIndex, const std::string& materialId = "");
         std::shared_ptr<Mesh> getMesh() const;
         
         // Getters for specific mesh configuration

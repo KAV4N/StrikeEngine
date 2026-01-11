@@ -449,8 +449,7 @@ namespace StrikeEngine {
 
         std::lock_guard<std::mutex> lock(mMutex);
         for (const auto& [id, asset] : mLoadedAssets) {
-            pugi::xml_node assetNode = asset->toNode();
-            assetsNode.append_copy(assetNode);
+            asset->toNode(assetsNode);
         }
     }
 

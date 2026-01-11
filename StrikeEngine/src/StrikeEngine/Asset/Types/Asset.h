@@ -37,7 +37,7 @@ namespace StrikeEngine {
         void setLoadAsync(bool async);
         void setLoadingState(AssetLoadingState state);
 
-        virtual pugi::xml_node toNode() const;
+        virtual void toNode(pugi::xml_node parent) const;
 
     protected:
         friend class AssetLoader;

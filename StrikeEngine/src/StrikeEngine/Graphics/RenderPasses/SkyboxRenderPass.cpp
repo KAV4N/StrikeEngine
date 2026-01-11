@@ -28,8 +28,6 @@ namespace StrikeEngine {
     }
 
     void SkyboxRenderPass::execute(const CameraRenderData& cameraData) {
-  
-        if (!cameraData.mSkyboxTexture) return;
 
         auto camera = cameraData.camera;
         auto cubeMap = cameraData.mSkyboxTexture;

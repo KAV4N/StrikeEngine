@@ -27,7 +27,7 @@ namespace StrikeEngine {
             return getStaticTypeName();
         }
 
-        void instantiate(Entity parentEntity);
+        bool instantiate(Entity parentEntity);
 
         bool areAssetsReady() const;
 

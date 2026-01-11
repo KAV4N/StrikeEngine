@@ -18,6 +18,16 @@ namespace StrikeEngine {
         return mScene && mScene->getRegistry().valid(mHandle);
     }
 
+    bool Entity::isActive() const {
+        if (!isValid()) return false;
+        return mScene->getGraphNode(mHandle)->isActive();; 
+    }
+
+    void Entity::setActive(bool active) {
+        if (!isValid()) return;
+        mScene->getGraphNode(mHandle)->setActive(active);
+    }
+
     // Tag operations now use GraphNode directly
     void Entity::setTag(const std::string& tag) {
         if (!isValid()) return;

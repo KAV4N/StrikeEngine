@@ -75,22 +75,36 @@ namespace StrikeEngine {
 
     void PhysicsSystem::onUpdate(float dt) {
         Scene* scene = World::get().getScene();
-        if (!mDynamicsWorld || !scene) return;
+        if (!scene) return;
 
         auto& registry = scene->getRegistry();
         auto view = registry.view<PhysicsComponent>();
 
-        for (auto entity : view) {
+       for (auto entity : view) {
             auto& physics = view.get<PhysicsComponent>(entity);
+            Entity ent(entity, scene);
+            bool shouldBeActive = ent.isActive() && physics.isActive();
+
+            if (!shouldBeActive) {
+                if (physics.mInPhysicsWorld && physics.getRigidBody()) {
+                    mDynamicsWorld->removeRigidBody(physics.getRigidBody());
+                    physics.mInPhysicsWorld = false;
+                }
+                continue;
+            }
 
             if (!physics.getRigidBody()) {
                 createRigidBody(entity);
+                physics.mInPhysicsWorld = true;
             } else if (physics.needsRecreate()) {
                 recreatePhysicsBody(entity);
+                physics.mInPhysicsWorld = true;
+            } else if (!physics.mInPhysicsWorld) {
+                mDynamicsWorld->addRigidBody(physics.getRigidBody());
+                physics.mInPhysicsWorld = true;
             }
 
             if (physics.isAnchored()) {
-                Entity ent(entity, scene);
                 syncTransformToPhysics(entity, physics, ent);
             }
         }
@@ -98,9 +112,11 @@ namespace StrikeEngine {
         mDynamicsWorld->stepSimulation(dt, 10);
 
         for (auto entity : view) {
+            Entity ent(entity, scene);
             auto& physics = view.get<PhysicsComponent>(entity);
+            if (!ent.isActive() || !physics.isActive()) continue;
+
             if (!physics.isAnchored()) {
-                Entity ent(entity, scene);
                 syncTransformFromPhysics(entity, physics, ent);
             }
         }
@@ -109,11 +125,11 @@ namespace StrikeEngine {
     std::vector<Entity> PhysicsSystem::getCollidingEntities(const Entity& entity) const {
         std::vector<Entity> colliding;
 
-        if (!entity.isValid() || !mDynamicsWorld) return colliding;
+        if (!entity.isValid() || !entity.isActive()) return colliding;
 
         Scene* scene = entity.getScene();
         auto* physics = scene->getRegistry().try_get<PhysicsComponent>(entity.getHandle());
-        if (!physics || !physics->getRigidBody()) return colliding;
+        if (!physics || !physics->getRigidBody() || !physics->isActive()) return colliding;
 
         btRigidBody* body = physics->getRigidBody();
 
@@ -128,7 +144,8 @@ namespace StrikeEngine {
             const btRigidBody* other = (bodyA == body) ? bodyB : (bodyB == body) ? bodyA : nullptr;
             if (other) {
                 Entity otherEnt = getEntityFromRigidBody(other);
-                if (otherEnt.isValid()) {
+                auto collPhys = scene->getRegistry().get<PhysicsComponent>(otherEnt.getHandle()); 
+                if (otherEnt.isValid() && otherEnt.isActive() && collPhys.isActive()) {
                     colliding.push_back(otherEnt);
                 }
             }
@@ -139,6 +156,7 @@ namespace StrikeEngine {
 
     bool PhysicsSystem::isColliding(const Entity& entityA, const Entity& entityB) const {
         if (!entityA.isValid() || !entityB.isValid() || entityA == entityB || !mDynamicsWorld) return false;
+        if (!entityA.isActive() || !entityB.isActive()) return false;
 
         Scene* scene = entityA.getScene();
         auto& reg = scene->getRegistry();
@@ -146,6 +164,7 @@ namespace StrikeEngine {
         auto* physA = reg.try_get<PhysicsComponent>(entityA.getHandle());
         auto* physB = reg.try_get<PhysicsComponent>(entityB.getHandle());
         if (!physA || !physB || !physA->getRigidBody() || !physB->getRigidBody()) return false;
+        if (!physA->isActive() || !physB->isActive()) return false;
 
         btRigidBody* bodyA = physA->getRigidBody();
         btRigidBody* bodyB = physB->getRigidBody();
@@ -180,7 +199,10 @@ namespace StrikeEngine {
             const btRigidBody* body = btRigidBody::upcast(callback.m_collisionObject);
             if (body) {
                 Entity ent = getEntityFromRigidBody(body);
-                if (ent.isValid()) {
+                Scene* scene = ent.getScene();
+                auto collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+
+                if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                     hit.entity = ent;
                     hit.distance = callback.m_closestHitFraction * maxDistance;
                     hit.normal = glm::vec3(callback.m_hitNormalWorld.x(), callback.m_hitNormalWorld.y(), callback.m_hitNormalWorld.z());
@@ -206,7 +228,11 @@ namespace StrikeEngine {
                 const btRigidBody* body = btRigidBody::upcast(callback.m_collisionObjects[i]);
                 if (body) {
                     Entity ent = getEntityFromRigidBody(body);
-                    if (ent.isValid()) {
+
+                    Scene* scene = ent.getScene();
+                    auto collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+
+                    if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                         RayHit hit;
                         hit.entity = ent;
                         hit.distance = callback.m_hitFractions[i] * maxDistance;
@@ -301,7 +327,6 @@ namespace StrikeEngine {
 
         physics.setRigidBody(body);
         mDynamicsWorld->addRigidBody(body);
-
         applyPendingValues(physics);
         physics.clearRecreate();
     }
@@ -317,7 +342,7 @@ namespace StrikeEngine {
         btRigidBody* body = physics->getRigidBody();
         if (body) {
             mDynamicsWorld->removeRigidBody(body);
-        
+            physics->mInPhysicsWorld = false;
             delete body->getCollisionShape();
             if (body->getMotionState()) delete body->getMotionState();
             if (body->getUserPointer()) delete static_cast<entt::entity*>(body->getUserPointer());
@@ -342,11 +367,14 @@ namespace StrikeEngine {
 
         removePhysics(entityHandle);
         createRigidBody(entityHandle);
+        
+        mDynamicsWorld->addRigidBody(physics.getRigidBody());
 
         if (preserve && !physics.isAnchored()) {
             physics.setVelocity(vel);
             physics.setAngularVelocity(angVel);
         }
+
     }
 
     void PhysicsSystem::applyPendingValues(PhysicsComponent& physics) {

@@ -1,106 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scene sceneId="MainScene">
+
 	<assets>
-		<!-- template entries removed, only non-template assets remain -->
 		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/skybox.jpg" async="false"/>
 		<audio id="shot" src="../Sounds/shot.mp3" async="false"/>
+
 		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" async="false"/>
-		<material id="gizmo_DefaultMaterial" name="DefaultMaterial" src="../Objects/gizmo/gizmo_DefaultMaterial.mat" async="false"/>
+		<material id="gizmo_DefaultMaterial" src="../Objects/gizmo/gizmo_DefaultMaterial.mat" async="false"/>
 
+		<model id="box" src="../Objects/box/box.obj" async="true"/>
+		<material id="box_DefaultMaterial" src="../Objects/box/box_DefaultMaterial.mat" async="true"/>
+		<material id="box_Material" src="../Objects/box/box_Material.mat" async="true"/>
 
-
-		<model id="box" src="../Objects/box/box.obj" async="true" />
-		<template id="portalBox" src="../Objects/CCP2.fbx" async="true" />
-
-		<material id="box_DefaultMaterial" name="DefaultMaterial" src="../Objects/box/box_DefaultMaterial.mat" async="true"/>
-		<material id="box_Material" name="Material" src="../Objects/box/box_Material.mat" async="true"/>
+		<template id="portalBox" src="../Objects/CCP2.fbx" async="true"/>
 	</assets>
 
 	<skybox cubeMapId="skyboxMainScene"/>
 
-	<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="true"/>
+	<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="false"/>
 
 	<entities>
+
+		<!-- CAMERA -->
 		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">
 			<components>
 				<camera
-					projectionType="perspective"
 					nearPlane="0.1"
 					farPlane="500.0"
 					fov="60.0"
 					viewportX="0.0"
 					viewportY="0.0"
-					viewportWidth="1"
+					viewportWidth="1.0"
 					viewportHeight="1.0"
 					renderOrder="2"
 				/>
-				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/> 
+				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/>
 				<logic>
-					<script type="CameraMovement" />
-					<script type="SunMovement" />
-					<script type="CubeSpawn" />
+					<script type="CameraMovement"/>
+					<script type="SunMovement"/>
+					<script type="CubeSpawn"/>
 				</logic>
 				<audiolistener/>
-				<light color="255, 245, 200" intensity="8" radius="100.0" fallOff="25" />
+				<light color="255,245,200" intensity="8" radius="100.0" fallOff="25"/>
 			</components>
 		</entity>
-		
 
+		<!-- UI TEXT -->
 		<entity tag="textEntity" position="300,300,0" rotation="0,0,0" scale="2,1,1">
 			<components>
 				<text text="Strike Engine Demo" color="255,255,255" pivot="0.5,0.5"/>
 			</components>
 		</entity>
 
+		<!-- GIZMO -->
 		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
 			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-				<physics anchored="true" canCollide="true" mass="1.0"/>
+				<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
+				<physics anchored="true" canCollide="true" mass="1"/>
 			</components>
 		</entity>
 
-		<entity template="portalBox" position="0,-20,0" scale="5,5,5">
+		<!-- PORTAL TEMPLATE -->
+		<entity position="0,-20,0" scale="5,5,5">
 			<components>
-              <physics anchored="true" canCollide="true" mass="1"/>
-          </components>
-		</entity>
-
-		<entity position="0,-20,0" rotation="0,0,0" scale="5,5,5">
-			<components>
-				<renderer model="CCP2" material="CCP2_CCP2" />
+				<renderer model="CCP2" mesh="0" material="CCP2_CCP2" />
+				<physics anchored="true" canCollide="true" mass="1"/>
 			</components>
 		</entity>
-		 
 
+		<!-- FALLING GIZMOS -->
 		<entity tag="gizmo2" position="0,100,0" rotation="0,0,0" scale="1,1,1">
 			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
+				<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
 				<physics anchored="false" canCollide="true" mass="1"/>
 			</components>
-			<entity tag="gizmo2" position="0,120,0" rotation="0,0,0" scale="1,1,1">
-					<components>
-						<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-						<physics anchored="true" canCollide="true" mass="1"/>
-					</components>
+
+			<entity tag="gizmo2_child" position="0,120,0" rotation="0,0,0" scale="1,1,1">
+				<components>
+					<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
+					<physics anchored="true" canCollide="true" mass="1"/>
+				</components>
 			</entity>
 		</entity>
 
+		<!-- CUBE -->
 		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
 			<components>
-				<renderer model="box" material="box_Material" />
-				<physics anchored="true" canCollide="true" mass="1.0"/>
+				<renderer model="box" material="box_Material"/>
+				<physics anchored="true" canCollide="true" mass="1"/>
 				<audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
 			</components>
 		</entity>
 
-
-		<entity template="portalBox" tag="portalGizmo" position="50,150,0" rotation="0,0,0" scale="5,5,5">
-		</entity>
-
-		<entity template="portalBox" tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="5,5,5">
-		</entity>
-
-
+		<!-- PORTAL INSTANCES -->
+		<entity template="portalBox" tag="portalGizmo" position="50,150,0" scale="5,5,5"/>
+		<entity template="portalBox" tag="gizmo245" position="50,100,0" scale="5,5,5"/>
 
 	</entities>
+
 </scene>

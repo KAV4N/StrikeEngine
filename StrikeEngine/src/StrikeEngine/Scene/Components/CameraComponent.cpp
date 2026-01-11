@@ -186,6 +186,11 @@ namespace StrikeEngine {
             mViewportRect.height = attr.as_float();
         }
 
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
+        }
+
+
         // Final setup
         setViewportRect(mViewportRect.x, mViewportRect.y, mViewportRect.width, mViewportRect.height);
     }
@@ -204,6 +209,7 @@ namespace StrikeEngine {
         node.append_attribute("viewportY") = mViewportRect.y;
         node.append_attribute("viewportWidth") = mViewportRect.width;
         node.append_attribute("viewportHeight") = mViewportRect.height;
+        node.append_attribute("active") = isActive();
     }
     
 }

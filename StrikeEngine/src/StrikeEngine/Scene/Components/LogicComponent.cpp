@@ -34,6 +34,11 @@ namespace StrikeEngine {
                 addScript(scriptType);
             }
         }
+
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
+        }
+
     }
 
     void LogicComponent::serialize(pugi::xml_node& node) const {
@@ -41,6 +46,10 @@ namespace StrikeEngine {
             auto scriptNode = node.append_child("script");
             scriptNode.append_attribute("type") = typeid(*script).name();
         }
+
+        
+        node.append_attribute("active") = isActive();
+
     }
 
 } 

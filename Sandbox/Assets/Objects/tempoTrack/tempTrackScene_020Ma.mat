@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<material>
+	<baseColor r="255" g="255" b="255">
+		<texture id="tempTrackScene_BaseColor_4" src="@\Assets\Objects\tempoTrack\020Ma_baseColor.jpg" />
+	</baseColor>
+	<metallic value="1">
+		<texture id="tempTrackScene_Metallic_4" src="@\Assets\Objects\tempoTrack\020Ma_metallicRoughness.png" />
+	</metallic>
+	<roughness value="1">
+		<texture id="tempTrackScene_Roughness_4" src="@\Assets\Objects\tempoTrack\020Ma_metallicRoughness.png" />
+	</roughness>
+</material>

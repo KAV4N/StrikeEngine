@@ -15,7 +15,6 @@ namespace StrikeEngine {
 
         const std::string& getTypeName() const override;
         void postLoad() override;
-        pugi::xml_node toNode() const override;
 
         GLuint getTextureID() const { return mTextureID; }
         int getWidth() const { return mWidth; }
@@ -24,7 +23,8 @@ namespace StrikeEngine {
 
         void bind(unsigned int slot = 0) const;
         void unbind() const;
-
+    private:
+        friend class TextureLoader;
         void setTextureData(int width, int height, int channels, unsigned char* data);
 
     private:
@@ -44,7 +44,6 @@ namespace StrikeEngine {
 
         const std::string& getTypeName() const override;
         void postLoad() override;
-        pugi::xml_node toNode() const override;
 
         GLuint getTextureID() const { return mTextureID; }
         int getWidth() const { return mWidth; }
@@ -52,11 +51,12 @@ namespace StrikeEngine {
 
         void bind(unsigned int slot = 0) const;
         void unbind() const;
-
+    private:
         void setCubeMapData(int width, int height, int channels, 
                            const std::array<std::vector<unsigned char>, 6>& faces);
 
     private:
+        friend class CubeMapLoader;
         GLuint mTextureID;
         int mWidth;
         int mHeight;

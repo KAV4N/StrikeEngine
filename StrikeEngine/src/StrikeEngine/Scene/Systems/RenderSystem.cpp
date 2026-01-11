@@ -40,9 +40,9 @@ namespace StrikeEngine {
         auto view = scene->view<TextComponent>();
         for (auto entity : view) {
             auto& textComp = view.get<TextComponent>(entity);
-            if (!textComp.isActive()) continue;
-
             Entity ent(entity, scene);
+            if (!textComp.isActive() || !ent.isActive()) continue;
+
             glm::vec3 position = ent.getPosition();
             glm::vec3 scale = ent.getScale();
 
@@ -81,71 +81,41 @@ namespace StrikeEngine {
     void RenderSystem::processScene(Scene* scene)
     {
         PROFILE_SCOPE("RenderSystem::processScene");
-        // Process cameras in render order
-        processCameras(scene);
-    }
-
-    void RenderSystem::processCameras(Scene* scene)
-    {
-        PROFILE_SCOPE("RenderSystem::processCameras");
-
         auto& registry = scene->getRegistry();
         auto& renderer = Renderer::get();
+        std::multimap<int, CameraRenderData> cameras;
 
-        // Collect and sort cameras
-        struct CameraData {
-            Entity entity;
-            CameraComponent* camera;
-            glm::mat4 worldMatrix;
-            glm::vec3 position;
-            int renderOrder;
-        };
-
-        std::vector<CameraData> cameras;
+        auto skybox = scene->getSkyboxCubeMap(); 
         auto view = registry.view<CameraComponent>();
         
         for (auto entity : view)
         {
             Entity ent(entity, scene);
+            if (!ent.isActive()) continue;
+
             auto& camera = registry.get<CameraComponent>(entity);
-            glm::mat4 worldMatrix = ent.getWorldMatrix();
-            
-            cameras.push_back({
-                ent,
-                &camera,
-                worldMatrix,
-                glm::vec3(worldMatrix[3]),
-                camera.getRenderOrder()
-            });
+
+            CameraRenderData cameraRenderData;
+            cameraRenderData.camera = camera;
+            cameraRenderData.cameraPosition = ent.getPosition();
+
+            cameras.emplace(camera.getRenderOrder(), cameraRenderData);
+
         }
 
-        // Sort by render order
-        std::sort(cameras.begin(), cameras.end(),
-            [](const CameraData& a, const CameraData& b) {
-                return a.renderOrder < b.renderOrder;
-            });
-
-        // Process each camera
-        for (const auto& camData : cameras)
+        for (const auto& [renderOrder, camData] : cameras)
         {
             // Begin rendering for this camera
-            renderer.beginCamera(*camData.camera, camData.position);
+            renderer.beginCamera(camData.camera, camData.cameraPosition);
 
-            // Set skybox if exists
-            auto skybox = scene->getSkyboxCubeMap();
-            if (skybox) {
-                renderer.submitSkybox(skybox);
-            }
-
-            // Submit lights for this camera
+            if (skybox) renderer.submitSkybox(skybox); 
             processLights(scene);
-
-            // Submit renderables
             processRenderables(scene);
 
-            // End camera rendering
             renderer.endCamera();
         }
+
+
     }
 
     void RenderSystem::processLights(Scene* scene)
@@ -155,24 +125,24 @@ namespace StrikeEngine {
         auto& registry = scene->getRegistry();
         auto& renderer = Renderer::get();
 
+        //Submit sun light
+        renderer.submitSun(&scene->getSun());    
+
         // Submit point lights
         auto pointLightView = registry.view<LightComponent>();
         for (auto entity : pointLightView)
         {
             Entity ent(entity, scene);
             auto& light = registry.get<LightComponent>(entity);
+
+            if (!ent.isActive() || !light.isActive()) continue;
             glm::vec3 position = ent.getPosition();
 
             submitPointLight(position, light.getColor(), light.getIntensity(),
                            light.getRadius(), light.getFallOff());
         }
 
-        // Submit directional light (sun)
-        auto sun = scene->getSun();
-        if (sun && sun->getCastShadows())
-        {
-            renderer.submitSun(sun);
-        }
+
     }
 
     void RenderSystem::processRenderables(Scene* scene)
@@ -185,11 +155,13 @@ namespace StrikeEngine {
         for (auto entity : view)
         {
             Entity ent(entity, scene);
+
             auto& rendererComp = registry.get<RendererComponent>(entity);
 
             glm::mat4 worldMatrix = ent.getWorldMatrix();
             auto material = rendererComp.getMaterial();
-            if (!material) continue;
+
+            if (!ent.isActive() || !material || !rendererComp.isActive()) continue;
 
             // Submit single mesh
             if (rendererComp.hasMesh())

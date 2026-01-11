@@ -22,6 +22,12 @@ namespace StrikeEngine {
         }
 
         mNeedsRecreate = true;
+
+        
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
+        }
+
     }
 
     void PhysicsComponent::serialize(pugi::xml_node& node) const {
@@ -37,6 +43,9 @@ namespace StrikeEngine {
         sizeNode.append_attribute("x") = mSize.x;
         sizeNode.append_attribute("y") = mSize.y;
         sizeNode.append_attribute("z") = mSize.z;
+
+        
+        node.append_attribute("active") = isActive();
     }
 
     void PhysicsComponent::setAnchored(bool anchored) {

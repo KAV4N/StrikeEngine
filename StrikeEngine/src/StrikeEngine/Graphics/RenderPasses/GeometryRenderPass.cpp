@@ -30,8 +30,6 @@ namespace StrikeEngine {
     }
 
     void GeometryRenderPass::execute(const CameraRenderData& cameraData) {
-        if (!isEnabled()) return;
-
         setupOpenGLState();
 
         for (const auto& [key, batch] : cameraData.instanceBatches) {
@@ -44,21 +42,20 @@ namespace StrikeEngine {
     void GeometryRenderPass::renderInstanceBatch(const InstanceBatch& batch,
                                               const CameraRenderData& cameraData)
     {
-        if (!batch.mesh || !batch.material || !batch.mesh->getVAO() || batch.worldMatrices.empty())
+        if (batch.worldMatrices.empty())
             return;
 
         auto camera = cameraData.camera;
         glm::vec3 cameraPos = cameraData.cameraPosition;
 
         ShadowMapPass* shadowPass = mRenderer.getPass<ShadowMapPass>();
-        Scene* scene = World::get().getScene();
-        auto sun = scene ? scene->getSun() : nullptr;
 
         batch.material->bind();
         auto shader = batch.material->getShader();
 
         shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
         shader->setVec3("uViewPos", cameraPos);
+
 
         // light clusters
         auto lightPass = mRenderer.getPass<LightCullingPass>();
@@ -67,21 +64,24 @@ namespace StrikeEngine {
         shader->setVec3("uGridSize", glm::vec3(lightPass->CLUSTER_X, lightPass->CLUSTER_Y, lightPass->CLUSTER_Z));
         shader->setVec2("uScreenDimensions", glm::vec2(mRenderer.getWidth(), mRenderer.getHeight()));
 
-        if (sun) {
-            shader->setVec3("uSun.direction", sun->getDirection());
-            shader->setVec3("uSun.color", sun->getColor() / 255.0f);
-            shader->setFloat("uSun.intensity", sun->getIntensity());
-            shader->setInt("uCastShadows", cameraData.sunData.castShadows ? 1 : 0);
 
-            if (shadowPass && cameraData.sunData.castShadows) {
-                shader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
-                glActiveTexture(GL_TEXTURE0 + 1);
-                glBindTexture(GL_TEXTURE_2D, shadowPass->getShadowMapTexture());
-                shader->setInt("uShadowMap", 1);
-            }
+        // Sun submission
+        Sun* sun = cameraData.sunData.sun;
+        shader->setVec3("uSun.direction", sun->getDirection());
+        shader->setVec3("uSun.color", sun->getColor() / 255.0f);
+        shader->setFloat("uSun.intensity", sun->getIntensity());
+        shader->setInt("uCastShadows", sun->getCastShadows() ? 1 : 0);
+
+        // Shadow submission
+        if (shadowPass && sun->getCastShadows()) {
+            shader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, shadowPass->getShadowMapTexture());
+            shader->setInt("uShadowMap", 0);
         }
         
-
+        
+        // Mesh rendering with instancing
         GLuint vao = batch.mesh->getVAO();
         glBindVertexArray(vao);
 

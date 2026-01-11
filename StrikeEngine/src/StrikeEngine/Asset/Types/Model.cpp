@@ -61,6 +61,9 @@ namespace StrikeEngine {
     }
 
     void Mesh::setupGPUResources() {
+        if (mVAO != 0) {
+            return;
+        }
         // Generate GPU buffers
         glGenVertexArrays(1, &mVAO);
         glGenBuffers(1, &mVBO);
@@ -177,7 +180,7 @@ namespace StrikeEngine {
         return mBounds;
     }
 
-    std::shared_ptr<Mesh> Model::getMesh(uint32_t index) const {
+    const std::shared_ptr<Mesh> Model::getMesh(uint32_t index) const {
         if (index < mMeshes.size()) {
             return mMeshes[index];
         }

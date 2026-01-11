@@ -133,10 +133,12 @@ namespace StrikeEngine {
             std::string posStr = entityNode.attribute("position").as_string("0,0,0");
             std::string rotStr = entityNode.attribute("rotation").as_string("0,0,0");
             std::string scaleStr = entityNode.attribute("scale").as_string("1,1,1");
+            bool active = entityNode.attribute("active").as_bool(true);
 
             entity.setPosition(parseVector3(posStr));
             entity.setRotationEuler(parseVector3(rotStr));
             entity.setScale(parseVector3(scaleStr));
+            entity.setActive(active);
 
             // Parse tag
             std::string tag = entityNode.attribute("tag").as_string("");
@@ -183,19 +185,19 @@ namespace StrikeEngine {
     void SceneLoader::setupSun(Scene& scene, const pugi::xml_node& sceneNode) {
         pugi::xml_node sunNode = sceneNode.child("sun");
         if (sunNode) {
-            auto sun = scene.getSun();
-            if (sun) {
-                std::string colorStr = sunNode.attribute("color").as_string("255,255,255");
-                float intensity = sunNode.attribute("intensity").as_float(1.0f);
-                std::string rotStr = sunNode.attribute("rotation").as_string("0,0,0");
-                bool shadows = sunNode.attribute("shadows").as_bool(false);
+            Sun& sun = scene.getSun();
 
-                glm::vec3 color = parseVector3(colorStr);
-                sun->setColor(color);
-                sun->setIntensity(intensity);
-                sun->setRotationEuler(parseVector3(rotStr));
-                sun->setCastShadows(shadows);
-            }
+            std::string colorStr = sunNode.attribute("color").as_string("255,255,255");
+            float intensity = sunNode.attribute("intensity").as_float(1.0f);
+            std::string rotStr = sunNode.attribute("rotation").as_string("0,0,0");
+            bool shadows = sunNode.attribute("shadows").as_bool(false);
+
+            glm::vec3 color = parseVector3(colorStr);
+            sun.setColor(color);
+            sun.setIntensity(intensity);
+            sun.setRotationEuler(parseVector3(rotStr));
+            sun.setCastShadows(shadows);
+            
         }
     }
 

@@ -32,7 +32,6 @@ namespace StrikeEngine {
     }
 
     void ShadowMapPass::execute(const CameraRenderData& cameraData) {
-        if (!cameraData.sunData.castShadows) return;
         if (cameraData.sunData.shadowBatches.empty()) return;
 
         setupOpenGLState();

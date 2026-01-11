@@ -45,6 +45,10 @@ namespace StrikeEngine {
     }
 
     void Texture::postLoad() {
+        if (mTextureID != 0) {
+            return; // Already loaded
+        }
+
         if (mData.empty() || mWidth == 0 || mHeight == 0) {
             std::cerr << "Cannot create texture: no data loaded" << std::endl;
             setLoadingState(AssetLoadingState::FAILED);
@@ -80,14 +84,6 @@ namespace StrikeEngine {
 
     void Texture::unbind() const {
         glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    pugi::xml_node Texture::toNode() const {
-        pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child(getTypeName().c_str());
-        node.append_attribute("id") = getId().c_str();
-        node.append_attribute("src") = getPath().string().c_str();
-        return node;
     }
 
     // ============ CubeMap ============
@@ -128,6 +124,9 @@ namespace StrikeEngine {
     }
 
     void CubeMap::postLoad() {
+        if (mTextureID != 0) {
+            return; // Already loaded
+        }
         bool hasValidData = true;
         for (const auto& face : mFaceData) {
             if (face.empty()) {
@@ -176,14 +175,6 @@ namespace StrikeEngine {
 
     void CubeMap::unbind() const {
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
-
-    pugi::xml_node CubeMap::toNode() const {
-        pugi::xml_document doc;
-        pugi::xml_node node = doc.append_child(getTypeName().c_str());
-        node.append_attribute("id") = getId().c_str();
-        node.append_attribute("src") = getPath().string().c_str();
-        return node;
     }
 
 }

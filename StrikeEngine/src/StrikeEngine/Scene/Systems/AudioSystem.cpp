@@ -55,7 +55,11 @@ namespace StrikeEngine {
         auto view = registry.view<AudioSourceComponent>();
 
         for (auto entity : view) {
+            Entity ent(entity, scene);
             auto& source = registry.get<AudioSourceComponent>(entity);
+
+            if (!ent.isActive() || !source.isActive()) continue;
+
             if (source.isAutoplay() && source.hasAudio() && !source.isPlaying() && !source.isPaused()) {
                 source.play();
             }

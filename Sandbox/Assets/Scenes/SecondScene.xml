@@ -1,109 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scene sceneId="SecondScene">
 	<assets>
-		<template id="gizmoTemplate" src="../Objects/gizmo/gizmo.obj"  async="false"/>
-		<template id="boxTemplate" src="../Objects/box/box.obj"  async="false"/>
+		<template id="track" src="../Objects/tempoTrack/tempTrackScene.gltf"  async="false"/>
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/skybox.jpg" async="false"/>
+
+		<model id="tempTrackScene" src="@/Assets/Objects/tempoTrack/tempTrackScene.gltf" async="false"/>
+		<material id="tempTrackScene_WINGS" src="@/Assets/Objects/tempoTrack/tempTrackScene_WINGS.mat" async="false"/>
+		<material id="tempTrackScene_BASE" src="@/Assets/Objects/tempoTrack/tempTrackScene_BASE.mat" async="false"/>
+		<material id="tempTrackScene_lights" src="@/Assets/Objects/tempoTrack/tempTrackScene_lights.mat" async="false"/>
+		<material id="tempTrackScene_metalic dark gray" src="@/Assets/Objects/tempoTrack/tempTrackScene_metalic dark gray.mat" async="false"/>
+		<material id="tempTrackScene_020Ma" src="@/Assets/Objects/tempoTrack/tempTrackScene_020Ma.mat" async="false"/>
+		<material id="tempTrackScene_020Mb" src="@/Assets/Objects/tempoTrack/tempTrackScene_020Mb.mat" async="false"/>
+		<material id="tempTrackScene_Material_6" src="@/Assets/Objects/tempoTrack/tempTrackScene_Material_6.mat" async="false"/>
 	</assets>
 
-	<entities>
-		<entity position="10,10,10" rotation="-45,0,0" scale="1,1,1">
-			<components>
-				<camera
-					projectionType="perspective"
-					nearPlane="0.1"
-					farPlane="1000.0"
-					fov="60.0"
-					viewportX="0.0"
-					viewportY="0.0"
-					viewportWidth="0.5"
-					viewportHeight="1.0"
-				/>
-				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/>
-			</components>
-		</entity>
+	<sun color="255,245,230" intensity="5" rotation="-70,0,0" shadows="false"/>
+	<skybox cubeMapId="skyboxMainScene"/>
 
+	<entities>
 		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">
 			<components>
 				<camera
-					projectionType="perspective"
 					nearPlane="0.1"
 					farPlane="500.0"
 					fov="60.0"
-					viewportX="0.5"
+					viewportX="0.0"
 					viewportY="0.0"
-					viewportWidth="0.5"
+					viewportWidth="1"
 					viewportHeight="1.0"
-					renderOrder="2"
+					renderOrder="1"
 				/>
 				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/> 
 				<logic>
 					<script type="CameraMovement" />
-					<script type="SunMovement" />
-					<script type="CubeSpawn" />
 				</logic>
-				<audiolistener/>
-				<light color="255, 245, 200" intensity="8" radius="100.0" fallOff="25" />
+				<audiolistener/>0
+				<light color="255, 245, 200" intensity="10" radius="100.0" fallOff="25" />
 			</components>
 		</entity>
-
-		<entity templateId="gizmoTemplate" tag="HUUUUUUUUUUUUUUUUUUUH" position="0,20,0" rotation="45,0,0" scale="1,1,1"/>
-				<entity tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="1,1,1">
+		
+		<entity tag="ship" position="-0.003,-0.908,4.304" rotation="23.199,-89.980,-113.199" scale="0.633,0.633,0.633">
 			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-				<physics anchored="false" canCollide="true" mass="1"/>
+				<renderer model="tempTrackScene" mesh="0" material="tempTrackScene_BASE" />
 			</components>
+
+			<entity position="0,15,5" rotation="90,0,180" scale="1,1,1">
+				<components>
+				<camera
+					nearPlane="0.1"
+					farPlane="500.0"
+					fov="60.0"
+					viewportX="0.0"
+					viewportY="0.5"
+					viewportWidth="0.4"
+					viewportHeight="0.4"
+					renderOrder="2"
+				/>
+				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/>
+				<light color="255, 245, 200" intensity="10" radius="100.0" fallOff="25" />
+				</components>
+			</entity>
+			<entity tag="Cube.003_WINGS_0" position="-0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
+				<components>
+					<renderer model="tempTrackScene" mesh="1" material="tempTrackScene_WINGS" />
+					<physics anchored="true" canCollide="true" mass="1"/>
+				</components>
+			</entity>
 		</entity>
-		<entity tag="gizmo245" position="50,100,0" rotation="0,0,0" scale="1,1,1">
-			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-				<physics anchored="false" canCollide="true" mass="1"/>
-			</components>
+		
+		
+		<entity template="track" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-20,0,0" rotation="0,0,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-40,0,0" rotation="0,0,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-60,0,0" rotation="0,0,0" scale="1,1,1">
 		</entity>
 
-
-
-
-
-
+		<entity template="track" position="10,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="0,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-10,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-20,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-30,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
+		<entity template="track" position="-40,0,-30" rotation="0,-90,0" scale="1,1,1">
+		</entity>
 
 
 		
-		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
+		<!-- UI TEXT -->
+		<entity tag="textEntity" position="250,300,0" rotation="0,0,0" scale="0.5,1,1">
 			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-				<physics anchored="true" canCollide="true" mass="1.0"/>
+				<text text="Speed test: 0" color="0,255,255" pivot="0.5,0.5"/>
 			</components>
 		</entity>
 
-		<entity template="portalBox" position="0,-20,0" scale="5,5,5">
-			<components>
-              <physics anchored="true" canCollide="true" mass="1"/>
-          </components>
-		</entity>
-
-		<entity position="0,-20,0" rotation="0,0,0" scale="5,5,5">
-			<components>
-				<renderer model="CCP2" material="CCP2_CCP2" />
-			</components>
-		</entity>
-		 
-
-		<entity tag="gizmo2" position="0,100,0" rotation="0,0,0" scale="1,1,1">
-			<components>
-				<renderer model="gizmo" material="gizmo_DefaultMaterial" />
-				<physics anchored="false" canCollide="true" mass="1"/>
-			</components>
-		</entity>
-
-		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
-			<components>
-				<renderer model="box" material="box_Material" />
-				<physics anchored="true" canCollide="true" mass="1.0"/>
-				<audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
-			</components>
-		</entity>
-
-		<entity template="portalBox" tag="portalGizmo" position="50,150,0" rotation="0,0,0" scale="5,5,5">
-		</entity>
 	</entities>
 </scene>

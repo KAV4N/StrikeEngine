@@ -67,6 +67,10 @@ namespace StrikeEngine {
         if (auto attr = node.attribute("spatial")) {
             setSpatial(attr.as_bool());
         }
+
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
+        }
     }
 
     void AudioSourceComponent::serialize(pugi::xml_node& node) const {
@@ -78,5 +82,7 @@ namespace StrikeEngine {
         node.append_attribute("loop") = mLoop;
         node.append_attribute("autoplay") = mAutoplay;
         node.append_attribute("spatial") = mSpatial;
+
+        node.append_attribute("active") = isActive();
     }
 }

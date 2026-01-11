@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <material>
 	<baseColor r="204" g="204" b="204" >
 		<texture id="CCP2_albedo" src="@/Assets/Materials/CCP2_AlbedoTransparency.png"/>

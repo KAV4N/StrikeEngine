@@ -39,7 +39,7 @@ namespace StrikeEngine {
 
         // Camera control
         void beginCamera(const CameraComponent& camera, const glm::vec3& position);
-        void endCamera(); // Now renders immediately for the current camera
+        void endCamera(); 
 
         // Submission API
         void submitMesh(const std::shared_ptr<Mesh>& mesh,
@@ -56,7 +56,7 @@ namespace StrikeEngine {
                              float radius,
                              float fallOff);
 
-        void submitSun(std::shared_ptr<Sun> sun);
+        void submitSun(Sun* sun);
         void submitSkybox(const std::shared_ptr<CubeMap>& skybox);
 
         // Display final result with post-processing

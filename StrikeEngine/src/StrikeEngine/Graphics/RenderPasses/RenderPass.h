@@ -8,13 +8,10 @@ namespace StrikeEngine {
 
     class RenderPass {
     public:
-        RenderPass(const std::string& name) : mName(name), mEnabled(true) {}
+        RenderPass(const std::string& name) : mName(name) {}
         virtual ~RenderPass() = default;
 
         virtual void execute(const CameraRenderData& cameraData) = 0;
-
-        void setEnabled(bool enabled) { mEnabled = enabled; }
-        bool isEnabled() const { return mEnabled; }
 
         const std::string& getName() const { return mName; }
 
@@ -23,7 +20,6 @@ namespace StrikeEngine {
 
     protected:
         std::string mName;
-        bool mEnabled;
     };
 
 }

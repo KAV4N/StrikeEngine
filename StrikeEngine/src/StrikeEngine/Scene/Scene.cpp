@@ -18,7 +18,7 @@
 namespace StrikeEngine {
 
     Scene::Scene(const std::string& id, const std::filesystem::path& path)
-        : mSun(std::make_shared<Sun>()), mId(id) {
+        : mId(id), mSun() {  // Sun is default-constructed automatically
         setupComponentProtection();
     }
 
@@ -34,8 +34,9 @@ namespace StrikeEngine {
         mPhysicsSystem = physicsSystem;
     }
 
-    void Scene::setSkyboxCubeMap(const std::string& cubeMapId) {
+    bool Scene::setSkyboxCubeMap(const std::string& cubeMapId) {
         mSkyboxCubeMap = AssetManager::get().getCubeMap(cubeMapId);
+        return mSkyboxCubeMap != nullptr;
     }
 
     std::shared_ptr<CubeMap> Scene::getSkyboxCubeMap() const {
@@ -143,7 +144,7 @@ namespace StrikeEngine {
     void Scene::updateTransforms() {
         // TODO: SAVE PARENTS INTO SEPARATE VECTOR
         for (auto& [entity, node] : mGraphNodes) {
-            if (node->isRoot()) {
+            if (node->isRoot() && node->isActive()) {
                 updateNodeTransforms(node);
             }
         }
@@ -151,6 +152,7 @@ namespace StrikeEngine {
 
     void Scene::updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty) {
         if (!node) return;
+        if (!node->isActive()) return;
 
         entt::entity entity = node->getEntityId();
         if (!mRegistry.valid(entity)) {

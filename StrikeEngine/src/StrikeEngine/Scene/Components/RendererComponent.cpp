@@ -11,9 +11,10 @@ namespace StrikeEngine {
 
     RendererComponent::RendererComponent() {}
 
-    void RendererComponent::setModel(const std::string& modelId) {
+    bool RendererComponent::setModel(const std::string& modelId) {
         mModel = AssetManager::get().getModel(modelId);
-        mMeshIdx.reset(); // Reset specific mesh when setting entire model
+        mMeshIdx.reset(); 
+        return mModel != nullptr;
     }
 
 
@@ -30,8 +31,9 @@ namespace StrikeEngine {
         return mModel;
     }
 
-    void RendererComponent::setMaterial(const std::string& materialId) {
+    bool RendererComponent::setMaterial(const std::string& materialId) {
         mMaterial = AssetManager::get().getMaterial(materialId);
+        return mMaterial != nullptr;
     }
 
 
@@ -47,13 +49,31 @@ namespace StrikeEngine {
         return mMaterial;
     }
 
-    void RendererComponent::setMesh(const std::string& modelId, uint32_t meshIndex, const std::string& materialId) {
-        mModel = AssetManager::get().getModel(modelId);        
-        if (!materialId.empty()) {
-            mMaterial = AssetManager::get().getMaterial(materialId);
+    bool RendererComponent::setMesh(const std::string& modelId,
+                                uint32_t meshIndex,
+                                const std::string& materialId)
+    {
+        auto model = AssetManager::get().getModel(modelId);
+        if (!model || meshIndex >= model->getMeshes().size()) {
+            return false;
         }
+
+        if (!materialId.empty()) {
+            auto material = AssetManager::get().getMaterial(materialId);
+            if (!material) {
+                return false;
+            }
+            mMaterial = material;
+        } else {
+            mMaterial.reset();
+        }
+
+        mModel = model;
         mMeshIdx = meshIndex;
+
+        return true;
     }
+
 
    
     std::shared_ptr<Mesh> RendererComponent::getMesh() const {
@@ -80,7 +100,7 @@ namespace StrikeEngine {
         }
 
         // Load specific mesh index if specified
-        if (auto attr = node.attribute("meshIdx")) {
+        if (auto attr = node.attribute("mesh")) {
             uint32_t meshIndex = attr.as_uint();
             mMeshIdx = meshIndex;
             
@@ -88,6 +108,10 @@ namespace StrikeEngine {
             if (mModel && meshIndex >= mModel->getMeshes().size()) {
                 mMeshIdx.reset();
             }
+        }
+
+        if (auto attr = node.attribute("active")) {
+            setActive(attr.as_bool(true));
         }
     }
 
@@ -106,6 +130,8 @@ namespace StrikeEngine {
         if (mMeshIdx.has_value()) {
             node.append_attribute("meshIdx") = mMeshIdx.value();
         }
+
+        node.append_attribute("active") = isActive();
     }
 
 }

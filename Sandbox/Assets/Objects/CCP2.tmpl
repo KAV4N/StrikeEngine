@@ -5,15 +5,11 @@
     <material id="CCP2_CCP2" src="CCP2_CCP2.mat" />
   </assets>
   <entities>
-    <entity tag="RootNode" position="0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
-      <entity tag="Companion_P2" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="1.000,1.000,1.000">
-        <entity tag="Companion_P2" position="0.000,0.000,0.000" rotation="0.000,0.000,0.000" scale="1.000,1.000,1.000">
-          <components>
-              <renderer model="CCP2" meshIdx="0" material="CCP2_CCP2" />
-              <physics anchored="false" canCollide="true" mass="1"/>
-          </components>
-        </entity>
-      </entity>
+    <entity tag="Companion_P2" position="0.000,0.000,0.000" rotation="-90.000,-0.000,0.000" scale="1.000,1,1.000">
+      <components>
+        <renderer model="CCP2" mesh="0" material="CCP2_CCP2" />
+        <physics anchored="false" canCollide="true" mass="1"/>
+      </components>
     </entity>
   </entities>
 </template>

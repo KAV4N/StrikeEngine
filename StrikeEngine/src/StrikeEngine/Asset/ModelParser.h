@@ -13,10 +13,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <pugixml.hpp>
-
-
 
 namespace StrikeEngine {
 
@@ -31,7 +30,7 @@ namespace StrikeEngine {
         glm::vec3 scale{ 1.0f };
 
         std::string modelId;
-        uint32_t meshIdx = 0;
+        int32_t meshIdx = -1;  // -1 = no mesh/renderer
         std::string materialId;
 
         std::vector<std::shared_ptr<EntityData>> children;
@@ -49,7 +48,10 @@ namespace StrikeEngine {
         // Process Assimp scene
         void processScene(const aiScene* scene, const std::filesystem::path& modelDir);
         void processMaterials(const aiScene* scene, const std::filesystem::path& modelDir);
-        void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr, const glm::mat4& parentTransform = glm::mat4(1.0f));
+        void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr);
+
+        // Texture processing
+        std::string processTexture(aiMaterial* aiMat, aiTextureType type, const std::string& typeName, unsigned int materialIndex);
 
         // Helpers
         glm::mat4 aiMatrixToGlm(const aiMatrix4x4& from);

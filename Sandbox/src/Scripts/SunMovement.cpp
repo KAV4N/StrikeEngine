@@ -3,13 +3,12 @@
 
 void SunMovement::onStart() {
     auto scene = StrikeEngine::World::get().getScene();
-    mSun = scene->getSun();
-    mTimeOfDay = 6.0f; // Start at 6 AM
+    mSun = &scene->getSun();  
+    mTimeOfDay = 6.0f;
 }
 
-void SunMovement::onUpdate(float deltaTime) {
-    if (!mSun) return;
 
+void SunMovement::onUpdate(float deltaTime) {
     auto scene = StrikeEngine::World::get().getScene();
     auto entity = scene->getEntity("textEntity");
 
