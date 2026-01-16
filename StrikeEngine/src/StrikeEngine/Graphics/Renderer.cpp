@@ -5,12 +5,11 @@
 #include "RenderPasses/LightCullingPass.h"
 #include "RenderPasses/SkyboxRenderPass.h"
 #include "RenderPasses/ShadowMapPass.h"
-#include "RenderPasses/CollisionRenderPass.h"
 
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Asset/Types/Model.h"
-#include "StrikeEngine/Asset/Types/Material.h"
+#include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Graphics/Shader.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 
@@ -23,9 +22,7 @@ namespace StrikeEngine {
 
     const size_t Renderer::MAX_INSTANCES;
 
-    Renderer::Renderer() {
-
-    }
+    Renderer::Renderer() {}
 
     Renderer::~Renderer() {
         cleanup();
@@ -38,88 +35,73 @@ namespace StrikeEngine {
         addPass<LightCullingPass>(PassStage::PreRender, *this);
         addPass<SkyboxRenderPass>(PassStage::MainRender, *this);
         addPass<GeometryRenderPass>(PassStage::MainRender, *this);
-        //addPass<CollisionRenderPass>(PassStage::MainRender, *this);
         
         setupScreenQuad();
         
         mScreenShader = ShaderManager::get().getShader("finalPass.glsl");
-
     }
 
-    void Renderer::beginCamera(const CameraComponent& camera, const glm::vec3& position)
-    {
+    void Renderer::beginCamera(const CameraComponent& camera, const glm::vec3& position) {
         PROFILE_SCOPE("Renderer::beginCamera");
 
-        // Clear previous camera data
         mCurrentCameraData.clear();
-
-        // Initialize camera data
         mCurrentCameraData.camera = camera;
         mCurrentCameraData.cameraPosition = position;
         
         mCameraActive = true;
     }
 
-    void Renderer::endCamera()
-    {
+    void Renderer::endCamera() {
         PROFILE_SCOPE("Renderer::endCamera");
         
         if (!mCameraActive) return;
 
-        // Render this camera immediately
         renderCamera(mCurrentCameraData);
-
-        // Clear data and mark inactive
         mCurrentCameraData.clear();
         mCameraActive = false;
     }
 
     void Renderer::submitMesh(const std::shared_ptr<Mesh>& mesh,
-                              const std::shared_ptr<Material>& material,
-                              const glm::mat4& transform)
-    {
-        if (!mCameraActive || !mesh || !material) return;
+                              const std::shared_ptr<Texture>& texture,
+                              const glm::vec4& color,
+                              const glm::mat4& transform) {
+        if (!mCameraActive || !mesh) return;
 
         PROFILE_SCOPE("Renderer::submitMesh");
 
-        // Create instance key using pointer addresses for fast hashing
         InstanceKey key{
             reinterpret_cast<uintptr_t>(mesh.get()),
-            reinterpret_cast<uintptr_t>(material.get())
+            reinterpret_cast<uintptr_t>(texture.get())
         };
 
-        // Get or create batch
         auto& batch = mCurrentCameraData.instanceBatches[key];
         if (!batch.mesh) {
             batch.mesh = mesh;
-            batch.material = material;
-            batch.worldMatrices.reserve(64); // Reserve some space
+            batch.texture = texture;
+            batch.color = color;
+            batch.worldMatrices.reserve(64);
         }
 
-        // Add instance
         batch.worldMatrices.push_back(transform);
 
-        // Add to shadow batch if needed
         if (mCurrentCameraData.sunData.sun) {
             addToShadowBatch(mesh, transform);
         }
     }
 
     void Renderer::submitModel(const std::shared_ptr<Model>& model,
-                               const std::shared_ptr<Material>& material,
-                               const glm::mat4& transform)
-    {
-        if (!model || !material) return;
+                               const std::shared_ptr<Texture>& texture,
+                               const glm::vec4& color,
+                               const glm::mat4& transform) {
+        if (!model) return;
 
         PROFILE_SCOPE("Renderer::submitModel");
 
-        // Submit each mesh in the model
         uint32_t meshCount = model->getMeshCount();
-        for (uint32_t i = 0; i < meshCount; ++i)
-        {
+        for (uint32_t i = 0; i < meshCount; ++i) {
             auto mesh = model->getMesh(i);
             if (mesh) {
-                submitMesh(mesh, material, transform);
+                submitMesh(mesh, texture, color, transform);
             }
         }
     }
@@ -127,39 +109,33 @@ namespace StrikeEngine {
     void Renderer::submitPointLight(const glm::vec3& position,
                                     const glm::vec3& color,
                                     float intensity,
-                                    float radius,
-                                    float fallOff)
-    {
+                                    float radius) {
         if (!mCameraActive) return;
 
         PointLight light;
-        light.position = glm::vec4(position, 0.0f);
+        light.position = glm::vec4(position, 1.0f);
         light.color = glm::vec4(color / 255.0f, 0.0f);
         light.intensity = intensity;
         light.radius = radius;
-        light.fallOff = fallOff;
 
         mCurrentCameraData.pointLights.push_back(light);
     }
 
-    void Renderer::submitSun(Sun* sun)
-    {
+    void Renderer::submitSun(Sun* sun) {
         if (!mCameraActive || !sun) return;
 
         PROFILE_SCOPE("Renderer::submitSun");
         mCurrentCameraData.sunData.sun = sun;
-        mCurrentCameraData.sunData.lightSpaceMatrix = sun->calculateLightSpaceMatrix(mCurrentCameraData.cameraPosition);
+        mCurrentCameraData.sunData.lightSpaceMatrix = sun->calculateLightSpaceMatrix(mCurrentCameraData.cameraPosition, mCurrentCameraData.camera.getForward());
     }
 
-    void Renderer::submitSkybox(const std::shared_ptr<CubeMap>& skybox)
-    {
+    void Renderer::submitSkybox(const std::shared_ptr<CubeMap>& skybox) {
         if (!mCameraActive) return;
         mCurrentCameraData.mSkyboxTexture = skybox;
     }
 
     void Renderer::addToShadowBatch(const std::shared_ptr<Mesh>& mesh, 
-                                    const glm::mat4& transform)
-    {
+                                    const glm::mat4& transform) {
         if (!mesh) return;
 
         ShadowInstanceKey key{
@@ -175,8 +151,7 @@ namespace StrikeEngine {
         batch.worldMatrices.push_back(transform);
     }
 
-    void Renderer::renderCamera(const CameraRenderData& cameraData)
-    {
+    void Renderer::renderCamera(const CameraRenderData& cameraData) {
         PROFILE_SCOPE("Renderer::renderCamera");
 
         preRender(cameraData);
@@ -190,7 +165,6 @@ namespace StrikeEngine {
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PreRender)];
         for (auto& pass : passes) {
             pass->execute(cameraData);
-            
         }
     }
 
@@ -215,7 +189,6 @@ namespace StrikeEngine {
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::MainRender)];
         for (auto& pass : passes) {
             pass->execute(cameraData);
-            
         }
 
         glDisable(GL_SCISSOR_TEST);
@@ -228,7 +201,6 @@ namespace StrikeEngine {
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PostRender)];
         for (auto& pass : passes) {
             pass->execute(cameraData);
-            
         }
     }
 

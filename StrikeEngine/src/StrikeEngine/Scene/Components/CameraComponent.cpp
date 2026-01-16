@@ -155,10 +155,10 @@ namespace StrikeEngine {
 
     void CameraComponent::deserialize(const pugi::xml_node& node) {
         // Near/Far planes
-        if (auto attr = node.attribute("nearPlane")) {
+        if (auto attr = node.attribute("near")) {
             mNearPlane = attr.as_float();
         }
-        if (auto attr = node.attribute("farPlane")) {
+        if (auto attr = node.attribute("far")) {
             mFarPlane = attr.as_float();
         }
 
@@ -168,21 +168,21 @@ namespace StrikeEngine {
         }
 
         // Render order
-        if (auto attr = node.attribute("renderOrder")) {
+        if (auto attr = node.attribute("order")) {
             mRenderOrder = attr.as_int();
         }
 
         // Viewport rect
-        if (auto attr = node.attribute("viewportX")) {
+        if (auto attr = node.attribute("x")) {
             mViewportRect.x = attr.as_float();
         }
-        if (auto attr = node.attribute("viewportY")) {
+        if (auto attr = node.attribute("y")) {
             mViewportRect.y = attr.as_float();
         }
-        if (auto attr = node.attribute("viewportWidth")) {
+        if (auto attr = node.attribute("width")) {
             mViewportRect.width = attr.as_float();
         }
-        if (auto attr = node.attribute("viewportHeight")) {
+        if (auto attr = node.attribute("height")) {
             mViewportRect.height = attr.as_float();
         }
 
@@ -196,19 +196,18 @@ namespace StrikeEngine {
     }
 
     void CameraComponent::serialize(pugi::xml_node& node) const {
-        node.append_attribute("projectionType") = "perspective";
-        node.append_attribute("nearPlane") = mNearPlane;
-        node.append_attribute("farPlane") = mFarPlane;
+        node.append_attribute("near") = mNearPlane;
+        node.append_attribute("far") = mFarPlane;
         node.append_attribute("fov") = mFOV;
 
         if (mRenderOrder != 0) {
-            node.append_attribute("renderOrder") = mRenderOrder;
+            node.append_attribute("order") = mRenderOrder;
         }
 
-        node.append_attribute("viewportX") = mViewportRect.x;
-        node.append_attribute("viewportY") = mViewportRect.y;
-        node.append_attribute("viewportWidth") = mViewportRect.width;
-        node.append_attribute("viewportHeight") = mViewportRect.height;
+        node.append_attribute("x") = mViewportRect.x;
+        node.append_attribute("y") = mViewportRect.y;
+        node.append_attribute("width") = mViewportRect.width;
+        node.append_attribute("height") = mViewportRect.height;
         node.append_attribute("active") = isActive();
     }
     

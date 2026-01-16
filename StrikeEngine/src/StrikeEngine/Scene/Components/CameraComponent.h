@@ -54,6 +54,10 @@ namespace StrikeEngine {
 
         const Frustum& getFrustum() const { return mFrustum; }
 
+        const glm::vec3& getRight() const { return mRight; }
+        const glm::vec3& getUp() const { return mUp; }
+        const glm::vec3& getForward() const { return mForward; }
+
         // Viewport rectangle (Unity-like)
         void setViewportRect(float x, float y, float width, float height);
         const Rect& getViewportRect() const { return mViewportRect; }

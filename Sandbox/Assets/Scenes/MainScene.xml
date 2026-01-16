@@ -26,7 +26,7 @@
 			<components>
 				<camera
 					nearPlane="0.1"
-					farPlane="500.0"
+					farPlane="100.0"
 					fov="60.0"
 					viewportX="0.0"
 					viewportY="0.0"
@@ -34,7 +34,7 @@
 					viewportHeight="1.0"
 					renderOrder="2"
 				/>
-				<physics anchored="true" canCollide="true" mass="1" size="10,10,10"/>
+				<physics anchored="true" collide="true" mass="1" size="10,10,10"/>
 				<logic>
 					<script type="CameraMovement"/>
 					<script type="SunMovement"/>
@@ -56,7 +56,7 @@
 		<entity position="0,20,0" rotation="45,0,0" scale="1,1,1">
 			<components>
 				<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
-				<physics anchored="true" canCollide="true" mass="1"/>
+				<physics anchored="true" collide="true" mass="1"/>
 			</components>
 		</entity>
 
@@ -64,7 +64,7 @@
 		<entity position="0,-20,0" scale="5,5,5">
 			<components>
 				<renderer model="CCP2" mesh="0" material="CCP2_CCP2" />
-				<physics anchored="true" canCollide="true" mass="1"/>
+				<physics anchored="true" collide="true" mass="1"/>
 			</components>
 		</entity>
 
@@ -72,13 +72,13 @@
 		<entity tag="gizmo2" position="0,100,0" rotation="0,0,0" scale="1,1,1">
 			<components>
 				<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
-				<physics anchored="false" canCollide="true" mass="1"/>
+				<physics anchored="false" collide="true" mass="1"/>
 			</components>
 
 			<entity tag="gizmo2_child" position="0,120,0" rotation="0,0,0" scale="1,1,1">
 				<components>
 					<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
-					<physics anchored="true" canCollide="true" mass="1"/>
+					<physics anchored="true" collide="true" mass="1"/>
 				</components>
 			</entity>
 		</entity>
@@ -87,7 +87,7 @@
 		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
 			<components>
 				<renderer model="box" material="box_Material"/>
-				<physics anchored="true" canCollide="true" mass="1"/>
+				<physics anchored="true" collide="true" mass="1"/>
 				<audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
 			</components>
 		</entity>
@@ -95,6 +95,7 @@
 		<!-- PORTAL INSTANCES -->
 		<entity template="portalBox" tag="portalGizmo" position="50,150,0" scale="5,5,5"/>
 		<entity template="portalBox" tag="gizmo245" position="50,100,0" scale="5,5,5"/>
+
 
 	</entities>
 

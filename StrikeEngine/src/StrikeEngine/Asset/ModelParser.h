@@ -20,7 +20,6 @@
 namespace StrikeEngine {
 
     class Model;
-    class Material;
 
     struct EntityData {
         std::string tag;
@@ -31,7 +30,8 @@ namespace StrikeEngine {
 
         std::string modelId;
         int32_t meshIdx = -1;  // -1 = no mesh/renderer
-        std::string materialId;
+        
+        glm::vec4 color{ 255.0f, 255.0f, 255.0f, 1.0f }; // RGB (0-255), Alpha (0-1)
 
         std::vector<std::shared_ptr<EntityData>> children;
     };
@@ -41,33 +41,27 @@ namespace StrikeEngine {
         ModelParser();
         ~ModelParser();
 
-        // Main function: parse model and generate template + material files
+        // Main function: parse model and generate template file (no materials)
         bool parseModel(const std::filesystem::path& modelPath);
 
     private:
         // Process Assimp scene
         void processScene(const aiScene* scene, const std::filesystem::path& modelDir);
-        void processMaterials(const aiScene* scene, const std::filesystem::path& modelDir);
         void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr);
-
-        // Texture processing
-        std::string processTexture(aiMaterial* aiMat, aiTextureType type, const std::string& typeName, unsigned int materialIndex);
 
         // Helpers
         glm::mat4 aiMatrixToGlm(const aiMatrix4x4& from);
         void decomposeTransform(const glm::mat4& transform, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
+        glm::vec4 extractColor(const aiMaterial* material);
 
         // Output
-        void saveMaterialToFile(const std::shared_ptr<Material>& material, const std::filesystem::path& matPath);
         void saveTemplateXml(const std::filesystem::path& templatePath);
-
         void writeEntityToXml(pugi::xml_node& parentNode, const std::shared_ptr<EntityData>& entity);
 
     private:
         Assimp::Importer mImporter;
 
         std::shared_ptr<Model> mModel;
-        std::vector<std::shared_ptr<Material>> mMaterials;
         std::vector<std::shared_ptr<EntityData>> mRootEntities;
 
         std::filesystem::path mModelDirectory;

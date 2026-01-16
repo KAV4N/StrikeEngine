@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sci-fi Building 2
+* source:	https://sketchfab.com/3d-models/sci-fi-building-2-3559c3a0038f4c5f94335707ccff8217
+* author:	Scarecrow_original (https://sketchfab.com/Scarecrow_original)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sci-fi Building 2" (https://sketchfab.com/3d-models/sci-fi-building-2-3559c3a0038f4c5f94335707ccff8217) by Scarecrow_original (https://sketchfab.com/Scarecrow_original) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

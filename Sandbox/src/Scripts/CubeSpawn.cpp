@@ -30,7 +30,7 @@ void CubeSpawn::spawnCube(){
 
 
     entity.setPosition(getEntity().getPosition() + forward * 10.0f);
-    renderer.setMesh("box", 0, "CCP2_CCP2");
+    renderer.setMesh("box", 0);
 
 
     auto& physics = entity.addComponent<StrikeEngine::PhysicsComponent>();

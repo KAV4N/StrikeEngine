@@ -2,21 +2,22 @@
 #include "RendererComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Asset/Types/Model.h"
-#include "StrikeEngine/Asset/Types/Material.h"
+#include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
-
 namespace StrikeEngine {
+
     REGISTER_COMPONENT(RendererComponent)
 
-    RendererComponent::RendererComponent() {}
+    RendererComponent::RendererComponent()
+        : mColor(255.0f, 255.0f, 255.0f, 1.0f) // Default white color, no blending
+    {}
 
     bool RendererComponent::setModel(const std::string& modelId) {
         mModel = AssetManager::get().getModel(modelId);
-        mMeshIdx.reset(); 
+        mMeshIdx.reset();
         return mModel != nullptr;
     }
-
 
     void RendererComponent::removeModel() {
         mModel.reset();
@@ -31,80 +32,70 @@ namespace StrikeEngine {
         return mModel;
     }
 
-    bool RendererComponent::setMaterial(const std::string& materialId) {
-        mMaterial = AssetManager::get().getMaterial(materialId);
-        return mMaterial != nullptr;
+    bool RendererComponent::setTexture(const std::string& textureId) {
+        mTexture = AssetManager::get().getTexture(textureId);
+        return mTexture != nullptr;
     }
 
-
-    void RendererComponent::removeMaterial() {
-        mMaterial.reset();
+    void RendererComponent::removeTexture() {
+        mTexture.reset();
     }
 
-    bool RendererComponent::hasMaterial() const {
-        return mMaterial != nullptr;
+    bool RendererComponent::hasTexture() const {
+        return mTexture != nullptr;
     }
 
-    std::shared_ptr<Material> RendererComponent::getMaterial() const {
-        return mMaterial;
+    std::shared_ptr<Texture> RendererComponent::getTexture() const {
+        return mTexture;
     }
 
-    bool RendererComponent::setMesh(const std::string& modelId,
-                                uint32_t meshIndex,
-                                const std::string& materialId)
-    {
+    void RendererComponent::setColor(const glm::vec4& color) {
+        mColor = color;
+    }
+
+    bool RendererComponent::setMesh(const std::string& modelId, uint32_t meshIndex) {
         auto model = AssetManager::get().getModel(modelId);
         if (!model || meshIndex >= model->getMeshes().size()) {
             return false;
         }
 
-        if (!materialId.empty()) {
-            auto material = AssetManager::get().getMaterial(materialId);
-            if (!material) {
-                return false;
-            }
-            mMaterial = material;
-        } else {
-            mMaterial.reset();
-        }
-
         mModel = model;
         mMeshIdx = meshIndex;
-
         return true;
     }
 
-
-   
     std::shared_ptr<Mesh> RendererComponent::getMesh() const {
         if (!mModel || !mMeshIdx.has_value()) {
             return nullptr;
         }
+
         return mModel->getMesh(mMeshIdx.value());
     }
 
     void RendererComponent::deserialize(const pugi::xml_node& node) {
-        // Clear previous state
         mModel.reset();
-        mMaterial.reset();
+        mTexture.reset();
         mMeshIdx.reset();
 
-        // Load model
         if (auto attr = node.attribute("model")) {
             setModel(attr.as_string());
         }
 
-        // Load material
-        if (auto attr = node.attribute("material")) {
-            setMaterial(attr.as_string());
+        if (auto attr = node.attribute("texture")) {
+            setTexture(attr.as_string());
         }
 
-        // Load specific mesh index if specified
+        if (auto attr = node.attribute("color")) {
+            std::string colorStr = attr.as_string();
+            std::stringstream ss(colorStr);
+            char comma1, comma2, comma3;
+            ss >> mColor.r >> comma1 >> mColor.g >> comma2 >> mColor.b >> comma3 >> mColor.a;
+        }
+
         if (auto attr = node.attribute("mesh")) {
             uint32_t meshIndex = attr.as_uint();
             mMeshIdx = meshIndex;
             
-            // Validate the mesh index
             if (mModel && meshIndex >= mModel->getMeshes().size()) {
                 mMeshIdx.reset();
             }
@@ -116,17 +107,18 @@ namespace StrikeEngine {
     }
 
     void RendererComponent::serialize(pugi::xml_node& node) const {
-        // Serialize model
         if (mModel) {
             node.append_attribute("model") = mModel->getId().c_str();
         }
 
-        // Serialize material
-        if (mMaterial) {
-            node.append_attribute("material") = mMaterial->getId().c_str();
+        if (mTexture) {
+            node.append_attribute("texture") = mTexture->getId().c_str();
         }
 
-        // Serialize specific mesh index if set
+        std::ostringstream colorStr;
+        colorStr << mColor.r << "," << mColor.g << "," << mColor.b << "," << mColor.a;
+        node.append_attribute("color") = colorStr.str().c_str();
+
         if (mMeshIdx.has_value()) {
             node.append_attribute("meshIdx") = mMeshIdx.value();
         }

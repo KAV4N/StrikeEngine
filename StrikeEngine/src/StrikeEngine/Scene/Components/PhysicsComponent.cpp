@@ -8,14 +8,14 @@ namespace StrikeEngine {
 
     void PhysicsComponent::deserialize(const pugi::xml_node& node) {
         mAnchored = node.attribute("anchored").as_bool(false);
-        mCanCollide = node.attribute("canCollide").as_bool(true);
+        mCanCollide = node.attribute("collide").as_bool(true);
         mMass = node.attribute("mass").as_float(1.0f);
         mFriction = node.attribute("friction").as_float(0.5f);
         mRestitution = node.attribute("restitution").as_float(0.0f);
-        mLinearDamping = node.attribute("linearDamping").as_float(0.0f);
-        mAngularDamping = node.attribute("angularDamping").as_float(0.05f);
+        mLinearDamping = node.attribute("lDamping").as_float(0.0f);
+        mAngularDamping = node.attribute("aDamping").as_float(0.05f);
 
-        if (auto sizeNode = node.child("collisionSize")) {
+        if (auto sizeNode = node.child("size")) {
             mSize.x = sizeNode.attribute("x").as_float(1.0f);
             mSize.y = sizeNode.attribute("y").as_float(1.0f);
             mSize.z = sizeNode.attribute("z").as_float(1.0f);
@@ -32,14 +32,14 @@ namespace StrikeEngine {
 
     void PhysicsComponent::serialize(pugi::xml_node& node) const {
         node.append_attribute("anchored") = mAnchored;
-        node.append_attribute("canCollide") = mCanCollide;
+        node.append_attribute("collide") = mCanCollide;
         node.append_attribute("mass") = mMass;
         node.append_attribute("friction") = mFriction;
         node.append_attribute("restitution") = mRestitution;
-        node.append_attribute("linearDamping") = mLinearDamping;
-        node.append_attribute("angularDamping") = mAngularDamping;
+        node.append_attribute("lDamping") = mLinearDamping;
+        node.append_attribute("aDamping") = mAngularDamping;
 
-        auto sizeNode = node.append_child("collisionSize");
+        auto sizeNode = node.append_child("size");
         sizeNode.append_attribute("x") = mSize.x;
         sizeNode.append_attribute("y") = mSize.y;
         sizeNode.append_attribute("z") = mSize.z;

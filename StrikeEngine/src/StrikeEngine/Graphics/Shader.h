@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include <memory>
+#include <fstream>
+#include <filesystem>
 
 namespace StrikeEngine {
     class ShaderManager;
@@ -24,6 +26,9 @@ namespace StrikeEngine {
         void setVec3(const std::string& name, const glm::vec3& value);
         void setVec4(const std::string& name, const glm::vec4& value);
         void setMat4(const std::string& name, const glm::mat4& value);
+
+        void setUVec2(const std::string& name, const glm::uvec2& value);
+        void setUVec3(const std::string& name, const glm::uvec3& value);
 
         GLuint getRendererId() const { return mRendererId; }
         const std::string& getId() const { return mId; }
@@ -58,6 +63,8 @@ namespace StrikeEngine {
         std::shared_ptr<Shader> getShader(const std::string& id);
         std::shared_ptr<ComputeShader> getComputeShader(const std::string& id);
 
+
+
         bool hasShader(const std::string& id) const;
         void clear();
 
@@ -74,6 +81,8 @@ namespace StrikeEngine {
             std::string computeSource;
         };
         
+        std::string readFileToString(const std::filesystem::path& filepath);
+
         ShaderSources parseShaderSource(const std::string& source);
         
         std::shared_ptr<Shader> createShaderFromSource(const std::string& id, const ShaderSources& sources);

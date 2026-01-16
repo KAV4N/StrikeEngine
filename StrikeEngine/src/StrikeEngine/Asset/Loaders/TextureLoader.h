@@ -34,8 +34,10 @@ namespace StrikeEngine {
         void swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) override;
 
     private:
+        void flipImageHorizontally(unsigned char* data, int width, int height, int channels);
         unsigned char* loadImageData(const std::filesystem::path& path, int& width, int& height, int& channels);
         void freeImageData(unsigned char* data);
+        std::filesystem::path findCubemapFace(const std::filesystem::path& directory, const std::string& faceName);
     };
 
 }

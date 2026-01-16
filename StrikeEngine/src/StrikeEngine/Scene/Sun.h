@@ -39,16 +39,11 @@ namespace StrikeEngine {
         void setCastShadows(bool cast);
         bool getCastShadows() const;
 
-        void setShadowDistance(float distance);
-        float getShadowDistance() const;
-
-        void setShadowArea(float area);
-        float getShadowArea() const;
-
-        glm::mat4 calculateLightSpaceMatrix(const glm::vec3& cameraPos);
+        // Updated to require camera direction
+        glm::mat4 calculateLightSpaceMatrix(const glm::vec3& cameraPos, const glm::vec3& cameraDirection);
         const Frustum& getFrustum() const;
 
-        void updateFrustum(const glm::vec3& cameraPos);
+        void updateFrustum(const glm::vec3& cameraPos, const glm::vec3& cameraDirection);
 
     private:
         void extractFrustumPlanes(const glm::mat4& matrix);
@@ -63,7 +58,7 @@ namespace StrikeEngine {
 
         bool mCastShadows = false;
         float mShadowDistance = 100.0f;
-        float mShadowArea = 50.0f;
+        float mShadowArea = 30.0f;
 
         glm::mat4 mLightSpaceMatrix{1.0f};
         Frustum mFrustum;

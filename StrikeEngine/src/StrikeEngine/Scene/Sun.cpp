@@ -82,35 +82,16 @@ namespace StrikeEngine {
         return mCastShadows;
     }
 
-    void Sun::setShadowDistance(float distance) {
-        mShadowDistance = distance;
-    }
 
-    float Sun::getShadowDistance() const {
-        return mShadowDistance;
-    }
-
-    void Sun::setShadowArea(float area) {
-        mShadowArea = area;
-    }
-
-    float Sun::getShadowArea() const {
-        return mShadowArea;
-    }
-
-    glm::mat4 Sun::calculateLightSpaceMatrix(const glm::vec3& cameraPos) {
-        updateFrustum(cameraPos);
-        return mLightSpaceMatrix;
-    }
-
-    const Sun::Frustum& Sun::getFrustum() const {
-        return mFrustum;
-    }
-
-    void Sun::updateFrustum(const glm::vec3& cameraPos) {
-        glm::vec3 direction = getDirection();
-        glm::vec3 lightPos = cameraPos - direction * (mShadowDistance * 0.5f);
-        glm::vec3 targetPos = cameraPos + direction * (mShadowDistance * 0.5f);
+    glm::mat4 Sun::calculateLightSpaceMatrix(const glm::vec3& cameraPos, const glm::vec3& cameraDirection) {
+         glm::vec3 sunDirection = getDirection();
+        
+        glm::vec3 camDir = glm::normalize(cameraDirection);
+        float frontBias = 0.25f;
+        glm::vec3 frustumCenter = cameraPos + camDir * (mShadowDistance * frontBias);
+        glm::vec3 lightPos = frustumCenter - sunDirection * (mShadowDistance * 0.5f);
+        
+        glm::vec3 targetPos = frustumCenter;
 
         glm::mat4 lightProjection = glm::ortho(
             -mShadowArea, mShadowArea,
@@ -118,45 +99,60 @@ namespace StrikeEngine {
             0.1f, mShadowDistance
         );
 
-        glm::vec3 up = glm::abs(direction.y) > 0.99f ? 
+        glm::vec3 up = glm::abs(sunDirection.y) > 0.99f ? 
             glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
         glm::mat4 lightView = glm::lookAt(lightPos, targetPos, up);
 
         mLightSpaceMatrix = lightProjection * lightView;
         extractFrustumPlanes(mLightSpaceMatrix);
+        return mLightSpaceMatrix;
+    }
+
+    const Sun::Frustum& Sun::getFrustum() const {
+        return mFrustum;
+    }
+
+    void Sun::updateFrustum(const glm::vec3& cameraPos, const glm::vec3& cameraDirection) {
+       
     }
 
     void Sun::extractFrustumPlanes(const glm::mat4& matrix) {
+        // Left plane
         mFrustum.planes[0] = glm::vec4(
             matrix[0][3] + matrix[0][0],
             matrix[1][3] + matrix[1][0],
             matrix[2][3] + matrix[2][0],
             matrix[3][3] + matrix[3][0]
         );
+        // Right plane
         mFrustum.planes[1] = glm::vec4(
             matrix[0][3] - matrix[0][0],
             matrix[1][3] - matrix[1][0],
             matrix[2][3] - matrix[2][0],
             matrix[3][3] - matrix[3][0]
         );
+        // Bottom plane
         mFrustum.planes[2] = glm::vec4(
             matrix[0][3] + matrix[0][1],
             matrix[1][3] + matrix[1][1],
             matrix[2][3] + matrix[2][1],
             matrix[3][3] + matrix[3][1]
         );
+        // Top plane
         mFrustum.planes[3] = glm::vec4(
             matrix[0][3] - matrix[0][1],
             matrix[1][3] - matrix[1][1],
             matrix[2][3] - matrix[2][1],
             matrix[3][3] - matrix[3][1]
         );
+        // Near plane
         mFrustum.planes[4] = glm::vec4(
             matrix[0][3] + matrix[0][2],
             matrix[1][3] + matrix[1][2],
             matrix[2][3] + matrix[2][2],
             matrix[3][3] + matrix[3][2]
         );
+        // Far plane
         mFrustum.planes[5] = glm::vec4(
             matrix[0][3] - matrix[0][2],
             matrix[1][3] - matrix[1][2],
@@ -164,6 +160,7 @@ namespace StrikeEngine {
             matrix[3][3] - matrix[3][2]
         );
 
+        // Normalize all planes
         for (auto& plane : mFrustum.planes) {
             float length = glm::length(glm::vec3(plane));
             if (length > 0.0f) plane /= length;

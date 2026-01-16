@@ -4,7 +4,6 @@
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 #include "StrikeEngine/Graphics/Shader.h"
 #include "StrikeEngine/Asset/Types/Model.h"
-#include "StrikeEngine/Asset/Types/Material.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>

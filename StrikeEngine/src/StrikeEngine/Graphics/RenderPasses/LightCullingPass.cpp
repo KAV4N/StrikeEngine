@@ -39,7 +39,7 @@ namespace StrikeEngine {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         // --- Cluster AABB + Light Index List SSBO (binding = 1) ---
-        struct ClusterData
+        struct alignas(16) ClusterData
         {
             glm::vec4 minPoint;
             glm::vec4 maxPoint;
@@ -74,6 +74,7 @@ namespace StrikeEngine {
 
         // --- Step 1: Build clusters in view space ---
         buildClusters(cameraData);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         // --- Step 2: Cull lights per cluster ---
         cullLights(cameraData);
@@ -96,16 +97,15 @@ namespace StrikeEngine {
         const float zFar = cam.getFarPlane();
         
         mClusterBuildShader->bind();
-        mClusterBuildShader->setFloat("zNear", zNear);
-        mClusterBuildShader->setFloat("zFar", zFar);
-        mClusterBuildShader->setMat4("inverseProjection", invProj);
+        mClusterBuildShader->setFloat("uZNear", zNear);
+        mClusterBuildShader->setFloat("uZFar", zFar);
+        mClusterBuildShader->setMat4("uInverseProjection", invProj);
         
-        mClusterBuildShader->setVec2("screenDimensions", 
-                                    glm::vec2(viewportWidth, viewportHeight));
+        mClusterBuildShader->setUVec2("uScreenDimensions", 
+                                    glm::uvec2(viewportWidth, viewportHeight));
         
-        mClusterBuildShader->setInt("gridSize.x", CLUSTER_X);
-        mClusterBuildShader->setInt("gridSize.y", CLUSTER_Y);
-        mClusterBuildShader->setInt("gridSize.z", CLUSTER_Z);
+        mClusterBuildShader->setUVec3("uGridSize", glm::uvec3(CLUSTER_X, CLUSTER_Y, CLUSTER_Z));
+
         
         mClusterBuildShader->dispatch(CLUSTER_X, CLUSTER_Y, CLUSTER_Z);
         mClusterBuildShader->waitFinish();
@@ -116,10 +116,10 @@ namespace StrikeEngine {
         const glm::mat4 viewMatrix = cameraData.camera.getViewMatrix();
 
         mLightCullShader->bind();
-        mLightCullShader->setMat4("viewMatrix", viewMatrix);
+        mLightCullShader->setMat4("uViewMatrix", viewMatrix);
 
-        // Dispatch one workgroup per cluster
-        mLightCullShader->dispatch(TOTAL_CLUSTERS / 128 + 1, 1, 1); // 128 threads per group
+        uint32_t numWorkGroups = (TOTAL_CLUSTERS + 127) / 128; // Proper ceiling division
+        mLightCullShader->dispatch(27, 1, 1);
         mLightCullShader->waitFinish();
     }
 

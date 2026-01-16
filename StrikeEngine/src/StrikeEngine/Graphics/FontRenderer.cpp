@@ -26,7 +26,7 @@ namespace StrikeEngine {
             return;
         }
 
-        loadFont("fonts/ARIAL.ttf", 48);
+        loadFont("res/fonts/ARIAL.ttf", 48);
 
         // Get shader
         mShader = ShaderManager::get().getShader("text.glsl");

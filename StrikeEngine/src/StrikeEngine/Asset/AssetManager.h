@@ -4,7 +4,6 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
-#include "StrikeEngine/Asset/Types/Material.h"
 #include "StrikeEngine/Asset/Types/Audio.h"
 
 #include <filesystem>
@@ -40,10 +39,6 @@ namespace StrikeEngine {
         std::shared_ptr<CubeMap> loadCubeMap(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<CubeMap> loadCubeMapAsync(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<CubeMap> getCubeMap(const std::string& id);
-
-        std::shared_ptr<Material> loadMaterial(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Material> loadMaterialAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Material> getMaterial(const std::string& id);
 
         std::shared_ptr<Audio> loadAudio(const std::string& id, const std::filesystem::path& src);
         std::shared_ptr<Audio> loadAudioAsync(const std::string& id, const std::filesystem::path& src);

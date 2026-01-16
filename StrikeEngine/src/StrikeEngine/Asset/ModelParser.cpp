@@ -1,14 +1,14 @@
 #include "strikepch.h"
 #include "ModelParser.h"
 #include "StrikeEngine/Asset/Types/Model.h"
-#include "StrikeEngine/Asset/Types/Material.h"
-#include "StrikeEngine/Asset/Types/Texture.h"
-#include "StrikeEngine/Asset/AssetManager.h"
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 namespace StrikeEngine {
 
     ModelParser::ModelParser() {}
-
     ModelParser::~ModelParser() {}
 
     bool ModelParser::parseModel(const std::filesystem::path& modelPath) {
@@ -46,14 +46,11 @@ namespace StrikeEngine {
         }
 
         mModel = std::make_shared<Model>(mModelId, modelPath);
-        mMaterials.clear();
         mRootEntities.clear();
 
-        processMaterials(scene, mModelDirectory);
         processScene(scene, mModelDirectory);
 
         std::filesystem::path templatePath = mModelDirectory / (mModelName + ".tmpl");
-        
         saveTemplateXml(templatePath);
 
         return true;
@@ -69,86 +66,6 @@ namespace StrikeEngine {
         } else if (root->mNumMeshes > 0) {
             processNode(root, scene, nullptr);
         }
-    }
-
-    void ModelParser::processMaterials(const aiScene* scene, const std::filesystem::path& modelDir) {
-        for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
-            aiMaterial* aiMat = scene->mMaterials[i];
-            aiString matName;
-            aiMat->Get(AI_MATKEY_NAME, matName);
-
-            std::string materialName = matName.C_Str();
-            if (materialName.empty()) {
-                materialName = "Material_" + std::to_string(i);
-            }
-            
-            std::string materialId = mModelName + "_" + materialName;
-
-            auto material = std::make_shared<Material>(materialId, materialId + ".mat");
-
-            aiColor3D baseColor(1.0f, 1.0f, 1.0f);
-            float metallic = 0.0f;
-            float roughness = 1.0f;
-
-            aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
-            aiMat->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
-            aiMat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-
-            material->setBaseColor(glm::ivec3(
-                static_cast<int>(baseColor.r * 255),
-                static_cast<int>(baseColor.g * 255),
-                static_cast<int>(baseColor.b * 255)
-            ));
-            material->setMetallic(metallic);
-            material->setRoughness(roughness);
-
-            mMaterials.push_back(material);
-
-            processTexture(aiMat, aiTextureType_DIFFUSE, "BaseColor", i);
-            processTexture(aiMat, aiTextureType_METALNESS, "Metallic", i);
-            processTexture(aiMat, aiTextureType_DIFFUSE_ROUGHNESS, "Roughness", i);
-        }
-    }
-
-    std::string ModelParser::processTexture(aiMaterial* aiMat, aiTextureType type, 
-                                           const std::string& typeName, unsigned int materialIndex) {
-        if (aiMat->GetTextureCount(type) == 0) {
-            return "";
-        }
-
-        aiString texPath;
-        if (aiMat->GetTexture(type, 0, &texPath) != AI_SUCCESS) {
-            return "";
-        }
-
-        std::string texPathStr = texPath.C_Str();
-        if (texPathStr.empty()) {
-            return "";
-        }
-
-        std::string texFilename = texPathStr;
-        size_t lastSlash = texFilename.find_last_of("/\\");
-        if (lastSlash != std::string::npos) {
-            texFilename = texFilename.substr(lastSlash + 1);
-        }
-
-        std::string textureId = mModelName + "_" + typeName + "_" + std::to_string(materialIndex);
-
-        std::filesystem::path fullTexturePath = "@" / mModelDirectory / texFilename;
-
-        auto texture = std::make_shared<Texture>(textureId, fullTexturePath);
-
-        auto& material = mMaterials[materialIndex];
-
-        if (typeName == "BaseColor") {
-            material->mTextures[static_cast<uint32_t>(TextureSlot::BaseColor)] = texture;
-        } else if (typeName == "Metallic") {
-            material->mTextures[static_cast<uint32_t>(TextureSlot::Metallic)] = texture;
-        } else if (typeName == "Roughness") {
-            material->mTextures[static_cast<uint32_t>(TextureSlot::Roughness)] = texture;
-        }
-
-        return textureId;
     }
 
     void ModelParser::processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent) {
@@ -169,10 +86,11 @@ namespace StrikeEngine {
 
                 entity->modelId = mModelId;
                 entity->meshIdx = static_cast<int32_t>(mModel->getMeshCount() - 1);
-
-                unsigned int matIndex = mesh->mMaterialIndex;
-                if (matIndex < mMaterials.size()) {
-                    entity->materialId = mMaterials[matIndex]->getId();
+                
+                // Extract color from material
+                if (mesh->mMaterialIndex < scene->mNumMaterials) {
+                    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+                    entity->color = extractColor(material);
                 }
             }
         }
@@ -218,8 +136,22 @@ namespace StrikeEngine {
         rot = glm::degrees(glm::eulerAngles(quat));
     }
 
-    void ModelParser::saveMaterialToFile(const std::shared_ptr<Material>& material, const std::filesystem::path& matPath) {
-        material->serialize(matPath);
+    glm::vec4 ModelParser::extractColor(const aiMaterial* material) {
+        aiColor3D diffuseColor(1.0f, 1.0f, 1.0f);
+        
+        // Try to get diffuse color
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) != AI_SUCCESS) {
+            // If diffuse fails, try base color (for PBR materials)
+            material->Get(AI_MATKEY_BASE_COLOR, diffuseColor);
+        }
+        
+        // Convert from 0-1 range to 0-255 range for RGB, keep alpha at 1.0
+        return glm::vec4(
+            diffuseColor.r * 255.0f,
+            diffuseColor.g * 255.0f,
+            diffuseColor.b * 255.0f,
+            1.0f
+        );
     }
 
     void ModelParser::saveTemplateXml(const std::filesystem::path& templatePath) {
@@ -237,17 +169,6 @@ namespace StrikeEngine {
         auto modelAsset = assets.append_child("model");
         modelAsset.append_attribute("id") = mModelId.c_str();
         modelAsset.append_attribute("src") = mModel->getPath().filename().string().c_str();
-
-        for (const auto& mat : mMaterials) {
-            auto matAsset = assets.append_child("material");
-            matAsset.append_attribute("id") = mat->getId().c_str();
-            
-            std::filesystem::path matFilePath = mat->getId() + ".mat";
-            matAsset.append_attribute("src") = matFilePath.string().c_str();
-
-            std::filesystem::path fullMatPath = mModelDirectory / matFilePath;
-            saveMaterialToFile(mat, fullMatPath);
-        }
 
         auto entities = templateNode.append_child("entities");
         for (const auto& rootEntity : mRootEntities) {
@@ -267,22 +188,26 @@ namespace StrikeEngine {
             return oss.str();
         };
 
-        auto posStr = formatFloat(entity->position.x) + "," + formatFloat(entity->position.y) + "," + formatFloat(entity->position.z);
-        auto rotStr = formatFloat(entity->rotation.x) + "," + formatFloat(entity->rotation.y) + "," + formatFloat(entity->rotation.z);
+        auto posStr   = formatFloat(entity->position.x) + "," + formatFloat(entity->position.y) + "," + formatFloat(entity->position.z);
+        auto rotStr   = formatFloat(entity->rotation.x) + "," + formatFloat(entity->rotation.y) + "," + formatFloat(entity->rotation.z);
         auto scaleStr = formatFloat(entity->scale.x) + "," + formatFloat(entity->scale.y) + "," + formatFloat(entity->scale.z);
 
         entityNode.append_attribute("position") = posStr.c_str();
         entityNode.append_attribute("rotation") = rotStr.c_str();
-        entityNode.append_attribute("scale") = scaleStr.c_str();
+        entityNode.append_attribute("scale")     = scaleStr.c_str();
 
         if (entity->meshIdx >= 0 && !entity->modelId.empty()) {
             auto components = entityNode.append_child("components");
             auto renderer = components.append_child("renderer");
             renderer.append_attribute("model") = entity->modelId.c_str();
-            renderer.append_attribute("mesh") = entity->meshIdx;
-            if (!entity->materialId.empty()) {
-                renderer.append_attribute("material") = entity->materialId.c_str();
-            }
+            renderer.append_attribute("mesh")  = entity->meshIdx;
+            
+            // Write color (RGB in 0-255 range, Alpha 0-1 range)
+            auto colorStr = formatFloat(entity->color.r) + "," + 
+                           formatFloat(entity->color.g) + "," + 
+                           formatFloat(entity->color.b) + "," + 
+                           formatFloat(entity->color.a);
+            renderer.append_attribute("color") = colorStr.c_str();
         }
 
         for (const auto& child : entity->children) {

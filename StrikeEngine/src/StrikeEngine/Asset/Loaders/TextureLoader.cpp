@@ -1,7 +1,6 @@
 #include "strikepch.h"
 #include "TextureLoader.h"
 
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -89,9 +88,48 @@ namespace StrikeEngine {
         }
     }
 
+    void CubeMapLoader::flipImageHorizontally(unsigned char* data, int width, int height, int channels) {
+        int rowSize = width * channels;
+        
+        for (int y = 0; y < height; y++) {
+            unsigned char* row = data + y * rowSize;
+            
+            for (int x = 0; x < width / 2; x++) {
+                int leftIdx = x * channels;
+                int rightIdx = (width - 1 - x) * channels;
+                
+                for (int c = 0; c < channels; c++) {
+                    unsigned char tmp = row[leftIdx + c];
+                    row[leftIdx + c] = row[rightIdx + c];
+                    row[rightIdx + c] = tmp;
+                }
+            }
+        }
+    }
+
+    std::filesystem::path CubeMapLoader::findCubemapFace(const std::filesystem::path& directory, const std::string& faceName) {
+        const std::array<std::string, 5> extensions = {".jpg", ".jpeg", ".png"};
+        
+        for (const auto& ext : extensions) {
+            std::filesystem::path candidatePath = directory / (faceName + ext);
+            if (std::filesystem::exists(candidatePath)) {
+                return candidatePath;
+            }
+        }
+        
+        return {};
+    }
+
     std::shared_ptr<Asset> CubeMapLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto cubemap = std::make_shared<CubeMap>(id, path);
         cubemap->setLoadingState(AssetLoadingState::Loading);
+
+        // Path is expected to be a directory containing the 6 face images
+        if (!std::filesystem::is_directory(path)) {
+            std::cerr << "CubeMap path must be a directory: " << path << std::endl;
+            cubemap->setLoadingState(AssetLoadingState::FAILED);
+            return cubemap;
+        }
 
         std::array<std::string, 6> faceNames = {
             "right", "left", "top", "bottom", "front", "back"
@@ -101,14 +139,15 @@ namespace StrikeEngine {
         int width = 0, height = 0, channels = 0;
         bool loadSuccess = true;
 
-        std::filesystem::path parentPath = path.parent_path();
-        
-        std::string baseName = path.stem().string();
-        std::string extension = path.extension().string();
-
         for (size_t i = 0; i < 6; i++) {
-            std::filesystem::path facePath = parentPath / (baseName + "_" + faceNames[i] + extension);
+            std::filesystem::path facePath = findCubemapFace(path, faceNames[i]);
             
+            if (facePath.empty()) {
+                std::cerr << "Failed to find cubemap face '" << faceNames[i] << "' in directory: " << path << std::endl;
+                loadSuccess = false;
+                break;
+            }
+
             int w, h, c;
             unsigned char* data = loadImageData(facePath, w, h, c);
 
@@ -128,6 +167,8 @@ namespace StrikeEngine {
                 loadSuccess = false;
                 break;
             }
+
+            flipImageHorizontally(data, w, h, c);
 
             size_t dataSize = static_cast<size_t>(w) * h * c;
             faceData[i].resize(dataSize);

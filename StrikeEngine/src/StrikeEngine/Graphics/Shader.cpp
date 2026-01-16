@@ -1,8 +1,10 @@
 #include "strikepch.h"
 #include "Shader.h"
-#include "GenShaders.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace StrikeEngine {
 
@@ -129,6 +131,20 @@ namespace StrikeEngine {
         }
     }
 
+    void Shader::setUVec2(const std::string& name, const glm::uvec2& value) {
+        GLint location = getUniformLocation(name);
+        if (location != -1) {
+            glUniform2uiv(location, 1, glm::value_ptr(value));
+        }
+    }
+
+    void Shader::setUVec3(const std::string& name, const glm::uvec3& value) {
+        GLint location = getUniformLocation(name);
+        if (location != -1) {
+            glUniform3uiv(location, 1, glm::value_ptr(value));
+        }
+    }
+
     void Shader::setMat4(const std::string& name, const glm::mat4& value) {
         GLint location = getUniformLocation(name);
         if (location != -1) {
@@ -145,8 +161,8 @@ namespace StrikeEngine {
         glDispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
     }
 
-    void ComputeShader::waitFinish(){
-         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    void ComputeShader::waitFinish() {
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
     // ShaderManager Implementation
@@ -158,6 +174,17 @@ namespace StrikeEngine {
     ShaderManager& ShaderManager::get() {
         static ShaderManager instance;
         return instance;
+    }
+
+    std::string ShaderManager::readFileToString(const std::filesystem::path& filepath) {
+        std::ifstream file(filepath, std::ios::in | std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("Failed to open shader file: " + filepath.string());
+        }
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        return buffer.str();
     }
 
     ShaderManager::ShaderSources ShaderManager::parseShaderSource(const std::string& source) {
@@ -247,28 +274,55 @@ namespace StrikeEngine {
     }
 
     void ShaderManager::loadAllShaders() {
-        std::cout << "Loading shaders from GenShaders.h..." << std::endl;
+        std::cout << "Loading shaders from res/shaders directory..." << std::endl;
         
-        for (const auto& [filename, shaderSource] : shaderMap) {
-            
-            std::cout << "Loading shader: " << filename << std::endl;
-            
-            ShaderSources sources = parseShaderSource(shaderSource);
+        std::filesystem::path shadersPath = "res/shaders";
+        
+        // Check if directory exists
+        if (!std::filesystem::exists(shadersPath)) {
+            std::cerr << "Shaders directory not found: " << shadersPath << std::endl;
+            return;
+        }
 
-            if (!sources.computeSource.empty()) {
-                auto computeShader = createComputeShaderFromSource(filename, sources.computeSource);
-                if (computeShader) {
-                    mShaders[filename] = computeShader;
-                    std::cout << "  -> Loaded as compute shader" << std::endl;
+        // Iterate through all files in shaders directory (including subdirectories)
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(shadersPath)) {
+            if (!entry.is_regular_file()) {
+                continue;
+            }
+
+            const auto& filepath = entry.path();
+            auto extension = filepath.extension().string();
+
+            // Only load .glsl and .shader files
+            if (extension != ".glsl" && extension != ".shader") {
+                continue;
+            }
+
+            std::string filename = filepath.filename().string();
+            std::cout << "Loading shader: " << filename << " from " << filepath << std::endl;
+
+            try {
+                std::string shaderSource = readFileToString(filepath);
+                ShaderSources sources = parseShaderSource(shaderSource);
+
+                if (!sources.computeSource.empty()) {
+                    auto computeShader = createComputeShaderFromSource(filename, sources.computeSource);
+                    if (computeShader) {
+                        mShaders[filename] = computeShader;
+                        std::cout << "  -> Loaded as compute shader" << std::endl;
+                    }
+                } else if (!sources.vertexSource.empty() && !sources.fragmentSource.empty()) {
+                    auto shader = createShaderFromSource(filename, sources);
+                    if (shader) {
+                        mShaders[filename] = shader;
+                        std::cout << "  -> Loaded as vertex/fragment shader" << std::endl;
+                    }
+                } else {
+                    std::cerr << "  -> Warning: Shader " << filename << " has incomplete sources" << std::endl;
                 }
-            } else if (!sources.vertexSource.empty() && !sources.fragmentSource.empty()) {
-                auto shader = createShaderFromSource(filename, sources);
-                if (shader) {
-                    mShaders[filename] = shader;
-                    std::cout << "  -> Loaded as vertex/fragment shader" << std::endl;
-                }
-            } else {
-                std::cerr << "  -> Warning: Shader " << filename << " has incomplete sources" << std::endl;
+            }
+            catch (const std::exception& e) {
+                std::cerr << "  -> Error loading shader: " << e.what() << std::endl;
             }
         }
         

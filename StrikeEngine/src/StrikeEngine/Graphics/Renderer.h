@@ -14,7 +14,7 @@ namespace StrikeEngine {
     class Shader;
     class FrameBuffer;
     class Mesh;
-    class Material;
+    class Texture;
     class Model;
     class CameraComponent;
     class CubeMap;
@@ -37,29 +37,27 @@ namespace StrikeEngine {
 
         void init();
 
-        // Camera control
         void beginCamera(const CameraComponent& camera, const glm::vec3& position);
         void endCamera(); 
 
-        // Submission API
         void submitMesh(const std::shared_ptr<Mesh>& mesh,
-                       const std::shared_ptr<Material>& material,
+                       const std::shared_ptr<Texture>& texture,
+                       const glm::vec4& color,
                        const glm::mat4& transform);
 
         void submitModel(const std::shared_ptr<Model>& model,
-                        const std::shared_ptr<Material>& material,
+                        const std::shared_ptr<Texture>& texture,
+                        const glm::vec4& color,
                         const glm::mat4& transform);
 
         void submitPointLight(const glm::vec3& position,
                              const glm::vec3& color,
                              float intensity,
-                             float radius,
-                             float fallOff);
+                             float radius);
 
         void submitSun(Sun* sun);
         void submitSkybox(const std::shared_ptr<CubeMap>& skybox);
 
-        // Display final result with post-processing
         void display();
         
         template<typename T, typename... Args>
@@ -97,7 +95,6 @@ namespace StrikeEngine {
             std::vector<std::unique_ptr<RenderPass>>{}
         };
 
-        // Current camera being rendered
         CameraRenderData mCurrentCameraData;
         bool mCameraActive = false;
 

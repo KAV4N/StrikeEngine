@@ -1,63 +1,87 @@
-// Thanks to DaveH355 for https://github.com/DaveH355/clustered-shading tutorial
 #type COMPUTE
 #version 430 core
 
 #define LOCAL_SIZE 128
+#define TOTAL_CLUSTERS (16 * 9 * 24)
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
-struct PointLight {
+struct PointLight
+{
     vec4 position;
-    vec4 color; // rgb [0,1], w unused
+    vec4 color;
     float intensity;
     float radius;
-    float fallOff;
 };
 
-struct Cluster {
+struct Cluster
+{
     vec4 minPoint;
     vec4 maxPoint;
     uint count;
     uint lightIndices[100];
 };
 
-layout(std430, binding = 1) restrict buffer clusterSSBO {
+layout(std430, binding = 1) restrict buffer clusterSSBO
+{
     Cluster clusters[];
 };
 
-layout(std430, binding = 2) restrict buffer lightSSBO {
+layout(std430, binding = 2) restrict buffer lightSSBO
+{
     PointLight pointLight[];
 };
 
-uniform mat4 viewMatrix;
+uniform mat4 uViewMatrix;
 
-bool testSphereAABB(uint i, Cluster c);
+// Sphere-AABB intersection test
+bool sphereAABBIntersection(vec3 sphereCenter, float sphereRadius, vec3 aabbMin, vec3 aabbMax)
+{
+    // Find the closest point on the AABB to the sphere center
+    vec3 closestPoint = clamp(sphereCenter, aabbMin, aabbMax);
+    
+    // Calculate the distance between the sphere center and closest point
+    vec3 diff = sphereCenter - closestPoint;
+    float distanceSquared = dot(diff, diff);
+    
+    // Check if the distance is less than or equal to the sphere radius
+    return distanceSquared <= (sphereRadius * sphereRadius);
+}
 
-void main() {
-    uint lightCount = pointLight.length();
-    uint index = gl_WorkGroupID.x * LOCAL_SIZE + gl_LocalInvocationID.x;
-    Cluster cluster = clusters[index];
-
-    cluster.count = 0;
-
-    for (uint i = 0; i < lightCount; ++i) {
-        if (testSphereAABB(i, cluster) && cluster.count < 100) {
-            cluster.lightIndices[cluster.count] = i;
-            cluster.count++;
-        }
+void main()
+{
+    // Get the cluster index from the invocation
+    uint clusterIndex = gl_GlobalInvocationID.x;
+    
+    // Early exit if outside cluster bounds
+    if (clusterIndex >= TOTAL_CLUSTERS)
+    {
+        return;
     }
-    clusters[index] = cluster;
-}
 
-bool sphereAABBIntersection(vec3 center, float radius, vec3 aabbMin, vec3 aabbMax) {
-    vec3 closestPoint = clamp(center, aabbMin, aabbMax);
-    float distanceSquared = dot(closestPoint - center, closestPoint - center);
-    return distanceSquared <= radius * radius;
-}
+    // Get cluster AABB bounds in view space
+    vec3 clusterMin = clusters[clusterIndex].minPoint.xyz;
+    vec3 clusterMax = clusters[clusterIndex].maxPoint.xyz;
+    
+    // Reset light count for this cluster
+    uint lightCount = 0;
+    uint totalLightCount = pointLight.length();
 
-bool testSphereAABB(uint i, Cluster cluster) {
-    vec3 center = vec3(viewMatrix * pointLight[i].position);
-    float radius = pointLight[i].radius;
-    vec3 aabbMin = cluster.minPoint.xyz;
-    vec3 aabbMax = cluster.maxPoint.xyz;
-    return sphereAABBIntersection(center, radius, aabbMin, aabbMax);
+    
+    // Test each light against this cluster
+    for (uint i = 0; i < totalLightCount; i++)
+    {
+        vec3 lightPosition = (uViewMatrix * pointLight[i].position).xyz;
+        float lightRadius = pointLight[i].radius;
+
+        if (sphereAABBIntersection(lightPosition, lightRadius, clusterMin, clusterMax))
+        {
+            clusters[clusterIndex].lightIndices[lightCount] = i;
+            lightCount++;
+        }
+
+        if (lightCount >= 100) 
+            break; 
+    }
+    
+    clusters[clusterIndex].count = lightCount;
 }

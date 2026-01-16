@@ -48,6 +48,14 @@ void CameraMovement::onUpdate(float deltaTime)
 
         const glm::vec3 worldMove = right * move.x + up * move.y + forward * move.z;
         mCameraEntity.move(worldMove);
+
+        // --- Print position after moving ---
+        glm::vec3 pos = mCameraEntity.getPosition();
+        std::cout << "[Camera Move] New Position -> "
+                << "x=" << pos.x << ", "
+                << "y=" << pos.y << ", "
+                << "z=" << pos.z
+                << std::endl;
     }
 
     // --------------------------------------------------------------------
@@ -119,7 +127,6 @@ void CameraMovement::spawnLight(){
     
     newEnt.setPosition(mCameraEntity.getPosition());
     auto& pointLight = newEnt.addComponent<StrikeEngine::LightComponent>();
-    pointLight.setFallOff(25);
 
     // Random color (0-255 for each channel)
     float r = static_cast<float>(rand() % 256);
@@ -128,8 +135,8 @@ void CameraMovement::spawnLight(){
 
     pointLight.setColor(glm::vec3(r, g, b));
 
-    pointLight.setRadius(100);
-    pointLight.setIntensity(20);
+    pointLight.setRadius(5);
+    pointLight.setIntensity(5);
 }
 
 void CameraMovement::swapScene() {

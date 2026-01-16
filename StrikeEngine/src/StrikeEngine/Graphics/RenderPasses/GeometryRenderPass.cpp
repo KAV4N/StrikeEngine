@@ -2,34 +2,63 @@
 #include "GeometryRenderPass.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "ShadowMapPass.h"
-#include "StrikeEngine/Graphics/Shader.h"
-#include "StrikeEngine/Scene/Systems/RenderSystem.h"
-#include "StrikeEngine/Scene/World.h"
-#include "StrikeEngine/Asset/Types/Model.h"
-#include "StrikeEngine/Asset/Types/Material.h"
-
 #include "LightCullingPass.h"
-
+#include "StrikeEngine/Graphics/Shader.h"
+#include "StrikeEngine/Asset/Types/Model.h"
+#include "StrikeEngine/Asset/Types/Texture.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
 namespace StrikeEngine {
 
     GeometryRenderPass::GeometryRenderPass(Renderer& renderer)
-        : RenderPass("GeometryPass"), mRenderer(renderer) {
+        : RenderPass("GeometryPass"), mRenderer(renderer), mWhiteTextureID(0) {
     }
 
     GeometryRenderPass::~GeometryRenderPass() {
         cleanup();
     }
 
+    void GeometryRenderPass::createWhiteTexture() {
+        // Create 1x1 white texture
+        glGenTextures(1, &mWhiteTextureID);
+        glBindTexture(GL_TEXTURE_2D, mWhiteTextureID);
+        
+        unsigned char whitePixel[] = { 255, 255, 255, 255 };
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void GeometryRenderPass::destroyWhiteTexture() {
+        if (mWhiteTextureID != 0) {
+            glDeleteTextures(1, &mWhiteTextureID);
+            mWhiteTextureID = 0;
+        }
+    }
+
     void GeometryRenderPass::setup() {
+        mShader = ShaderManager::get().getShader("geometry.glsl");
+        if (!mShader) {
+            std::cerr << "Failed to load geometry shader!" << std::endl;
+        }
+
+        createWhiteTexture();
     }
 
     void GeometryRenderPass::cleanup() {
+        mShader.reset();
+        destroyWhiteTexture();
     }
 
     void GeometryRenderPass::execute(const CameraRenderData& cameraData) {
+        if (!mShader) return;
+
         setupOpenGLState();
 
         for (const auto& [key, batch] : cameraData.instanceBatches) {
@@ -40,63 +69,80 @@ namespace StrikeEngine {
     }
 
     void GeometryRenderPass::renderInstanceBatch(const InstanceBatch& batch,
-                                              const CameraRenderData& cameraData)
-    {
-        if (batch.worldMatrices.empty())
-            return;
+                                              const CameraRenderData& cameraData) {
+        if (batch.worldMatrices.empty()) return;
 
         auto camera = cameraData.camera;
         glm::vec3 cameraPos = cameraData.cameraPosition;
 
-        ShadowMapPass* shadowPass = mRenderer.getPass<ShadowMapPass>();
+        mShader->bind();
 
-        batch.material->bind();
-        auto shader = batch.material->getShader();
+        // Set separate view and projection matrices instead of combined
+        mShader->setMat4("uView", camera.getViewMatrix());
+        mShader->setMat4("uProjection", camera.getProjectionMatrix());
+        mShader->setVec3("uViewPos", cameraPos);
 
-        shader->setMat4("uViewProjection", camera.getViewProjectionMatrix());
-        shader->setVec3("uViewPos", cameraPos);
+        // Set color with blend (RGB in 0-255 range converted to 0-1, A is blend in 0-1 range)
+        glm::vec4 colorWithBlend = glm::vec4(glm::vec3(batch.color) / 255.0f, batch.color.a);
+        mShader->setVec4("uColorBlend", colorWithBlend);
 
-
-        // light clusters
-        auto lightPass = mRenderer.getPass<LightCullingPass>();
-        shader->setFloat("uNear", cameraData.camera.getNearPlane());
-        shader->setFloat("uFar", cameraData.camera.getFarPlane());
-        shader->setVec3("uGridSize", glm::vec3(lightPass->CLUSTER_X, lightPass->CLUSTER_Y, lightPass->CLUSTER_Z));
-        shader->setVec2("uScreenDimensions", glm::vec2(mRenderer.getWidth(), mRenderer.getHeight()));
-
-
-        // Sun submission
-        Sun* sun = cameraData.sunData.sun;
-        shader->setVec3("uSun.direction", sun->getDirection());
-        shader->setVec3("uSun.color", sun->getColor() / 255.0f);
-        shader->setFloat("uSun.intensity", sun->getIntensity());
-        shader->setInt("uCastShadows", sun->getCastShadows() ? 1 : 0);
-
-        // Shadow submission
-        if (shadowPass && sun->getCastShadows()) {
-            shader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, shadowPass->getShadowMapTexture());
-            shader->setInt("uShadowMap", 0);
+        // Always bind a texture (either actual texture or white texture)
+        glActiveTexture(GL_TEXTURE0);
+        if (batch.texture) {
+            batch.texture->bind(0);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, mWhiteTextureID);
         }
+        mShader->setInt("uTexture", 0);
+
+        // Clustered lighting uniforms
+        auto lightPass = mRenderer.getPass<LightCullingPass>();
+        mShader->setFloat("uZNear", camera.getNearPlane());
+        mShader->setFloat("uZFar", camera.getFarPlane());
+        mShader->setUVec3("uGridSize", glm::uvec3(
+            lightPass->CLUSTER_X, 
+            lightPass->CLUSTER_Y, 
+            lightPass->CLUSTER_Z
+        ));
+
+        const auto& viewport = camera.getViewportRect();
         
-        
-        // Mesh rendering with instancing
+        float viewportWidth = viewport.width * mRenderer.getWidth();
+        float viewportHeight = viewport.height * mRenderer.getHeight();
+
+        mShader->setUVec2("uScreenDimensions", glm::uvec2(
+            viewportWidth, 
+            viewportHeight
+        ));
+
+        // Sun
+        Sun* sun = cameraData.sunData.sun;
+        mShader->setVec3("uSun.direction", sun->getDirection());
+        mShader->setVec3("uSun.color", sun->getColor() / 255.0f);
+        mShader->setFloat("uSun.intensity", sun->getIntensity());
+        mShader->setInt("uCastShadows", sun->getCastShadows() ? 1 : 0);
+
+        // Shadows
+        ShadowMapPass* shadowPass = mRenderer.getPass<ShadowMapPass>();
+        if (shadowPass && sun->getCastShadows()) {
+            mShader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, shadowPass->getShadowMapTexture());
+            mShader->setInt("uShadowMap", 1);
+        }
+
+        // Render instanced
         GLuint vao = batch.mesh->getVAO();
         glBindVertexArray(vao);
 
         const auto& indices = batch.mesh->getIndices();
         size_t indiceCount = indices.size();
-
-            
         size_t totalInstances = batch.worldMatrices.size();
         size_t offset = 0;
 
-        while (offset < totalInstances)
-        {
+        while (offset < totalInstances) {
             size_t instanceCount = std::min(totalInstances - offset, (size_t)Renderer::MAX_INSTANCES);
             const glm::mat4* matrixPtr = batch.worldMatrices.data() + offset;
-
             batch.mesh->updateInstanceBuffer(matrixPtr, instanceCount);
             
             glDrawElementsInstanced(GL_TRIANGLES,
@@ -106,33 +152,27 @@ namespace StrikeEngine {
                                     static_cast<GLsizei>(instanceCount));
             
             offset += instanceCount;
-            
         }
-        
-        
 
         glBindVertexArray(0);
+        mShader->unbind();
     }
 
     void GeometryRenderPass::setupOpenGLState() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        
     }
 
     void GeometryRenderPass::restoreOpenGLState() {
-        
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
         glDisable(GL_CULL_FACE);
-        
     }
 
 }

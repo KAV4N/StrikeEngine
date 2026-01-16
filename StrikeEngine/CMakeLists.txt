@@ -35,8 +35,6 @@ set(USE_GLUT OFF CACHE BOOL "" FORCE)
 set(USE_GRAPHICAL_BENCHMARK OFF CACHE BOOL "" FORCE)
 set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
 
-
-
 # External dependencies
 add_subdirectory(${INCLUDE_DIR}/GLFW)
 add_subdirectory(${INCLUDE_DIR}/Glad)
@@ -44,85 +42,6 @@ add_subdirectory(${INCLUDE_DIR}/assimp)
 add_subdirectory(${INCLUDE_DIR}/pugixml)
 add_subdirectory(${INCLUDE_DIR}/bullet3)
 add_subdirectory(${INCLUDE_DIR}/freetype)
-
-# ============================================================================
-# SHADER STRINGIFICATION
-# ============================================================================
-set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res/shaders)
-set(GENERATED_SHADERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-set(GENERATED_SHADERS_HEADER ${GENERATED_SHADERS_DIR}/GenShaders.h)
-
-# Collect all shader files
-file(GLOB_RECURSE SHADER_FILES 
-    "${SHADERS_DIR}/*.glsl"
-    "${SHADERS_DIR}/*.shader"
-)
-
-# Function to convert shader filename to valid C++ identifier
-function(shader_to_identifier SHADER_PATH OUTPUT_VAR)
-    get_filename_component(SHADER_NAME ${SHADER_PATH} NAME)
-    string(REPLACE "." "_" IDENTIFIER ${SHADER_NAME})
-    string(REPLACE "-" "_" IDENTIFIER ${IDENTIFIER})
-    set(${OUTPUT_VAR} ${IDENTIFIER} PARENT_SCOPE)
-endfunction()
-
-# --------------------------------------------------------------------
-# Generate header shaders
-# --------------------------------------------------------------------
-file(WRITE ${GENERATED_SHADERS_HEADER}
-"// Auto-generated file - DO NOT EDIT\n"
-"// Generated from shaders in ${SHADERS_DIR}\n\n"
-"#pragma once\n\n"
-"#include <string>\n"
-"#include <unordered_map>\n\n"
-"namespace StrikeEngine {\n\n"   
-)
-
-# Add each shader as a string literal
-foreach(SHADER_FILE ${SHADER_FILES})
-    shader_to_identifier(${SHADER_FILE} SHADER_IDENTIFIER)
-
-    # Read shader content
-    file(READ ${SHADER_FILE} SHADER_CONTENT)
-
-    # Escape special characters
-    string(REPLACE "\\" "\\\\" SHADER_CONTENT "${SHADER_CONTENT}")
-    string(REPLACE "\"" "\\\"" SHADER_CONTENT "${SHADER_CONTENT}")
-    string(REPLACE "\n" "\\n\"\n\"" SHADER_CONTENT "${SHADER_CONTENT}")
-
-    # Write to header
-    file(APPEND ${GENERATED_SHADERS_HEADER}
-"inline const char* ${SHADER_IDENTIFIER} = \n\"${SHADER_CONTENT}\";\n\n"
-    )
-endforeach()
-
-# Create shader map for easy access by filename
-file(APPEND ${GENERATED_SHADERS_HEADER}
-"// Shader lookup map\n"
-"inline const std::unordered_map<std::string, const char*> shaderMap = {\n"
-)
-
-foreach(SHADER_FILE ${SHADER_FILES})
-    get_filename_component(SHADER_NAME ${SHADER_FILE} NAME)
-    shader_to_identifier(${SHADER_FILE} SHADER_IDENTIFIER)
-    file(APPEND ${GENERATED_SHADERS_HEADER}
-"    {\"${SHADER_NAME}\", ${SHADER_IDENTIFIER}},\n"
-    )
-endforeach()
-
-file(APPEND ${GENERATED_SHADERS_HEADER}
-"};\n\n"
-"// Helper function to get shader source by filename\n"
-"inline const char* getShader(const std::string& filename) {\n"
-"    auto it = shaderMap.find(filename);\n"
-"    return (it != shaderMap.end()) ? it->second : nullptr;\n"
-"}\n\n"
-"} // namespace StrikeEngine\n"   
-)
-
-message(STATUS "Generated shader header: ${GENERATED_SHADERS_HEADER}")
-
-# ============================================================================
 
 # Define the engine library
 add_library(${PROJECT_NAME} STATIC)
@@ -158,7 +77,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIR}/pugixml/src
     ${INCLUDE_DIR}/bullet3/src
     ${INCLUDE_DIR}/miniaudio
-    ${GENERATED_SHADERS_DIR}  # Add generated shaders directory
 )
 
 # Linking
@@ -179,42 +97,37 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     CRT_SECURE_NO_WARNINGS
     PLATFORM_WINDOWS
     GLFW_INCLUDE_NONE
-    STRIKE_USE_EMBEDDED_SHADERS  
     $<$<CONFIG:Debug>:STRIKE_DEBUG>
     $<$<CONFIG:Release>:STRIKE_RELEASE>
     $<$<CONFIG:Dist>:STRIKE_DIST>
 )
 
-
-# Export engine resources path for dependent projects
-set(STRIKE_ENGINE_RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources CACHE PATH "StrikeEngine resources directory")
-
 # ============================================================================
-# FUNCTION TO SETUP ENGINE FONTS FOR GAME PROJECTS
+# FUNCTION TO SETUP ENGINE RESOURCES FOR GAME PROJECTS
 # ============================================================================
-set(STRIKE_ENGINE_FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res/fonts CACHE PATH "StrikeEngine fonts directory")
+set(STRIKE_ENGINE_RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res CACHE PATH "StrikeEngine res directory")
 
-function(strike_setup_fonts TARGET_NAME)
+function(strike_setup_resources TARGET_NAME)
     if(WIN32)
         # Debug: Create junction link for fast development
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
-            COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/fonts\" \"${STRIKE_ENGINE_FONTS_DIR}\"">
-            COMMENT "Setting up engine fonts link for Debug configuration"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+            COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/res\" \"${STRIKE_ENGINE_RES_DIR}\"">
+            COMMENT "Setting up engine resources link for Debug configuration"
         )
     else()
         # Debug: Create symlink 
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink ${STRIKE_ENGINE_FONTS_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
-            COMMENT "Setting up engine fonts link for Debug"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink ${STRIKE_ENGINE_RES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+            COMMENT "Setting up engine resources link for Debug"
         )
     endif()
 
-    # Release: Copy fonts
+    # Release: Copy entire res directory
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory ${STRIKE_ENGINE_FONTS_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/fonts
-        COMMENT "Copying engine fonts for Release/Dist configuration"
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory ${STRIKE_ENGINE_RES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+        COMMENT "Copying engine resources for Release/Dist configuration"
     )
 endfunction()

@@ -10,8 +10,8 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE StrikeEngine)
 
-# Setup engine fonts
-strike_setup_fonts(${PROJECT_NAME})
+# Setup engine resources
+strike_setup_resources(${PROJECT_NAME})
 
 # Setup Sandbox-specific assets
 if(WIN32)
