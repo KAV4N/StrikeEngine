@@ -13,14 +13,14 @@ namespace StrikeEngine {
     }
 
     bool Template::instantiate(Entity parentEntity) {
-        if (getLoadingState() != AssetLoadingState::Ready) {
-            throw std::runtime_error("Template not loaded: " + getId());
+        if (!isReady()) {
+            STRIKE_CORE_WARN("Template '{}' is not ready for instantiation", getId());
             return false;
         }
 
         pugi::xml_node templateNode = mDoc.child("template");
         if (!templateNode) {
-            throw std::runtime_error("Invalid template format: " + getId());
+            STRIKE_CORE_ERROR("Invalid template format in '{}': no template node found", getId());
             return false;
         }
 
@@ -68,21 +68,15 @@ namespace StrikeEngine {
                     std::string componentType = componentNode.name();
                     if (ComponentRegistry::hasComponentFactory(componentType)) {
                         ComponentRegistry::addComponentToEntity(entity, componentType, componentNode);
-                        std::cout << "Added component: " << componentType 
-                                << " to entity with tag: " << entity.getTag() 
-                                << " in template: " << getId() << std::endl;
                     }
                     else {
-                        std::cerr << "Unknown component type: " << componentType 
-                                << " in entity with tag: " << entity.getTag() << std::endl;
+                        STRIKE_CORE_ERROR("Unknown component type '{}' in template '{}'", 
+                                componentType, getId());
                     }
                 }
             }
 
             createEntities(scene, entityNode, entity);
-
-            std::cout << "Created entity with tag: " << tag 
-                    << " in template: " << getId() << std::endl;
         }
     }
 

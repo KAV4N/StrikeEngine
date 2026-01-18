@@ -2,7 +2,7 @@
 <scene sceneId="MainScene">
 
 	<assets>
-		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/skybox.jpg" async="false"/>
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/" async="false"/>
 		<audio id="shot" src="../Sounds/shot.mp3" async="false"/>
 
 		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" async="false"/>

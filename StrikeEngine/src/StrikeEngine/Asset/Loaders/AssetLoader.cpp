@@ -23,28 +23,22 @@ namespace StrikeEngine {
         }
 
         auto asset = loadAssetInternal(id, path);
-        if (!asset) {
-            throw std::runtime_error("Failed to load asset: " + path.string());
-        }
 
-        asset->setLoadingState(AssetLoadingState::Loaded);
         if (!asset->mNeedsPostLoad){
             asset->postLoad();
-            asset->setLoadingState(AssetLoadingState::Ready);
+            asset->setLoadingState(AssetState::Ready);
         }else{
             LoadingTask postLoadTask;
             postLoadTask.placeholderAsset = asset;
             mLoadingTasks.emplace(asset->getId(), std::move(postLoadTask));
         }
 
-        
-
         return asset;
     }
 
     void AssetLoader::loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset) {
         std::lock_guard<std::mutex> lock(mMutex);
-        placeholderAsset->setLoadingState(AssetLoadingState::Loading);
+        placeholderAsset->setLoadingState(AssetState::Loading);
 
         if (mLoadingTasks.find(id) != mLoadingTasks.end()) {
             return;
@@ -65,7 +59,7 @@ namespace StrikeEngine {
             auto userAsset = task.placeholderAsset;
             if (userAsset->mNeedsPostLoad && !task.future.valid()){
                 userAsset->postLoad();
-                userAsset->setLoadingState(AssetLoadingState::Ready);
+                userAsset->setLoadingState(AssetState::Ready);
                 it = mLoadingTasks.erase(it);
             }
             else if (task.future.valid() && task.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -75,11 +69,11 @@ namespace StrikeEngine {
                     swapData(userAsset, loadedAsset);
                     userAsset->postLoad();
                     userAsset->mLoadAsync = true;
-                    userAsset->setLoadingState(AssetLoadingState::Ready);
+                    userAsset->setLoadingState(AssetState::Ready);
                 }
                 else {
-                    userAsset->setLoadingState(AssetLoadingState::FAILED);
-                    AssetManager::get().removeAsset(userAsset->getId()); // automatically remove the asset from the manager
+                    userAsset->setLoadingState(AssetState::Failed);
+                    //AssetManager::get().removeAsset(userAsset->getId()); 
                 }
                 
                 it = mLoadingTasks.erase(it);
@@ -93,11 +87,30 @@ namespace StrikeEngine {
     void AssetLoader::clearLoadingTasks() {
         std::lock_guard<std::mutex> lock(mMutex);
         for (auto& [id, task] : mLoadingTasks) {
+            if (task.future.valid()) {
+                auto status = task.future.wait_for(std::chrono::milliseconds(500));
+                
+                if (status == std::future_status::ready) {
+                    try {
+                        task.future.get(); 
+                    } catch (const std::exception& e) {
+                        STRIKE_CORE_ERROR("Error during async task cleanup: {}", e.what());
+                    } catch (...) {
+                    }
+                }
+            }
+            
             if (task.placeholderAsset) {
-                task.placeholderAsset->setLoadingState(AssetLoadingState::FAILED);
+                task.placeholderAsset->setLoadingState(AssetState::Failed);
             }
         }
+        
         mLoadingTasks.clear();
+    }
+
+    bool AssetLoader::hasLoadingTasks() const {
+        std::lock_guard<std::mutex> lock(mMutex);
+        return !mLoadingTasks.empty();
     }
 
     std::filesystem::path AssetLoader::resolvePath(const std::filesystem::path& src, const std::filesystem::path& basePath) const {

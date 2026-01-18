@@ -22,7 +22,7 @@ namespace StrikeEngine {
 
         // Initialize FreeType
         if (FT_Init_FreeType(&mFT)) {
-            std::cerr << "Failed to initialize FreeType" << std::endl;
+            STRIKE_CORE_ERROR("Could not init FreeType Library");
             return;
         }
 
@@ -31,7 +31,7 @@ namespace StrikeEngine {
         // Get shader
         mShader = ShaderManager::get().getShader("text.glsl");
         if (!mShader) {
-            std::cerr << "Failed to load text shader" << std::endl;
+            STRIKE_CORE_ERROR("FontRenderer: Failed to load text shader");
             return;
         }
 
@@ -54,7 +54,7 @@ namespace StrikeEngine {
 
     void FontRenderer::loadFont(const std::string& fontPath, unsigned int fontSize) {
         if (FT_New_Face(mFT, fontPath.c_str(), 0, &mFace)) {
-            std::cerr << "Failed to load font: " << fontPath << std::endl;
+            STRIKE_CORE_ERROR("Failed to load font: {}", fontPath);
             return;
         }
 
@@ -64,7 +64,7 @@ namespace StrikeEngine {
         // Load ASCII characters
         for (unsigned char c = 0; c < 128; c++) {
             if (FT_Load_Char(mFace, c, FT_LOAD_RENDER)) {
-                std::cerr << "Failed to load glyph: " << c << std::endl;
+                STRIKE_CORE_ERROR("Failed to load Glyph for character: {}", c);
                 continue;
             }
 

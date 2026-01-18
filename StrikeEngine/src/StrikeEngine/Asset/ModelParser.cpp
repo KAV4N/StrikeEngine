@@ -27,7 +27,7 @@ namespace StrikeEngine {
         }
 
         if (!std::filesystem::exists(modelPath)) {
-            std::cerr << "Model file not found: " << modelPath << std::endl;
+            STRIKE_CORE_ERROR("Model file does not exist: {}", modelPath.string());
             return false;
         }
 
@@ -41,7 +41,8 @@ namespace StrikeEngine {
             aiProcess_FlipUVs);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            std::cerr << "Assimp error: " << mImporter.GetErrorString() << std::endl;
+            STRIKE_CORE_ERROR("Assimp error loading model '{}': {}", 
+                modelPath.string(), mImporter.GetErrorString());
             return false;
         }
 
@@ -136,7 +137,7 @@ namespace StrikeEngine {
         rot = glm::degrees(glm::eulerAngles(quat));
     }
 
-    glm::vec4 ModelParser::extractColor(const aiMaterial* material) {
+    glm::uvec3 ModelParser::extractColor(const aiMaterial* material) {
         aiColor3D diffuseColor(1.0f, 1.0f, 1.0f);
         
         // Try to get diffuse color
@@ -145,12 +146,11 @@ namespace StrikeEngine {
             material->Get(AI_MATKEY_BASE_COLOR, diffuseColor);
         }
         
-        // Convert from 0-1 range to 0-255 range for RGB, keep alpha at 1.0
-        return glm::vec4(
-            diffuseColor.r * 255.0f,
-            diffuseColor.g * 255.0f,
-            diffuseColor.b * 255.0f,
-            1.0f
+        // Convert from 0-1 range to 0-255 integer range
+        return glm::uvec3(
+            static_cast<unsigned int>(glm::clamp(diffuseColor.r * 255.0f + 0.5f, 0.0f, 255.0f)),
+            static_cast<unsigned int>(glm::clamp(diffuseColor.g * 255.0f + 0.5f, 0.0f, 255.0f)),
+            static_cast<unsigned int>(glm::clamp(diffuseColor.b * 255.0f + 0.5f, 0.0f, 255.0f))
         );
     }
 
@@ -161,8 +161,6 @@ namespace StrikeEngine {
         decl.append_attribute("encoding") = "UTF-8";
 
         auto templateNode = doc.append_child("template");
-        templateNode.append_attribute("name") = mModelName.c_str();
-        templateNode.append_attribute("source") = mModel->getPath().filename().string().c_str();
 
         auto assets = templateNode.append_child("assets");
 
@@ -202,12 +200,11 @@ namespace StrikeEngine {
             renderer.append_attribute("model") = entity->modelId.c_str();
             renderer.append_attribute("mesh")  = entity->meshIdx;
             
-            // Write color (RGB in 0-255 range, Alpha 0-1 range)
-            auto colorStr = formatFloat(entity->color.r) + "," + 
-                           formatFloat(entity->color.g) + "," + 
-                           formatFloat(entity->color.b) + "," + 
-                           formatFloat(entity->color.a);
-            renderer.append_attribute("color") = colorStr.c_str();
+            // Write color as integers (0–255)
+            char colorStr[32];
+            snprintf(colorStr, sizeof(colorStr), "%u,%u,%u",
+                     entity->color.r, entity->color.g, entity->color.b);
+            renderer.append_attribute("color") = colorStr;
         }
 
         for (const auto& child : entity->children) {

@@ -1,6 +1,6 @@
 #pragma once
 #include "SystemECS.h"
-#include "StrikeEngine/Graphics/RenderCommands.h"
+#include "StrikeEngine/Graphics/RenderData.h"
 #include "StrikeEngine/Scene/Scene.h"
 
 #include <entt/entt.hpp>
@@ -23,16 +23,16 @@ namespace StrikeEngine {
 
         void submitMesh(const std::shared_ptr<Mesh>& mesh,
                        const std::shared_ptr<Texture>& texture,
-                       const glm::vec4& color,
+                       const glm::uvec3& color,
                        const glm::mat4& transform);
 
         void submitModel(const std::shared_ptr<Model>& model,
                         const std::shared_ptr<Texture>& texture,
-                        const glm::vec4& color,
+                        const glm::uvec3& color,
                         const glm::mat4& transform);
 
         void submitPointLight(const glm::vec3& position,
-                            const glm::vec3& color,
+                            const glm::uvec3& color,
                             float intensity,
                             float radius
                             );

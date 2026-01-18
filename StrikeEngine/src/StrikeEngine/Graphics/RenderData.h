@@ -13,15 +13,27 @@ namespace StrikeEngine {
     struct InstanceKey {
         uintptr_t meshPtr;
         uintptr_t texturePtr;
+        uint8_t colorR;
+        uint8_t colorG;
+        uint8_t colorB;
+        
         bool operator==(const InstanceKey& other) const {
-            return meshPtr == other.meshPtr && texturePtr == other.texturePtr;
+            return meshPtr == other.meshPtr && 
+                   texturePtr == other.texturePtr &&
+                   colorR == other.colorR &&
+                   colorG == other.colorG &&
+                   colorB == other.colorB;
         }
     };
     
     struct InstanceKeyHash {
         std::size_t operator()(const InstanceKey& key) const {
-            return std::hash<uintptr_t>{}(key.meshPtr) ^
-                   (std::hash<uintptr_t>{}(key.texturePtr) << 1);
+            std::size_t h1 = std::hash<uintptr_t>{}(key.meshPtr);
+            std::size_t h2 = std::hash<uintptr_t>{}(key.texturePtr);
+            std::size_t h3 = std::hash<uint32_t>{}((uint32_t(key.colorR) << 16) | 
+                                                    (uint32_t(key.colorG) << 8) | 
+                                                    uint32_t(key.colorB));
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
         }
     };
     
@@ -41,7 +53,7 @@ namespace StrikeEngine {
     struct InstanceBatch {
         std::shared_ptr<Mesh> mesh;
         std::shared_ptr<Texture> texture;
-        glm::vec4 color;  // Changed from vec3 to vec4 for blending
+        glm::uvec3 color;
         std::vector<glm::mat4> worldMatrices;
         
         void clear() {

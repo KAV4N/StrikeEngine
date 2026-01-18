@@ -1,4 +1,3 @@
-
 #include "strikepch.h"
 #include "AssetManager.h"
 
@@ -18,289 +17,30 @@ namespace StrikeEngine {
     AssetManager::AssetManager() {
         registerAssetLoaders();
     }
-    AssetManager::~AssetManager() = default;
-
+    
+    AssetManager::~AssetManager() {
+        shutdown();
+    }
 
     void AssetManager::registerAssetLoaders() {
-        mLoaders[Model::getStaticTypeName()] = std::make_unique<ModelLoader>();
-        mLoaders[Template::getStaticTypeName()] = std::make_unique<TemplateLoader>();
-        mLoaders[Texture::getStaticTypeName()] = std::make_unique<TextureLoader>();
-        mLoaders[CubeMap::getStaticTypeName()] = std::make_unique<CubeMapLoader>();
-        mLoaders[Audio::getStaticTypeName()] = std::make_unique<AudioLoader>();
+        mLoaders[Model::getStaticTypeName()]     = std::make_unique<ModelLoader>();
+        mLoaders[Template::getStaticTypeName()]   = std::make_unique<TemplateLoader>();
+        mLoaders[Texture::getStaticTypeName()]    = std::make_unique<TextureLoader>();
+        mLoaders[CubeMap::getStaticTypeName()]    = std::make_unique<CubeMapLoader>();
+        mLoaders[Audio::getStaticTypeName()]      = std::make_unique<AudioLoader>();
     }
 
-
-
-
-    std::shared_ptr<Model> AssetManager::loadModel(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingModel = getModel(id)) {
-            return existingModel;
-        }
-
-        auto loader = getLoader(Model::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<Model>(loadedAsset);
-    }
-
-    std::shared_ptr<Model> AssetManager::loadModelAsync(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingModel = getModel(id)) {
-            return existingModel;
-        }
-
-        auto loader = getLoader(Model::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto placeholderModel = std::make_shared<Model>(id, filePath);
-        placeholderModel->setLoadingState(AssetLoadingState::Loading);
-
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderModel;
-        }
-
-        loader->loadAsync(id, filePath, placeholderModel);
-        return placeholderModel;
-    }
-
-    std::shared_ptr<Model> AssetManager::getModel(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
+    std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) const {
         auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == Model::getStaticTypeName()) {
-                return std::static_pointer_cast<Model>(it->second);
-            }
-            mLoadedAssets.erase(it);
-        }
-        return nullptr;
+        return (it != mLoadedAssets.end()) ? it->second : nullptr;
     }
-
-    std::shared_ptr<Template> AssetManager::loadTemplate(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingTemplate = getTemplate(id)) {
-            return existingTemplate;
-        }
-
-        auto loader = getLoader(Template::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<Template>(loadedAsset);
-    }
-
-    std::shared_ptr<Template> AssetManager::loadTemplateAsync(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingTemplate = getTemplate(id)) {
-            return existingTemplate;
-        }
-
-        auto loader = getLoader(Template::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto placeholderTemplate = std::make_shared<Template>(id, filePath);
-        placeholderTemplate->setLoadingState(AssetLoadingState::Loading);
-
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderTemplate;
-        }
-
-        loader->loadAsync(id, filePath, placeholderTemplate);
-        return placeholderTemplate;
-    }
-
-    std::shared_ptr<Template> AssetManager::getTemplate(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == Template::getStaticTypeName()) {
-                return std::static_pointer_cast<Template>(it->second);
-            }
-            mLoadedAssets.erase(it);
-        }
-        return nullptr;
-    }
-
-    std::shared_ptr<Texture> AssetManager::loadTexture(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingTexture = getTexture(id)) {
-            return existingTexture;
-        }
-
-        auto loader = getLoader(Texture::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<Texture>(loadedAsset);
-    }
-
-    std::shared_ptr<Texture> AssetManager::loadTextureAsync(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingTexture = getTexture(id)) {
-            return existingTexture;
-        }
-
-        auto loader = getLoader(Texture::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto placeholderTexture = std::make_shared<Texture>(id, filePath);
-        placeholderTexture->setLoadingState(AssetLoadingState::Loading);
-
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderTexture;
-        }
-
-        loader->loadAsync(id, filePath, placeholderTexture);
-        return placeholderTexture;
-    }
-
-    std::shared_ptr<Texture> AssetManager::getTexture(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == Texture::getStaticTypeName()) {
-                return std::static_pointer_cast<Texture>(it->second);
-            }
-            mLoadedAssets.erase(it);
-        }
-        return nullptr;
-    }
-
-    std::shared_ptr<CubeMap> AssetManager::loadCubeMap(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingCubeMap = getCubeMap(id)) {
-            return existingCubeMap;
-        }
-
-        auto loader = getLoader(CubeMap::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<CubeMap>(loadedAsset);
-    }
-
-    std::shared_ptr<CubeMap> AssetManager::loadCubeMapAsync(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingCubeMap = getCubeMap(id)) {
-            return existingCubeMap;
-        }
-
-        auto loader = getLoader(CubeMap::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto placeholderCubeMap = std::make_shared<CubeMap>(id, filePath);
-        placeholderCubeMap->setLoadingState(AssetLoadingState::Loading);
-
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderCubeMap;
-        }
-
-        loader->loadAsync(id, filePath, placeholderCubeMap);
-        return placeholderCubeMap;
-    }
-
-    std::shared_ptr<CubeMap> AssetManager::getCubeMap(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == CubeMap::getStaticTypeName()) {
-                return std::static_pointer_cast<CubeMap>(it->second);
-            }
-            mLoadedAssets.erase(it);
-        }
-        return nullptr;
-    }
-
-
-    std::shared_ptr<Audio> AssetManager::loadAudio(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingAudio = getAudio(id)) {
-            return existingAudio;
-        }
-
-        auto loader = getLoader(Audio::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<Audio>(loadedAsset);
-    }
-
-    std::shared_ptr<Audio> AssetManager::loadAudioAsync(const std::string& id, const std::filesystem::path& filePath) {
-        if (auto existingAudio = getAudio(id)) {
-            return existingAudio;
-        }
-
-        auto loader = getLoader(Audio::getStaticTypeName());
-        if (!loader) {
-            return nullptr;
-        }
-
-        auto placeholderAudio = std::make_shared<Audio>(id, filePath);
-        placeholderAudio->setLoadingState(AssetLoadingState::Loading);
-
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mLoadedAssets[id] = placeholderAudio;
-        }
-
-        loader->loadAsync(id, filePath, placeholderAudio);
-        return placeholderAudio;
-    }
-
-    std::shared_ptr<Audio> AssetManager::getAudio(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == Audio::getStaticTypeName()) {
-                return std::static_pointer_cast<Audio>(it->second);
-            }
-            mLoadedAssets.erase(it);
-        }
-        return nullptr;
-    }
-
 
     bool AssetManager::hasAsset(const std::string& id) const {
-        std::lock_guard<std::mutex> lock(mMutex);
         return mLoadedAssets.find(id) != mLoadedAssets.end();
     }
 
+
     bool AssetManager::isAssetLoading(const std::string& id) const {
-        std::lock_guard<std::mutex> lock(mMutex);
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
             return it->second->isLoading();
@@ -308,28 +48,64 @@ namespace StrikeEngine {
         return false;
     }
 
+    bool AssetManager::isLoading() const {
+        for (const auto& [type, loader] : mLoaders) {
+            if (loader->hasLoadingTasks()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool AssetManager::isShuttingDown() const {
+        return mShuttingDown;
+    }
+
     void AssetManager::clear() {
-        std::lock_guard<std::mutex> lock(mMutex);
-        mLoadedAssets.clear();
+        mShuttingDown = true;
+        
+        // Clear all loading tasks first
         for (auto& [type, loader] : mLoaders) {
             loader->clearLoadingTasks();
         }
+        
+        // Then clear loaded assets
+        mLoadedAssets.clear();
+        
+        mShuttingDown = false;
+    }
+
+    void AssetManager::shutdown() {
+        if (mShuttingDown) {
+            return; 
+        }
+        
+        mShuttingDown = true;
+
+        for (auto& [type, loader] : mLoaders) {
+            loader->clearLoadingTasks();
+        }
+        mLoadedAssets.clear();
+        mLoaders.clear();
     }
 
     void AssetManager::update() {
+        if (mShuttingDown) {
+            return; 
+        }
+        
         for (auto& [type, loader] : mLoaders) {
             loader->update();
         }
     }
 
     void AssetManager::removeAsset(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
         mLoadedAssets.erase(id);
     }
 
     std::vector<std::string> AssetManager::getLoadedAssetIds() const {
-        std::lock_guard<std::mutex> lock(mMutex);
         std::vector<std::string> ids;
+        ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isReady()) {
                 ids.push_back(id);
@@ -339,8 +115,8 @@ namespace StrikeEngine {
     }
 
     std::vector<std::string> AssetManager::getLoadingAssetIds() const {
-        std::lock_guard<std::mutex> lock(mMutex);
         std::vector<std::string> ids;
+        ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isLoading()) {
                 ids.push_back(id);
@@ -350,38 +126,27 @@ namespace StrikeEngine {
     }
 
     size_t AssetManager::getLoadedAssetCount() const {
-        std::lock_guard<std::mutex> lock(mMutex);
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isReady()) {
-                count++;
+                ++count;
             }
         }
         return count;
     }
 
     size_t AssetManager::getLoadingAssetCount() const {
-        std::lock_guard<std::mutex> lock(mMutex);
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isLoading()) {
-                count++;
+                ++count;
             }
         }
         return count;
     }
 
-    std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
 
     void AssetManager::removeAssetInternal(const std::string& id) {
-        std::lock_guard<std::mutex> lock(mMutex);
         mLoadedAssets.erase(id);
     }
 
@@ -391,41 +156,53 @@ namespace StrikeEngine {
     }
 
     void AssetManager::serialize(pugi::xml_document& doc) {
+        if (mShuttingDown) {
+            return;
+        }
+        
         pugi::xml_node assetsNode = doc.append_child("assets");
 
-        std::lock_guard<std::mutex> lock(mMutex);
         for (const auto& [id, asset] : mLoadedAssets) {
             asset->toNode(assetsNode);
         }
     }
 
-    void AssetManager::deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, const bool direct) {
-        if (direct){
-            if (hasAsset(node.attribute("id").as_string())) return;
-            std::string typeName = node.name();
+    void AssetManager::deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct) {
+        if (mShuttingDown) {
+            return;
+        }
+        
+        if (direct) {
+            const std::string assetId = node.attribute("id").as_string();
+            if (hasAsset(assetId)) {
+                return;
+            }
+            
+            const std::string typeName = node.name();
             auto loader = getLoader(typeName);
             if (loader) {
                 auto asset = loader->loadFromNode(node, basePath);
                 if (asset) {
-                    std::lock_guard<std::mutex> lock(mMutex);
                     mLoadedAssets[asset->getId()] = asset;
                 }
             }
-        }
-        else{
-            for (pugi::xml_node assetNode : node.children()) {
-                if (hasAsset(assetNode.attribute("id").as_string())) return;
-                std::string typeName = assetNode.name();
+        } else {
+            for (const pugi::xml_node& assetNode : node.children()) {
+                const std::string assetId = assetNode.attribute("id").as_string();
+                if (hasAsset(assetId)) {
+                    continue;
+                }
+                
+                const std::string typeName = assetNode.name();
                 auto loader = getLoader(typeName);
                 if (loader) {
                     auto asset = loader->loadFromNode(assetNode, basePath);
                     if (asset) {
-                        std::lock_guard<std::mutex> lock(mMutex);
                         mLoadedAssets[asset->getId()] = asset;
                     }
                 }
             }
         }
-        
     }
-}
+
+} // namespace StrikeEngine

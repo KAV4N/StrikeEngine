@@ -9,12 +9,11 @@
 #include <filesystem>
 #include <future>
 #include <memory>
-#include <mutex>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include <thread>
+#include <atomic>
 #include <pugixml.hpp>
 
 namespace StrikeEngine {
@@ -24,30 +23,24 @@ namespace StrikeEngine {
     public:
         static AssetManager& get();
 
-        std::shared_ptr<Model> loadModel(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Model> loadModelAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Model> getModel(const std::string& id);
+        template<typename T>
+        std::shared_ptr<T> load(const std::string& id, const std::filesystem::path& src);
+        
+        template<typename T>
+        std::shared_ptr<T> loadAsync(const std::string& id, const std::filesystem::path& src);
+        
+        template<typename T>
+        std::shared_ptr<T> getAsset(const std::string& id);
 
-        std::shared_ptr<Template> loadTemplate(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Template> loadTemplateAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Template> getTemplate(const std::string& id);
-
-        std::shared_ptr<Texture> loadTexture(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Texture> loadTextureAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Texture> getTexture(const std::string& id);
-
-        std::shared_ptr<CubeMap> loadCubeMap(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<CubeMap> loadCubeMapAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<CubeMap> getCubeMap(const std::string& id);
-
-        std::shared_ptr<Audio> loadAudio(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Audio> loadAudioAsync(const std::string& id, const std::filesystem::path& src);
-        std::shared_ptr<Audio> getAudio(const std::string& id);
+        std::shared_ptr<Asset> getAssetBase(const std::string& id) const;
 
         bool hasAsset(const std::string& id) const;
         bool isAssetLoading(const std::string& id) const;
+        bool isShuttingDown() const;
+        bool isLoading() const;
 
         void clear();
+        void shutdown();
         void update();
         void removeAsset(const std::string& id);
 
@@ -57,7 +50,7 @@ namespace StrikeEngine {
         size_t getLoadedAssetCount() const;
         size_t getLoadingAssetCount() const;
 
-        void deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, const bool direct = false);
+        void deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct = false);
         void serialize(pugi::xml_document& doc);
 
     private:
@@ -69,7 +62,6 @@ namespace StrikeEngine {
 
         void registerAssetLoaders();
 
-        std::shared_ptr<Asset> getAssetBase(const std::string& id);
         void removeAssetInternal(const std::string& id);
         AssetLoader* getLoader(const std::string& typeName);
 
@@ -79,7 +71,70 @@ namespace StrikeEngine {
 
         std::unordered_map<std::string, std::shared_ptr<Asset>> mLoadedAssets;
         std::unordered_map<std::string, std::unique_ptr<AssetLoader>> mLoaders;
-        mutable std::mutex mMutex;
+        std::atomic<bool> mShuttingDown{false};
     };
 
+    // Template implementations
+    template<typename T>
+    std::shared_ptr<T> AssetManager::load(const std::string& id, const std::filesystem::path& filePath) {
+        static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
+        
+        if (mShuttingDown) {
+            return nullptr;
+        }
+        
+        if (auto existing = getAsset<T>(id)) {
+            return existing;
+        }
+
+        auto loader = getLoader(T::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        auto loadedAsset = loader->load(id, filePath);
+        if (loadedAsset) {
+            mLoadedAssets[id] = loadedAsset;
+        }
+        return std::static_pointer_cast<T>(loadedAsset);
+    }
+
+    template<typename T>
+    std::shared_ptr<T> AssetManager::loadAsync(const std::string& id, const std::filesystem::path& filePath) {
+        static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
+        auto placeholder = std::make_shared<T>(id, filePath);
+        placeholder->setLoadingState(AssetState::Loading);
+        if (mShuttingDown) {
+            return nullptr;
+        }
+        
+        if (auto existing = getAsset<T>(id)) {
+            return existing;
+        }
+
+        auto loader = getLoader(T::getStaticTypeName());
+        if (!loader) {
+            return nullptr;
+        }
+
+        mLoadedAssets[id] = placeholder;
+
+        loader->loadAsync(id, filePath, placeholder);
+        return placeholder;
+    }
+
+    template<typename T>
+    std::shared_ptr<T> AssetManager::getAsset(const std::string& id) {
+        static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
+        
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            if (it->second->getTypeName() == T::getStaticTypeName()) {
+                return std::static_pointer_cast<T>(it->second);
+            }
+
+            mLoadedAssets.erase(it);
+        }
+        return nullptr;
+    }
 }

@@ -63,7 +63,7 @@ namespace StrikeEngine {
 
     void Renderer::submitMesh(const std::shared_ptr<Mesh>& mesh,
                               const std::shared_ptr<Texture>& texture,
-                              const glm::vec4& color,
+                              const glm::uvec3& color,
                               const glm::mat4& transform) {
         if (!mCameraActive || !mesh) return;
 
@@ -71,7 +71,10 @@ namespace StrikeEngine {
 
         InstanceKey key{
             reinterpret_cast<uintptr_t>(mesh.get()),
-            reinterpret_cast<uintptr_t>(texture.get())
+            reinterpret_cast<uintptr_t>(texture.get()),
+            static_cast<uint8_t>(glm::clamp(color.r, 0u, 255u)),
+            static_cast<uint8_t>(glm::clamp(color.g, 0u, 255u)),
+            static_cast<uint8_t>(glm::clamp(color.b, 0u, 255u))
         };
 
         auto& batch = mCurrentCameraData.instanceBatches[key];
@@ -91,7 +94,7 @@ namespace StrikeEngine {
 
     void Renderer::submitModel(const std::shared_ptr<Model>& model,
                                const std::shared_ptr<Texture>& texture,
-                               const glm::vec4& color,
+                               const glm::uvec3& color,
                                const glm::mat4& transform) {
         if (!model) return;
 
@@ -107,14 +110,14 @@ namespace StrikeEngine {
     }
 
     void Renderer::submitPointLight(const glm::vec3& position,
-                                    const glm::vec3& color,
+                                    const glm::uvec3& color,
                                     float intensity,
                                     float radius) {
         if (!mCameraActive) return;
 
         PointLight light;
         light.position = glm::vec4(position, 1.0f);
-        light.color = glm::vec4(color / 255.0f, 0.0f);
+        light.color = glm::vec4(glm::vec3(color) / 255.0f, 1.0f);
         light.intensity = intensity;
         light.radius = radius;
 

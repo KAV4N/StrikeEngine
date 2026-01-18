@@ -8,65 +8,29 @@
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
 
-
 namespace StrikeEngine {
 
-    SceneLoader::SceneLoader() : mIsLoading(false) {
+    SceneLoader::SceneLoader() {
     }
 
-    std::future<std::unique_ptr<Scene>> SceneLoader::loadScene(const std::filesystem::path& path) {
-        if (mIsLoading) {
-            throw std::runtime_error("Scene is already loading");
-        }
-
-        mIsLoading = true;
-
+    std::unique_ptr<Scene> SceneLoader::loadScene(const std::filesystem::path& path) {
         AssetManager::get().clear();
-        
-        std::promise<std::unique_ptr<Scene>> promise;
-        promise.set_value(loadSceneInternal(path));
-
-        mIsLoading = false;
-        
-        return promise.get_future();
+        return loadSceneInternal(path);
     }
 
-    std::future<std::unique_ptr<Scene>> SceneLoader::loadSceneAsync(const std::filesystem::path& path) {
-        if (mIsLoading) {
-            throw std::runtime_error("Scene is already loading");
-        }
-
-        mIsLoading = true;
-
-        AssetManager::get().clear();
-        
-        
-        return std::async(std::launch::async, [this, path]() {
-            auto scene = loadSceneInternal(path, true);
-            mIsLoading = false;
-            return scene;
-        });
-    }
-
-    bool SceneLoader::isLoading() const {
-        return mIsLoading;
-    }
-
-    void SceneLoader::update() {
-
-    }
-
-    std::unique_ptr<Scene> SceneLoader::loadSceneInternal(const std::filesystem::path& path, bool async) {
+    std::unique_ptr<Scene> SceneLoader::loadSceneInternal(const std::filesystem::path& path) {
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
         
         if (!result) {
-            throw std::runtime_error("Failed to load scene XML: " + path.string());
+            STRIKE_CORE_ERROR("Failed to load scene file '{}': {}", path.string(), result.description());
+            return nullptr;
         }
 
         pugi::xml_node sceneNode = doc.child("scene");
         if (!sceneNode) {
-            throw std::runtime_error("Invalid scene format: no scene node found");
+            STRIKE_CORE_ERROR("Invalid scene format: no scene node found in file '{}'", path.string()); 
+            return nullptr;
         }
 
         std::string sceneId = sceneNode.attribute("sceneId").as_string("DefaultScene");
@@ -74,14 +38,14 @@ namespace StrikeEngine {
 
         pugi::xml_node assetsNode = sceneNode.child("assets");
         if (assetsNode) {
-            loadAssets(assetsNode, path.parent_path(), async);
+            loadAssets(assetsNode, path.parent_path());
         }
 
-        // Step 3: Setup skybox and sun
+        // Setup skybox and sun
         setupSkybox(*scene, sceneNode);
         setupSun(*scene, sceneNode);
 
-        // Step 4: Create entities (pass empty Entity() as root - entities without parent become roots)
+        // Create entities (pass empty Entity() as root - entities without parent become roots)
         pugi::xml_node entitiesNode = sceneNode.child("entities");
         if (entitiesNode) {
             createEntities(*scene, entitiesNode, Entity());
@@ -90,37 +54,18 @@ namespace StrikeEngine {
         return scene;
     }
 
-    void SceneLoader::loadAssets(const pugi::xml_node& assetsNode, const std::filesystem::path& basePath, bool async) {
+    void SceneLoader::loadAssets(const pugi::xml_node& assetsNode, const std::filesystem::path& basePath) {
         auto& assetManager = AssetManager::get();
-        std::vector<std::string> loadingAssetIds;
-
         for (pugi::xml_node assetNode : assetsNode.children()) {
             std::string assetId = assetNode.attribute("id").as_string();
-            
             if (assetId.empty()) {
                 continue;
             }
-
             assetManager.deserialize(assetNode, basePath, true);
-            loadingAssetIds.push_back(assetId);
-
         }
 
-
-        // WAIT FOR ASYNC ASSETS TO BE READY
-        while (!loadingAssetIds.empty()) {  
-            if (!async) {
-                assetManager.update(); // UPDATE SYNC METHODS REQUIRED TO INIT LIKE MESH OR MODEL TO BE FULLY READY
-            }
-            for (auto it = loadingAssetIds.begin(); it != loadingAssetIds.end(); ) {
-                auto asset = assetManager.getAssetBase(*it);
-                if (!asset || asset->isReady() || asset->hasFailed()) {
-                    it = loadingAssetIds.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));           
+        while (assetManager.isLoading()) {  
+            assetManager.update();     
         }
     }
 
@@ -149,7 +94,7 @@ namespace StrikeEngine {
             // Check for template instantiation
             std::string templateId = entityNode.attribute("template").as_string("");
             if (!templateId.empty()) {
-                auto templateAsset = AssetManager::get().getTemplate(templateId);
+                auto templateAsset = AssetManager::get().getAsset<Template>(templateId);
                 if (templateAsset && templateAsset->isReady()) {
                     templateAsset->instantiate(entity);
                 }
@@ -177,7 +122,7 @@ namespace StrikeEngine {
         if (skyboxNode) {
             std::string cubeMapId = skyboxNode.attribute("cubeMapId").as_string();
             if (!cubeMapId.empty()) {
-                scene.setSkyboxCubeMap(cubeMapId);
+                scene.setSkybox(cubeMapId);
             }
         }
     }
@@ -197,7 +142,6 @@ namespace StrikeEngine {
             sun.setIntensity(intensity);
             sun.setRotationEuler(parseVector3(rotStr));
             sun.setCastShadows(shadows);
-            
         }
     }
 

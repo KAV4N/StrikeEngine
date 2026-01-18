@@ -10,24 +10,27 @@ namespace StrikeEngine {
     AudioSourceComponent::AudioSourceComponent() {}
 
     void AudioSourceComponent::setAudio(const std::string& audioId) {
-        mAudio = AssetManager::get().getAudio(audioId);
+        mAudioId = audioId;
     }
 
     void AudioSourceComponent::removeAudio() {
         stop();
-        mAudio.reset();
+        mAudioId.clear();
     }
 
     std::shared_ptr<Audio> AudioSourceComponent::getAudio() const {
-        return mAudio;
+        if (mAudioId.empty()) {
+            return nullptr;
+        }
+        return AssetManager::get().getAsset<Audio>(mAudioId);
     }
 
     bool AudioSourceComponent::hasAudio() const {
-        return mAudio != nullptr;
+        return !mAudioId.empty();
     }
 
     void AudioSourceComponent::play() {
-        if (!mAudio) return;
+        if (mAudioId.empty()) return;
         mIsPlaying = true;
         mIsPaused = false;
     }
@@ -49,7 +52,7 @@ namespace StrikeEngine {
 
     void AudioSourceComponent::deserialize(const pugi::xml_node& node) {
         if (auto attr = node.attribute("audio")) {
-            setAudio(attr.as_string());
+            mAudioId = attr.as_string();
         }
 
         if (auto attr = node.attribute("volume")) {
@@ -74,8 +77,8 @@ namespace StrikeEngine {
     }
 
     void AudioSourceComponent::serialize(pugi::xml_node& node) const {
-        if (mAudio) {
-            node.append_attribute("audio") = mAudio->getId().c_str();
+        if (!mAudioId.empty()) {
+            node.append_attribute("audio") = mAudioId.c_str();
         }
 
         node.append_attribute("volume") = mVolume;

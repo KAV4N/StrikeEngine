@@ -6,7 +6,7 @@
 
 namespace StrikeEngine {
 
-    // ============ TextureLoader ============
+
 
     TextureLoader::TextureLoader() : AssetLoader("Texture") {}
 
@@ -23,14 +23,14 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> TextureLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto texture = std::make_shared<Texture>(id, path);
-        texture->setLoadingState(AssetLoadingState::Loading);
+        texture->setLoadingState(AssetState::Loading);
 
         int width, height, channels;
         unsigned char* data = loadImageData(path, width, height, channels);
 
         if (!data) {
-            std::cerr << "Failed to load texture: " << path << std::endl;
-            texture->setLoadingState(AssetLoadingState::FAILED);
+            STRIKE_CORE_ERROR("Failed to load texture image: {}", path.string());
+            texture->setLoadingState(AssetState::Failed);
             return texture;
         }
 
@@ -38,25 +38,6 @@ namespace StrikeEngine {
         freeImageData(data);
 
         return texture;
-    }
-
-    std::shared_ptr<Asset> TextureLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string id = node.attribute("id").as_string();
-        std::string srcStr = node.attribute("src").as_string();
-        
-        if (id.empty() || srcStr.empty()) {
-            std::cerr << "Invalid texture node: missing id or src" << std::endl;
-            return nullptr;
-        }
-
-        std::filesystem::path path = resolvePath(srcStr, basePath);
-        return load(id, path);
-    }
-
-    std::shared_ptr<Asset> TextureLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        auto placeholder = std::make_shared<Texture>(id, path);
-        placeholder->setLoadingState(AssetLoadingState::Loading);
-        return placeholder;
     }
 
     void TextureLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
@@ -71,6 +52,10 @@ namespace StrikeEngine {
             std::vector<unsigned char> tempData(static_cast<size_t>(width) * height * channels);
             placeholderTexture->setTextureData(width, height, channels, tempData.data());
         }
+    }
+
+    std::shared_ptr<Asset> TextureLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
+        return loadFromNodeInternal<Texture>(node, basePath);
     }
 
     // ============ CubeMapLoader ============
@@ -122,12 +107,11 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> CubeMapLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto cubemap = std::make_shared<CubeMap>(id, path);
-        cubemap->setLoadingState(AssetLoadingState::Loading);
+        cubemap->setLoadingState(AssetState::Loading);
 
-        // Path is expected to be a directory containing the 6 face images
         if (!std::filesystem::is_directory(path)) {
-            std::cerr << "CubeMap path must be a directory: " << path << std::endl;
-            cubemap->setLoadingState(AssetLoadingState::FAILED);
+            STRIKE_CORE_ERROR("Cubemap path is not a directory: {}", path.string());
+            cubemap->setLoadingState(AssetState::Failed);
             return cubemap;
         }
 
@@ -135,7 +119,7 @@ namespace StrikeEngine {
             "right", "left", "top", "bottom", "front", "back"
         };
 
-        std::array<std::vector<unsigned char>, 6> faceData;
+        unsigned char* faceData[6] = {nullptr};
         int width = 0, height = 0, channels = 0;
         bool loadSuccess = true;
 
@@ -143,7 +127,7 @@ namespace StrikeEngine {
             std::filesystem::path facePath = findCubemapFace(path, faceNames[i]);
             
             if (facePath.empty()) {
-                std::cerr << "Failed to find cubemap face '" << faceNames[i] << "' in directory: " << path << std::endl;
+                STRIKE_CORE_ERROR("Cubemap face image not found: {} in {}", faceNames[i], path.string());
                 loadSuccess = false;
                 break;
             }
@@ -152,7 +136,7 @@ namespace StrikeEngine {
             unsigned char* data = loadImageData(facePath, w, h, c);
 
             if (!data) {
-                std::cerr << "Failed to load cubemap face: " << facePath << std::endl;
+                STRIKE_CORE_ERROR("Failed to load cubemap face image: {}", facePath.string());
                 loadSuccess = false;
                 break;
             }
@@ -162,46 +146,30 @@ namespace StrikeEngine {
                 height = h;
                 channels = c;
             } else if (w != width || h != height || c != channels) {
-                std::cerr << "Cubemap face dimensions mismatch: " << facePath << std::endl;
+                STRIKE_CORE_ERROR("Cubemap face image dimensions mismatch: {}", facePath.string());
                 freeImageData(data);
                 loadSuccess = false;
                 break;
             }
 
             flipImageHorizontally(data, w, h, c);
-
-            size_t dataSize = static_cast<size_t>(w) * h * c;
-            faceData[i].resize(dataSize);
-            std::memcpy(faceData[i].data(), data, dataSize);
-            freeImageData(data);
+            faceData[i] = data;
         }
 
-        if (!loadSuccess) {
-            cubemap->setLoadingState(AssetLoadingState::FAILED);
-            return cubemap;
+        if (loadSuccess) {
+            cubemap->setCubeMapData(width, height, channels, faceData);
+        } else {
+            cubemap->setLoadingState(AssetState::Failed);
         }
 
-        cubemap->setCubeMapData(width, height, channels, faceData);
+        // Free all loaded image data
+        for (int i = 0; i < 6; i++) {
+            if (faceData[i]) {
+                freeImageData(faceData[i]);
+            }
+        }
+
         return cubemap;
-    }
-
-    std::shared_ptr<Asset> CubeMapLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string id = node.attribute("id").as_string();
-        std::string srcStr = node.attribute("src").as_string();
-        
-        if (id.empty() || srcStr.empty()) {
-            std::cerr << "Invalid cubemap node: missing id or src" << std::endl;
-            return nullptr;
-        }
-
-        std::filesystem::path path = resolvePath(srcStr, basePath);
-        return load(id, path);
-    }
-
-    std::shared_ptr<Asset> CubeMapLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        auto placeholder = std::make_shared<CubeMap>(id, path);
-        placeholder->setLoadingState(AssetLoadingState::Loading);
-        return placeholder;
     }
 
     void CubeMapLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
@@ -211,10 +179,22 @@ namespace StrikeEngine {
         if (loadedCubemap && placeholderCubemap) {
             int width = loadedCubemap->getWidth();
             int height = loadedCubemap->getHeight();
+            int channels = loadedCubemap->getChannels();
+
+            // Create temporary pointers to the loaded face data
+            unsigned char* faceData[6];
+            size_t faceSize = static_cast<size_t>(width) * height * channels;
             
-            std::array<std::vector<unsigned char>, 6> emptyFaces;
-            placeholderCubemap->setCubeMapData(width, height, 0, emptyFaces);
+            for (int i = 0; i < 6; i++) {
+                faceData[i] = loadedCubemap->mFaceData[i].data();
+            }
+
+            placeholderCubemap->setCubeMapData(width, height, channels, faceData);
         }
+    }
+
+    std::shared_ptr<Asset> CubeMapLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
+        return loadFromNodeInternal<CubeMap>(node, basePath);
     }
 
 }

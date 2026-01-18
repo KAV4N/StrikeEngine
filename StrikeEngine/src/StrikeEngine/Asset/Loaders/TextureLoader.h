@@ -13,7 +13,6 @@ namespace StrikeEngine {
 
     protected:
         std::shared_ptr<Asset> loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async=false) override;
-        std::shared_ptr<Asset> createPlaceholder(const std::string& id, const std::filesystem::path& path) override;
         void swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) override;
 
     private:
@@ -30,7 +29,6 @@ namespace StrikeEngine {
 
     protected:
         std::shared_ptr<Asset> loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async=false) override;
-        std::shared_ptr<Asset> createPlaceholder(const std::string& id, const std::filesystem::path& path) override;
         void swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) override;
 
     private:

@@ -50,6 +50,7 @@ namespace StrikeEngine {
         float getDuration() const;
 
     private:
+        friend class AudioLoader;
         AudioData mAudioData;
     };
 

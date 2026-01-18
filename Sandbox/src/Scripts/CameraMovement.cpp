@@ -144,9 +144,9 @@ void CameraMovement::swapScene() {
     auto scene = world.getScene();
 
     if (scene->getId() == "SecondScene"){
-        StrikeEngine::World::get().loadSceneAsync("Assets/Scenes/MainScene.xml");
+        StrikeEngine::World::get().loadScene("Assets/Scenes/MainScene.xml");
     }else{
-        StrikeEngine::World::get().loadSceneAsync("Assets/Scenes/SecondScene.xml");
+        StrikeEngine::World::get().loadScene("Assets/Scenes/SecondScene.xml");
     }
 }
 

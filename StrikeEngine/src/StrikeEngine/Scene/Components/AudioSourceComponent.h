@@ -26,6 +26,7 @@ namespace StrikeEngine {
         // Audio clip management
         void setAudio(const std::string& audioId);
         void removeAudio();
+        const std::string& getAudioId() const { return mAudioId; }
         std::shared_ptr<Audio> getAudio() const;
         bool hasAudio() const;
 
@@ -56,7 +57,7 @@ namespace StrikeEngine {
     private:
         friend class AudioSystem;
 
-        std::shared_ptr<Audio> mAudio;
+        std::string mAudioId;
         float mVolume = 1.0f;
         bool mLoop = false;
         bool mAutoplay = false;

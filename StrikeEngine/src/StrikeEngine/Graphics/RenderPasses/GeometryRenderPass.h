@@ -29,7 +29,7 @@ namespace StrikeEngine {
 
     private:
         Renderer& mRenderer;
-        std::shared_ptr<Shader> mShader;
+        std::shared_ptr<Shader> mShader;  
         GLuint mWhiteTextureID;
     };
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "RenderPasses/RenderPass.h"
-#include "RenderCommands.h"
+#include "RenderData.h"
 
 #include <memory>
 #include <vector>
@@ -42,16 +42,16 @@ namespace StrikeEngine {
 
         void submitMesh(const std::shared_ptr<Mesh>& mesh,
                        const std::shared_ptr<Texture>& texture,
-                       const glm::vec4& color,
+                       const glm::uvec3& color,
                        const glm::mat4& transform);
 
         void submitModel(const std::shared_ptr<Model>& model,
                         const std::shared_ptr<Texture>& texture,
-                        const glm::vec4& color,
+                        const glm::uvec3& color,
                         const glm::mat4& transform);
 
         void submitPointLight(const glm::vec3& position,
-                             const glm::vec3& color,
+                             const glm::uvec3& color,
                              float intensity,
                              float radius);
 
@@ -60,8 +60,7 @@ namespace StrikeEngine {
 
         void display();
         
-        template<typename T, typename... Args>
-        T* addPass(PassStage stage, Args&&... args);
+
 
         template <typename T>
         T* getPass() const;
@@ -87,6 +86,9 @@ namespace StrikeEngine {
         void postRender(const CameraRenderData& cameraData);
 
         void addToShadowBatch(const std::shared_ptr<Mesh>& mesh, const glm::mat4& transform);
+
+        template<typename T, typename... Args>
+        T* addPass(PassStage stage, Args&&... args);
 
     private:
         std::array<std::vector<std::unique_ptr<RenderPass>>, 3> mStagePasses{

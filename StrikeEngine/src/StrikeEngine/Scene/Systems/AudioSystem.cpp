@@ -26,12 +26,12 @@ namespace StrikeEngine {
         mDeviceConfig.pUserData = this;
 
         if (ma_device_init(NULL, &mDeviceConfig, &mDevice) != MA_SUCCESS) {
-            std::cerr << "Failed to initialize audio device" << std::endl;
+            STRIKE_CORE_ERROR("Failed to initialize audio device");
             return false;
         }
 
         if (ma_device_start(&mDevice) != MA_SUCCESS) {
-            std::cerr << "Failed to start audio device" << std::endl;
+            STRIKE_CORE_ERROR("Failed to start audio device");
             ma_device_uninit(&mDevice);
             return false;
         }
@@ -57,10 +57,13 @@ namespace StrikeEngine {
         for (auto entity : view) {
             Entity ent(entity, scene);
             auto& source = registry.get<AudioSourceComponent>(entity);
+            
+            // Fetch audio on-demand
+            auto audio = source.getAudio();
 
-            if (!ent.isActive() || !source.isActive()) continue;
+            if (!ent.isActive() || !source.isActive() || !audio || !audio->isReady()) continue;
 
-            if (source.isAutoplay() && source.hasAudio() && !source.isPlaying() && !source.isPaused()) {
+            if (source.isAutoplay() && !source.isPlaying() && !source.isPaused()) {
                 source.play();
             }
         }
@@ -95,9 +98,10 @@ namespace StrikeEngine {
             Entity ent(entity, scene);
             auto& source = registry.get<AudioSourceComponent>(entity);
 
-            if (!source.isPlaying() || source.isPaused() || !source.hasAudio()) continue;
-
+            // Fetch audio on-demand
             auto audio = source.getAudio();
+            if (!source.isPlaying() || source.isPaused() || !audio || !audio->isReady()) continue;
+
             const auto& audioData = audio->getData();
             uint64_t totalFrames = audio->getFrameCount();
             uint32_t channels = audio->getChannels();

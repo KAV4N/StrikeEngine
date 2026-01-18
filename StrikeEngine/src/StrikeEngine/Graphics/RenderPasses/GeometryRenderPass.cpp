@@ -44,10 +44,6 @@ namespace StrikeEngine {
 
     void GeometryRenderPass::setup() {
         mShader = ShaderManager::get().getShader("geometry.glsl");
-        if (!mShader) {
-            std::cerr << "Failed to load geometry shader!" << std::endl;
-        }
-
         createWhiteTexture();
     }
 
@@ -83,8 +79,7 @@ namespace StrikeEngine {
         mShader->setVec3("uViewPos", cameraPos);
 
         // Set color with blend (RGB in 0-255 range converted to 0-1, A is blend in 0-1 range)
-        glm::vec4 colorWithBlend = glm::vec4(glm::vec3(batch.color) / 255.0f, batch.color.a);
-        mShader->setVec4("uColorBlend", colorWithBlend);
+        mShader->setVec3("uColor", glm::vec3(batch.color) / 255.0f);
 
         // Always bind a texture (either actual texture or white texture)
         glActiveTexture(GL_TEXTURE0);

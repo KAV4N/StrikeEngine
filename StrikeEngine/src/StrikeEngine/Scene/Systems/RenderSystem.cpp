@@ -79,7 +79,7 @@ namespace StrikeEngine {
         auto& renderer = Renderer::get();
         std::multimap<int, CameraRenderData> cameras;
 
-        auto skybox = scene->getSkyboxCubeMap(); 
+        auto skybox = scene->getSkybox(); 
         auto view = registry.view<CameraComponent>();
         
         for (auto entity : view) {
@@ -98,7 +98,7 @@ namespace StrikeEngine {
         for (const auto& [renderOrder, camData] : cameras) {
             renderer.beginCamera(camData.camera, camData.cameraPosition);
 
-            if (skybox) renderer.submitSkybox(skybox); 
+            if (skybox && skybox->isReady()) renderer.submitSkybox(skybox); 
             processLights(scene);
             processRenderables(scene);
 
@@ -140,16 +140,25 @@ namespace StrikeEngine {
             if (!ent.isActive() || !rendererComp.isActive()) continue;
 
             glm::mat4 worldMatrix = ent.getWorldMatrix();
+            
+            // Fetch assets on-demand
             auto texture = rendererComp.getTexture();
-            glm::vec4 color = rendererComp.getColor();
+            auto model = rendererComp.getModel();
+            glm::uvec3 color = rendererComp.getColor();
 
+            bool readyModel = rendererComp.hasModel() && model && model->isReady();
+            bool readyTexture = (texture == nullptr) || texture->isReady();
+
+            if (!readyModel || !readyTexture) {
+                continue;
+            }
+            
             if (rendererComp.hasMesh()) {
                 auto mesh = rendererComp.getMesh();
                 if (mesh) {
                     submitMesh(mesh, texture, color, worldMatrix);
                 }
             } else if (rendererComp.hasModel()) {
-                auto model = rendererComp.getModel();
                 if (model) {
                     submitModel(model, texture, color, worldMatrix);
                 }
@@ -159,20 +168,20 @@ namespace StrikeEngine {
 
     void RenderSystem::submitMesh(const std::shared_ptr<Mesh>& mesh,
                                   const std::shared_ptr<Texture>& texture,
-                                  const glm::vec4& color,
+                                  const glm::uvec3& color,
                                   const glm::mat4& transform) {
         Renderer::get().submitMesh(mesh, texture, color, transform);
     }
 
     void RenderSystem::submitModel(const std::shared_ptr<Model>& model,
                                    const std::shared_ptr<Texture>& texture,
-                                   const glm::vec4& color,
+                                   const glm::uvec3& color,
                                    const glm::mat4& transform) {
         Renderer::get().submitModel(model, texture, color, transform);
     }
 
     void RenderSystem::submitPointLight(const glm::vec3& position,
-                                       const glm::vec3& color,
+                                       const glm::uvec3& color,
                                        float intensity,
                                        float radius
                                        ) {

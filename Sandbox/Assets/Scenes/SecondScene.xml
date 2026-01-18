@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scene sceneId="SecondScene">
 	<assets>
-		<template id="track" src="../Objects/tempoTrack/scene.gltf" async="false"/>
-		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/skybox/" async="false"/>
-		<texture id="bodyR" src="@/Assets/Objects/tempoTrack/BASE_baseColor.png" async="false"/>
-		<texture id="wingR" src="@/Assets/Objects/tempoTrack/WINGS_baseColor.png" async="false"/>
-		<template id="gizmo" src="../Objects/gizmo/untitled45.fbx" async="false"/>
+		<template id="track" src="../Objects/tempoTrack/scene.gltf" async="true"/>
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/skybox/" async="true"/>
+		<texture id="bodyR" src="@/Assets/Objects/tempoTrack/BASE_baseColor.png" async="true"/>
+		<texture id="wingR" src="@/Assets/Objects/tempoTrack/WINGS_baseColor.png" async="true"/>
+		<template id="gizmo" src="../Objects/gizmo/untitled45.fbx" async="true"/>
 	</assets>
 
 	<sun color="255, 240, 210" intensity="1" rotation="-120,0,0" shadows="true"/>
@@ -36,16 +36,16 @@
 
 		<entity tag="ship" position="-0.003,0,4.304" rotation="23.199,-89.980,-113.199" scale="0.633,0.633,0.633">
 			<components>
-				<renderer model="scene" mesh="0" color="0,0,0,0" texture="BASE_baseColor" />
+				<renderer model="scene" mesh="0" color="255,255,255" texture="BASE_baseColor" />
 			</components>
 			<entity tag="Cube.002_BODY_0" position="0.000,20.000,0.000" rotation="0.000,0.000,90.000" scale="1.000,1.000,1.000">
 				<components>
-						<renderer model="scene" mesh="0" color="0,0,0,0" texture="BASE_baseColor" />
+					<renderer model="scene" mesh="0" color="255,0,0" texture="BASE_baseColor" />
 				</components>
 			</entity>
 			<entity tag="Cube.003_WINGS_0" position="-0.000,0.000,0.000" rotation="0.000,-0.000,0.000" scale="1.000,1.000,1.000">
 				<components>
-				<renderer model="scene" mesh="1" color="0,0,0,0" texture="WINGS_baseColor" />
+					<renderer model="scene" mesh="1" color="255,255,255" texture="WINGS_baseColor" />
 				</components>
 			</entity>
 		</entity>

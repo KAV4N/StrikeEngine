@@ -40,8 +40,11 @@ namespace StrikeEngine {
         void setParent(const Entity& child, const Entity& parent);
         void addChild(const Entity& parent, const Entity& child);
 
-        bool setSkyboxCubeMap(const std::string& cubeMapId);
-        std::shared_ptr<CubeMap> getSkyboxCubeMap() const;
+        // Skybox management
+        void setSkybox(const std::string& cubeMapId);
+        bool hasSkybox() const;
+        const std::string& getSkyboxId() const { return mSkyboxCubeMapId; }
+        std::shared_ptr<CubeMap> getSkybox() const;
 
         // Update operations
         void updateTransforms();
@@ -119,8 +122,7 @@ namespace StrikeEngine {
         entt::registry mRegistry;
         Sun mSun; 
 
-        std::shared_ptr<CubeMap> mSkyboxCubeMap;
-
+        std::string mSkyboxCubeMapId;
 
         // Graph node storage
         std::unordered_map<entt::entity, std::shared_ptr<GraphNode>> mGraphNodes;

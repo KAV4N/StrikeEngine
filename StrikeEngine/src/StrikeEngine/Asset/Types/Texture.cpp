@@ -40,8 +40,6 @@ namespace StrikeEngine {
             mData.resize(dataSize);
             std::memcpy(mData.data(), data, dataSize);
         }
-        
-        setLoadingState(AssetLoadingState::Loaded);
     }
 
     void Texture::postLoad() {
@@ -50,8 +48,8 @@ namespace StrikeEngine {
         }
 
         if (mData.empty() || mWidth == 0 || mHeight == 0) {
-            std::cerr << "Cannot create texture: no data loaded" << std::endl;
-            setLoadingState(AssetLoadingState::FAILED);
+            STRIKE_CORE_ERROR("Cannot create texture: no data loaded");
+            setLoadingState(AssetState::Failed);
             return;
         }
 
@@ -113,20 +111,27 @@ namespace StrikeEngine {
         return CubeMap::getStaticTypeName();
     }
 
-    void CubeMap::setCubeMapData(int width, int height, int channels,
-                                 const std::array<std::vector<unsigned char>, 6>& faces) {
+    void CubeMap::setCubeMapData(int width, int height, int channels, unsigned char* faceData[6]) {
         mWidth = width;
         mHeight = height;
         mChannels = channels;
-        mFaceData = faces;
-        
-        setLoadingState(AssetLoadingState::Loaded);
+
+        if (faceData) {
+            size_t faceSize = static_cast<size_t>(width) * height * channels;
+            for (int i = 0; i < 6; i++) {
+                if (faceData[i]) {
+                    mFaceData[i].resize(faceSize);
+                    std::memcpy(mFaceData[i].data(), faceData[i], faceSize);
+                }
+            }
+        }
     }
 
     void CubeMap::postLoad() {
         if (mTextureID != 0) {
             return; // Already loaded
         }
+        
         bool hasValidData = true;
         for (const auto& face : mFaceData) {
             if (face.empty()) {
@@ -136,8 +141,8 @@ namespace StrikeEngine {
         }
 
         if (!hasValidData || mWidth == 0 || mHeight == 0) {
-            std::cerr << "Cannot create cubemap: incomplete face data" << std::endl;
-            setLoadingState(AssetLoadingState::FAILED);
+            STRIKE_CORE_ERROR("Cannot create cubemap: incomplete face data");
+            setLoadingState(AssetState::Failed);
             return;
         }
 

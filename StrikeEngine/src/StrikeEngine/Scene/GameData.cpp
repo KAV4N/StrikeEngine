@@ -106,19 +106,18 @@ namespace StrikeEngine {
             // Write JSON to file with pretty formatting
             std::ofstream file(filePath);
             if (!file.is_open()) {
-                std::cerr << "Failed to open file for saving: " << filePath << std::endl;
+                STRIKE_CORE_ERROR("Failed to open file for saving: {}", filePath.string());
                 return false;
             }
 
             file << jsonData.dump(4); // Pretty print with 4-space indentation
             file.close();
 
-            std::cout << "GameData saved to: " << filePath << " (" << jsonData.size() << " entries)" << std::endl;
             return true;
 
         }
         catch (const std::exception& e) {
-            std::cerr << "Exception while saving GameData: " << e.what() << std::endl;
+            STRIKE_CORE_ERROR("Exception while saving GameData: {}", e.what());
             return false;
         }
     }
@@ -133,7 +132,7 @@ namespace StrikeEngine {
         try {
             std::ifstream file(filePath);
             if (!file.is_open()) {
-                std::cerr << "Failed to open file for loading: " << filePath << std::endl;
+                STRIKE_CORE_ERROR("Failed to open file for loading: {}", filePath.string());
                 return false;
             }
 
@@ -161,7 +160,7 @@ namespace StrikeEngine {
 
         }
         catch (const std::exception& e) {
-            std::cerr << "Exception while loading GameData: " << e.what() << std::endl;
+            STRIKE_CORE_ERROR("Exception while loading GameData: {}", e.what());
             return false;
         }
     }
@@ -238,7 +237,7 @@ namespace StrikeEngine {
     std::optional<DataValue> GameData::jsonToDataValue(const nlohmann::json& json) const {
         try {
             if (!json.contains("type") || !json.contains("value")) {
-                std::cerr << "Invalid JSON format: missing 'type' or 'value' field" << std::endl;
+                STRIKE_CORE_ERROR("Invalid JSON format for DataValue");
                 return std::nullopt;
             }
 
@@ -260,13 +259,13 @@ namespace StrikeEngine {
                 return json["value"].get<std::string>();
             }
             else {
-                std::cerr << "Unknown data type: " << type << std::endl;
+                STRIKE_CORE_ERROR("Unknown DataValue type in JSON: {}", type);
                 return std::nullopt;
             }
 
         }
         catch (const std::exception& e) {
-            std::cerr << "Failed to deserialize JSON value: " << e.what() << std::endl;
+            STRIKE_CORE_ERROR("Exception while converting JSON to DataValue: {}", e.what());
             return std::nullopt;
         }
     }

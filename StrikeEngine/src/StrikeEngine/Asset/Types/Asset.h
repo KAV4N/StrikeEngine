@@ -7,12 +7,12 @@
 namespace StrikeEngine {
     class AssetManager;
 
-    enum class AssetLoadingState {
+    enum class AssetState {
         Uninitialized = 0,
         Loading,
         Loaded,
         Ready,
-        FAILED
+        Failed
     };
 
     class Asset {
@@ -23,27 +23,29 @@ namespace StrikeEngine {
         virtual const std::string& getTypeName() const = 0;
 
         const std::string& getId() const;
-        AssetLoadingState getLoadingState() const;
+        AssetState getLoadingState() const;
         const std::filesystem::path& getPath() const;
 
         virtual void postLoad();
 
         bool isReady() const;
-        bool isLoaded() const;
         bool isLoading() const;
         bool hasFailed() const;
         bool isAsync() const;
 
         void setLoadAsync(bool async);
-        void setLoadingState(AssetLoadingState state);
+       
 
         virtual void toNode(pugi::xml_node parent) const;
-
+    protected:
+        void setLoadingState(AssetState state);
     protected:
         friend class AssetLoader;
+        friend class AssetManager;
+
         std::string mId;
         std::filesystem::path mPath;
-        AssetLoadingState mLoadingState;
+        AssetState mLoadingState;
         bool mLoadAsync;
         bool mNeedsPostLoad;
 

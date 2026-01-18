@@ -94,6 +94,9 @@ namespace StrikeEngine {
 
     bool Application::onWindowClose(WindowCloseEvent& e) {
         mRunning = false;
+
+        AssetManager::get().shutdown();
+
         return true;
     }
 

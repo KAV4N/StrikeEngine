@@ -242,7 +242,7 @@ namespace StrikeEngine {
             return shader;
         }
         catch (const std::exception& e) {
-            std::cerr << "Failed to create shader " << id << ": " << e.what() << std::endl;
+            STRIKE_CORE_ERROR("Failed to create shader {}: {}", id, e.what());
             return nullptr;
         }
     }
@@ -268,7 +268,7 @@ namespace StrikeEngine {
             return shader;
         }
         catch (const std::exception& e) {
-            std::cerr << "Failed to create compute shader " << id << ": " << e.what() << std::endl;
+            STRIKE_CORE_ERROR("Failed to create compute shader {}: {}", id, e.what());
             return nullptr;
         }
     }
@@ -280,7 +280,7 @@ namespace StrikeEngine {
         
         // Check if directory exists
         if (!std::filesystem::exists(shadersPath)) {
-            std::cerr << "Shaders directory not found: " << shadersPath << std::endl;
+            STRIKE_CORE_ERROR("Shaders directory does not exist: {}", shadersPath.string());
             return;
         }
 
@@ -318,11 +318,11 @@ namespace StrikeEngine {
                         std::cout << "  -> Loaded as vertex/fragment shader" << std::endl;
                     }
                 } else {
-                    std::cerr << "  -> Warning: Shader " << filename << " has incomplete sources" << std::endl;
+                    STRIKE_CORE_ERROR("Shader file {} does not contain valid shader sources", filename);
                 }
             }
             catch (const std::exception& e) {
-                std::cerr << "  -> Error loading shader: " << e.what() << std::endl;
+                STRIKE_CORE_ERROR("Failed to load shader {}: {}", filename, e.what());
             }
         }
         

@@ -86,7 +86,7 @@ layout(std430, binding = 1) buffer clusterSSBO {
 uniform Sun uSun;
 uniform int uCastShadows;
 uniform sampler2D uShadowMap;
-uniform vec4 uColorBlend;
+uniform vec3 uColor;
 uniform sampler2D uTexture;
 
 uniform mat4 uView;
@@ -101,7 +101,7 @@ const float PI = 3.14159265359;
 vec3 getBaseColor()
 {
     vec3 texColor = texture(uTexture, fs_in.TexCoords).rgb;
-    return mix(texColor, uColorBlend.rgb, uColorBlend.a);
+    return texColor * uColor.rgb;
 }
 
 // Shadow calculation

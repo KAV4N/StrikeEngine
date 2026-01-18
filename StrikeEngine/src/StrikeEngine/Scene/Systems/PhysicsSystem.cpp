@@ -275,7 +275,8 @@ namespace StrikeEngine {
         glm::vec3 centerOffset(0.0f);
 
         auto* renderer = registry.try_get<RendererComponent>(entityHandle);
-        if (renderer && renderer->hasModel()) {
+
+        if (renderer && renderer->hasModel() && renderer->getModel()->isReady()) {
             Bounds bounds = renderer->hasMesh() ?
                 (renderer->getMesh() ? renderer->getMesh()->getBounds() : renderer->getModel()->getBounds()) :
                 renderer->getModel()->getBounds();

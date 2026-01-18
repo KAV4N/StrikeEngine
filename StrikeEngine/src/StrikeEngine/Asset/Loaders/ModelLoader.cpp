@@ -9,30 +9,7 @@ namespace StrikeEngine {
     ModelLoader::ModelLoader() : AssetLoader(Model::getStaticTypeName()) {}
 
     std::shared_ptr<Asset> ModelLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& filePath, bool async) {
-        auto model = loadModelWithAssimp(id, filePath);
-        if (!model) {
-            throw std::runtime_error("Failed to load model: " + filePath.string());
-        }
-        return model;
-    }
-
-    std::shared_ptr<Asset> ModelLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string assetId = node.attribute("id").as_string();
-        std::filesystem::path src = node.attribute("src").as_string();
-        std::string srcString = src.string();
-
-        bool async = node.attribute("async").as_bool();
-        
-        if (assetId.empty() || src.empty()) {
-            throw std::runtime_error("Invalid model node: missing assetId or src attribute");
-        }
-
-        src = resolvePath(src, basePath);
-
-        if (async) 
-            return AssetManager::get().loadModelAsync(assetId, src);
-        else 
-            return AssetManager::get().loadModel(assetId, src);
+        return loadModelWithAssimp(id, filePath);;
     }
 
     void ModelLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
@@ -42,8 +19,14 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Model> ModelLoader::loadModelWithAssimp(const std::string& id, const std::filesystem::path& filePath) {
+        auto asset = std::make_shared<Model>(id, addRootPrefix(filePath));
+        
+        asset->setLoadingState(AssetState::Loading);
+
         if (!std::filesystem::exists(filePath)) {
-            throw std::runtime_error("Model file does not exist: " + filePath.string());
+            STRIKE_CORE_ERROR("Model file does not exist: {}", filePath.string());
+            asset->setLoadingState(AssetState::Failed);
+            return asset;
         }
 
         Assimp::Importer importer;
@@ -56,17 +39,20 @@ namespace StrikeEngine {
             aiProcess_ValidateDataStructure);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            throw std::runtime_error("Assimp failed to load model: " + std::string(importer.GetErrorString()));
+            STRIKE_CORE_ERROR("Assimp failed to load model {}: {}", filePath.string(), importer.GetErrorString());
+            asset->setLoadingState(AssetState::Failed);
+            return asset;
         }
 
-        auto model = std::make_shared<Model>(id, addRootPrefix(filePath));
-        
+
         try {
-            processNode(scene->mRootNode, scene, model.get());
-            return model;
+            processNode(scene->mRootNode, scene, asset.get());
+            return asset;
         }
         catch (const std::exception& e) {
-            throw std::runtime_error("Error processing model data from " + filePath.string() + ": " + e.what());
+            STRIKE_CORE_ERROR("Error processing model {}: {}", filePath.string(), e.what());
+            asset->setLoadingState(AssetState::Failed);
+            return asset;
         }
     }
 
@@ -169,7 +155,8 @@ namespace StrikeEngine {
         return bounds;
     }
 
-    std::shared_ptr<Asset> ModelLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        return std::make_shared<Model>(id, path);
-    }
+
+    std::shared_ptr<Asset> ModelLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
+        return loadFromNodeInternal<Model>(node, basePath);
+    }   
 }

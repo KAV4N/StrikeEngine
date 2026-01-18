@@ -18,7 +18,7 @@
 namespace StrikeEngine {
 
     Scene::Scene(const std::string& id, const std::filesystem::path& path)
-        : mId(id), mSun() {  // Sun is default-constructed automatically
+        : mId(id), mSun() { 
         setupComponentProtection();
     }
 
@@ -34,13 +34,19 @@ namespace StrikeEngine {
         mPhysicsSystem = physicsSystem;
     }
 
-    bool Scene::setSkyboxCubeMap(const std::string& cubeMapId) {
-        mSkyboxCubeMap = AssetManager::get().getCubeMap(cubeMapId);
-        return mSkyboxCubeMap != nullptr;
+    void Scene::setSkybox(const std::string& cubeMapId) {
+        mSkyboxCubeMapId = cubeMapId;
     }
 
-    std::shared_ptr<CubeMap> Scene::getSkyboxCubeMap() const {
-        return mSkyboxCubeMap;
+    bool Scene::hasSkybox() const {
+        return !mSkyboxCubeMapId.empty();
+    }
+
+    std::shared_ptr<CubeMap> Scene::getSkybox() const {
+        if (mSkyboxCubeMapId.empty()) {
+            return nullptr;
+        }
+        return AssetManager::get().getAsset<CubeMap>(mSkyboxCubeMapId);
     }
 
     Entity Scene::getEntityFromHandle(entt::entity handle) {

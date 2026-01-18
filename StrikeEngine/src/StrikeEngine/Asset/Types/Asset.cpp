@@ -7,7 +7,7 @@ namespace StrikeEngine {
     Asset::Asset(const std::string& id, const std::filesystem::path& path)
         : mId(id),
         mPath(path),
-        mLoadingState(AssetLoadingState::Uninitialized),
+        mLoadingState(AssetState::Uninitialized),
         mLoadAsync(false),
         mNeedsPostLoad(false)
     {
@@ -23,7 +23,7 @@ namespace StrikeEngine {
         return mId;
     }
 
-    AssetLoadingState Asset::getLoadingState() const {
+    AssetState Asset::getLoadingState() const {
         return mLoadingState;
     }
 
@@ -34,19 +34,16 @@ namespace StrikeEngine {
 
 
     bool Asset::isReady() const {
-        return mLoadingState == AssetLoadingState::Ready;
+        return mLoadingState == AssetState::Ready;
     }
 
     bool Asset::isLoading() const {
-        return mLoadingState == AssetLoadingState::Loading;
+        return mLoadingState == AssetState::Loading;
     }
 
-    bool Asset::isLoaded() const {
-        return mLoadingState == AssetLoadingState::Loaded;
-    }
 
     bool Asset::hasFailed() const {
-        return mLoadingState == AssetLoadingState::FAILED;
+        return mLoadingState == AssetState::Failed;
     }
 
     bool Asset::isAsync() const {
@@ -57,7 +54,7 @@ namespace StrikeEngine {
         mLoadAsync = async;
     }
 
-    void Asset::setLoadingState(AssetLoadingState state) {
+    void Asset::setLoadingState(AssetState state) {
         mLoadingState = state;
     }
 

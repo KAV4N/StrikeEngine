@@ -9,18 +9,13 @@
 #include "Systems/PhysicsSystem.h"
 #include "Systems/AudioSystem.h"
 
-
 #include "StrikeEngine/Graphics/Skybox.h"
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 
-#include <chrono>
-#include <thread>
-
 #include "StrikeEngine/Core/Profiler.h"
 
 namespace StrikeEngine {
-
 
     World& World::get()
     {
@@ -38,54 +33,52 @@ namespace StrikeEngine {
         mAudioSystem->initialize();
     }
 
-
     void World::loadScene(const std::filesystem::path& path)
     {
-        mPendingScene = mSceneLoader->loadScene(path);
-    }
-
-
-    void World::loadSceneAsync(const std::filesystem::path& path)
-    {
         if (!std::filesystem::exists(path)) {
-            std::cerr << "Scene file does not exist: " << path << std::endl;
+            STRIKE_CORE_ERROR("Scene file does not exist: {}", path.string());
             return;
         }
-
-        if (mSceneLoader->isLoading()) {
-            std::cout << "Cannot load scene: another scene is currently being loaded";
-            return;
-        }
-
-        mPendingScene = mSceneLoader->loadSceneAsync(path);
-
-        if (mPendingScene.valid()) {
-            std::cout << "Started async loading of scene from: " << path << std::endl;
-        }
-        else {
-            std::cerr << "Failed to start async loading of scene from: " << path << std::endl;
-        }
+        mPendingScenePath = path;
+        mSceneLoadPending = true;
+        std::cout << "Scene queued for loading: " << path.string() << std::endl;
     }
 
+    void World::processSceneLoad()
+    {
+        if (!mSceneLoadPending) {
+            return;
+        }
+        try {
+            auto newScene = mSceneLoader->loadScene(mPendingScenePath);
+            if (newScene) {
+                clearPhysicsWorld();
+                if (mCurrentScene) {
+                    mCurrentScene->shutdown();
+                }
+                mCurrentScene = std::move(newScene);
+                mCurrentScene->setPhysicsSystem(mPhysicsSystem.get());
+            }
+            else {
+                STRIKE_CORE_ERROR("Failed to load scene: {}", mPendingScenePath.string());
+            }
+        }
+        catch (const std::exception& e) {
+            STRIKE_CORE_ERROR("Exception while loading scene: {}", e.what());
+        }
+
+        mSceneLoadPending = false;
+        mPendingScenePath.clear();
+    }
 
     Scene* World::getScene() const
     {
         return mCurrentScene.get();
     }
 
-    bool World::isLoading() const
-    {
-        return mPendingScene.valid() && 
-               mPendingScene.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
-    }
-
-
-
     void World::onUpdate(float dt)
     {
         PROFILE_SCOPE("world");
-        mSceneLoader->update();
-        checkAndSwitchScene();
 
         if (mCurrentScene) {
 
@@ -115,6 +108,8 @@ namespace StrikeEngine {
             }
         }
 
+        // Unity-style: process scene load at end of frame (after all updates)
+        processSceneLoad();
     }
 
     RayHit World::rayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const
@@ -154,39 +149,6 @@ namespace StrikeEngine {
         mRenderSystem->resize(width, height);
     }
 
-
-    void World::checkAndSwitchScene()
-    {
-        if (!mPendingScene.valid())
-            return;
-
-        auto status = mPendingScene.wait_for(std::chrono::seconds(0));
-        if (status != std::future_status::ready)
-            return;
-
-        try {
-            auto newScene = mPendingScene.get();
-            if (newScene) {
-                clearPhysicsWorld();
-                if (mCurrentScene)
-                    mCurrentScene->shutdown();
-                mCurrentScene = std::move(newScene);
-                mCurrentScene->setPhysicsSystem(mPhysicsSystem.get());
-                std::cout << "Successfully switched to new scene (sync or async)" << std::endl;
-            }
-            else {
-                mCurrentScene = nullptr;
-                std::cerr << "Scene loading returned null pointer" << std::endl;
-            }
-        }
-        catch (const std::exception& e) {
-            mCurrentScene = nullptr;
-            std::cerr << "Exception during scene switching: " << e.what() << std::endl;
-        }
-        mPendingScene = std::future<std::unique_ptr<Scene>>();
-    }
-
-
     void World::clearPhysicsWorld()
     {
         if (mPhysicsSystem && mCurrentScene) {
@@ -198,4 +160,4 @@ namespace StrikeEngine {
         }
     }
 
-} 
+}

@@ -32,33 +32,34 @@ namespace StrikeEngine {
         void serialize(pugi::xml_node& node) const override;
 
         // Model management
-        bool setModel(const std::string& modelId);
+        void setModel(const std::string& modelId);
         void removeModel();
         bool hasModel() const;
+        const std::string& getModelId() const { return mModelId; }
         std::shared_ptr<Model> getModel() const;
 
         // Texture management
-        bool setTexture(const std::string& textureId);
+        void setTexture(const std::string& textureId);
         void removeTexture();
         bool hasTexture() const;
+        const std::string& getTextureId() const { return mTextureId; }
         std::shared_ptr<Texture> getTexture() const;
 
         // Color management (0-255 RGB range)
-        void setColor(const glm::vec4& color);
-        glm::vec4 getColor() const { return mColor; }
+        void setColor(const glm::uvec3& color);
+        glm::uvec3 getColor() const { return mColor; }
 
         // Specific mesh rendering
-        bool setMesh(const std::string& modelId, uint32_t meshIndex);
+        void setMesh(const std::string& modelId, uint32_t meshIndex);
         std::shared_ptr<Mesh> getMesh() const;
         
         bool hasMesh() const { return mMeshIdx.has_value(); }
         std::optional<uint32_t> getMeshIdx() const { return mMeshIdx; }
 
     private:
-        std::shared_ptr<Model> mModel;
-        std::shared_ptr<Texture> mTexture;
-        glm::vec4 mColor; // RGB in 0-255 range, A (blend) in 0-1 range
-        
+        std::string mModelId;
+        std::string mTextureId;
+        glm::uvec3 mColor; 
         std::optional<uint32_t> mMeshIdx;
     };
 

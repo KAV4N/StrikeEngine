@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 #include <filesystem>
-#include <future>
 #include <vector>
 #include <unordered_set>
 #include <pugixml.hpp>
@@ -18,16 +17,12 @@ namespace StrikeEngine {
         SceneLoader();
         ~SceneLoader() = default;
 
-        std::future<std::unique_ptr<Scene>> loadScene(const std::filesystem::path& path);
-        std::future<std::unique_ptr<Scene>> loadSceneAsync(const std::filesystem::path& path);
-        
-        bool isLoading() const;
-        void update();
+        std::unique_ptr<Scene> loadScene(const std::filesystem::path& path);
 
     private:
-        std::unique_ptr<Scene> loadSceneInternal(const std::filesystem::path& path, bool async = false);
+        std::unique_ptr<Scene> loadSceneInternal(const std::filesystem::path& path);
         
-        void loadAssets(const pugi::xml_node& assetsNode, const std::filesystem::path& basePath, bool async = false);
+        void loadAssets(const pugi::xml_node& assetsNode, const std::filesystem::path& basePath);
         
         void createEntities(Scene& scene, const pugi::xml_node& entitiesNode, Entity parentEntity);
         
@@ -35,8 +30,5 @@ namespace StrikeEngine {
         void setupSun(Scene& scene, const pugi::xml_node& sceneNode);
         
         glm::vec3 parseVector3(const std::string& str);
-
-    private:
-        bool mIsLoading;
     };
 }

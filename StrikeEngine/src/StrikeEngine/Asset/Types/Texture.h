@@ -48,15 +48,15 @@ namespace StrikeEngine {
         GLuint getTextureID() const { return mTextureID; }
         int getWidth() const { return mWidth; }
         int getHeight() const { return mHeight; }
+        int getChannels() const { return mChannels; }
 
         void bind(unsigned int slot = 0) const;
         void unbind() const;
     private:
-        void setCubeMapData(int width, int height, int channels, 
-                           const std::array<std::vector<unsigned char>, 6>& faces);
+        friend class CubeMapLoader;
+        void setCubeMapData(int width, int height, int channels, unsigned char* faceData[6]);
 
     private:
-        friend class CubeMapLoader;
         GLuint mTextureID;
         int mWidth;
         int mHeight;

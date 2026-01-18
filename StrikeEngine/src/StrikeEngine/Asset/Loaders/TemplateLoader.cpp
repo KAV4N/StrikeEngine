@@ -13,17 +13,22 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> TemplateLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto templateAsset = std::make_shared<Template>(id, addRootPrefix(path));
+        templateAsset->setLoadingState(AssetState::Loading);
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
 
         if (!result) {
-            throw std::runtime_error("Failed to load template XML: " + path.string());
+            STRIKE_CORE_ERROR("Failed to load template XML: {}. Error description: {}", path.string(), result.description());
+            templateAsset->setLoadingState(AssetState::Failed);
+            return templateAsset;
         }
 
         pugi::xml_node templateNode = doc.child("template");
         if (!templateNode) {
-            throw std::runtime_error("Invalid template format: no template node found in " + path.string());
+            STRIKE_CORE_ERROR("Invalid template XML: missing <template> root node in {}", path.string());
+            templateAsset->setLoadingState(AssetState::Failed);
+            return templateAsset;
         }
 
         // Store the document
@@ -65,31 +70,6 @@ namespace StrikeEngine {
         }
     }
 
-    std::shared_ptr<Asset> TemplateLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
-        std::string assetId = node.attribute("id").as_string();
-        std::filesystem::path src = node.attribute("src").as_string();
-
-        if (assetId.empty() || src.empty()) {
-            throw std::runtime_error("Invalid template node: missing id or src attribute");
-        }
-
-        src = resolvePath(src, basePath);
-
-        ModelParser parser;
-        if (!parser.parseModel(src)) {
-            if (src.empty() || !std::filesystem::exists(src)) {
-                throw std::runtime_error("Failed to load template: missing valid src file");
-            }
-        }
-        src.replace_extension(".tmpl");
-
-        bool async = node.attribute("async").as_bool();
-
-        if (async)
-            return AssetManager::get().loadTemplateAsync(assetId, src);
-        else
-            return AssetManager::get().loadTemplate(assetId, src);
-    }
 
     void TemplateLoader::swapData(std::shared_ptr<Asset> placeholder, const std::shared_ptr<Asset> loaded) {
         auto placeholderTemplate = std::dynamic_pointer_cast<Template>(placeholder);
@@ -100,8 +80,7 @@ namespace StrikeEngine {
         }
     }
 
-    std::shared_ptr<Asset> TemplateLoader::createPlaceholder(const std::string& id, const std::filesystem::path& path) {
-        return std::make_shared<Template>(id, path);
+    std::shared_ptr<Asset> TemplateLoader::loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) {
+        return loadFromNodeInternal<Template>(node, basePath);
     }
-
 }

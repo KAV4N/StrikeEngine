@@ -31,7 +31,7 @@ namespace StrikeEngine {
         std::string modelId;
         int32_t meshIdx = -1;  // -1 = no mesh/renderer
         
-        glm::vec4 color{ 255.0f, 255.0f, 255.0f, 1.0f }; // RGB (0-255), Alpha (0-1)
+        glm::uvec3 color{ 255u, 255u, 255u }; // RGB (0–255 integers)
 
         std::vector<std::shared_ptr<EntityData>> children;
     };
@@ -52,7 +52,7 @@ namespace StrikeEngine {
         // Helpers
         glm::mat4 aiMatrixToGlm(const aiMatrix4x4& from);
         void decomposeTransform(const glm::mat4& transform, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
-        glm::vec4 extractColor(const aiMaterial* material);
+        glm::uvec3 extractColor(const aiMaterial* material);
 
         // Output
         void saveTemplateXml(const std::filesystem::path& templatePath);
