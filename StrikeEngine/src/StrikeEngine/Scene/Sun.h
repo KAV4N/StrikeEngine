@@ -1,67 +1,53 @@
 #pragma once
 
-#include <memory>
-#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <array>
 
 namespace StrikeEngine {
 
+    class CameraComponent;
+
     class Sun {
     public:
-        struct Frustum {
-            std::array<glm::vec4, 6> planes;
-        };
-
         Sun() = default;
         ~Sun() = default;
 
-        void setColor(const glm::vec3& color);
-        const glm::vec3& getColor() const;
+        // Color (0–255)
+        void setColor(const glm::uvec3& color);
+        const glm::uvec3& getColor() const;
 
+        // Intensity
         void setIntensity(float intensity);
         float getIntensity() const;
 
-        void setRotationEuler(const glm::vec3& eulerAngles);
+        // Rotation
         void setRotation(const glm::quat& rotation);
+        const glm::quat& getRotation() const;
 
-        void rotateQuaternion(float angleDegrees, glm::vec3 axis);
-        void rotateX(float angleDegrees);
-        void rotateY(float angleDegrees);
-        void rotateZ(float angleDegrees);
-
+        void setRotationEuler(const glm::vec3& eulerDegrees);
         glm::vec3 getRotationEuler() const;
-        const glm::quat& getRotation() const { return mRotation; }
+
+        void rotate(const glm::vec3& eulerDegrees);
+        void rotateQuaternion(float angleDegrees, const glm::vec3& axis);
+
+        // Direction (world space)
         glm::vec3 getDirection() const;
 
+        // Shadows
         void setCastShadows(bool cast);
         bool getCastShadows() const;
 
-        // Updated to require camera direction
-        glm::mat4 calculateLightSpaceMatrix(const glm::vec3& cameraPos, const glm::vec3& cameraDirection);
-        const Frustum& getFrustum() const;
-
-        void updateFrustum(const glm::vec3& cameraPos, const glm::vec3& cameraDirection);
+        // Shadow mapping
+        glm::mat4 calculateLightSpaceMatrix(const CameraComponent& camera);
 
     private:
-        void extractFrustumPlanes(const glm::mat4& matrix);
-        glm::vec3 normalizeEulerAngles(const glm::vec3& angles) const;
+        static constexpr float MAX_SHADOW_DISTANCE = 100.0f;
 
-    private:
-        glm::vec3 mColor = glm::vec3(1.0f);
+        glm::uvec3 mColor = glm::uvec3(255);
         float mIntensity = 1.0f;
 
-        // Sun has its own rotation (no position/scale needed)
-        glm::quat mRotation{1.0f, 0.0f, 0.0f, 0.0f};
-
+        glm::quat mRotation = glm::quat(1, 0, 0, 0);
         bool mCastShadows = false;
-        float mShadowDistance = 100.0f;
-        float mShadowArea = 30.0f;
-
-        glm::mat4 mLightSpaceMatrix{1.0f};
-        Frustum mFrustum;
     };
 
 } // namespace StrikeEngine

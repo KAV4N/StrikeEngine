@@ -113,7 +113,7 @@ namespace StrikeEngine {
         // Sun
         Sun* sun = cameraData.sunData.sun;
         mShader->setVec3("uSun.direction", sun->getDirection());
-        mShader->setVec3("uSun.color", sun->getColor() / 255.0f);
+        mShader->setVec3("uSun.color", glm::vec3(sun->getColor()) / 255.0f);
         mShader->setFloat("uSun.intensity", sun->getIntensity());
         mShader->setInt("uCastShadows", sun->getCastShadows() ? 1 : 0);
 

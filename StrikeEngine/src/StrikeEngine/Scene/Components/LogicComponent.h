@@ -30,8 +30,7 @@ namespace StrikeEngine {
         }
 
         void deserialize(const pugi::xml_node& node) override;
-        void serialize(pugi::xml_node& node) const override;
-
+        
         template<typename T>
         T* addScript();
 

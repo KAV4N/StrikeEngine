@@ -30,15 +30,12 @@ namespace StrikeEngine {
 
         bool isReady() const;
         bool isLoading() const;
-        bool hasFailed() const;
-        bool isAsync() const;
+        bool hasFailed() const;     
 
-        void setLoadAsync(bool async);
-       
-
-        virtual void toNode(pugi::xml_node parent) const;
+        virtual void toNode(pugi::xml_node parent);
     protected:
         void setLoadingState(AssetState state);
+        std::filesystem::path addRootPrefix(const std::filesystem::path& path);
     protected:
         friend class AssetLoader;
         friend class AssetManager;
@@ -46,7 +43,6 @@ namespace StrikeEngine {
         std::string mId;
         std::filesystem::path mPath;
         AssetState mLoadingState;
-        bool mLoadAsync;
         bool mNeedsPostLoad;
 
     };

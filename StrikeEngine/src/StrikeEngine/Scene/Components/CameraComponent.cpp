@@ -71,24 +71,27 @@ namespace StrikeEngine {
         return mViewProjectionMatrix;
     }
 
+    float CameraComponent::getAspectRatio() const {
+        return mAspectRatio;
+    }
+
+    void CameraComponent::lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
+        mViewMatrix = glm::lookAt(eye, center, up);
+    }
     void CameraComponent::update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height) {
         updateViewMatrix(worldMatrix);
         updateProjectionMatrix(width, height);
         updateViewProjectionMatrix();
         calculateFrustum();
-
-        glm::quat rotation = glm::toQuat(worldMatrix);
-        mForward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
-        mUp = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
-        mRight = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
     }
 
     void CameraComponent::updateProjectionMatrix(uint32_t width, uint32_t height) {
         // Calculate aspect ratio based on viewport size
         float viewportWidth = mViewportRect.width * width;
         float viewportHeight = mViewportRect.height * height;
-        float aspectRatio = (viewportHeight > 0.0f) ? (viewportWidth / viewportHeight) : 1.0f;
-        mProjectionMatrix = glm::perspective(glm::radians(mFOV), aspectRatio, mNearPlane, mFarPlane);
+        mAspectRatio = (viewportHeight > 0.0f) ? (viewportWidth / viewportHeight) : 1.0f;
+
+        mProjectionMatrix = glm::perspective(glm::radians(mFOV), mAspectRatio, mNearPlane, mFarPlane);
 
     }
 
@@ -193,22 +196,6 @@ namespace StrikeEngine {
 
         // Final setup
         setViewportRect(mViewportRect.x, mViewportRect.y, mViewportRect.width, mViewportRect.height);
-    }
-
-    void CameraComponent::serialize(pugi::xml_node& node) const {
-        node.append_attribute("near") = mNearPlane;
-        node.append_attribute("far") = mFarPlane;
-        node.append_attribute("fov") = mFOV;
-
-        if (mRenderOrder != 0) {
-            node.append_attribute("order") = mRenderOrder;
-        }
-
-        node.append_attribute("x") = mViewportRect.x;
-        node.append_attribute("y") = mViewportRect.y;
-        node.append_attribute("width") = mViewportRect.width;
-        node.append_attribute("height") = mViewportRect.height;
-        node.append_attribute("active") = isActive();
     }
     
 }

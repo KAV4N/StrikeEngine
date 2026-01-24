@@ -22,17 +22,12 @@ namespace StrikeEngine {
         }
 
         void deserialize(const pugi::xml_node& node) override;
-        void serialize(pugi::xml_node& node) const override;
 
         // uvec3 interface (0–255 integers)
-        void setColor(const glm::uvec3& color) { mColor = color; }
+        void setColor(const glm::uvec3& color) { mColor = glm::clamp(color, glm::uvec3(0.0f), glm::uvec3(255.0f)); }
         const glm::uvec3& getColor() const     { return mColor; }
 
-        // Optional: float vec3 convenience interface
-        void setColorF(const glm::vec3& color) { mColor = glm::uvec3(color); }
-        glm::vec3 getColorF() const            { return glm::vec3(mColor);   }
-
-        void setIntensity(float intensity) { mIntensity = intensity; }
+        void setIntensity(float intensity) { mIntensity = glm::max(intensity, 0.0f); }
         float getIntensity() const { return mIntensity; }
 
         void setRadius(float radius) { mRadius = radius; }

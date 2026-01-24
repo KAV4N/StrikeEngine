@@ -39,13 +39,14 @@ namespace StrikeEngine {
 
         // Serialization methods
         void deserialize(const pugi::xml_node& node) override;
-        void serialize(pugi::xml_node& node) const override;
 
         // Projection settings
         void setPerspective(float fov, float nearPlane, float farPlane);
 
         // Getters
+        float getFOV() const { return mFOV; }
         float getFOV() { return mFOV; }
+        
         float getNearPlane() { return mNearPlane; }
         float getFarPlane() { return mFarPlane; }
 
@@ -54,11 +55,7 @@ namespace StrikeEngine {
 
         const Frustum& getFrustum() const { return mFrustum; }
 
-        const glm::vec3& getRight() const { return mRight; }
-        const glm::vec3& getUp() const { return mUp; }
-        const glm::vec3& getForward() const { return mForward; }
-
-        // Viewport rectangle (Unity-like)
+        // Viewport rectangle 
         void setViewportRect(float x, float y, float width, float height);
         const Rect& getViewportRect() const { return mViewportRect; }
 
@@ -66,6 +63,7 @@ namespace StrikeEngine {
         void setFOV(float fov);
         void setNearPlane(float nearPlane);
         void setFarPlane(float farPlane);
+        float getAspectRatio() const;
 
         // Matrix calculations
         glm::mat4 getProjectionMatrix();
@@ -78,6 +76,9 @@ namespace StrikeEngine {
 
         int getRenderOrder() const { return mRenderOrder; }
         void setRenderOrder(int order) { mRenderOrder = order; }
+
+
+        void lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
 
         void update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height);
 
@@ -99,13 +100,11 @@ namespace StrikeEngine {
 
         Frustum mFrustum;
 
-        glm::vec3 mRight;
-        glm::vec3 mUp;
-        glm::vec3 mForward;
-
         glm::mat4 mProjectionMatrix;
         glm::mat4 mViewMatrix;
         glm::mat4 mViewProjectionMatrix;
+
+        float mAspectRatio = 1.0f;
     };
 
 }

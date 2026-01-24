@@ -55,12 +55,21 @@ namespace StrikeEngine {
                              float intensity,
                              float radius);
 
-        void submitSun(Sun* sun);
+        void submitSun(Sun* sun, const glm::mat4& lightSpaceMatrix);
         void submitSkybox(const std::shared_ptr<CubeMap>& skybox);
 
         void display();
         
-
+        // Fog settings
+        void setFogStart(float start) { mFogStart = start; }
+        void setFogEnd(float end) { mFogEnd = end; }
+        void setFogDensity(float density) { mFogDensity = density; }
+        void setFogColor(const glm::uvec3& color) { mFogColor = color; }
+        
+        float getFogStart() const { return mFogStart; }
+        float getFogEnd() const { return mFogEnd; }
+        float getFogDensity() const { return mFogDensity; }
+        glm::uvec3 getFogColor() const { return mFogColor; }
 
         template <typename T>
         T* getPass() const;
@@ -108,6 +117,12 @@ namespace StrikeEngine {
         GLuint mScreenEBO = 0;
         uint32_t mWidth = 1920;
         uint32_t mHeight = 1080;
+        
+        // Fog parameters
+        float mFogStart = 10.0f;
+        float mFogEnd = 100.0f;
+        float mFogDensity = 0.0f;
+        glm::uvec3 mFogColor = glm::uvec3(128, 153, 179); 
     };
 
     template<typename T, typename... Args>

@@ -40,16 +40,4 @@ namespace StrikeEngine {
         }
 
     }
-
-    void LogicComponent::serialize(pugi::xml_node& node) const {
-        for (const auto& script : mScripts) {
-            auto scriptNode = node.append_child("script");
-            scriptNode.append_attribute("type") = typeid(*script).name();
-        }
-
-        
-        node.append_attribute("active") = isActive();
-
-    }
-
 } 

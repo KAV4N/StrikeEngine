@@ -2,14 +2,16 @@
 #include "ScriptRegistry.h"
 
 namespace StrikeEngine {
-
     std::unordered_map<std::string, ScriptRegistry::ScriptFactory>& ScriptRegistry::getFactories() {
         static std::unordered_map<std::string, ScriptFactory> sFactories;
         return sFactories;
     }
 
     void ScriptRegistry::registerScriptFactory(const std::string& className, ScriptFactory factory) {
-        getFactories()[className] = factory;
+        auto& factories = getFactories();
+        STRIKE_ASSERT(factories.find(className) == factories.end(), 
+                      "Script '{}' is already registered!", className);
+        factories[className] = factory;
     }
 
     bool ScriptRegistry::hasScriptFactory(const std::string& className) {
@@ -31,7 +33,4 @@ namespace StrikeEngine {
         }
         return scripts;
     }
-
-
-
 } // namespace StrikeEngine

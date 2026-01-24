@@ -23,8 +23,6 @@ namespace StrikeEngine {
     class World final {
     public:
         static World& get();
-
-        // Unity-style: scene loads at end of frame
         void loadScene(const std::filesystem::path& path);
         
         Scene* getScene() const;
@@ -39,6 +37,18 @@ namespace StrikeEngine {
 
         void setGravity(const glm::vec3& gravity);
         glm::vec3 getGravity() const;
+
+        void setFogStart(float start);
+        void setFogEnd(float end);
+        void setFogDensity(float density);
+        void setFogColor(const glm::uvec3& color);
+
+        float getFogStart() const;
+        float getFogEnd() const;
+        float getFogDensity() const;
+        glm::uvec3 getFogColor() const;
+
+        void shutDownSystems();
 
     private:
         friend class Entity;

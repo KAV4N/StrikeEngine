@@ -26,6 +26,8 @@
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 #include "StrikeEngine/Scene/Components/RendererComponent.h"
 #include "StrikeEngine/Scene/Components/TextComponent.h"
+#include "StrikeEngine/Scene/Components/AudioSourceComponent.h"
+#include "StrikeEngine/Scene/Components/AudioListenerComponent.h"
 
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Scene/ScriptRegistry.h"

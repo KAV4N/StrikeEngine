@@ -45,9 +45,17 @@ namespace StrikeEngine {
         bool hasSkybox() const;
         const std::string& getSkyboxId() const { return mSkyboxCubeMapId; }
         std::shared_ptr<CubeMap> getSkybox() const;
-
-        // Update operations
-        void updateTransforms();
+        
+        // Fog management
+        void setFogStart(float start) { mFogStart = start; }
+        void setFogEnd(float end) { mFogEnd = end; }
+        void setFogDensity(float density) { mFogDensity = density; }
+        void setFogColor(const glm::uvec3& color) { mFogColor = color; }
+        
+        float getFogStart() const { return mFogStart; }
+        float getFogEnd() const { return mFogEnd; }
+        float getFogDensity() const { return mFogDensity; }
+        glm::uvec3 getFogColor() const { return mFogColor; }
 
         // Management
         void shutdown();
@@ -113,21 +121,28 @@ namespace StrikeEngine {
 
         void onPhysicsComponentDestroy(entt::registry& registry, entt::entity entity);
         void onPhysicsComponentCreate(entt::registry& registry, entt::entity entity);
+        void onAudioSourceDestroy(entt::registry& registry, entt::entity entity);
         void setupComponentProtection();
 
         void setPhysicsSystem(PhysicsSystem* physicsSystem);
 
     private:
+        friend class AudioSystem;
+
         std::string mId;
         entt::registry mRegistry;
         Sun mSun; 
 
         std::string mSkyboxCubeMapId;
+        
+        // Fog parameters
+        float mFogStart = 10.0f;
+        float mFogEnd = 100.0f;
+        float mFogDensity = 0.015f;
+        glm::uvec3 mFogColor = glm::uvec3(128, 153, 179); // Light blue-gray
 
         // Graph node storage
         std::unordered_map<entt::entity, std::shared_ptr<GraphNode>> mGraphNodes;
-
-        PhysicsSystem* mPhysicsSystem = nullptr;
     };
 
 } // namespace StrikeEngine

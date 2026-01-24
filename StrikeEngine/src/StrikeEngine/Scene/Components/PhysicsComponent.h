@@ -33,7 +33,6 @@ namespace StrikeEngine {
         const std::string& getTypeName() const override { return getStaticTypeName(); }
 
         void deserialize(const pugi::xml_node& node) override;
-        void serialize(pugi::xml_node& node) const override;
 
         void setAnchored(bool anchored);
         bool isAnchored() const { return mAnchored; }

@@ -17,7 +17,6 @@ namespace StrikeEngine {
 
         // Virtual serialization methods
         virtual void deserialize(const pugi::xml_node& node) = 0;
-        virtual void serialize(pugi::xml_node& node) const = 0;
 
     protected:
         bool mIsActive = true;

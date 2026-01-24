@@ -89,11 +89,12 @@ namespace StrikeEngine {
         }
 
         if (auto attr = node.attribute("color")) {
-            std::string colorStr = attr.as_string();
-            std::stringstream ss(colorStr);
-            char comma1, comma2;
-            ss >> mColor.r >> comma1 >> mColor.g >> comma2 >> mColor.b;
+            unsigned int r = 255, g = 255, b = 255;
+            if (sscanf(attr.as_string(), "%u,%u,%u", &r, &g, &b) == 3) {
+                setColor(glm::uvec3(r, g, b));
+            }
         }
+
 
         if (auto attr = node.attribute("mesh")) {
             mMeshIdx = attr.as_uint();
@@ -103,25 +104,4 @@ namespace StrikeEngine {
             setActive(attr.as_bool(true));
         }
     }
-
-    void RendererComponent::serialize(pugi::xml_node& node) const {
-        if (!mModelId.empty()) {
-            node.append_attribute("model") = mModelId.c_str();
-        }
-
-        if (!mTextureId.empty()) {
-            node.append_attribute("texture") = mTextureId.c_str();
-        }
-
-        std::ostringstream colorStr;
-        colorStr << mColor.r << "," << mColor.g << "," << mColor.b;
-        node.append_attribute("color") = colorStr.str().c_str();
-
-        if (mMeshIdx.has_value()) {
-            node.append_attribute("mesh") = mMeshIdx.value();
-        }
-
-        node.append_attribute("active") = isActive();
-    }
-
 }

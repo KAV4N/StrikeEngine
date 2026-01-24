@@ -51,9 +51,8 @@ namespace StrikeEngine {
         size_t getLoadingAssetCount() const;
 
         void deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct = false);
-        void serialize(pugi::xml_document& doc);
 
-    private:
+        private:
         AssetManager();
         ~AssetManager();
 
@@ -83,12 +82,27 @@ namespace StrikeEngine {
             return nullptr;
         }
         
-        if (auto existing = getAsset<T>(id)) {
-            return existing;
+        // Check if asset already exists with this ID
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            // Asset exists - check if type matches
+            if (it->second->getTypeName() != T::getStaticTypeName()) {
+                STRIKE_CORE_ERROR(
+                    "Asset with id '{}' already exists with different type. Expected '{}', got '{}'",
+                    id,
+                    T::getStaticTypeName(),
+                    it->second->getTypeName()
+                );
+                return nullptr;
+            }
+            
+            // Type matches, return existing asset
+            return std::static_pointer_cast<T>(it->second);
         }
 
         auto loader = getLoader(T::getStaticTypeName());
         if (!loader) {
+            STRIKE_CORE_ERROR("No loader found for asset type '{}'", T::getStaticTypeName());
             return nullptr;
         }
 
@@ -102,21 +116,37 @@ namespace StrikeEngine {
     template<typename T>
     std::shared_ptr<T> AssetManager::loadAsync(const std::string& id, const std::filesystem::path& filePath) {
         static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
-        auto placeholder = std::make_shared<T>(id, filePath);
-        placeholder->setLoadingState(AssetState::Loading);
+        
         if (mShuttingDown) {
             return nullptr;
         }
         
-        if (auto existing = getAsset<T>(id)) {
-            return existing;
+        // Check if asset already exists with this ID
+        auto it = mLoadedAssets.find(id);
+        if (it != mLoadedAssets.end()) {
+            // Asset exists - check if type matches
+            if (it->second->getTypeName() != T::getStaticTypeName()) {
+                STRIKE_CORE_ERROR(
+                    "Asset with id '{}' already exists with different type. Expected '{}', got '{}'",
+                    id,
+                    T::getStaticTypeName(),
+                    it->second->getTypeName()
+                );
+                return nullptr;
+            }
+            
+            // Type matches, return existing asset
+            return std::static_pointer_cast<T>(it->second);
         }
 
         auto loader = getLoader(T::getStaticTypeName());
         if (!loader) {
+            STRIKE_CORE_ERROR("No loader found for asset type '{}'", T::getStaticTypeName());
             return nullptr;
         }
 
+        auto placeholder = std::make_shared<T>(id, filePath);
+        placeholder->setLoadingState(AssetState::Loading);
         mLoadedAssets[id] = placeholder;
 
         loader->loadAsync(id, filePath, placeholder);
@@ -124,17 +154,26 @@ namespace StrikeEngine {
     }
 
     template<typename T>
-    std::shared_ptr<T> AssetManager::getAsset(const std::string& id) {
-        static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
-        
-        auto it = mLoadedAssets.find(id);
-        if (it != mLoadedAssets.end()) {
-            if (it->second->getTypeName() == T::getStaticTypeName()) {
-                return std::static_pointer_cast<T>(it->second);
-            }
+    std::shared_ptr<T> AssetManager::getAsset(const std::string& id)
+    {
+        static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
 
-            mLoadedAssets.erase(it);
+        auto it = mLoadedAssets.find(id);
+        if (it == mLoadedAssets.end()) {
+            return nullptr;
         }
-        return nullptr;
+
+        if (it->second->getTypeName() != T::getStaticTypeName())
+        {
+            STRIKE_CORE_ERROR(
+                "Type mismatch for asset '{}': expected '{}', got '{}'",
+                id,
+                T::getStaticTypeName(),
+                it->second->getTypeName()
+            );
+            return nullptr;
+        }
+
+        return std::static_pointer_cast<T>(it->second);
     }
 }

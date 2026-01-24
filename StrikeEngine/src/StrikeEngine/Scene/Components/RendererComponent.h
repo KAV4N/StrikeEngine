@@ -29,7 +29,6 @@ namespace StrikeEngine {
         }
 
         void deserialize(const pugi::xml_node& node) override;
-        void serialize(pugi::xml_node& node) const override;
 
         // Model management
         void setModel(const std::string& modelId);

@@ -16,8 +16,6 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include "StrikeEngine/Core/Profiler.h"
-
 namespace StrikeEngine {
 
     const size_t Renderer::MAX_INSTANCES;
@@ -42,8 +40,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::beginCamera(const CameraComponent& camera, const glm::vec3& position) {
-        PROFILE_SCOPE("Renderer::beginCamera");
-
         mCurrentCameraData.clear();
         mCurrentCameraData.camera = camera;
         mCurrentCameraData.cameraPosition = position;
@@ -51,9 +47,7 @@ namespace StrikeEngine {
         mCameraActive = true;
     }
 
-    void Renderer::endCamera() {
-        PROFILE_SCOPE("Renderer::endCamera");
-        
+    void Renderer::endCamera() {       
         if (!mCameraActive) return;
 
         renderCamera(mCurrentCameraData);
@@ -66,8 +60,6 @@ namespace StrikeEngine {
                               const glm::uvec3& color,
                               const glm::mat4& transform) {
         if (!mCameraActive || !mesh) return;
-
-        PROFILE_SCOPE("Renderer::submitMesh");
 
         InstanceKey key{
             reinterpret_cast<uintptr_t>(mesh.get()),
@@ -98,8 +90,6 @@ namespace StrikeEngine {
                                const glm::mat4& transform) {
         if (!model) return;
 
-        PROFILE_SCOPE("Renderer::submitModel");
-
         uint32_t meshCount = model->getMeshCount();
         for (uint32_t i = 0; i < meshCount; ++i) {
             auto mesh = model->getMesh(i);
@@ -124,12 +114,11 @@ namespace StrikeEngine {
         mCurrentCameraData.pointLights.push_back(light);
     }
 
-    void Renderer::submitSun(Sun* sun) {
+    void Renderer::submitSun(Sun* sun, const glm::mat4& lightSpaceMatrix) {
         if (!mCameraActive || !sun) return;
 
-        PROFILE_SCOPE("Renderer::submitSun");
         mCurrentCameraData.sunData.sun = sun;
-        mCurrentCameraData.sunData.lightSpaceMatrix = sun->calculateLightSpaceMatrix(mCurrentCameraData.cameraPosition, mCurrentCameraData.camera.getForward());
+        mCurrentCameraData.sunData.lightSpaceMatrix = lightSpaceMatrix;
     }
 
     void Renderer::submitSkybox(const std::shared_ptr<CubeMap>& skybox) {
@@ -155,7 +144,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::renderCamera(const CameraRenderData& cameraData) {
-        PROFILE_SCOPE("Renderer::renderCamera");
 
         preRender(cameraData);
         mainRender(cameraData);
@@ -163,7 +151,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::preRender(const CameraRenderData& cameraData) {
-        PROFILE_SCOPE("Renderer::preRender");
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PreRender)];
         for (auto& pass : passes) {
@@ -172,7 +159,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::mainRender(const CameraRenderData& cameraData) {
-        PROFILE_SCOPE("Renderer::mainRender");
 
         mFrameBuffer->bind();
 
@@ -199,7 +185,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::postRender(const CameraRenderData& cameraData) {
-        PROFILE_SCOPE("Renderer::postRender");
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PostRender)];
         for (auto& pass : passes) {
@@ -208,7 +193,6 @@ namespace StrikeEngine {
     }
 
     void Renderer::display() {
-        PROFILE_SCOPE("Renderer::display");
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, mWidth, mHeight);
@@ -216,8 +200,22 @@ namespace StrikeEngine {
 
         if (mScreenShader) {
             mScreenShader->bind();
-            mScreenShader->setInt("screenTexture", 0);
-            mFrameBuffer->bindFramebufferTexture(0);
+
+            // slot 0 = color
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, mFrameBuffer->getColorTextureID());
+            mScreenShader->setInt("uScreenTexture", 0);
+
+            // slot 1 = depth
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, mFrameBuffer->getDepthTextureID());
+            mScreenShader->setInt("uDepthTexture", 1);
+            
+            // Fog uniforms - normalize color from 0-255 to 0-1
+            mScreenShader->setFloat("uFogStart", mFogStart);
+            mScreenShader->setFloat("uFogEnd", mFogEnd);
+            mScreenShader->setFloat("uFogDensity", mFogDensity);
+            mScreenShader->setVec3("uFogColor", glm::vec3(mFogColor) / 255.0f);
 
             glBindVertexArray(mScreenVAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

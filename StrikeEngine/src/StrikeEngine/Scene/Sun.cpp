@@ -1,48 +1,41 @@
 #include "strikepch.h"
 #include "Sun.h"
+#include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include <glm/gtx/euler_angles.hpp>
 
 namespace StrikeEngine {
     
-    void Sun::setColor(const glm::vec3& color) {
-        mColor = glm::clamp(color, glm::vec3(0.0f), glm::vec3(255.0f));
+    void Sun::setColor(const glm::uvec3& color) {
+        mColor = glm::clamp(color, glm::uvec3(0.0f), glm::uvec3(255.0f));
     }
 
-    const glm::vec3& Sun::getColor() const {
+    const glm::uvec3& Sun::getColor() const {
         return mColor;
     }
 
     void Sun::setIntensity(float intensity) {
-        mIntensity = intensity;
+        mIntensity = glm::max(intensity, 0.0f);
     }
 
     float Sun::getIntensity() const {
         return mIntensity;
     }
 
-    void Sun::setRotationEuler(const glm::vec3& eulerAngles) {
-        glm::vec3 normalized = normalizeEulerAngles(eulerAngles);
-        glm::vec3 eulerRad = glm::radians(normalized);
-        mRotation = glm::normalize(glm::quat(eulerRad));
-    }
-
     void Sun::setRotation(const glm::quat& rotation) {
-        mRotation = rotation;
+        mRotation = glm::normalize(rotation);
     }
 
-    void Sun::rotateX(float angleDegrees) {
-        rotateQuaternion(angleDegrees, glm::vec3(1.0f, 0.0f, 0.0f));
+    void Sun::rotate(const glm::vec3& angles) {
+        rotateQuaternion(angles.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        rotateQuaternion(angles.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        rotateQuaternion(angles.z, glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
-    void Sun::rotateY(float angleDegrees) {
-        rotateQuaternion(angleDegrees, glm::vec3(0.0f, 1.0f, 0.0f));
+    void Sun::setRotationEuler(const glm::vec3& eulerAngles) {
+        mRotation = glm::normalize(glm::quat(glm::radians(eulerAngles)));
     }
 
-    void Sun::rotateZ(float angleDegrees) {
-        rotateQuaternion(angleDegrees, glm::vec3(0.0f, 0.0f, 1.0f));
-    }
-
-    void Sun::rotateQuaternion(float angleDegrees, glm::vec3 axis) {
+    void Sun::rotateQuaternion(float angleDegrees, const glm::vec3& axis) {
         glm::quat angleQuat = glm::angleAxis(glm::radians(angleDegrees), axis);
         if (axis.y == 1.0f) {
             mRotation = angleQuat * mRotation;
@@ -57,21 +50,8 @@ namespace StrikeEngine {
     }
 
     glm::vec3 Sun::getDirection() const {
-        return mRotation * glm::vec3(0.0f, 0.0f, -1.0f);
-    }
-
-    glm::vec3 Sun::normalizeEulerAngles(const glm::vec3& angles) const {
-        auto normalizeAngle = [](float angle) {
-            angle = fmod(angle + 180.0f, 360.0f);
-            if (angle < 0.0f) angle += 360.0f;
-            return angle - 180.0f;
-        };
-        
-        return glm::vec3(
-            normalizeAngle(angles.x),
-            normalizeAngle(angles.y),
-            normalizeAngle(angles.z)
-        );
+        glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+        return glm::normalize(mRotation * forward);
     }
 
     void Sun::setCastShadows(bool cast) {
@@ -82,89 +62,70 @@ namespace StrikeEngine {
         return mCastShadows;
     }
 
+    glm::mat4 Sun::calculateLightSpaceMatrix(const CameraComponent& camera) {
+        std::vector<glm::vec4> ndcCorners = {
+            {-1, -1, -1, 1}, {1, -1, -1, 1},
+            {-1,  1, -1, 1}, {1,  1, -1, 1},
+            {-1, -1,  1, 1}, {1, -1,  1, 1},
+            {-1,  1,  1, 1}, {1,  1,  1, 1}
+        };
 
-    glm::mat4 Sun::calculateLightSpaceMatrix(const glm::vec3& cameraPos, const glm::vec3& cameraDirection) {
-         glm::vec3 sunDirection = getDirection();
+        glm::mat4 cameraProjection = camera.getProjectionMatrix();
+        glm::mat4 cameraView = camera.getViewMatrix();
+
+        glm::mat4 invViewProj = glm::inverse(cameraProjection * cameraView);
+        std::vector<glm::vec3> worldCorners;
+        worldCorners.reserve(8);
+
+        for (const auto& corner : ndcCorners) {
+            glm::vec4 worldPos = invViewProj * corner;
+            worldCorners.push_back(glm::vec3(worldPos) / worldPos.w);
+        }
+
+        glm::vec3 center = glm::vec3(0.0f);
+        for (const auto& corner : worldCorners) {
+            center += corner;
+        }
+        center /= worldCorners.size();
         
-        glm::vec3 camDir = glm::normalize(cameraDirection);
-        float frontBias = 0.25f;
-        glm::vec3 frustumCenter = cameraPos + camDir * (mShadowDistance * frontBias);
-        glm::vec3 lightPos = frustumCenter - sunDirection * (mShadowDistance * 0.5f);
+        glm::mat4 lightView = glm::lookAt(
+            center - glm::normalize(getDirection()),  // Light position
+            center,                              // Look at frustum center
+            glm::vec3(0, 1, 0)                  // Up vector
+        );
+
+        float minX = std::numeric_limits<float>::max();
+        float maxX = std::numeric_limits<float>::lowest();
+        float minY = std::numeric_limits<float>::max();
+        float maxY = std::numeric_limits<float>::lowest();
+        float minZ = std::numeric_limits<float>::max();
+        float maxZ = std::numeric_limits<float>::lowest();
         
-        glm::vec3 targetPos = frustumCenter;
+        for (const auto& corner : worldCorners) {
+            glm::vec4 lightSpacePos = lightView * glm::vec4(corner, 1.0f);
+            minX = glm::min(minX, lightSpacePos.x);
+            maxX = glm::max(maxX, lightSpacePos.x);
+            minY = glm::min(minY, lightSpacePos.y);
+            maxY = glm::max(maxY, lightSpacePos.y);
+            minZ = glm::min(minZ, lightSpacePos.z);
+            maxZ = glm::max(maxZ, lightSpacePos.z);
+        }
+
+        constexpr float zMultiplier = 10.0f;
+        if (minZ < 0) {
+            minZ *= zMultiplier;
+        } else {
+            minZ /= zMultiplier;
+        }
 
         glm::mat4 lightProjection = glm::ortho(
-            -mShadowArea, mShadowArea,
-            -mShadowArea, mShadowArea,
-            0.1f, mShadowDistance
+            minX, maxX,
+            minY, maxY,
+            minZ, maxZ
         );
 
-        glm::vec3 up = glm::abs(sunDirection.y) > 0.99f ? 
-            glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::mat4 lightView = glm::lookAt(lightPos, targetPos, up);
-
-        mLightSpaceMatrix = lightProjection * lightView;
-        extractFrustumPlanes(mLightSpaceMatrix);
-        return mLightSpaceMatrix;
-    }
-
-    const Sun::Frustum& Sun::getFrustum() const {
-        return mFrustum;
-    }
-
-    void Sun::updateFrustum(const glm::vec3& cameraPos, const glm::vec3& cameraDirection) {
-       
-    }
-
-    void Sun::extractFrustumPlanes(const glm::mat4& matrix) {
-        // Left plane
-        mFrustum.planes[0] = glm::vec4(
-            matrix[0][3] + matrix[0][0],
-            matrix[1][3] + matrix[1][0],
-            matrix[2][3] + matrix[2][0],
-            matrix[3][3] + matrix[3][0]
-        );
-        // Right plane
-        mFrustum.planes[1] = glm::vec4(
-            matrix[0][3] - matrix[0][0],
-            matrix[1][3] - matrix[1][0],
-            matrix[2][3] - matrix[2][0],
-            matrix[3][3] - matrix[3][0]
-        );
-        // Bottom plane
-        mFrustum.planes[2] = glm::vec4(
-            matrix[0][3] + matrix[0][1],
-            matrix[1][3] + matrix[1][1],
-            matrix[2][3] + matrix[2][1],
-            matrix[3][3] + matrix[3][1]
-        );
-        // Top plane
-        mFrustum.planes[3] = glm::vec4(
-            matrix[0][3] - matrix[0][1],
-            matrix[1][3] - matrix[1][1],
-            matrix[2][3] - matrix[2][1],
-            matrix[3][3] - matrix[3][1]
-        );
-        // Near plane
-        mFrustum.planes[4] = glm::vec4(
-            matrix[0][3] + matrix[0][2],
-            matrix[1][3] + matrix[1][2],
-            matrix[2][3] + matrix[2][2],
-            matrix[3][3] + matrix[3][2]
-        );
-        // Far plane
-        mFrustum.planes[5] = glm::vec4(
-            matrix[0][3] - matrix[0][2],
-            matrix[1][3] - matrix[1][2],
-            matrix[2][3] - matrix[2][2],
-            matrix[3][3] - matrix[3][2]
-        );
-
-        // Normalize all planes
-        for (auto& plane : mFrustum.planes) {
-            float length = glm::length(glm::vec3(plane));
-            if (length > 0.0f) plane /= length;
-        }
+        
+        return lightProjection * lightView;;
     }
 
 } // namespace StrikeEngine

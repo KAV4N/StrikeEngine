@@ -46,7 +46,6 @@ namespace StrikeEngine {
 
         // Path resolution utilities
         std::filesystem::path resolvePath(const std::filesystem::path& src, const std::filesystem::path& basePath) const;
-        std::filesystem::path addRootPrefix(const std::filesystem::path& path);
 
         // XML loading
         template<typename AssetType>
@@ -74,33 +73,28 @@ namespace StrikeEngine {
 
 
     template<typename AssetType>
-    std::shared_ptr<AssetType> AssetLoader::loadFromNodeInternal(const pugi::xml_node& node, const std::filesystem::path& basePath){
+    std::shared_ptr<AssetType> AssetLoader::loadFromNodeInternal(const pugi::xml_node& node, const std::filesystem::path& basePath) {
         static_assert(std::is_base_of_v<Asset, AssetType>, "AssetType must derive from Asset");
 
         std::string id  = node.attribute("id").as_string();
         std::string src = node.attribute("src").as_string();
-        bool async      = node.attribute("async").as_bool(false);
 
-        if (id.empty() || src.empty()){
+        if (id.empty() || src.empty()) {
             STRIKE_CORE_ERROR("Invalid asset node: missing id or src attribute");
-            
+
             auto asset = std::make_shared<AssetType>(id, src);
             asset->setLoadingState(AssetState::Failed);
             return asset;
         }
 
         auto asset = std::make_shared<AssetType>(id, src);
-        asset->setLoadAsync(async);
 
         std::filesystem::path fullPath = resolvePath(src, basePath);
 
-        if constexpr (std::is_same_v<AssetType, Template>)
-        {
+        if constexpr (std::is_same_v<AssetType, Template>) {
             ModelParser parser;
-            if (!parser.parseModel(fullPath))
-            {
-                if (!std::filesystem::exists(fullPath))
-                {
+            if (!parser.parseModel(fullPath)) {
+                if (!std::filesystem::exists(fullPath)) {
                     STRIKE_CORE_ERROR("Template model file does not exist: {}", fullPath.string());
                     asset->setLoadingState(AssetState::Failed);
                     return asset;
@@ -109,11 +103,9 @@ namespace StrikeEngine {
             fullPath.replace_extension(".tmpl");
         }
 
-        if (async)
-            return AssetManager::get().loadAsync<AssetType>(id, fullPath);
-        else
-            return AssetManager::get().load<AssetType>(id, fullPath);
-        
+        // always load synchronously
+        return AssetManager::get().load<AssetType>(id, fullPath);
     }
+
 
 }

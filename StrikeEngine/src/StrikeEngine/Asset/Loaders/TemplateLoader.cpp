@@ -12,7 +12,7 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Asset> TemplateLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
-        auto templateAsset = std::make_shared<Template>(id, addRootPrefix(path));
+        auto templateAsset = std::make_shared<Template>(id, path);
         templateAsset->setLoadingState(AssetState::Loading);
 
         pugi::xml_document doc;

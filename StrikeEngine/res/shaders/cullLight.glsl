@@ -1,3 +1,6 @@
+// Based on clustered shading implementation by DaveH355
+// https://github.com/DaveH355/clustered-shading
+
 #type COMPUTE
 #version 430 core
 

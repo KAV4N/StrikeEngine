@@ -12,6 +12,7 @@ namespace StrikeEngine {
     class Model;
     class Texture;
     class Mesh;
+    class CameraComponent;
 
     class RenderSystem : public SystemECS {
     public:
@@ -39,7 +40,16 @@ namespace StrikeEngine {
 
     private:
         void processScene(Scene* scene);
-        void processRenderables(Scene* scene);
+        void processRenderables(Scene* scene, const CameraComponent& camera);
         void processLights(Scene* scene);
+        
+        // Frustum culling helper functions
+        bool isInFrustum(const CameraComponent::Frustum& frustum, 
+                        const glm::vec3& center, 
+                        const glm::vec3& halfExtents) const;
+        
+        bool isSphereInFrustum(const CameraComponent::Frustum& frustum,
+                              const glm::vec3& center,
+                              float radius) const;
     };
 }

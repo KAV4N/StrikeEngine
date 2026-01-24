@@ -23,7 +23,7 @@ namespace StrikeEngine {
     class Script {
     public:
         Script();
-        virtual ~Script();
+        ~Script();
 
         Script(const Script&) = delete;
         Script& operator=(const Script&) = delete;
@@ -34,19 +34,8 @@ namespace StrikeEngine {
         virtual void onStart();
         virtual void onUpdate(float deltaTime);
         virtual void onDestroy();
+        virtual void onEvent(Event& event);
         
-
-        
-        void onEvent(Event& event);
-
-        // Override these to handle specific events 
-        virtual void onKeyPressed(KeyPressedEvent& event) {}
-        virtual void onKeyReleased(KeyReleasedEvent& event) {}
-        virtual void onKeyTyped(KeyTypedEvent& event) {}
-        virtual void onMouseMoved(MouseMovedEvent& event) {}
-        virtual void onMouseScrolled(MouseScrolledEvent& event) {}
-        virtual void onMouseButtonPressed(MouseButtonPressedEvent& event) {}
-        virtual void onMouseButtonReleased(MouseButtonReleasedEvent& event) {}
 
         const Entity& getEntity() const;
 

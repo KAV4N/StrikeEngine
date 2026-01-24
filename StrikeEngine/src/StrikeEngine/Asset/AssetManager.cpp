@@ -39,7 +39,6 @@ namespace StrikeEngine {
         return mLoadedAssets.find(id) != mLoadedAssets.end();
     }
 
-
     bool AssetManager::isAssetLoading(const std::string& id) const {
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
@@ -145,7 +144,6 @@ namespace StrikeEngine {
         return count;
     }
 
-
     void AssetManager::removeAssetInternal(const std::string& id) {
         mLoadedAssets.erase(id);
     }
@@ -155,18 +153,6 @@ namespace StrikeEngine {
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
     }
 
-    void AssetManager::serialize(pugi::xml_document& doc) {
-        if (mShuttingDown) {
-            return;
-        }
-        
-        pugi::xml_node assetsNode = doc.append_child("assets");
-
-        for (const auto& [id, asset] : mLoadedAssets) {
-            asset->toNode(assetsNode);
-        }
-    }
-
     void AssetManager::deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct) {
         if (mShuttingDown) {
             return;
@@ -174,32 +160,66 @@ namespace StrikeEngine {
         
         if (direct) {
             const std::string assetId = node.attribute("id").as_string();
-            if (hasAsset(assetId)) {
+            
+            // Check if asset already exists
+            auto it = mLoadedAssets.find(assetId);
+            if (it != mLoadedAssets.end()) {
+                const std::string typeName = node.name();
+                
+                // Check if type matches
+                if (it->second->getTypeName() != typeName) {
+                    STRIKE_CORE_ERROR(
+                        "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                        assetId,
+                        typeName,
+                        it->second->getTypeName()
+                    );
+                }
                 return;
             }
             
             const std::string typeName = node.name();
             auto loader = getLoader(typeName);
-            if (loader) {
-                auto asset = loader->loadFromNode(node, basePath);
-                if (asset) {
-                    mLoadedAssets[asset->getId()] = asset;
-                }
+            if (!loader) {
+                STRIKE_CORE_ERROR("No loader found for asset type '{}'", typeName);
+                return;
+            }
+            
+            auto asset = loader->loadFromNode(node, basePath);
+            if (asset) {
+                mLoadedAssets[asset->getId()] = asset;
             }
         } else {
             for (const pugi::xml_node& assetNode : node.children()) {
                 const std::string assetId = assetNode.attribute("id").as_string();
-                if (hasAsset(assetId)) {
+                
+                // Check if asset already exists
+                auto it = mLoadedAssets.find(assetId);
+                if (it != mLoadedAssets.end()) {
+                    const std::string typeName = assetNode.name();
+                    
+                    // Check if type matches
+                    if (it->second->getTypeName() != typeName) {
+                        STRIKE_CORE_ERROR(
+                            "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                            assetId,
+                            typeName,
+                            it->second->getTypeName()
+                        );
+                    }
                     continue;
                 }
                 
                 const std::string typeName = assetNode.name();
                 auto loader = getLoader(typeName);
-                if (loader) {
-                    auto asset = loader->loadFromNode(assetNode, basePath);
-                    if (asset) {
-                        mLoadedAssets[asset->getId()] = asset;
-                    }
+                if (!loader) {
+                    STRIKE_CORE_ERROR("No loader found for asset type '{}'", typeName);
+                    continue;
+                }
+                
+                auto asset = loader->loadFromNode(assetNode, basePath);
+                if (asset) {
+                    mLoadedAssets[asset->getId()] = asset;
                 }
             }
         }

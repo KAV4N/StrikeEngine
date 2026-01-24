@@ -4,18 +4,14 @@
 	<assets>
 		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/" async="false"/>
 		<audio id="shot" src="../Sounds/shot.mp3" async="false"/>
-
 		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" async="false"/>
-		<material id="gizmo_DefaultMaterial" src="../Objects/gizmo/gizmo_DefaultMaterial.mat" async="false"/>
+		<model id="box" src="../Objects/box/box.obj" async="false"/>
 
-		<model id="box" src="../Objects/box/box.obj" async="true"/>
-		<material id="box_DefaultMaterial" src="../Objects/box/box_DefaultMaterial.mat" async="true"/>
-		<material id="box_Material" src="../Objects/box/box_Material.mat" async="true"/>
-
-		<template id="portalBox" src="../Objects/CCP2.fbx" async="true"/>
+		<template id="portalBox" src="../Objects/CCP2.fbx" async="false"/>
 	</assets>
 
-	<skybox cubeMapId="skyboxMainScene"/>
+	<skybox cubeMap="skyboxMainScene"/>
+	<fog start="10.0" end="100.0" density="0.015" color="128,153,179"/>
 
 	<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="false"/>
 
@@ -46,9 +42,9 @@
 		</entity>
 
 		<!-- UI TEXT -->
-		<entity tag="textEntity" position="300,300,0" rotation="0,0,0" scale="2,1,1">
+		<entity tag="text" position="300,300,0" rotation="0,0,0" scale="2,1,1">
 			<components>
-				<text text="Strike Engine Demo" color="255,255,255" pivot="0.5,0.5"/>
+				<text text="Strike Engine Demo" color="255,255,255" pivot="0.5,0.5" x="0.5" y="0.5"/>
 			</components>
 		</entity>
 
@@ -84,7 +80,7 @@
 		</entity>
 
 		<!-- CUBE -->
-		<entity tag="Cube" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
+		<entity tag="shotSound" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
 			<components>
 				<renderer model="box" material="box_Material"/>
 				<physics anchored="true" collide="true" mass="1"/>

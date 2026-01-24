@@ -11,7 +11,6 @@
 
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
-#include "Profiler.h"
 
 #include <chrono>
 
@@ -45,31 +44,22 @@ namespace StrikeEngine {
             EventDispatcher dispatcher(e);
             dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
             dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
-            dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::printProfiler));
             World::get().onEvent(e);
         }
-    }
-
-    bool Application::printProfiler(KeyPressedEvent& e){
-        Profiler::printResults();
-        return true;
     }
 
     void Application::onUpdate(float deltaTime) {
         World& world = World::get();
         world.onUpdate(deltaTime);
-
+        AssetManager::get().update();   
         world.onRender();
-
-        AssetManager::get().update();
-       
-        mWindow->setWindowTitle("StrikeEngine - FPS: " + std::to_string(static_cast<int>(mCurrentFPS)));
-    
         mWindow->onUpdate();
+
+                
+
     }
 
     void Application::run() {
-        PROFILE_SCOPE("AppRun");
         auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
         while (mRunning) {
@@ -96,6 +86,7 @@ namespace StrikeEngine {
         mRunning = false;
 
         AssetManager::get().shutdown();
+        World::get().shutDownSystems();
 
         return true;
     }

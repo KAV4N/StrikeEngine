@@ -19,7 +19,7 @@ namespace StrikeEngine {
     }
 
     std::shared_ptr<Model> ModelLoader::loadModelWithAssimp(const std::string& id, const std::filesystem::path& filePath) {
-        auto asset = std::make_shared<Model>(id, addRootPrefix(filePath));
+        auto asset = std::make_shared<Model>(id, filePath);
         
         asset->setLoadingState(AssetState::Loading);
 

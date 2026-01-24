@@ -41,10 +41,11 @@ namespace StrikeEngine {
                 if (body->getMotionState()) {
                     delete body->getMotionState();
                 }
+               
                 if (body->getUserPointer()) {
                     delete static_cast<entt::entity*>(body->getUserPointer());
+                    body->setUserPointer(nullptr);
                 }
-
                 if (body->getCollisionShape()) {
                     delete body->getCollisionShape();
                 }
@@ -60,6 +61,10 @@ namespace StrikeEngine {
         delete mCollisionConfiguration;
 
         mDynamicsWorld = nullptr;
+        mSolver = nullptr;
+        mBroadphase = nullptr;
+        mDispatcher = nullptr;
+        mCollisionConfiguration = nullptr;
     }
 
     void PhysicsSystem::setGravity(const glm::vec3& gravity) {
@@ -276,13 +281,21 @@ namespace StrikeEngine {
 
         auto* renderer = registry.try_get<RendererComponent>(entityHandle);
 
-        if (renderer && renderer->hasModel() && renderer->getModel()->isReady()) {
-            Bounds bounds = renderer->hasMesh() ?
-                (renderer->getMesh() ? renderer->getMesh()->getBounds() : renderer->getModel()->getBounds()) :
-                renderer->getModel()->getBounds();
+        if (renderer && renderer->isActive()) {
+            auto model = renderer->getModel();
+            auto mesh = renderer->getMesh();
 
-            size = bounds.aabbMax - bounds.aabbMin;
-            centerOffset = (bounds.aabbMax + bounds.aabbMin) * 0.5f;
+            if (model)
+            {
+                Bounds bounds;
+                if (mesh) 
+                    bounds = mesh->getBounds();
+                else 
+                    bounds = model->getBounds();
+                size = bounds.aabbMax - bounds.aabbMin;
+                centerOffset = (bounds.aabbMax + bounds.aabbMin) * 0.5f;
+            }
+           
             
         }
 
@@ -344,10 +357,12 @@ namespace StrikeEngine {
         if (body) {
             mDynamicsWorld->removeRigidBody(body);
             physics->mInPhysicsWorld = false;
-            delete body->getCollisionShape();
+            if (auto collShape = body->getCollisionShape()) delete collShape;
             if (body->getMotionState()) delete body->getMotionState();
             if (body->getUserPointer()) delete static_cast<entt::entity*>(body->getUserPointer());
             delete body;
+            physics->setRigidBody(nullptr);
+            physics->setCollisionShape(nullptr);
         }
     }
 
@@ -423,11 +438,9 @@ namespace StrikeEngine {
         btRigidBody* body = physics.getRigidBody();
         if (!body) return;
 
-        const glm::mat4& worldMat = ent.getWorldMatrix();
-        glm::vec3 pos, scale, skew;
-        glm::quat rot;
-        glm::vec4 persp;
-        glm::decompose(worldMat, scale, rot, pos, skew, persp);
+        glm::vec3 pos = ent.getWorldPosition();
+        glm::quat rot = ent.getWorldRotation();
+        glm::vec3 scale = ent.getWorldScale();
 
         glm::vec3 offset = physics.getCenter() * scale;
         glm::vec3 adjustedPos = pos + rot * offset;

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scene sceneId="SecondScene">
 	<assets>
-		<template id="track" src="../Objects/tempoTrack/scene.gltf" async="true"/>
-		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/skybox/" async="true"/>
-		<texture id="bodyR" src="@/Assets/Objects/tempoTrack/BASE_baseColor.png" async="true"/>
-		<texture id="wingR" src="@/Assets/Objects/tempoTrack/WINGS_baseColor.png" async="true"/>
-		<template id="gizmo" src="../Objects/gizmo/untitled45.fbx" async="true"/>
+		<template id="track" src="../Objects/tempoTrack/scene.gltf"/>
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/skybox/" />
+		<texture id="bodyR" src="@/Assets/Objects/tempoTrack/BASE_baseColor.png"/>
+		<texture id="wingR" src="@/Assets/Objects/tempoTrack/WINGS_baseColor.png" />
+		<template id="gizmo" src="../Objects/gizmo/untitled45.fbx" />
+		<audio id="shot" src="../Sounds/shot.mp3" />
+		<model id="box" src="../Objects/box/box.obj"/>
 	</assets>
 
 	<sun color="255, 240, 210" intensity="1" rotation="-120,0,0" shadows="true"/>
-	<skybox cubeMapId="skyboxMainScene"/>
+	<skybox cubeMap="skyboxMainScene"/>
+	
 
 	<entities>
 		<entity position="0,20,0" rotation="0,0,0" scale="1,1,1">
@@ -27,6 +30,7 @@
 				<physics anchored="true" collide="true" mass="1" size="10,10,10"/> 
 				<logic>
 					<script type="CameraMovement" />
+					<script type="CubeSpawn" />
 				</logic>
 				<audiolistener/>
 				<light color="255, 245, 200" intensity="1" radius="5.0" />
@@ -71,9 +75,17 @@
 
 
 		<!-- UI TEXT -->
-		<entity tag="textEntity" position="200,100,0" rotation="0,0,0" scale="1,1,1">
+		<entity tag="text" position="200,100,0" rotation="0,0,0" scale="1,1,1">
 			<components>
-				<text text="Speed: 0" color="255,255,255" pivot="0.5,0.5"/>
+				<text text="Speed: 0" color="255,255,255" pivot="0.5,0.5" x="0.1" y="0.2"/>
+			</components>
+		</entity>
+
+		<entity tag="shotSound" position="50,-20,0" rotation="0,0,0" scale="20,20,20">
+			<components>
+				<renderer model="box" material="box_Material"/>
+				<physics anchored="true" collide="true" mass="1"/>
+				<audiosource audio="shot"/>
 			</components>
 		</entity>
 

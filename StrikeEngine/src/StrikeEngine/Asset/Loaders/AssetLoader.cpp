@@ -44,7 +44,6 @@ namespace StrikeEngine {
             return;
         }
     
-        placeholderAsset->setLoadAsync(true);
         auto future = std::async(std::launch::async, [this, id, path]() {
             return this->loadAssetInternal(id, path, true);
         });
@@ -68,7 +67,6 @@ namespace StrikeEngine {
                 if (loadedAsset) {
                     swapData(userAsset, loadedAsset);
                     userAsset->postLoad();
-                    userAsset->mLoadAsync = true;
                     userAsset->setLoadingState(AssetState::Ready);
                 }
                 else {
@@ -129,13 +127,6 @@ namespace StrikeEngine {
         }
     }
 
-    std::filesystem::path AssetLoader::addRootPrefix(const std::filesystem::path& path) {
-        std::string pathStr = path.generic_string();
 
-        if (!pathStr.empty() && pathStr[0] == '@') {
-            return std::filesystem::path(pathStr).lexically_normal();
-        }
-        return std::filesystem::path("@") / path.lexically_normal();
-    }
 
 }

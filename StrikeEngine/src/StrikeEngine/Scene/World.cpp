@@ -13,7 +13,7 @@
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
 
-#include "StrikeEngine/Core/Profiler.h"
+#include "StrikeEngine/Asset/AssetManager.h"
 
 namespace StrikeEngine {
 
@@ -30,18 +30,32 @@ namespace StrikeEngine {
         , mPhysicsSystem(std::make_unique<PhysicsSystem>())
         , mAudioSystem(std::make_unique<AudioSystem>())
     {
-        mAudioSystem->initialize();
+
+
     }
 
     void World::loadScene(const std::filesystem::path& path)
     {
+
+        /*
+        std::unique_ptr<Scene> temp = std::make_unique<Scene>("1", std::filesystem::path("test/test/"));
+        mCurrentScene = std::make_unique<Scene>("asd", std::filesystem::path("test/test/"));
+
+        // ─── Create some test entities ────────────────────────────────
+        mCurrentScene->createEntity();
+        mCurrentScene->createEntity();
+
+
+        mCurrentScene->shutdown();
+        mCurrentScene = std::move(temp);
+        */
         if (!std::filesystem::exists(path)) {
             STRIKE_CORE_ERROR("Scene file does not exist: {}", path.string());
             return;
         }
         mPendingScenePath = path;
         mSceneLoadPending = true;
-        std::cout << "Scene queued for loading: " << path.string() << std::endl;
+        
     }
 
     void World::processSceneLoad()
@@ -52,12 +66,12 @@ namespace StrikeEngine {
         try {
             auto newScene = mSceneLoader->loadScene(mPendingScenePath);
             if (newScene) {
-                clearPhysicsWorld();
                 if (mCurrentScene) {
+                    mAudioSystem->stopAll();
+                    clearPhysicsWorld();
                     mCurrentScene->shutdown();
                 }
                 mCurrentScene = std::move(newScene);
-                mCurrentScene->setPhysicsSystem(mPhysicsSystem.get());
             }
             else {
                 STRIKE_CORE_ERROR("Failed to load scene: {}", mPendingScenePath.string());
@@ -73,42 +87,24 @@ namespace StrikeEngine {
 
     Scene* World::getScene() const
     {
+        //return nullptr;
         return mCurrentScene.get();
     }
 
     void World::onUpdate(float dt)
     {
-        PROFILE_SCOPE("world");
-
+        
         if (mCurrentScene) {
 
-            {
-                PROFILE_SCOPE("Scene::onUpdate");
-                mCurrentScene->onUpdate(dt);
-            }
-
-            {
-                PROFILE_SCOPE("ScriptSystem::onUpdate");
-                mScriptSystem->onUpdate(dt);
-            }
-
-            {
-                PROFILE_SCOPE("PhysicsSystem::onUpdate");
-                mPhysicsSystem->onUpdate(dt);
-            }
-
-            {
-                PROFILE_SCOPE("AudioSystem::onUpdate");
-                mAudioSystem->onUpdate(dt);
-            }
-
-            {
-                PROFILE_SCOPE("RenderSystem::onUpdate");
-                mRenderSystem->onUpdate(dt);
-            }
+            mCurrentScene->onUpdate(dt);       
+            mScriptSystem->onUpdate(dt);
+            mPhysicsSystem->onUpdate(dt);
+            mAudioSystem->onUpdate(dt);
+            mRenderSystem->onUpdate(dt);
+            
         }
-
-        // Unity-style: process scene load at end of frame (after all updates)
+        
+        // process scene load at end of frame (after all updates)
         processSceneLoad();
     }
 
@@ -144,6 +140,47 @@ namespace StrikeEngine {
         }
     }
 
+
+    void World::setFogStart(float start)
+    {
+        Renderer::get().setFogStart(start);
+    }
+
+    void World::setFogEnd(float end)
+    {
+        Renderer::get().setFogEnd(end);
+    }
+
+    void World::setFogDensity(float density)
+    {
+        Renderer::get().setFogDensity(density);
+    }
+
+    void World::setFogColor(const glm::uvec3& color)
+    {
+        Renderer::get().setFogColor(color);
+    }
+
+    float World::getFogStart() const
+    {
+        return Renderer::get().getFogStart();
+    }
+
+    float World::getFogEnd() const
+    {
+        return Renderer::get().getFogEnd();
+    }
+
+    float World::getFogDensity() const
+    {
+        return Renderer::get().getFogDensity();
+    }
+
+    glm::uvec3 World::getFogColor() const
+    {
+        return Renderer::get().getFogColor();
+    }
+
     void World::resize(uint32_t width, uint32_t height)
     {
         mRenderSystem->resize(width, height);
@@ -157,6 +194,17 @@ namespace StrikeEngine {
             for (auto entity : view) {
                 mPhysicsSystem->removePhysics(entity);
             }
+        }
+    }
+
+    void World::shutDownSystems()
+    {
+        if (mAudioSystem) {
+            mAudioSystem->stopAll();
+        }
+        if (mCurrentScene) {
+            clearPhysicsWorld();
+            mCurrentScene->shutdown();
         }
     }
 

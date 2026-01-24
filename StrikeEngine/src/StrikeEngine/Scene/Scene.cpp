@@ -5,7 +5,11 @@
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Scene/Components/LogicComponent.h"
 #include "StrikeEngine/Scene/Components/PhysicsComponent.h"
+#include "StrikeEngine/Scene/Components/AudioSourceComponent.h"
+
 #include "StrikeEngine/Scene/Systems/PhysicsSystem.h"
+#include "StrikeEngine/Scene/Systems/AudioSystem.h"
+
 #include "StrikeEngine/Asset/Types/Asset.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "Components/CameraComponent.h"
@@ -26,13 +30,12 @@ namespace StrikeEngine {
     }
 
     void Scene::setupComponentProtection() {
+        
         mRegistry.on_construct<PhysicsComponent>().connect<&Scene::onPhysicsComponentCreate>(this);
         mRegistry.on_destroy<PhysicsComponent>().connect<&Scene::onPhysicsComponentDestroy>(this);
+        mRegistry.on_destroy<AudioSourceComponent>().connect<&Scene::onAudioSourceDestroy>(this);
     }
 
-    void Scene::setPhysicsSystem(PhysicsSystem* physicsSystem) {
-        mPhysicsSystem = physicsSystem;
-    }
 
     void Scene::setSkybox(const std::string& cubeMapId) {
         mSkyboxCubeMapId = cubeMapId;
@@ -98,24 +101,29 @@ namespace StrikeEngine {
 
     void Scene::setParent(const Entity& child, const Entity& parent) {
         if (!child.isValid() || !parent.isValid()) {
-            throw std::invalid_argument("Invalid entity");
+            STRIKE_ASSERT(false, "Invalid entity in setParent");
+            return;
         }
 
         entt::entity childHandle = child.getHandle();
         entt::entity parentHandle = parent.getHandle();
 
         if (childHandle == parentHandle) {
-            throw std::invalid_argument("Entity cannot be parent of itself");
+            STRIKE_ASSERT(false, "Entity cannot be parent of itself");
+            return;
         }
+
         if (isAncestor(child, parent)) {
-            throw std::invalid_argument("Circular hierarchy detected");
+            STRIKE_ASSERT(false, "Circular hierarchy detected");
+            return;
         }
 
         auto childNode = getGraphNode(childHandle);
         auto parentNode = getGraphNode(parentHandle);
 
         if (!childNode || !parentNode) {
-            throw std::invalid_argument("Graph nodes not found");
+            STRIKE_ASSERT(childNode && parentNode, "Graph nodes not found");
+            return;
         }
 
         childNode->setParent(parentNode);
@@ -126,12 +134,18 @@ namespace StrikeEngine {
     }
 
     bool Scene::isAncestor(const Entity& ancestor, const Entity& descendant) const {
-        if (!ancestor.isValid() || !descendant.isValid()) return false;
+        if (!ancestor.isValid() || !descendant.isValid()) {
+            STRIKE_CORE_WARN("isAncestor called with invalid entity");
+            return false;
+        }
 
         auto ancestorNode = getGraphNode(ancestor.getHandle());
         auto descendantNode = getGraphNode(descendant.getHandle());
 
-        if (!ancestorNode || !descendantNode) return false;
+        if (!ancestorNode || !descendantNode) {
+            STRIKE_CORE_WARN("isAncestor: Graph nodes not found");
+            return false;
+        }
 
         auto currentNode = descendantNode->getParent();
         while (currentNode) {
@@ -147,14 +161,6 @@ namespace StrikeEngine {
         return isAncestor(ancestor, descendant);
     }
 
-    void Scene::updateTransforms() {
-        // TODO: SAVE PARENTS INTO SEPARATE VECTOR
-        for (auto& [entity, node] : mGraphNodes) {
-            if (node->isRoot() && node->isActive()) {
-                updateNodeTransforms(node);
-            }
-        }
-    }
 
     void Scene::updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty) {
         if (!node) return;
@@ -162,6 +168,7 @@ namespace StrikeEngine {
 
         entt::entity entity = node->getEntityId();
         if (!mRegistry.valid(entity)) {
+            STRIKE_CORE_WARN("updateNodeTransforms: Invalid entity in graph node");
             return;
         }
 
@@ -176,7 +183,7 @@ namespace StrikeEngine {
                 }
             }
             node->mWorldMatrix = worldMatrix;
-            node->clearDirty();
+            node->mIsDirty = false;
 
             // Update camera
             if (mRegistry.all_of<CameraComponent>(entity)) {
@@ -194,21 +201,19 @@ namespace StrikeEngine {
 
     void Scene::destroy(entt::entity entity) {
         if (!mRegistry.valid(entity)) {
+            STRIKE_CORE_WARN("Attempted to destroy invalid entity");
             return;
         }
 
         auto node = getGraphNode(entity);
         if (node) {
-            // Destroy all children first
+           
             auto children = node->getChildren();
             for (auto& child : children) {
                 destroy(child->getEntityId());
             }
 
-            // Remove from parent
-            node->removeParent();
-
-            // Remove graph node
+            node->removeFromParent();
             mGraphNodes.erase(entity);
         }
 
@@ -216,23 +221,34 @@ namespace StrikeEngine {
     }
 
     void Scene::shutdown() {
+        
+        mRegistry.on_construct<PhysicsComponent>().disconnect<&Scene::onPhysicsComponentCreate>(this);
         mRegistry.on_destroy<PhysicsComponent>().disconnect<&Scene::onPhysicsComponentDestroy>(this);
+        mRegistry.on_destroy<AudioSourceComponent>().disconnect<&Scene::onAudioSourceDestroy>(this);
+        
         mGraphNodes.clear();
         mRegistry.clear();
     }
 
     void Scene::onPhysicsComponentDestroy(entt::registry& registry, entt::entity entity) {
-        if (mPhysicsSystem) {
-            mPhysicsSystem->removePhysics(entity);
-        }
+        World::get().mPhysicsSystem->removePhysics(entity);
     }
 
     void Scene::onPhysicsComponentCreate(entt::registry& registry, entt::entity entity) {
         // Physics initialization if needed
     }
 
+    void Scene::onAudioSourceDestroy(entt::registry& registry, entt::entity entity) {
+        World::get().mAudioSystem->stopEntity(entity);
+    }
+
+
     void Scene::onUpdate(float dt) {
-        updateTransforms();
+        for (auto& [entity, node] : mGraphNodes) {
+            if (node->isRoot() && node->isActive()) {
+                updateNodeTransforms(node);
+            }
+        }
     }
 
     void Scene::onRender() {

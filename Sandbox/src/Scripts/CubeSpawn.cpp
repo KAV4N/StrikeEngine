@@ -7,31 +7,31 @@ void CubeSpawn::onStart() {
 }
 
 void CubeSpawn::onUpdate(float deltaTime) {
-    //if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_3))  spawnCube();
+    if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_3))  spawnCube();
         
-}
-
-void CubeSpawn::onMouseButtonPressed(StrikeEngine::MouseButtonPressedEvent& event){
-    if (event.getMouseButton() == STRIKE_MOUSE_BUTTON_3){
-        spawnCube();
-    }
-
 }
 
 void CubeSpawn::spawnCube(){
     StrikeEngine::Scene* scene = getEntity().getScene();
-    
-    
-    glm::mat4 myWorld = getEntity().getWorldMatrix();
-    glm::vec3 forward = -glm::vec3(myWorld[2]);
+    glm::vec3 forward = getEntity().getForward();
+
+    StrikeEngine::Entity ent = scene->getEntity("shotSound");
+    if (ent.isValid()){
+        auto& audio = ent.getComponent<StrikeEngine::AudioSourceComponent>();
+        if (audioPlayed == false) {
+            audio.play();
+            audioPlayed = true;
+        }
+        else if (tick(audio.getAudio()->getDuration()))
+            audioPlayed = false;
+    }
     
     StrikeEngine::Entity entity = scene->createEntity();
     auto& renderer = entity.addComponent<StrikeEngine::RendererComponent>();
 
 
-    entity.setPosition(getEntity().getPosition() + forward * 10.0f);
+    entity.setWorldPosition(getEntity().getWorldPosition() + forward * 10.0f);
     renderer.setMesh("box", 0);
-
 
     auto& physics = entity.addComponent<StrikeEngine::PhysicsComponent>();
     auto& logic = entity.addComponent<StrikeEngine::LogicComponent>();

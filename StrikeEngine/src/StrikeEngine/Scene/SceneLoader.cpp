@@ -8,6 +8,8 @@
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
 
+#include "StrikeEngine/Graphics/Renderer.h"
+
 namespace StrikeEngine {
 
     SceneLoader::SceneLoader() {
@@ -44,6 +46,7 @@ namespace StrikeEngine {
         // Setup skybox and sun
         setupSkybox(*scene, sceneNode);
         setupSun(*scene, sceneNode);
+        setupFog(sceneNode);
 
         // Create entities (pass empty Entity() as root - entities without parent become roots)
         pugi::xml_node entitiesNode = sceneNode.child("entities");
@@ -81,7 +84,7 @@ namespace StrikeEngine {
             bool active = entityNode.attribute("active").as_bool(true);
 
             entity.setPosition(parseVector3(posStr));
-            entity.setRotationEuler(parseVector3(rotStr));
+            entity.setEulerAngles(parseVector3(rotStr));
             entity.setScale(parseVector3(scaleStr));
             entity.setActive(active);
 
@@ -120,7 +123,7 @@ namespace StrikeEngine {
     void SceneLoader::setupSkybox(Scene& scene, const pugi::xml_node& sceneNode) {
         pugi::xml_node skyboxNode = sceneNode.child("skybox");
         if (skyboxNode) {
-            std::string cubeMapId = skyboxNode.attribute("cubeMapId").as_string();
+            std::string cubeMapId = skyboxNode.attribute("cubeMap").as_string();
             if (!cubeMapId.empty()) {
                 scene.setSkybox(cubeMapId);
             }
@@ -137,11 +140,41 @@ namespace StrikeEngine {
             std::string rotStr = sunNode.attribute("rotation").as_string("0,0,0");
             bool shadows = sunNode.attribute("shadows").as_bool(false);
 
-            glm::vec3 color = parseVector3(colorStr);
-            sun.setColor(color);
+
+            unsigned int r = 255, g = 255, b = 255;
+            if (sscanf(colorStr.c_str(), "%u,%u,%u", &r, &g, &b) == 3) {
+                sun.setColor(glm::uvec3(r, g, b));
+            }
+
             sun.setIntensity(intensity);
             sun.setRotationEuler(parseVector3(rotStr));
             sun.setCastShadows(shadows);
+        }
+    }
+
+
+    void SceneLoader::setupFog(const pugi::xml_node& sceneNode) {
+        auto& renderer = Renderer::get();
+        
+        pugi::xml_node fogNode = sceneNode.child("fog");
+        if (fogNode) {
+            float start = fogNode.attribute("start").as_float(10.0f);
+            float end = fogNode.attribute("end").as_float(100.0f);
+            float density = fogNode.attribute("density").as_float(0.015f);
+            std::string colorStr = fogNode.attribute("color").as_string("128,153,179");
+            
+            glm::vec3 color = parseVector3(colorStr);
+            
+            renderer.setFogStart(start);
+            renderer.setFogEnd(end);
+            renderer.setFogDensity(density);
+            renderer.setFogColor(glm::uvec3(color.x, color.y, color.z));
+        } else {
+            // Set default fog values when no fog tag is found
+            renderer.setFogStart(10.0f);
+            renderer.setFogEnd(100.0f);
+            renderer.setFogDensity(0.0f);
+            renderer.setFogColor(glm::uvec3(128, 153, 179));
         }
     }
 
@@ -152,5 +185,7 @@ namespace StrikeEngine {
         ss >> result.x >> comma >> result.y >> comma >> result.z;
         return result;
     }
+
+
 
 } // namespace StrikeEngine

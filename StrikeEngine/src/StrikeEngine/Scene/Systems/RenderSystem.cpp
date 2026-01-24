@@ -15,14 +15,12 @@
 
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Graphics/FontRenderer.h"
-#include "StrikeEngine/Core/Profiler.h"
 
 namespace StrikeEngine {
 
     RenderSystem::RenderSystem() {}
 
     void RenderSystem::onUpdate(float dt) {
-        PROFILE_SCOPE("RenderSystem::onUpdate");
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
@@ -35,19 +33,30 @@ namespace StrikeEngine {
         
         Renderer::get().display();
 
+        auto& renderer = Renderer::get();
+        uint32_t screenWidth = renderer.getWidth();
+        uint32_t screenHeight = renderer.getHeight();
+
         auto view = scene->view<TextComponent>();
         for (auto entity : view) {
             auto& textComp = view.get<TextComponent>(entity);
             Entity ent(entity, scene);
             if (!textComp.isActive() || !ent.isActive()) continue;
 
-            glm::vec3 position = ent.getPosition();
+            // Get normalized position (0-1) from TextComponent
+            glm::vec2 normalizedPos = textComp.getPosition();
+            
+            // Convert to screen coordinates
+            float screenX = normalizedPos.x * static_cast<float>(screenWidth);
+            float screenY = normalizedPos.y * static_cast<float>(screenHeight);
+
+            // Get scale from entity (use x scale as font scale)
             glm::vec3 scale = ent.getScale();
 
             FontRenderer::get().renderText(
                 textComp.getText(),
-                position.x,
-                position.y,
+                screenX,
+                screenY,
                 scale.x,
                 textComp.getColor(),
                 textComp.getPivot()
@@ -56,7 +65,6 @@ namespace StrikeEngine {
     }
 
     void RenderSystem::resize(uint32_t width, uint32_t height) {
-        PROFILE_SCOPE("RenderSystem::resize");
 
         Scene* scene = World::get().getScene();
         if (!scene) return;
@@ -74,7 +82,6 @@ namespace StrikeEngine {
     }
 
     void RenderSystem::processScene(Scene* scene) {
-        PROFILE_SCOPE("RenderSystem::processScene");
         auto& registry = scene->getRegistry();
         auto& renderer = Renderer::get();
         std::multimap<int, CameraRenderData> cameras;
@@ -91,6 +98,7 @@ namespace StrikeEngine {
             CameraRenderData cameraRenderData;
             cameraRenderData.camera = camera;
             cameraRenderData.cameraPosition = ent.getPosition();
+            cameraRenderData.cameraForward = ent.getForward();
 
             cameras.emplace(camera.getRenderOrder(), cameraRenderData);
         }
@@ -100,19 +108,23 @@ namespace StrikeEngine {
 
             if (skybox && skybox->isReady()) renderer.submitSkybox(skybox); 
             processLights(scene);
-            processRenderables(scene);
+
+            auto& sun = scene->getSun();
+            renderer.submitSun(&sun, sun.calculateLightSpaceMatrix(camData.camera));
+
+            processRenderables(scene, camData.camera);
 
             renderer.endCamera();
         }
     }
 
     void RenderSystem::processLights(Scene* scene) {
-        PROFILE_SCOPE("RenderSystem::processLights");
 
         auto& registry = scene->getRegistry();
         auto& renderer = Renderer::get();
 
-        renderer.submitSun(&scene->getSun());    
+
+  
 
         auto pointLightView = registry.view<LightComponent>();
         for (auto entity : pointLightView) {
@@ -127,11 +139,12 @@ namespace StrikeEngine {
         }
     }
 
-    void RenderSystem::processRenderables(Scene* scene) {
-        PROFILE_SCOPE("RenderSystem::processRenderables");
+    void RenderSystem::processRenderables(Scene* scene, const CameraComponent& camera) {
 
         auto& registry = scene->getRegistry();
         auto view = registry.view<RendererComponent>();
+        
+        const auto& frustum = camera.getFrustum();
 
         for (auto entity : view) {
             Entity ent(entity, scene);
@@ -153,6 +166,38 @@ namespace StrikeEngine {
                 continue;
             }
             
+            // Frustum culling check
+            const Bounds* bounds = nullptr;
+            if (rendererComp.hasMesh()) {
+                auto mesh = rendererComp.getMesh();
+                if (mesh) {
+                    bounds = &mesh->getBounds();
+                }
+            } else if (model) {
+                bounds = &model->getBounds();
+            }
+            
+            if (bounds) {
+                // Transform bounds to world space
+                glm::vec3 center = glm::vec3(worldMatrix * glm::vec4(bounds->getMidPoint(), 1.0f));
+                glm::vec3 extents = (bounds->aabbMax - bounds->aabbMin) * 0.5f;
+                
+                // Extract scale from world matrix
+                glm::vec3 scale = glm::vec3(
+                    glm::length(glm::vec3(worldMatrix[0])),
+                    glm::length(glm::vec3(worldMatrix[1])),
+                    glm::length(glm::vec3(worldMatrix[2]))
+                );
+                
+                glm::vec3 worldExtents = extents * scale;
+                
+                // Perform frustum culling
+                if (!isInFrustum(frustum, center, worldExtents)) {
+                    continue; // Skip rendering this object
+                }
+            }
+            
+            // Object is visible, submit for rendering
             if (rendererComp.hasMesh()) {
                 auto mesh = rendererComp.getMesh();
                 if (mesh) {
@@ -164,6 +209,52 @@ namespace StrikeEngine {
                 }
             }
         }
+    }
+
+    bool RenderSystem::isInFrustum(const CameraComponent::Frustum& frustum, 
+                                   const glm::vec3& center, 
+                                   const glm::vec3& halfExtents) const {
+        // Test against all 6 frustum planes
+        for (int i = 0; i < 6; i++) {
+            const glm::vec4& plane = frustum.planes[i];
+            glm::vec3 normal = glm::vec3(plane);
+            float distance = plane.w;
+            
+            // Find the "positive vertex" - the corner of the AABB that's furthest
+            // along the plane normal direction
+            glm::vec3 positiveVertex = center;
+            positiveVertex.x += (normal.x >= 0.0f) ? halfExtents.x : -halfExtents.x;
+            positiveVertex.y += (normal.y >= 0.0f) ? halfExtents.y : -halfExtents.y;
+            positiveVertex.z += (normal.z >= 0.0f) ? halfExtents.z : -halfExtents.z;
+            
+            // Check if the positive vertex is outside this plane
+            if (glm::dot(normal, positiveVertex) + distance < 0.0f) {
+                return false; // Outside this plane, so outside frustum
+            }
+        }
+        
+        return true; // Inside all planes, so inside frustum
+    }
+
+    bool RenderSystem::isSphereInFrustum(const CameraComponent::Frustum& frustum,
+                                        const glm::vec3& center,
+                                        float radius) const {
+        // Test against all 6 frustum planes
+        for (int i = 0; i < 6; i++) {
+            const glm::vec4& plane = frustum.planes[i];
+            glm::vec3 normal = glm::vec3(plane);
+            float distance = plane.w;
+            
+            // Calculate signed distance from sphere center to plane
+            float dist = glm::dot(normal, center) + distance;
+            
+            // If distance is less than negative radius, sphere is completely outside
+            if (dist < -radius) {
+                return false;
+            }
+        }
+        
+        return true; // Inside or intersecting frustum
     }
 
     void RenderSystem::submitMesh(const std::shared_ptr<Mesh>& mesh,

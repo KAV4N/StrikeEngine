@@ -25,7 +25,7 @@ void SunMovement::onUpdate(float deltaTime) {
 
     // Rotate the sun
     float rotationSpeed = 10.0f;
-    mSun->rotateX(rotationSpeed * deltaTime);
+    mSun->rotate(glm::vec3(rotationSpeed * deltaTime, 0.0f, 0.0f));
 
     // Simulate time of day (0 to 24 hours)
     float daySpeed = 0.1f; // Adjust for faster/slower cycle

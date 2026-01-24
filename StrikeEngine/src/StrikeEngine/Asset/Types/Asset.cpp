@@ -8,7 +8,6 @@ namespace StrikeEngine {
         : mId(id),
         mPath(path),
         mLoadingState(AssetState::Uninitialized),
-        mLoadAsync(false),
         mNeedsPostLoad(false)
     {
     }
@@ -46,21 +45,22 @@ namespace StrikeEngine {
         return mLoadingState == AssetState::Failed;
     }
 
-    bool Asset::isAsync() const {
-        return mLoadAsync;
-    }
-
-    void Asset::setLoadAsync(bool async) {
-        mLoadAsync = async;
-    }
-
     void Asset::setLoadingState(AssetState state) {
         mLoadingState = state;
     }
 
-    void Asset::toNode(pugi::xml_node parent) const {
+    void Asset::toNode(pugi::xml_node parent) {
         pugi::xml_node node = parent.append_child(getTypeName().c_str());
         node.append_attribute("id") = mId.c_str();
-        node.append_attribute("src") = mPath.string().c_str();
+        node.append_attribute("src") = addRootPrefix(mPath).generic_string().c_str();
+    }
+
+    std::filesystem::path Asset::addRootPrefix(const std::filesystem::path& path) {
+        std::string pathStr = path.generic_string();
+
+        if (!pathStr.empty() && pathStr[0] == '@') {
+            return std::filesystem::path(pathStr).lexically_normal();
+        }
+        return std::filesystem::path("@") / path.lexically_normal();
     }
 }

@@ -81,6 +81,7 @@ namespace StrikeEngine {
     struct CameraRenderData {
         CameraComponent camera;
         glm::vec3 cameraPosition;
+        glm::vec3 cameraForward;
         
         SunRenderData sunData;
         std::shared_ptr<CubeMap> mSkyboxTexture;

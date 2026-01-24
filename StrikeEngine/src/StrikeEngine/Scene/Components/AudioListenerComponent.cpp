@@ -10,10 +10,5 @@ namespace StrikeEngine {
             setActive(attr.as_bool(true));
         }
     }
-
-    void AudioListenerComponent::serialize(pugi::xml_node& node) const {
-        
-        node.append_attribute("active") = isActive();
-    }
     
 }

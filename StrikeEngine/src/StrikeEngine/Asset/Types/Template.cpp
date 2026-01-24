@@ -21,6 +21,7 @@ namespace StrikeEngine {
         pugi::xml_node templateNode = mDoc.child("template");
         if (!templateNode) {
             STRIKE_CORE_ERROR("Invalid template format in '{}': no template node found", getId());
+            mLoadingState = AssetState::Failed;
             return false;
         }
 
@@ -48,7 +49,7 @@ namespace StrikeEngine {
             bool active = entityNode.attribute("active").as_bool(true);
 
             entity.setPosition(parseVector3(posStr));
-            entity.setRotationEuler(parseVector3(rotStr));
+            entity.setEulerAngles(parseVector3(rotStr));
             entity.setScale(parseVector3(scaleStr));
             entity.setActive(active);
 

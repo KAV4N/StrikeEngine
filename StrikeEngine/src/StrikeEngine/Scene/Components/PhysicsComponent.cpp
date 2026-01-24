@@ -30,30 +30,6 @@ namespace StrikeEngine {
 
     }
 
-    void PhysicsComponent::serialize(pugi::xml_node& node) const {
-        node.append_attribute("anchored") = mAnchored;
-        node.append_attribute("collide") = mCanCollide;
-        node.append_attribute("mass") = mMass;
-        node.append_attribute("friction") = mFriction;
-        node.append_attribute("restitution") = mRestitution;
-        node.append_attribute("lDamping") = mLinearDamping;
-        node.append_attribute("aDamping") = mAngularDamping;
-
-        auto sizeNode = node.append_child("size");
-        sizeNode.append_attribute("x") = mSize.x;
-        sizeNode.append_attribute("y") = mSize.y;
-        sizeNode.append_attribute("z") = mSize.z;
-
-        
-        node.append_attribute("active") = isActive();
-    }
-
-    void PhysicsComponent::setAnchored(bool anchored) {
-        if (mAnchored != anchored) {
-            mAnchored = anchored;
-            mNeedsRecreate = true;
-        }
-    }
 
     void PhysicsComponent::setCanCollide(bool canCollide) {
         mCanCollide = canCollide;
