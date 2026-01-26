@@ -5,6 +5,9 @@
 
 namespace StrikeEngine {
 
+    /**
+     * @brief Properties for creating a window.
+     */
     struct WindowProps {
         std::string title;
         unsigned int width;
@@ -16,11 +19,12 @@ namespace StrikeEngine {
             : title(title), width(width), height(height) {
         }
     };
-
+    /**
+     * @brief Abstract base class for a window in StrikeEngine.
+     */
     class Window {
     public:
         using EventCallbackFn = std::function<void(Event&)>;
-
         virtual ~Window() {}
 
         virtual void onUpdate() = 0;

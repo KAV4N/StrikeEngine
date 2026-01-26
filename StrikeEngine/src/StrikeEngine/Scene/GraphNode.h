@@ -10,6 +10,10 @@
 
 namespace StrikeEngine {
 
+
+    /**
+     * @brief Represents a node in the scene graph, managing local and world transforms.
+     */
     class GraphNode : public std::enable_shared_from_this<GraphNode> {
     public:
         explicit GraphNode(entt::entity entityId);
@@ -17,7 +21,6 @@ namespace StrikeEngine {
 
         GraphNode(const GraphNode&) = delete;
         GraphNode& operator=(const GraphNode&) = delete;
-
         entt::entity getEntityId() const { return mEntityId; }
 
         // ===============================
@@ -116,4 +119,4 @@ namespace StrikeEngine {
         std::vector<std::shared_ptr<GraphNode>> mChildren;
     };
 
-} // namespace StrikeEngine
+} 

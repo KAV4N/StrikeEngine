@@ -20,7 +20,6 @@
 namespace StrikeEngine {
 
     class Model;
-
     struct EntityData {
         std::string tag;
 
@@ -41,7 +40,11 @@ namespace StrikeEngine {
         ModelParser();
         ~ModelParser();
 
-        // Main function: parse model and generate template file (no materials)
+        /**
+         * @brief Parse a 3D model file and convert it into the engine's Model format.
+         * @param modelPath The file path to the 3D model.
+         * @return True if parsing was successful, false otherwise.
+         */
         bool parseModel(const std::filesystem::path& modelPath);
 
     private:

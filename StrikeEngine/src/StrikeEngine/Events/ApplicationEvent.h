@@ -4,6 +4,9 @@
 
 namespace StrikeEngine {
 
+    /**
+     * @brief Event class for window resize events.
+     */
     class WindowResizeEvent : public Event {
     public:
         WindowResizeEvent(unsigned int width, unsigned int height)
@@ -25,6 +28,9 @@ namespace StrikeEngine {
         unsigned int mWidth, mHeight;
     };
 
+    /**
+     * @brief Event class for window close events.
+     */
     class WindowCloseEvent : public Event {
     public:
         WindowCloseEvent() {}

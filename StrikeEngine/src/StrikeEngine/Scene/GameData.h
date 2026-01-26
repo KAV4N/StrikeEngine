@@ -10,9 +10,15 @@
 
 namespace StrikeEngine {
 
-    // Type-safe variant for different data types
+    /**
+     * @brief Variant type to hold different data types for game data.
+     */
     using DataValue = std::variant<int, float, double, bool, std::string>;
 
+
+    /**
+     * @brief Singleton class for managing persistent game data as key-value pairs.
+     */
     class GameData final {
     public:
         // Singleton access
@@ -20,7 +26,7 @@ namespace StrikeEngine {
             static GameData instance;
             return instance;
         }
-
+        
         // Integer operations
         void setInt(const std::string& key, int value);
         int getInt(const std::string& key, int defaultValue = 0) const;

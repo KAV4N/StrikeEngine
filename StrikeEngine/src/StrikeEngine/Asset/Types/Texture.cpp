@@ -21,15 +21,7 @@ namespace StrikeEngine {
         }
     }
     
-    const std::string& Texture::getStaticTypeName() {
-        static const std::string typeName = "texture";
-        return typeName;
-    }
-
-    const std::string& Texture::getTypeName() const {
-        return Texture::getStaticTypeName();
-    }
-
+   
     void Texture::setTextureData(int width, int height, int channels, unsigned char* data) {
         mWidth = width;
         mHeight = height;
@@ -102,14 +94,7 @@ namespace StrikeEngine {
         }
     }
 
-    const std::string& CubeMap::getStaticTypeName() {
-        static const std::string typeName = "cubeMap";
-        return typeName;
-    }
 
-    const std::string& CubeMap::getTypeName() const {
-        return CubeMap::getStaticTypeName();
-    }
 
     void CubeMap::setCubeMapData(int width, int height, int channels, unsigned char* faceData[6]) {
         mWidth = width;

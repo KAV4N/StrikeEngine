@@ -9,12 +9,4 @@ namespace StrikeEngine {
     {
     }
 
-    const std::string& Audio::getStaticTypeName() {
-        static std::string typeName = "audio";
-        return typeName;
-    }
-
-    const std::string& Audio::getTypeName() const {
-        return getStaticTypeName();
-    }
 }

@@ -6,6 +6,11 @@ namespace StrikeEngine {
 
     class KeyEvent : public Event {
     public:
+
+        /**
+         * @brief Get the key code associated with the event.
+         * @return Key code.
+         */
         int getKeyCode() const { return mKeyCode; }
 
     protected:
@@ -19,7 +24,10 @@ namespace StrikeEngine {
         KeyPressedEvent(int keycode, int repeatCount)
             : KeyEvent(keycode), mRepeatCount(repeatCount) {
         }
-
+        /**
+         * @brief Get the repeat count of the key press event.
+         * @return Number of times the key has been repeated.
+         */
         int getRepeatCount() const { return mRepeatCount; }
 
         std::string toString() const override {
@@ -38,7 +46,7 @@ namespace StrikeEngine {
     class KeyReleasedEvent : public KeyEvent {
     public:
         KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
-
+        
         std::string toString() const override {
             std::stringstream ss;
             ss << "KeyReleasedEvent: " << mKeyCode;

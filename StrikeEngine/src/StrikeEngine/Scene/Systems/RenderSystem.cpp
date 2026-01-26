@@ -37,7 +37,9 @@ namespace StrikeEngine {
         uint32_t screenWidth = renderer.getWidth();
         uint32_t screenHeight = renderer.getHeight();
 
-        auto view = scene->view<TextComponent>();
+        auto& registry = scene->getRegistry();
+        auto view = registry.view<TextComponent>();
+        
         for (auto entity : view) {
             auto& textComp = view.get<TextComponent>(entity);
             Entity ent(entity, scene);

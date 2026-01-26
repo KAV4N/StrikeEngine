@@ -5,7 +5,9 @@
 #include "spdlog/fmt/ostr.h"
 
 namespace StrikeEngine {
-
+    /**
+     * @brief Logging class for StrikeEngine.
+     */
     class Log {
     public:
         static void init();

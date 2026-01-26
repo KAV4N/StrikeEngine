@@ -56,8 +56,6 @@ namespace StrikeEngine {
         
         ma_decoder_uninit(&decoder);
 
-
-        asset->setLoadingState(AssetState::Loaded);
         return asset;
     }
 

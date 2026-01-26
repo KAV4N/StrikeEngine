@@ -11,7 +11,8 @@ namespace StrikeEngine {
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
-        auto view = scene->view<LogicComponent>();
+        auto& registry = scene->getRegistry();
+        auto view = registry.view<LogicComponent>();
         
         for (auto entity : view) {
             auto& logic = view.get<LogicComponent>(entity);
@@ -47,7 +48,8 @@ namespace StrikeEngine {
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
-        auto view = scene->view<LogicComponent>();
+        auto& registry = scene->getRegistry();
+        auto view = registry.view<LogicComponent>();
         
         for (auto entity : view) {
             if (event.handled){

@@ -20,20 +20,59 @@ namespace StrikeEngine {
 
     class AssetLoader {
     public:
+        /**
+         * @brief Construct a new Asset Loader object.
+         * @param typeName The type name of the assets this loader handles same as asset type.
+         */
         AssetLoader(const std::string& typeName);
         virtual ~AssetLoader() = default;
 
+        /**
+         * @brief Get the type name of the assets this loader handles.
+         * @return Type name string.
+         */
         const std::string& getTypeName() const;
 
-        // Main load methods - now call loadAssetInternal
+        
+        /**
+         * @brief Load an asset from a file path.
+         * @param id The unique identifier for the asset.
+         * @param path The file path to the asset.
+         * @return Shared pointer to the loaded asset.
+         */
         std::shared_ptr<Asset> load(const std::string& id, const std::filesystem::path& path);
         
-        // Async loading management
+        /**
+         * @brief Load an asset asynchronously.
+         * @param id The unique identifier for the asset.
+         *  @param path The file path to the asset.
+         * @param placeholderAsset The placeholder asset to populate once loading is complete.
+         */
         void loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset);
+
+        /**
+         * @brief Update the loader to process any completed asynchronous loading tasks.
+         * @note This is called periodically in the main thread to finalize async loads.
+         */
         void update();
+
+        /**
+         * @brief Clear all ongoing loading tasks.
+         */
         void clearLoadingTasks();
+
+        /**
+         * @brief Check if there are any ongoing loading tasks.
+         * @return True if there are loading tasks, false otherwise.
+         */
         bool hasLoadingTasks() const; 
 
+        /**
+         * @brief Load an asset from an XML node.
+         * @param node The XML node containing asset data.
+         * @param basePath The base path to resolve relative asset paths.
+         * @return Shared pointer to the loaded asset.
+         */
         virtual std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) = 0;
        
     protected:

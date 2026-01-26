@@ -14,8 +14,19 @@ namespace StrikeEngine {
     class Scene;
     class Entity;
 
+    /**
+     * @brief Template asset type.
+     * @note Loaded via AssetManager by TemplateLoader.
+     */
     class Template : public Asset {
     public:
+
+    /**
+     * @brief Construct a new Template object.
+     * @param id Unique identifier for the template in AssetManager.
+     * @param path File path to the template asset.
+     * @note This does not load the template asset; for loading use AssetManager.
+     */
         Template(const std::string& id, const std::filesystem::path& path);
 
         static const std::string& getStaticTypeName() {
@@ -24,11 +35,22 @@ namespace StrikeEngine {
         }
 
         const std::string& getTypeName() const override {
-            return getStaticTypeName();
+            return Template::getStaticTypeName();
         }
 
+
+        /**
+         * @brief Instantiate the template into the given Entity parent.
+         * @param parentEntity The parent entity to which the template entities will be added.
+         * @return True if instantiation was successful, false otherwise.
+         */
         bool instantiate(Entity parentEntity);
 
+        /**
+         * @brief Check if all referenced assets are ready.
+         * @return True if all assets are ready, false otherwise.
+         * @note This loops through all referenced assets and checks their loading state.
+         */
         bool areAssetsReady() const;
 
     private:

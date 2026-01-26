@@ -15,6 +15,12 @@ namespace StrikeEngine {
     public:
         TemplateLoader();
 
+        /**
+         * @brief Load an asset from an XML node.
+         * @param node The XML node containing asset data.
+         * @param basePath The base path to resolve relative asset paths.
+         * @return Shared pointer to the loaded asset.
+         */
         std::shared_ptr<Asset> loadFromNode(const pugi::xml_node& node, const std::filesystem::path& basePath) override;
 
     protected:

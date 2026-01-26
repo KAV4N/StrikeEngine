@@ -12,11 +12,19 @@ namespace StrikeEngine {
     class Scene;
     class Entity;
 
+    /**
+     * @brief Loader for scenes from XML files.
+     */
     class SceneLoader {
     public:
         SceneLoader();
         ~SceneLoader() = default;
-
+        /**
+         * @brief Load a scene from the specified file path.
+         * @param path The file path to the scene file.
+         * @return Unique pointer to the loaded Scene object.
+         * @note Returns nullptr if loading failed.
+         */
         std::unique_ptr<Scene> loadScene(const std::filesystem::path& path);
 
     private:

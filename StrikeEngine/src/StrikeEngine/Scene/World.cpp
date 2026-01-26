@@ -141,45 +141,20 @@ namespace StrikeEngine {
     }
 
 
-    void World::setFogStart(float start)
+    void World::setFog(float start, float end, float density, const glm::uvec3& color)
     {
+        mFog.start = start;
+        mFog.end = end;
+        mFog.density = density;
+        mFog.color = color;
+
+        // Apply to renderer immediately
         Renderer::get().setFogStart(start);
-    }
-
-    void World::setFogEnd(float end)
-    {
         Renderer::get().setFogEnd(end);
-    }
-
-    void World::setFogDensity(float density)
-    {
         Renderer::get().setFogDensity(density);
-    }
-
-    void World::setFogColor(const glm::uvec3& color)
-    {
         Renderer::get().setFogColor(color);
     }
 
-    float World::getFogStart() const
-    {
-        return Renderer::get().getFogStart();
-    }
-
-    float World::getFogEnd() const
-    {
-        return Renderer::get().getFogEnd();
-    }
-
-    float World::getFogDensity() const
-    {
-        return Renderer::get().getFogDensity();
-    }
-
-    glm::uvec3 World::getFogColor() const
-    {
-        return Renderer::get().getFogColor();
-    }
 
     void World::resize(uint32_t width, uint32_t height)
     {
