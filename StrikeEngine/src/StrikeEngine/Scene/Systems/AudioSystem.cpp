@@ -289,4 +289,4 @@ namespace StrikeEngine {
         return mMasterVolume;
     }
 
-} // namespace StrikeEngine
+} 

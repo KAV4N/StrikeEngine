@@ -240,4 +240,4 @@ namespace StrikeEngine {
         mScene->destroy(mHandle);
     }
 
-} // namespace StrikeEngine
+} 

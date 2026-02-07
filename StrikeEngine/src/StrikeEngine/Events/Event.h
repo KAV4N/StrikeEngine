@@ -7,15 +7,6 @@
 namespace StrikeEngine {
 
     /**
-     * @brief Cursor modes for input handling.
-     */
-    enum class CursorMode {
-        Normal,
-        Locked,
-        Hidden
-    };
-
-    /**
      * @brief Enumeration of event types.
      */
     enum class EventType {

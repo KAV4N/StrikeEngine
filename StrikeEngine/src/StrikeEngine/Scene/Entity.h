@@ -406,7 +406,7 @@ namespace StrikeEngine {
             : addComponent<T>(std::forward<Args>(args)...);
     }
 
-} // namespace StrikeEngine
+} 
 
 namespace std {
     template<>

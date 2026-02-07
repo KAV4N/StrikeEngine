@@ -33,4 +33,4 @@ namespace StrikeEngine {
         }
         return scripts;
     }
-} // namespace StrikeEngine
+} 

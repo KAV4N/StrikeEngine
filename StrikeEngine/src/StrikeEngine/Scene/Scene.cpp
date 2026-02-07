@@ -254,4 +254,4 @@ namespace StrikeEngine {
     void Scene::onRender() {
     }
 
-} // namespace StrikeEngine
+} 

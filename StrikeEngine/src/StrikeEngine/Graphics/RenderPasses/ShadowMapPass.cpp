@@ -103,4 +103,4 @@ namespace StrikeEngine {
         return mShadowMap->getDepthTextureID();
     }
 
-} // namespace StrikeEngine
+} 

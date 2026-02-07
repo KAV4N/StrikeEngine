@@ -109,4 +109,4 @@ namespace StrikeEngine {
         bool mCastShadows = false;
     };
 
-} // namespace StrikeEngine
+} 

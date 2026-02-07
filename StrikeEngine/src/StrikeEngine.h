@@ -17,7 +17,6 @@
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Sun.h"
 
-#include "StrikeEngine/Asset/ModelParser.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
@@ -29,9 +28,11 @@
 #include "StrikeEngine/Scene/Components/AudioSourceComponent.h"
 #include "StrikeEngine/Scene/Components/AudioListenerComponent.h"
 
+#include "StrikeEngine/Scene/GameData.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include "StrikeEngine/Scene/ScriptRegistry.h"
 #include "StrikeEngine/Scene/Script.h"
+
 
 
 

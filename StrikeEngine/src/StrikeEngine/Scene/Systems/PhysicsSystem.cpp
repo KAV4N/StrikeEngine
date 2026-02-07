@@ -149,7 +149,7 @@ namespace StrikeEngine {
             const btRigidBody* other = (bodyA == body) ? bodyB : (bodyB == body) ? bodyA : nullptr;
             if (other) {
                 Entity otherEnt = getEntityFromRigidBody(other);
-                auto collPhys = scene->getRegistry().get<PhysicsComponent>(otherEnt.getHandle()); 
+                auto& collPhys = scene->getRegistry().get<PhysicsComponent>(otherEnt.getHandle()); 
                 if (otherEnt.isValid() && otherEnt.isActive() && collPhys.isActive()) {
                     colliding.push_back(otherEnt);
                 }
@@ -205,7 +205,7 @@ namespace StrikeEngine {
             if (body) {
                 Entity ent = getEntityFromRigidBody(body);
                 Scene* scene = ent.getScene();
-                auto collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+                auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
 
                 if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                     hit.entity = ent;
@@ -235,7 +235,7 @@ namespace StrikeEngine {
                     Entity ent = getEntityFromRigidBody(body);
 
                     Scene* scene = ent.getScene();
-                    auto collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+                    auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
 
                     if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                         RayHit hit;

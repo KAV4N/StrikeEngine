@@ -258,4 +258,4 @@ namespace StrikeEngine {
         std::unordered_map<entt::entity, std::shared_ptr<GraphNode>> mGraphNodes;
     };
 
-} // namespace StrikeEngine
+} 

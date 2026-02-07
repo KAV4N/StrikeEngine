@@ -32,4 +32,4 @@ namespace StrikeEngine {
             setActive(attr.as_bool(true));
         }
     }
-} // namespace StrikeEngine
+} 

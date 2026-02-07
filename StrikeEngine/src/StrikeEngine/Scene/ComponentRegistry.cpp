@@ -35,4 +35,4 @@ namespace StrikeEngine {
         return components;
     }
 
-} // namespace StrikeEngine
+} 

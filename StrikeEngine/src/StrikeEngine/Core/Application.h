@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Core.h"
-#include "Window.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"
 #include "StrikeEngine/Events/KeyEvent.h"
+
+#include "StrikeEngine/Core/Window.h"
+
+#include <memory>
 
 namespace StrikeEngine {
     class World;
@@ -14,7 +17,14 @@ namespace StrikeEngine {
      */
     class Application {
     public:
+        /**
+         * @brief Construct a new Application object.
+         */
         Application();
+        
+        /**
+         * @brief Destroy the Application object.
+         */
         virtual ~Application();
 
         /**
@@ -27,11 +37,29 @@ namespace StrikeEngine {
          * @return Reference to the Window object.
          */
         inline Window& getWindow() { return *mWindow; }
+        
+        /**
+         * @brief Get the singleton Application instance.
+         * @return Reference to the Application instance.
+         */
         inline static Application& get() { return *sInstance; }
         
-        
+        /**
+         * @brief Set the target frames per second.
+         * @param fps Target FPS (0 for unlimited).
+         */
         inline void setTargetFPS(int fps) { mTargetFPS = fps; }
+        
+        /**
+         * @brief Get the target frames per second.
+         * @return Target FPS.
+         */
         inline int getTargetFPS() const { return mTargetFPS; }
+        
+        /**
+         * @brief Get the current frames per second.
+         * @return Current FPS.
+         */
         inline float getCurrentFPS() const { return mCurrentFPS; }
 
     private:
@@ -45,7 +73,6 @@ namespace StrikeEngine {
         void onUpdate(float deltaTime);
 
     private:
-
         std::unique_ptr<Window> mWindow;
         bool mRunning = true;
         int mTargetFPS = 0;

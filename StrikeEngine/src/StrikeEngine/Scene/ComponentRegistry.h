@@ -61,7 +61,7 @@ namespace StrikeEngine {
         static std::unordered_map<std::string, ComponentFactory>& getFactories();
     };
 
-} // namespace StrikeEngine
+} 
 
 
 /**

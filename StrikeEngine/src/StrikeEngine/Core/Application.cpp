@@ -24,12 +24,12 @@ namespace StrikeEngine {
         STRIKE_CORE_ASSERT(!sInstance, "Application already exists!");
         sInstance = this;
 
-        mWindow = std::unique_ptr<Window>(Window::create());
+        mWindow = std::make_unique<Window>();
         mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 
         Renderer& renderer = Renderer::get();
         renderer.init();
-        renderer.resize(mWindow.get()->getWidth(), mWindow.get()->getHeight());
+        renderer.resize(mWindow->getWidth(), mWindow->getHeight());
 
         FontRenderer::get().init();
 
@@ -40,7 +40,7 @@ namespace StrikeEngine {
     }
 
     void Application::onEvent(Event& e) {
-        if (mRunning){
+        if (mRunning) {
             EventDispatcher dispatcher(e);
             dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
             dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
@@ -54,9 +54,6 @@ namespace StrikeEngine {
         AssetManager::get().update();   
         world.onRender();
         mWindow->onUpdate();
-
-                
-
     }
 
     void Application::run() {

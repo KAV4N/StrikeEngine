@@ -239,4 +239,4 @@ namespace StrikeEngine {
         */  
     }
 
-} // namespace StrikeEngine
+} 

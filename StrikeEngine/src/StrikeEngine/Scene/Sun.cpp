@@ -128,4 +128,4 @@ namespace StrikeEngine {
         return lightProjection * lightView;;
     }
 
-} // namespace StrikeEngine
+} 

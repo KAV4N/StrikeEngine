@@ -72,4 +72,4 @@ namespace StrikeEngine {
         std::string mModelId;
     };
 
-} // namespace StrikeEngine
+} 
