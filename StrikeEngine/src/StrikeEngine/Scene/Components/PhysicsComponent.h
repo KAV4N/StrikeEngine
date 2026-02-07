@@ -42,7 +42,7 @@ namespace StrikeEngine {
      * The PhysicsComponent provides rigid body physics using the Bullet physics engine.
      * It supports properties like mass, velocity, friction, and collision detection.
      * 
-     * @note This class is non-copyable and non-movable to ensure safe script management and physics bodies are managed by the PhysicsSystem
+     * @note This class is non-copyable and non-movable. Physics bodies are managed by the PhysicsSystem
      */
     class PhysicsComponent : public Component {
     public:
