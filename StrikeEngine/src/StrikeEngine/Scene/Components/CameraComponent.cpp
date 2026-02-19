@@ -78,6 +78,7 @@ namespace StrikeEngine {
     void CameraComponent::lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
         mViewMatrix = glm::lookAt(eye, center, up);
     }
+    
     void CameraComponent::update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height) {
         updateViewMatrix(worldMatrix);
         updateProjectionMatrix(width, height);
@@ -92,7 +93,6 @@ namespace StrikeEngine {
         mAspectRatio = (viewportHeight > 0.0f) ? (viewportWidth / viewportHeight) : 1.0f;
 
         mProjectionMatrix = glm::perspective(glm::radians(mFOV), mAspectRatio, mNearPlane, mFarPlane);
-
     }
 
     void CameraComponent::updateViewMatrix(const glm::mat4& worldMatrix) {
@@ -106,6 +106,7 @@ namespace StrikeEngine {
     void CameraComponent::calculateFrustum() {
         glm::mat4 viewProj = mViewProjectionMatrix;
 
+        // Extract frustum planes from view-projection matrix
         mFrustum.planes[0] = glm::vec4(
             viewProj[0][3] + viewProj[0][0],
             viewProj[1][3] + viewProj[1][0],
@@ -148,6 +149,7 @@ namespace StrikeEngine {
             viewProj[3][3] - viewProj[3][2]
         );
 
+        // Normalize planes
         for (int i = 0; i < 6; i++) {
             float length = glm::length(glm::vec3(mFrustum.planes[i]));
             if (length > 0.0f) {
@@ -193,11 +195,9 @@ namespace StrikeEngine {
             setActive(attr.as_bool(true));
         }
 
-
         // Final setup
         setViewportRect(mViewportRect.x, mViewportRect.y, mViewportRect.width, mViewportRect.height);
     }
-    
-}
 
     
+}

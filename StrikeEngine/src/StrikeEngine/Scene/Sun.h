@@ -87,6 +87,7 @@ namespace StrikeEngine {
          * @param cast True to enable shadow casting, false to disable.
          */
         void setCastShadows(bool cast);
+        
         /**
          * @brief Check if the sun casts shadows.
          * @return True if shadow casting is enabled, false otherwise.
@@ -95,12 +96,14 @@ namespace StrikeEngine {
 
         /**
          * @brief Calculate the light space matrix for shadow mapping.
+         * 
          * @param camera The camera component to base the calculation on.
+         * @return Light space matrix (projection * view) for shadow mapping.
          */
         glm::mat4 calculateLightSpaceMatrix(const CameraComponent& camera);
 
     private:
-        static constexpr float MAX_SHADOW_DISTANCE = 100.0f;
+        static constexpr float MAX_SHADOW_DISTANCE = 40.0f;
 
         glm::uvec3 mColor = glm::uvec3(255);
         float mIntensity = 1.0f;
@@ -109,4 +112,4 @@ namespace StrikeEngine {
         bool mCastShadows = false;
     };
 
-} 
+}

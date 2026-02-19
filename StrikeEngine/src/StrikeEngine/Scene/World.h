@@ -106,8 +106,6 @@ namespace StrikeEngine {
          */
         const Fog& getFog() const { return mFog; }
 
-
-
     private:
         friend class Entity;
         friend class Scene;

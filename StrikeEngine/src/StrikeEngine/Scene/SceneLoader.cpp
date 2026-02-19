@@ -15,12 +15,12 @@ namespace StrikeEngine {
     SceneLoader::SceneLoader() {
     }
 
-    std::unique_ptr<Scene> SceneLoader::loadScene(const std::filesystem::path& path) {
-        AssetManager::get().clear();
-        return loadSceneInternal(path);
-    }
 
-    std::unique_ptr<Scene> SceneLoader::loadSceneInternal(const std::filesystem::path& path) {
+    std::unique_ptr<Scene> SceneLoader::loadScene(const std::filesystem::path& path) {
+        mIsLoading = true;
+
+        AssetManager::get().clear();
+
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
         
@@ -53,6 +53,8 @@ namespace StrikeEngine {
         if (entitiesNode) {
             createEntities(*scene, entitiesNode, Entity());
         }
+
+        mIsLoading = false;
 
         return scene;
     }

@@ -10,6 +10,7 @@
 #include "StrikeEngine/Graphics/FontRenderer.h"
 
 #include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Scene/Systems/AudioSystem.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 
 #include <chrono>
@@ -92,4 +93,14 @@ namespace StrikeEngine {
         Renderer::get().resize(e.getWidth(), e.getHeight());
         return true;
     }
+
+    float Application::getMasterVolume() const{
+        return World::get().mAudioSystem->getMasterVolume();
+    }
+
+    void Application::setMasterVolume(float volume){
+        World::get().mAudioSystem->setMasterVolume(volume);
+    }
+
+
 }

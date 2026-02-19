@@ -255,6 +255,7 @@ namespace StrikeEngine {
          */
         void lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
 
+    private:
         /**
          * @brief Update camera matrices and frustum
          * 
@@ -265,7 +266,6 @@ namespace StrikeEngine {
          */
         void update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height);
 
-    private:
         /**
          * @brief Update the projection matrix based on viewport size
          * 
@@ -292,6 +292,9 @@ namespace StrikeEngine {
         void calculateFrustum();
 
     private:
+        friend class Scene;
+        friend class RenderSystem;
+
         float mFOV = 45.0f;                ///< Field of view in degrees
         float mNearPlane = 0.1f;           ///< Near clipping plane distance
         float mFarPlane = 1000.0f;         ///< Far clipping plane distance

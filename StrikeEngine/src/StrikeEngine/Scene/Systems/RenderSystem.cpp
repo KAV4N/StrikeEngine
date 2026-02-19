@@ -99,7 +99,7 @@ namespace StrikeEngine {
 
             CameraRenderData cameraRenderData;
             cameraRenderData.camera = camera;
-            cameraRenderData.cameraPosition = ent.getPosition();
+            cameraRenderData.cameraPosition = ent.getWorldPosition();
             cameraRenderData.cameraForward = ent.getForward();
 
             cameras.emplace(camera.getRenderOrder(), cameraRenderData);

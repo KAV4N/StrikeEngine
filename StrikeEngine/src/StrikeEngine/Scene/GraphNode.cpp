@@ -55,13 +55,22 @@ namespace StrikeEngine {
         markDirty();
     }
 
-    void GraphNode::rotateQuaternion(float angleDegrees, const glm::vec3& axis) {
-        glm::quat angleQuat = glm::angleAxis(glm::radians(angleDegrees), axis);
-        if (axis.y == 1.0f) {
+    void GraphNode::rotateQuaternion(float angleDegrees, const glm::vec3& axis)
+    {
+        glm::vec3 normAxis = glm::normalize(axis);
+
+        glm::quat angleQuat = glm::angleAxis(
+            glm::radians(angleDegrees),
+            normAxis
+        );
+
+        if (normAxis.y == 1.0f)
             mRotation = angleQuat * mRotation;
-        } else {
+        else
             mRotation = mRotation * angleQuat;
-        }
+
+        mRotation = glm::normalize(mRotation);  
+        
         markDirty();
     }
 

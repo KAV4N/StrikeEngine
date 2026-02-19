@@ -27,8 +27,10 @@ namespace StrikeEngine {
          */
         std::unique_ptr<Scene> loadScene(const std::filesystem::path& path);
 
+        
+        bool isLoading() const { return mIsLoading;}
+
     private:
-        std::unique_ptr<Scene> loadSceneInternal(const std::filesystem::path& path);
         
         void loadAssets(const pugi::xml_node& assetsNode, const std::filesystem::path& basePath);
         
@@ -39,5 +41,8 @@ namespace StrikeEngine {
         void setupFog(const pugi::xml_node& sceneNode);  
         
         glm::vec3 parseVector3(const std::string& str);
+
+    private:
+        bool mIsLoading = false;
     };
 }

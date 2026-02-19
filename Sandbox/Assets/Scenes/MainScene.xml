@@ -2,12 +2,12 @@
 <scene sceneId="MainScene">
 
 	<assets>
-		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/" async="false"/>
-		<audio id="shot" src="../Sounds/shot.mp3" async="false"/>
-		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" async="false"/>
-		<model id="box" src="../Objects/box/box.obj" async="false"/>
+		<cubeMap id="skyboxMainScene" src="@/Assets/Textures/Skybox/" />
+		<audio id="shot" src="../Sounds/shot.mp3" />
+		<model id="gizmo" src="../Objects/gizmo/gizmo.obj" />
+		<model id="box" src="../Objects/box/box.obj" />
 
-		<template id="portalBox" src="../Objects/CCP2.fbx" async="false"/>
+		<template id="portalBox" src="../Objects/CCP2.fbx" />
 	</assets>
 
 	<skybox cubeMap="skyboxMainScene"/>

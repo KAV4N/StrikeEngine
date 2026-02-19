@@ -62,6 +62,21 @@ namespace StrikeEngine {
          */
         inline float getCurrentFPS() const { return mCurrentFPS; }
 
+        /**
+         * @brief Get the Master Volume of the game
+         * 
+         * @return float volume
+         */
+        float getMasterVolume() const;
+
+        /**
+         * @brief Sets the global master volume.
+         * 
+         * @param volume Volume in range [0.0, 1.0].
+         */
+        void setMasterVolume(float volume);
+
+
     private:
         friend class Renderer;
 
