@@ -13,7 +13,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <unordered_map>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Asset;
     class CubeMap;

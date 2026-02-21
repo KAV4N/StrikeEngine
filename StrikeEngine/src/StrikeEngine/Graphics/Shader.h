@@ -8,7 +8,7 @@
 #include <fstream>
 #include <filesystem>
 
-namespace StrikeEngine {
+namespace Strike {
     class ShaderManager;
     
     /**

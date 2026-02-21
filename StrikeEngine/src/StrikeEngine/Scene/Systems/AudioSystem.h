@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Scene;
     class AudioAsset;

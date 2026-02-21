@@ -5,7 +5,7 @@
 #include <vector>
 #include <glad/glad.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Renderer;
     class Shader;

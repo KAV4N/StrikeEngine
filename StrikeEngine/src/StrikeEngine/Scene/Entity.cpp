@@ -6,7 +6,7 @@
 #include "Systems/PhysicsSystem.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     Entity::Entity(entt::entity handle, Scene* scene)
         : mHandle(handle), mScene(scene) {}

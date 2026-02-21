@@ -7,7 +7,7 @@
 #include "StrikeEngine/Scene/Components/AudioListenerComponent.h"
 #include "StrikeEngine/Scene/GraphNode.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     AudioSystem::AudioSystem()
         : mInitialized(false)

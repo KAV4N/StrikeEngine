@@ -2,7 +2,7 @@
 
 void SwapScene::onStart()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     if (!gd.hasKey("session_id"))
         initGameData();
@@ -20,15 +20,15 @@ void SwapScene::onUpdate(float dt)
 
     mTimeInScene += dt;
 
-    bool fDown = StrikeEngine::Input::isKeyPressed(STRIKE_KEY_F);
+    bool fDown = Strike::Input::isKeyPressed(STRIKE_KEY_F);
     if (fDown && !mFWasDown)
         doSwap();
     mFWasDown = fDown;
 
-    bool tDown = StrikeEngine::Input::isKeyPressed(STRIKE_KEY_T);
+    bool tDown = Strike::Input::isKeyPressed(STRIKE_KEY_T);
     if (tDown && !mTWasDown)
     {
-        auto& gd = StrikeEngine::GameData::get();
+        auto& gd = Strike::GameData::get();
         bool current = gd.getBool("swap_sound_enabled", true);
         gd.setBool("swap_sound_enabled", !current);
 
@@ -44,7 +44,7 @@ void SwapScene::onUpdate(float dt)
 
 void SwapScene::doSwap()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     onSceneLeave();
 
@@ -63,12 +63,12 @@ void SwapScene::doSwap()
     printGameDataSummary();
 
     STRIKE_INFO("Swapping to: {}", nextScene);
-    StrikeEngine::World::get().loadScene(nextScene);
+    Strike::World::get().loadScene(nextScene);
 }
 
 void SwapScene::initGameData()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     gd.setString("session_id", "SESSION_001");
     gd.setString("current_scene", SCENES[0]);
@@ -84,7 +84,7 @@ void SwapScene::initGameData()
 
 void SwapScene::onSceneEnter()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     int    swapCount = gd.getInt("swap_count", 0);
     int    score     = gd.getInt("player_score", 0);
@@ -112,7 +112,7 @@ void SwapScene::onSceneEnter()
 
 void SwapScene::onSceneLeave()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     double prev = gd.getDouble("total_time", 0.0);
     gd.setDouble("total_time", prev + static_cast<double>(mTimeInScene));
@@ -131,7 +131,7 @@ void SwapScene::onSceneLeave()
 
 void SwapScene::printGameDataSummary()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     STRIKE_INFO("─── GameData snapshot (pre-swap) ───────────────────────────");
     gd.printAllData();
@@ -143,10 +143,10 @@ void SwapScene::buildHUD()
 {
     auto* scene = getEntity().getScene();
 
-    auto makeText = [&](float y, const glm::uvec3& col) -> StrikeEngine::Entity
+    auto makeText = [&](float y, const glm::uvec3& col) -> Strike::Entity
     {
         auto ent = scene->createEntity();
-        auto& t  = ent.addComponent<StrikeEngine::TextComponent>();
+        auto& t  = ent.addComponent<Strike::TextComponent>();
         t.setColor(col);
         t.setPosition(glm::vec2(0.03f, y));
         t.setPivot(glm::vec2(0.0f, 0.0f));
@@ -161,7 +161,7 @@ void SwapScene::buildHUD()
 
 void SwapScene::updateHUD()
 {
-    auto& gd = StrikeEngine::GameData::get();
+    auto& gd = Strike::GameData::get();
 
     std::string scene = gd.getString("current_scene", "?");
     int swaps         = gd.getInt("swap_count", 0);
@@ -173,10 +173,10 @@ void SwapScene::updateHUD()
     std::string sceneName =
         (slash != std::string::npos) ? scene.substr(slash + 1) : scene;
 
-    auto setLine = [](StrikeEngine::Entity& e, const std::string& text)
+    auto setLine = [](Strike::Entity& e, const std::string& text)
     {
         if (e.isValid())
-            e.getComponent<StrikeEngine::TextComponent>().setText(text);
+            e.getComponent<Strike::TextComponent>().setText(text);
     };
 
     {

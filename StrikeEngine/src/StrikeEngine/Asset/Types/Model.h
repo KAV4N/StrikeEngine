@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class GraphicsAsset;
 

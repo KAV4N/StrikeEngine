@@ -9,7 +9,7 @@
 #include <GL/gl.h>
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Shader;
     class FrameBuffer;

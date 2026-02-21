@@ -5,7 +5,7 @@
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     REGISTER_COMPONENT(RendererComponent)
 

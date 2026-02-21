@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Scene;
     class Entity;

@@ -9,7 +9,7 @@
 
 #include "ModelParser.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     AssetManager& AssetManager::get() {
         static AssetManager instance;

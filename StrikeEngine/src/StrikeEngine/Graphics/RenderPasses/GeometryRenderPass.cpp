@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     GeometryRenderPass::GeometryRenderPass(Renderer& renderer)
         : RenderPass("GeometryPass"), mRenderer(renderer), mWhiteTextureID(0) {

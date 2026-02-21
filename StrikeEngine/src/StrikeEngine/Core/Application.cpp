@@ -17,7 +17,7 @@
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-namespace StrikeEngine {
+namespace Strike {
     
     Application* Application::sInstance = nullptr;
 
@@ -25,7 +25,7 @@ namespace StrikeEngine {
         STRIKE_CORE_ASSERT(!sInstance, "Application already exists!");
         sInstance = this;
 
-        StrikeEngine::Log::init();
+        Strike::Log::init();
 
         mWindow = std::make_unique<Window>();
         mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));

@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 
-namespace StrikeEngine {
+namespace Strike {
 
     GraphNode::GraphNode(entt::entity entityId)
         : mEntityId(entityId) {}

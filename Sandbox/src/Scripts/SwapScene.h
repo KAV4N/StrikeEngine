@@ -1,7 +1,7 @@
 #pragma once
 #include "StrikeEngine.h"
 
-class SwapScene : public StrikeEngine::Script
+class SwapScene : public Strike::Script
 {
 public:
     void onStart() override;
@@ -25,10 +25,10 @@ private:
     float mTimeInScene = 0.0f;
     bool  mInitialized = false;
 
-    StrikeEngine::Entity mHUDLine1;
-    StrikeEngine::Entity mHUDLine2;
-    StrikeEngine::Entity mHUDLine3;
-    StrikeEngine::Entity mHUDLine4;
+    Strike::Entity mHUDLine1;
+    Strike::Entity mHUDLine2;
+    Strike::Entity mHUDLine3;
+    Strike::Entity mHUDLine4;
 
     static constexpr const char* SCENES[] =
     {

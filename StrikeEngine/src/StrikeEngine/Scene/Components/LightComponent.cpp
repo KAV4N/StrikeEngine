@@ -5,7 +5,7 @@
 #include <cstdio>   // snprintf, sscanf
 #include <cstring>  // memset (optional)
 
-namespace StrikeEngine {
+namespace Strike {
 
     REGISTER_COMPONENT(LightComponent);
 

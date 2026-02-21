@@ -17,7 +17,7 @@
 
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Model;
     struct EntityData {

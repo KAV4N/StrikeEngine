@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-namespace StrikeEngine {
+namespace Strike {
     /**
      * @brief Event class for mouse movement events.
      */

@@ -8,7 +8,7 @@
 #include <optional>
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Mesh;
     class Model;

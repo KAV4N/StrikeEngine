@@ -4,7 +4,7 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     AssetLoader::AssetLoader(const std::string& typeName) : mTypeName(typeName) {}
 

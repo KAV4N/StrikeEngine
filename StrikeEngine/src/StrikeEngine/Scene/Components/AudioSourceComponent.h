@@ -5,7 +5,7 @@
 #include <vector>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
     class Audio;
 
     /**

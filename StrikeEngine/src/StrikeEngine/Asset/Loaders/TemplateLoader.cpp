@@ -5,7 +5,7 @@
 #include "StrikeEngine/Asset/AssetManager.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     TemplateLoader::TemplateLoader() : AssetLoader(Template::getStaticTypeName()) {
     }

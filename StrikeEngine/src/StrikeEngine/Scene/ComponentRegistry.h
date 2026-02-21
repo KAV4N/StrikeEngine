@@ -11,7 +11,7 @@
 #include <memory>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Registry for component factories to enable dynamic component creation.
@@ -70,8 +70,8 @@ namespace StrikeEngine {
  */
 #define REGISTER_COMPONENT(ComponentClass) \
     static bool ComponentClass##_registered = []() { \
-        StrikeEngine::ComponentRegistry::registerComponentFactory(ComponentClass::getStaticTypeName(), \
-            [](StrikeEngine::Entity& entity, const pugi::xml_node& node) -> StrikeEngine::Component* { \
+        Strike::ComponentRegistry::registerComponentFactory(ComponentClass::getStaticTypeName(), \
+            [](Strike::Entity& entity, const pugi::xml_node& node) -> Strike::Component* { \
                 auto& component = entity.addComponent<ComponentClass>(); \
                 component.deserialize(node); \
                 return &component; \

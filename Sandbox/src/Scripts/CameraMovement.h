@@ -1,7 +1,7 @@
 #pragma once
 #include "StrikeEngine.h"
 
-class CameraMovement : public StrikeEngine::Script {
+class CameraMovement : public Strike::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;

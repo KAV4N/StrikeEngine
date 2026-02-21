@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "ScriptRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
     std::unordered_map<std::string, ScriptRegistry::ScriptFactory>& ScriptRegistry::getFactories() {
         static std::unordered_map<std::string, ScriptFactory> sFactories;
         return sFactories;

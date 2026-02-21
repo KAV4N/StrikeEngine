@@ -5,7 +5,7 @@
 #include <pugixml.hpp>
 #include <string>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Component for point light sources in the scene.

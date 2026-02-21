@@ -4,14 +4,14 @@
 // Helpers
 // ------------------------------------------------------------
 
-static std::string stateToString(StrikeEngine::AssetState state)
+static std::string stateToString(Strike::AssetState state)
 {
     switch (state)
     {
-        case StrikeEngine::AssetState::Uninitialized: return "Uninitialized";
-        case StrikeEngine::AssetState::Loading:       return "Loading";
-        case StrikeEngine::AssetState::Ready:         return "Ready";
-        case StrikeEngine::AssetState::Failed:        return "Failed";
+        case Strike::AssetState::Uninitialized: return "Uninitialized";
+        case Strike::AssetState::Loading:       return "Loading";
+        case Strike::AssetState::Ready:         return "Ready";
+        case Strike::AssetState::Failed:        return "Failed";
         default:                                      return "Unknown";
     }
 }
@@ -25,7 +25,7 @@ void AssetShowcase::onStart()
     auto* scene = getEntity().getScene();
 
     mLabel = scene->createEntity();
-    auto& text = mLabel.addComponent<StrikeEngine::TextComponent>();
+    auto& text = mLabel.addComponent<Strike::TextComponent>();
     text.setText("Asset Showcase — Auto-advancing every 2 seconds");
     text.setColor(glm::uvec3(80,220,255));
     text.setPosition(glm::vec2(0.03f,0.03f));
@@ -55,7 +55,7 @@ void AssetShowcase::onUpdate(float dt)
 
 void AssetShowcase::pollAsync()
 {
-    auto asset = StrikeEngine::AssetManager::get().getAssetBase(mAsyncWaitId);
+    auto asset = Strike::AssetManager::get().getAssetBase(mAsyncWaitId);
     if (!asset) 
     {
         STRIKE_INFO("Async asset '{}' was removed during loading!", mAsyncWaitId);
@@ -65,12 +65,12 @@ void AssetShowcase::pollAsync()
 
     auto state = asset->getState();
 
-    if (state == StrikeEngine::AssetState::Ready)
+    if (state == Strike::AssetState::Ready)
     {
         STRIKE_INFO("Async asset '{}' READY", mAsyncWaitId);
         mWaitingAsync = false;
     }
-    else if (state == StrikeEngine::AssetState::Failed)
+    else if (state == Strike::AssetState::Failed)
     {
         STRIKE_INFO("Async asset '{}' FAILED", mAsyncWaitId);
         mWaitingAsync = false;
@@ -124,7 +124,7 @@ void AssetShowcase::updateLabel(const std::string& text)
 {
     if (!mLabel.isValid()) return;
 
-    mLabel.getComponent<StrikeEngine::TextComponent>()
+    mLabel.getComponent<Strike::TextComponent>()
         .setText("[Auto-advancing every 2s]\n" + text);
 }
 
@@ -134,7 +134,7 @@ void AssetShowcase::updateLabel(const std::string& text)
 
 void AssetShowcase::queryInitialState()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Initial State ===");
     STRIKE_INFO("Loaded count: {}", am.getLoadedAssetCount());
@@ -146,8 +146,8 @@ void AssetShowcase::queryInitialState()
 
 void AssetShowcase::syncLoadModel()
 {
-    auto model = StrikeEngine::AssetManager::get()
-        .load<StrikeEngine::Model>(ID_MODEL_SYNC, "Assets/Objects/box/box.obj");
+    auto model = Strike::AssetManager::get()
+        .load<Strike::Model>(ID_MODEL_SYNC, "Assets/Objects/box/box.obj");
 
     if (model)
         STRIKE_INFO("Model sync loaded. State: {}",
@@ -158,8 +158,8 @@ void AssetShowcase::syncLoadModel()
 
 void AssetShowcase::asyncLoadModel()
 {
-    auto model = StrikeEngine::AssetManager::get()
-        .loadAsync<StrikeEngine::Model>(ID_MODEL_ASYNC, "Assets/Objects/box/portalCube/CCP2.fbx");
+    auto model = Strike::AssetManager::get()
+        .loadAsync<Strike::Model>(ID_MODEL_ASYNC, "Assets/Objects/box/portalCube/CCP2.fbx");
 
     if (model)
     {
@@ -173,8 +173,8 @@ void AssetShowcase::asyncLoadModel()
 
 void AssetShowcase::syncLoadTexture()
 {
-    auto tex = StrikeEngine::AssetManager::get()
-        .load<StrikeEngine::Texture>(ID_TEX_SYNC, "Assets/Objects/tempoTrack/Root_baseColor.png");
+    auto tex = Strike::AssetManager::get()
+        .load<Strike::Texture>(ID_TEX_SYNC, "Assets/Objects/tempoTrack/Root_baseColor.png");
 
     if (tex)
         STRIKE_INFO("Texture sync loaded.");
@@ -184,8 +184,8 @@ void AssetShowcase::syncLoadTexture()
 
 void AssetShowcase::asyncLoadTexture()
 {
-    auto tex = StrikeEngine::AssetManager::get()
-        .loadAsync<StrikeEngine::Texture>(ID_TEX_ASYNC, "Assets/Objects/tempoTrack/road.png");
+    auto tex = Strike::AssetManager::get()
+        .loadAsync<Strike::Texture>(ID_TEX_ASYNC, "Assets/Objects/tempoTrack/road.png");
 
     if (tex)
     {
@@ -199,8 +199,8 @@ void AssetShowcase::asyncLoadTexture()
 
 void AssetShowcase::syncLoadCubeMap()
 {
-    auto cube = StrikeEngine::AssetManager::get()
-        .load<StrikeEngine::CubeMap>(
+    auto cube = Strike::AssetManager::get()
+        .load<Strike::CubeMap>(
             ID_CUBEMAP_SYNC,
             "Assets/Skyboxes/mountainSkybox"
         );
@@ -213,8 +213,8 @@ void AssetShowcase::syncLoadCubeMap()
 
 void AssetShowcase::asyncLoadCubeMap()
 {
-    auto cube = StrikeEngine::AssetManager::get()
-        .loadAsync<StrikeEngine::CubeMap>(
+    auto cube = Strike::AssetManager::get()
+        .loadAsync<Strike::CubeMap>(
             ID_CUBEMAP_ASYNC,
              "Assets/Skyboxes/plainSkybox"
         );
@@ -232,8 +232,8 @@ void AssetShowcase::asyncLoadCubeMap()
 
 void AssetShowcase::syncLoadTemplate()
 {
-    auto tmpl = StrikeEngine::AssetManager::get()
-        .load<StrikeEngine::Template>(
+    auto tmpl = Strike::AssetManager::get()
+        .load<Strike::Template>(
             ID_TEMPLATE_SYNC,
             "Assets/Objects/box/box.obj"
         );
@@ -246,8 +246,8 @@ void AssetShowcase::syncLoadTemplate()
 
 void AssetShowcase::asyncLoadTemplate()
 {
-    auto tmpl = StrikeEngine::AssetManager::get()
-        .loadAsync<StrikeEngine::Template>(
+    auto tmpl = Strike::AssetManager::get()
+        .loadAsync<Strike::Template>(
             ID_TEMPLATE_ASYNC,
             "Assets/Objects/box/portalCube/CCP2.fbx"
         );
@@ -264,8 +264,8 @@ void AssetShowcase::asyncLoadTemplate()
 
 void AssetShowcase::instantiateTemplate()
 {
-    auto tmpl = StrikeEngine::AssetManager::get()
-        .getAsset<StrikeEngine::Template>(ID_TEMPLATE_SYNC);
+    auto tmpl = Strike::AssetManager::get()
+        .getAsset<Strike::Template>(ID_TEMPLATE_SYNC);
 
     if (!tmpl)
     {
@@ -273,14 +273,14 @@ void AssetShowcase::instantiateTemplate()
         return;
     }
 
-    if (tmpl->getState() != StrikeEngine::AssetState::Ready)
+    if (tmpl->getState() != Strike::AssetState::Ready)
     {
         STRIKE_INFO("Template not ready.");
         return;
     }
 
     auto* scene = getEntity().getScene();
-    StrikeEngine::Entity entity = scene->createEntity();
+    Strike::Entity entity = scene->createEntity();
 
     if (tmpl->instantiate(entity))
     {
@@ -296,8 +296,8 @@ void AssetShowcase::instantiateTemplate()
 
 void AssetShowcase::syncLoadAudio()
 {
-    auto audio = StrikeEngine::AssetManager::get()
-        .load<StrikeEngine::Audio>(
+    auto audio = Strike::AssetManager::get()
+        .load<Strike::Audio>(
             ID_AUDIO_SYNC,
             "Assets/Sounds/shot.mp3"
         );
@@ -310,8 +310,8 @@ void AssetShowcase::syncLoadAudio()
 
 void AssetShowcase::asyncLoadAudio()
 {
-    auto audio = StrikeEngine::AssetManager::get()
-        .loadAsync<StrikeEngine::Audio>(
+    auto audio = Strike::AssetManager::get()
+        .loadAsync<Strike::Audio>(
             ID_AUDIO_ASYNC,
             "Assets/Sounds/ambient.mp3"
         );
@@ -328,7 +328,7 @@ void AssetShowcase::asyncLoadAudio()
 
 void AssetShowcase::testHasAsset()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Testing hasAsset() ===");
     STRIKE_INFO("Has '{}': {}", ID_MODEL_SYNC, am.hasAsset(ID_MODEL_SYNC));
@@ -340,12 +340,12 @@ void AssetShowcase::testHasAsset()
 
 void AssetShowcase::testIsAssetLoading()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Testing isAssetLoading() ===");
     
     // Start an async load for testing
-    auto testAsset = am.loadAsync<StrikeEngine::Texture>(
+    auto testAsset = am.loadAsync<Strike::Texture>(
         ID_TEST_ASYNC, 
         "Assets/Objects/tempoTrack/Root_baseColor.png"
     );
@@ -359,7 +359,7 @@ void AssetShowcase::testIsAssetLoading()
 
 void AssetShowcase::testIsLoading()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Testing isLoading() ===");
     STRIKE_INFO("AssetManager is loading any assets: {}", am.isLoading());
@@ -369,7 +369,7 @@ void AssetShowcase::testIsLoading()
 
 void AssetShowcase::testGetAssetBase()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Testing getAssetBase() ===");
     
@@ -394,7 +394,7 @@ void AssetShowcase::testGetAssetBase()
 
 void AssetShowcase::queryAssetManager()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Querying AssetManager ===");
     STRIKE_INFO("Loaded count: {}", am.getLoadedAssetCount());
@@ -413,7 +413,7 @@ void AssetShowcase::queryAssetManager()
 
 void AssetShowcase::removeAssetDemo()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
     
     STRIKE_INFO("=== Testing removeAsset() ===");
     STRIKE_INFO("Before removal - Has '{}': {}", ID_MODEL_SYNC, am.hasAsset(ID_MODEL_SYNC));
@@ -428,12 +428,12 @@ void AssetShowcase::removeAssetDemo()
 
 void AssetShowcase::testRemoveLoadingAsset()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
     
     STRIKE_INFO("=== Testing removal of loading asset ===");
     
     // Start an async load
-    auto asyncAsset = am.loadAsync<StrikeEngine::Model>(
+    auto asyncAsset = am.loadAsync<Strike::Model>(
         "test_remove_loading", 
         "Assets/Objects/box/portalCube/CCP2.fbx"
     );
@@ -454,7 +454,7 @@ void AssetShowcase::testRemoveLoadingAsset()
 
 void AssetShowcase::testClearAssets()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
     
     STRIKE_INFO("=== Testing clear() ===");
     STRIKE_INFO("Before clear - Loaded: {}, Loading: {}", 
@@ -474,7 +474,7 @@ void AssetShowcase::testClearAssets()
 
 void AssetShowcase::finalQuery()
 {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     STRIKE_INFO("=== Final State Query ===");
     STRIKE_INFO("Loaded count: {}", am.getLoadedAssetCount());

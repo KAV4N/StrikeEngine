@@ -12,7 +12,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     CollisionRenderPass::CollisionRenderPass(Renderer& renderer)
         : RenderPass("CollisionWireframe"), mRenderer(renderer), mBoxVAO(0), mBoxVBO(0), mBoxEBO(0),

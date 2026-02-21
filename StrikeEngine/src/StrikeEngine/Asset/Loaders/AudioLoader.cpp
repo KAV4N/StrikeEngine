@@ -6,7 +6,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     AudioLoader::AudioLoader() : AssetLoader(Audio::getStaticTypeName()) {
     }

@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <chrono>
 
-namespace StrikeEngine {
+namespace Strike {
 
     static bool sGLFWInitialized = false;
     static constexpr int RESIZE_DELAY_MS = 150;

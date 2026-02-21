@@ -5,7 +5,7 @@
 #include "StrikeEngine/Events/MouseEvent.h"
 #include "Entity.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     Script::Script() = default;
 

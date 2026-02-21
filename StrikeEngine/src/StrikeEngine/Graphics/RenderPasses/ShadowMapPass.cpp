@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     ShadowMapPass::ShadowMapPass(Renderer& renderer)
         : RenderPass("SunShadowPass"), mRenderer(renderer) {

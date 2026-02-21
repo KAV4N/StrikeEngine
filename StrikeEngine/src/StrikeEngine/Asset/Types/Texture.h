@@ -4,7 +4,7 @@
 #include <vector>
 #include <array>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Texture asset type.

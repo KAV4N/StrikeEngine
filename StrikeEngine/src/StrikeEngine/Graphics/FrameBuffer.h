@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <glad/glad.h>
 
-namespace StrikeEngine {
+namespace Strike {
     /**
      * @brief OpenGL framebuffer wrapper for off-screen rendering
      * 

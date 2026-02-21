@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Shader;
 

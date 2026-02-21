@@ -2,7 +2,7 @@
 #include "AudioListenerComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
     REGISTER_COMPONENT(AudioListenerComponent)
 
     void AudioListenerComponent::deserialize(const pugi::xml_node& node) {

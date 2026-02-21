@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Component for rendering 2D text overlays.

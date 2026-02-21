@@ -4,7 +4,7 @@
 
 #include "StrikeEngine/Graphics/Shader.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     Skybox::Skybox()
         : mVAO(0)

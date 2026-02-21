@@ -13,7 +13,7 @@ class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
 class btSequentialImpulseConstraintSolver;
 
-namespace StrikeEngine {
+namespace Strike {
 
     struct RayHit;
 

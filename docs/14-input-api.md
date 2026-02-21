@@ -6,7 +6,7 @@ The `Input` class is a static utility class that provides polling-based access t
 
 ```cpp
 // Example: polling in onUpdate()
-if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) {
+if (Strike::Input::isKeyPressed(STRIKE_KEY_W)) {
     // move forward
 }
 ```
@@ -19,7 +19,7 @@ if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) {
 Returns `true` if the specified key is currently held down, `false` otherwise. Use `STRIKE_KEY_*` macros for key codes (see [Event System - Key Codes Reference](EVENT_SYSTEM_API.md#key-codes-reference)).
 
 ```cpp
-if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
+if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
     // space is held
 }
 ```
@@ -32,7 +32,7 @@ if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) {
 Returns `true` if the specified mouse button is currently held down, `false` otherwise. Use `STRIKE_MOUSE_BUTTON_*` macros for button codes (see [Event System - Mouse Button Codes Reference](EVENT_SYSTEM_API.md#mouse-button-codes-reference)).
 
 ```cpp
-if (StrikeEngine::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_LEFT)) {
+if (Strike::Input::isMouseButtonPressed(STRIKE_MOUSE_BUTTON_LEFT)) {
     // left button held
 }
 ```
@@ -51,7 +51,7 @@ Returns the current mouse cursor Y position in pixels.
 Returns both X and Y positions in a single call. Prefer this over calling `getMouseX()` and `getMouseY()` separately to ensure both values are from the same moment.
 
 ```cpp
-auto [x, y] = StrikeEngine::Input::getMouseXY();
+auto [x, y] = Strike::Input::getMouseXY();
 ```
 
 ---
@@ -73,10 +73,10 @@ enum class CursorMode {
 
 ```cpp
 // Lock cursor for FPS camera
-StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 
 // Release cursor for UI
-StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Normal);
+Strike::Input::setCursorMode(Strike::CursorMode::Normal);
 ```
 
 ---
@@ -88,9 +88,9 @@ StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Normal);
 **Static Access** - All methods are static. Use them directly without any instance:
 
 ```cpp
-StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A);
-StrikeEngine::Input::getMouseXY();
-StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+Strike::Input::isKeyPressed(STRIKE_KEY_A);
+Strike::Input::getMouseXY();
+Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 ```
 
 **Key and Mouse Codes** - Always use `STRIKE_KEY_*` and `STRIKE_MOUSE_BUTTON_*` macros instead of raw integers. See the [Event API](event-api.md) for the full reference tables.

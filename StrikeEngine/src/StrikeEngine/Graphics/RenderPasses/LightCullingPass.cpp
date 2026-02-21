@@ -3,7 +3,7 @@
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Graphics/Shader.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     LightCullingPass::LightCullingPass(Renderer& renderer)
         : RenderPass("LightCullingPass"), mRenderer(renderer)

@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "Texture.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     // ============ Texture ============
 

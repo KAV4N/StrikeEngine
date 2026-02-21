@@ -16,7 +16,7 @@
 
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     class AssetLoader {
     public:

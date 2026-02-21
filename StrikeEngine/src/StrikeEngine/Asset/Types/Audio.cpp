@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "Audio.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     Audio::Audio(const std::string& id, const std::filesystem::path& path)
         : Asset(id, path)

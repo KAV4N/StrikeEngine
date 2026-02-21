@@ -2,7 +2,7 @@
 #include "SystemECS.h"
 #include <entt/entt.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Scene;
     class Event;

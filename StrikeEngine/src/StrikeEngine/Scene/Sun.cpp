@@ -3,7 +3,7 @@
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include <glm/gtx/euler_angles.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
     
     void Sun::setColor(const glm::uvec3& color) {
         mColor = glm::clamp(color, glm::uvec3(0.0f), glm::uvec3(255.0f));

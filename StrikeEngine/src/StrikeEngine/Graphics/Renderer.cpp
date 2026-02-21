@@ -20,7 +20,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     const size_t Renderer::MAX_INSTANCES;
 

@@ -2,7 +2,7 @@
 #include "Component.h"
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Component that acts as an audio listener in 3D space.

@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
-namespace StrikeEngine {
+namespace Strike {
 
     FontRenderer& FontRenderer::get() {
         static FontRenderer instance;

@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "FrameBuffer.h"
 
-namespace StrikeEngine {
+namespace Strike {
     FrameBuffer::FrameBuffer(uint32_t width, uint32_t height)
         : mWidth(width), mHeight(height)
     {

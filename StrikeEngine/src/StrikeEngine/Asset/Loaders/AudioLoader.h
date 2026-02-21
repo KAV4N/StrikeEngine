@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Asset;
     class Audio;

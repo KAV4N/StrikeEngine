@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "ComponentRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     std::unordered_map<std::string, ComponentRegistry::ComponentFactory>& ComponentRegistry::getFactories() {
         static std::unordered_map<std::string, ComponentFactory> sFactories;

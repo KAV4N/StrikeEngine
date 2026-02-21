@@ -2,7 +2,7 @@
 #include "GraphicsContext.h"
 #include <glad/glad.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     GraphicsContext::GraphicsContext(GLFWwindow* windowHandle)
         : mWindowHandle(windowHandle) {

@@ -10,7 +10,7 @@
 
 #include "StrikeEngine/Graphics/Renderer.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     SceneLoader::SceneLoader() {
     }

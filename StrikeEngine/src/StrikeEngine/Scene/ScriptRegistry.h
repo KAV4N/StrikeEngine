@@ -5,7 +5,7 @@
 #include <memory>
 #include <functional>
 
-namespace StrikeEngine {
+namespace Strike {
 
 
     /**
@@ -59,8 +59,8 @@ namespace StrikeEngine {
  */
 #define REGISTER_SCRIPT(ScriptClass) \
     static bool ScriptClass##_registered = []() { \
-        StrikeEngine::ScriptRegistry::registerScriptFactory(#ScriptClass, \
-            []() -> std::unique_ptr<StrikeEngine::Script> { \
+        Strike::ScriptRegistry::registerScriptFactory(#ScriptClass, \
+            []() -> std::unique_ptr<Strike::Script> { \
                 return std::make_unique<ScriptClass>(); \
             }); \
         return true; \

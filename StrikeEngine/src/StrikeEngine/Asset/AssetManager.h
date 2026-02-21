@@ -16,7 +16,7 @@
 #include <atomic>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
     class AssetLoader;
     
     class AssetManager {

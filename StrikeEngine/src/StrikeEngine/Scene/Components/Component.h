@@ -4,7 +4,7 @@
 #include <pugixml.hpp>
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Base class for all entity components in the StrikeEngine.

@@ -6,7 +6,7 @@
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     Template::Template(const std::string& id, const std::filesystem::path& path)
         : Asset(id, path) {

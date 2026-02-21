@@ -8,7 +8,7 @@
 #include <memory>
 #include <pugixml.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
     
     /**
      * @brief Component for attaching and managing scripts on entities.

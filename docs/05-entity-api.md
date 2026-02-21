@@ -29,7 +29,7 @@ Entities are created and managed by the scene. You don't construct them directly
 
 ```cpp
 // Default-constructed entity - invalid, use only as a null placeholder
-StrikeEngine::Entity empty;
+Strike::Entity empty;
 empty.isValid(); // false
 ```
 
@@ -90,31 +90,31 @@ All component methods are templated on the component type. When writing scripts,
 ```cpp
 void MyScript::onCreate() {
     // Add a component
-    auto& light = addComponent<StrikeEngine::LightComponent>();
+    auto& light = addComponent<Strike::LightComponent>();
 
     // Get - mutable
-    auto& renderer = getComponent<StrikeEngine::RendererComponent>();
+    auto& renderer = getComponent<Strike::RendererComponent>();
 
     // Get - const (safe in const methods)
-    const auto& constRenderer = getComponent<StrikeEngine::RendererComponent>();
+    const auto& constRenderer = getComponent<Strike::RendererComponent>();
 
     // Check before getting to avoid throws
-    if (hasComponent<StrikeEngine::PhysicsComponent>()) {
-        auto& physics = getComponent<StrikeEngine::PhysicsComponent>();
+    if (hasComponent<Strike::PhysicsComponent>()) {
+        auto& physics = getComponent<Strike::PhysicsComponent>();
     }
 
     // Remove
-    removeComponent<StrikeEngine::LightComponent>();
+    removeComponent<Strike::LightComponent>();
 
     // Get existing or add if missing
-    auto& logic = getOrAddComponent<StrikeEngine::LogicComponent>();
+    auto& logic = getOrAddComponent<Strike::LogicComponent>();
 }
 
 void MyScript::onUpdate(float deltaTime) {
     // Access a component on a different entity
     auto lamp = getEntity().getScene()->getEntity("Lamp");
-    if (lamp && lamp.hasComponent<StrikeEngine::LightComponent>()) {
-        lamp.getComponent<StrikeEngine::LightComponent>().setIntensity(2.0f);
+    if (lamp && lamp.hasComponent<Strike::LightComponent>()) {
+        lamp.getComponent<Strike::LightComponent>().setIntensity(2.0f);
     }
 }
 ```
@@ -249,21 +249,21 @@ void MyScript::onStart() {
 
     // Detach - weapon becomes a root entity
     weapon.removeFromParent();
-    // or: weapon.setParent(StrikeEngine::Entity{}); // pass invalid entity to detach
+    // or: weapon.setParent(Strike::Entity{}); // pass invalid entity to detach
 
     // Add a child directly
     auto shield = scene->getEntity("Shield");
     hand.addChild(shield);
 
     // Traverse children
-    std::vector<StrikeEngine::Entity> children = hand.getChildren();
+    std::vector<Strike::Entity> children = hand.getChildren();
     for (auto& child : children) {
         // ...
     }
 
     // Check hierarchy state
     bool isRoot = hand.isRoot();
-    StrikeEngine::Entity parent = hand.getParent(); // invalid entity if root
+    Strike::Entity parent = hand.getParent(); // invalid entity if root
 }
 ```
 
@@ -328,15 +328,15 @@ void MyScript::onStart() {
     entt::entity handle = a.getHandle();
 
     // Owning scene
-    StrikeEngine::Scene* owningScene = a.getScene();
+    Strike::Scene* owningScene = a.getScene();
 }
 ```
 
-Entities can be stored in hash-based containers without a custom hasher - `std::hash<StrikeEngine::Entity>` is provided automatically:
+Entities can be stored in hash-based containers without a custom hasher - `std::hash<Strike::Entity>` is provided automatically:
 
 ```cpp
 // MyScript.h
-std::unordered_map<StrikeEngine::Entity, int> mHealthMap;
+std::unordered_map<Strike::Entity, int> mHealthMap;
 
 // MyScript.cpp
 void MyScript::onStart() {

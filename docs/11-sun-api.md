@@ -11,9 +11,9 @@ The `Sun` class in StrikeEngine represents a directional light source that simul
 The Sun is accessed through the current Scene instance:
 
 ```cpp
-auto scene = StrikeEngine::World::get().getScene();
+auto scene = Strike::World::get().getScene();
 if (scene) {
-    StrikeEngine::Sun& sun = scene->getSun();
+    Strike::Sun& sun = scene->getSun();
 }
 ```
 
@@ -108,7 +108,7 @@ The Sun is configured in scene XML files using the `<sun>` tag:
 
 ```cpp
 void updateSun(float deltaTime) {
-    auto scene = StrikeEngine::World::get().getScene();
+    auto scene = Strike::World::get().getScene();
     auto& sun = scene->getSun();
 
     // Rotate sun continuously
@@ -124,7 +124,7 @@ void updateSun(float deltaTime) {
 
 ```cpp
 void SunMovement::onStart() {
-    auto scene = StrikeEngine::World::get().getScene();
+    auto scene = Strike::World::get().getScene();
     mSun = &scene->getSun();
     mTimeOfDay = 6.0f;
 }
@@ -150,7 +150,7 @@ void SunMovement::onUpdate(float deltaTime) {
 
 ```cpp
 void enableShadows() {
-    auto scene = StrikeEngine::World::get().getScene();
+    auto scene = Strike::World::get().getScene();
     auto& sun = scene->getSun();
     sun.setCastShadows(true);
 }

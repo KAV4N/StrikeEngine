@@ -2,9 +2,9 @@
 
 void CameraMovement::onStart()
 {
-    StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+    Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 
-    auto [x, y] = StrikeEngine::Input::getMouseXY();
+    auto [x, y] = Strike::Input::getMouseXY();
     mLastX = x;
     mLastY = y;
 }
@@ -15,12 +15,12 @@ void CameraMovement::onUpdate(float deltaTime)
     glm::vec3 move(0.0f);
     const float speed = 20.0f * deltaTime;
 
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D)) move.x += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A)) move.x -= speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) move.z -= speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S)) move.z += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) move.y += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_D)) move.x += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_A)) move.x -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_W)) move.z -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_S)) move.z += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE)) move.y += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
 
      if (glm::length(move) > 0.0f) {
         scriptEntity.move(move);
@@ -28,15 +28,15 @@ void CameraMovement::onUpdate(float deltaTime)
 
 
     // Toggle rotation and cursor mode on P press (edge detection)
-    bool pPressed = StrikeEngine::Input::isKeyPressed(STRIKE_KEY_P);
+    bool pPressed = Strike::Input::isKeyPressed(STRIKE_KEY_P);
     if (pPressed && !mPKeyWasPressed) {
         mRotationEnabled = !mRotationEnabled;
 
         if (mRotationEnabled) {
-            StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+            Strike::Input::setCursorMode(Strike::CursorMode::Locked);
             mFirstMouse = true; // reset to avoid jump when re-enabling
         } else {
-            StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Normal);
+            Strike::Input::setCursorMode(Strike::CursorMode::Normal);
         }
     }
     mPKeyWasPressed = pPressed;
@@ -44,7 +44,7 @@ void CameraMovement::onUpdate(float deltaTime)
     if (!mRotationEnabled)
         return;
 
-    auto [x, y] = StrikeEngine::Input::getMouseXY();
+    auto [x, y] = Strike::Input::getMouseXY();
 
     if (mFirstMouse) {
         mLastX = x;

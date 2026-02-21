@@ -2,7 +2,7 @@
 #include "AssetLoader.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     class TextureLoader : public AssetLoader {
     public:

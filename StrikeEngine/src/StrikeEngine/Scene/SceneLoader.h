@@ -8,7 +8,7 @@
 #include <pugixml.hpp>
 #include "glm/glm.hpp"
 
-namespace StrikeEngine {
+namespace Strike {
     class Scene;
     class Entity;
 

@@ -3,7 +3,7 @@
 #include "StrikeEngine/Core/Application.h"
 #include <GLFW/glfw3.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     bool Input::isKeyPressed(int keycode) {
         auto window = static_cast<GLFWwindow*>(Application::get().getWindow().getNativeWindow());

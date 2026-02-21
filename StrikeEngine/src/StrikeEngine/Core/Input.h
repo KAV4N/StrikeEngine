@@ -3,7 +3,7 @@
 #include "StrikeEngine/Core/Core.h"
 #include <utility>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Cursor display modes.

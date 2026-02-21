@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Base class for all ECS systems in the engine.

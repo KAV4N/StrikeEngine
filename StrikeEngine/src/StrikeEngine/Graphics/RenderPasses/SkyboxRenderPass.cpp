@@ -7,7 +7,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     SkyboxRenderPass::SkyboxRenderPass(Renderer& renderer)
         : RenderPass("SkyboxPass"), 

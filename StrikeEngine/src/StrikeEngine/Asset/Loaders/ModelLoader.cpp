@@ -4,7 +4,7 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/AssetManager.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     ModelLoader::ModelLoader() : AssetLoader(Model::getStaticTypeName()) {}
 

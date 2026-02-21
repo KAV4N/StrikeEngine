@@ -4,7 +4,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @class Log
@@ -70,22 +70,22 @@ namespace StrikeEngine {
 /**
  * @brief Logs an error message to the core logger.
  */
-#define STRIKE_CORE_ERROR(...)  ::StrikeEngine::Log::getCoreLogger()->error(__VA_ARGS__)
+#define STRIKE_CORE_ERROR(...)  ::Strike::Log::getCoreLogger()->error(__VA_ARGS__)
 
 /**
  * @brief Logs a warning message to the core logger.
  */
-#define STRIKE_CORE_WARN(...)   ::StrikeEngine::Log::getCoreLogger()->warn(__VA_ARGS__)
+#define STRIKE_CORE_WARN(...)   ::Strike::Log::getCoreLogger()->warn(__VA_ARGS__)
 
 /**
  * @brief Logs an informational message to the core logger.
  */
-#define STRIKE_CORE_INFO(...)   ::StrikeEngine::Log::getCoreLogger()->info(__VA_ARGS__)
+#define STRIKE_CORE_INFO(...)   ::Strike::Log::getCoreLogger()->info(__VA_ARGS__)
 
 /**
  * @brief Logs a trace-level message to the core logger.
  */
-#define STRIKE_CORE_TRACE(...)  ::StrikeEngine::Log::getCoreLogger()->trace(__VA_ARGS__)
+#define STRIKE_CORE_TRACE(...)  ::Strike::Log::getCoreLogger()->trace(__VA_ARGS__)
 
 /** @} */
 
@@ -98,21 +98,21 @@ namespace StrikeEngine {
 /**
  * @brief Logs an error message to the client logger.
  */
-#define STRIKE_ERROR(...)       ::StrikeEngine::Log::getClientLogger()->error(__VA_ARGS__)
+#define STRIKE_ERROR(...)       ::Strike::Log::getClientLogger()->error(__VA_ARGS__)
 
 /**
  * @brief Logs a warning message to the client logger.
  */
-#define STRIKE_WARN(...)        ::StrikeEngine::Log::getClientLogger()->warn(__VA_ARGS__)
+#define STRIKE_WARN(...)        ::Strike::Log::getClientLogger()->warn(__VA_ARGS__)
 
 /**
  * @brief Logs an informational message to the client logger.
  */
-#define STRIKE_INFO(...)        ::StrikeEngine::Log::getClientLogger()->info(__VA_ARGS__)
+#define STRIKE_INFO(...)        ::Strike::Log::getClientLogger()->info(__VA_ARGS__)
 
 /**
  * @brief Logs a trace-level message to the client logger.
  */
-#define STRIKE_TRACE(...)       ::StrikeEngine::Log::getClientLogger()->trace(__VA_ARGS__)
+#define STRIKE_TRACE(...)       ::Strike::Log::getClientLogger()->trace(__VA_ARGS__)
 
 /** @} */

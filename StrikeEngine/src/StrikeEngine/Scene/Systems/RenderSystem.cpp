@@ -16,7 +16,7 @@
 #include "StrikeEngine/Graphics/Renderer.h"
 #include "StrikeEngine/Graphics/FontRenderer.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     RenderSystem::RenderSystem() {}
 

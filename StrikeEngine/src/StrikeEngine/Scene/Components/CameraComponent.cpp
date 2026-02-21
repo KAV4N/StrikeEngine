@@ -8,7 +8,7 @@
 
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     REGISTER_COMPONENT(CameraComponent);
 

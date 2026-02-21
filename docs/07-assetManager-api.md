@@ -7,7 +7,7 @@ The `AssetManager` is a singleton that handles loading, caching, and lifecycle m
 ## Accessing the AssetManager
 
 ```cpp
-StrikeEngine::AssetManager& am = StrikeEngine::AssetManager::get();
+Strike::AssetManager& am = Strike::AssetManager::get();
 ```
 
 ---
@@ -54,11 +54,11 @@ Blocks until the asset is fully loaded and ready. Safe to use immediately after 
 
 ```cpp
 void MyScript::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
-    auto model = am.load<StrikeEngine::Model>("crate", "Assets/Models/crate.obj");
-    auto texture = am.load<StrikeEngine::Texture>("crate_tex", "Assets/Textures/crate.png");
-    auto audio = am.load<StrikeEngine::Audio>("explosion", "Assets/Sounds/explosion.wav");
+    auto model = am.load<Strike::Model>("crate", "Assets/Models/crate.obj");
+    auto texture = am.load<Strike::Texture>("crate_tex", "Assets/Textures/crate.png");
+    auto audio = am.load<Strike::Audio>("explosion", "Assets/Sounds/explosion.wav");
 }
 ```
 
@@ -70,10 +70,10 @@ Returns a placeholder immediately in `Loading` state. The asset becomes `Ready` 
 
 ```cpp
 void MyScript::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     // Kick off background loading
-    mTexture = am.loadAsync<StrikeEngine::Texture>("terrain_tex", "Assets/Textures/terrain.png");
+    mTexture = am.loadAsync<Strike::Texture>("terrain_tex", "Assets/Textures/terrain.png");
 }
 
 void MyScript::onUpdate(float deltaTime) {
@@ -97,10 +97,10 @@ Use `getAsset<T>()` to retrieve an already-loaded asset by its ID. This is the p
 
 ```cpp
 void MyScript::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     // Returns shared_ptr<Model>, or nullptr if not found or type mismatch
-    auto model = am.getAsset<StrikeEngine::Model>("player_model");
+    auto model = am.getAsset<Strike::Model>("player_model");
 
     if (model && model->isReady()) {
         // use model
@@ -112,9 +112,9 @@ For untyped access (when you only need to check existence or state):
 
 ```cpp
 void MyScript::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
-    std::shared_ptr<StrikeEngine::Asset> base = am.getAssetBase("player_model");
+    std::shared_ptr<Strike::Asset> base = am.getAssetBase("player_model");
     if (base) {
         STRIKE_INFO("Type: {}", base->getTypeName());
         STRIKE_INFO("Path: {}", base->getPath().string());
@@ -128,7 +128,7 @@ void MyScript::onStart() {
 
 ```cpp
 void MyScript::onUpdate(float deltaTime) {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     // Does an asset with this ID exist in the cache?
     if (am.hasAsset("terrain_tex")) { Assets. }
@@ -150,7 +150,7 @@ void MyScript::onUpdate(float deltaTime) {
 
 ```cpp
 void MyScript::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     // IDs of all fully ready assets
     std::vector<std::string> readyIds = am.getLoadedAssetIds();
@@ -170,7 +170,7 @@ void MyScript::onStart() {
 
 ```cpp
 void MyScript::onUpdate(float deltaTime) {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
     // Remove a single asset by ID - releases the shared_ptr from the cache
     am.removeAsset("temp_texture");
@@ -190,23 +190,23 @@ This example shows a script that spawns a new entity with a dynamically loaded m
 
 ```cpp
 // SpawnOnEvent.h
-std::shared_ptr<StrikeEngine::Model>   mSpawnModel;
-std::shared_ptr<StrikeEngine::Texture> mSpawnTexture;
+std::shared_ptr<Strike::Model>   mSpawnModel;
+std::shared_ptr<Strike::Texture> mSpawnTexture;
 ```
 
 ```cpp
 // SpawnOnEvent.cpp
 void SpawnOnEvent::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
-    mSpawnModel   = am.load<StrikeEngine::Model>("crate",     "Assets/Models/crate.obj");
-    mSpawnTexture = am.load<StrikeEngine::Texture>("crate_tex", "Assets/Textures/crate.png");
+    mSpawnModel   = am.load<Strike::Model>("crate",     "Assets/Models/crate.obj");
+    mSpawnTexture = am.load<Strike::Texture>("crate_tex", "Assets/Textures/crate.png");
 }
 
-void SpawnOnEvent::onEvent(StrikeEngine::Event& event) {
-    if (event.getEventType() != StrikeEngine::EventType::KeyPressed) return;
+void SpawnOnEvent::onEvent(Strike::Event& event) {
+    if (event.getEventType() != Strike::EventType::KeyPressed) return;
 
-    auto& keyEvent = static_cast<StrikeEngine::KeyPressedEvent&>(event);
+    auto& keyEvent = static_cast<Strike::KeyPressedEvent&>(event);
     if (keyEvent.getKeyCode() != STRIKE_KEY_E) return;
 
     if (!mSpawnModel || !mSpawnModel->isReady()) return;
@@ -216,19 +216,19 @@ void SpawnOnEvent::onEvent(StrikeEngine::Event& event) {
 
     entity.setWorldPosition(scriptEntity.getWorldPosition() + scriptEntity.getForward() * 3.0f);
 
-    auto& renderer = entity.addComponent<StrikeEngine::RendererComponent>();
+    auto& renderer = entity.addComponent<Strike::RendererComponent>();
     renderer.setModel("crate");
     renderer.setTexture("crate_tex");
 
-    auto& physics = entity.addComponent<StrikeEngine::PhysicsComponent>();
+    auto& physics = entity.addComponent<Strike::PhysicsComponent>();
     physics.setMass(10.0f);
 
     event.handled = true;
 }
 
 void SpawnOnEvent::onDestroy() {
-    StrikeEngine::AssetManager::get().removeAsset("crate");
-    StrikeEngine::AssetManager::get().removeAsset("crate_tex");
+    Strike::AssetManager::get().removeAsset("crate");
+    Strike::AssetManager::get().removeAsset("crate_tex");
 }
 
 REGISTER_SCRIPT(SpawnOnEvent)
@@ -240,18 +240,18 @@ REGISTER_SCRIPT(SpawnOnEvent)
 
 ```cpp
 // LevelLoader.h
-std::shared_ptr<StrikeEngine::Texture> mTerrainTex;
-std::shared_ptr<StrikeEngine::Model>   mTerrainModel;
+std::shared_ptr<Strike::Texture> mTerrainTex;
+std::shared_ptr<Strike::Model>   mTerrainModel;
 bool mAssetsApplied = false;
 ```
 
 ```cpp
 // LevelLoader.cpp
 void LevelLoader::onStart() {
-    auto& am = StrikeEngine::AssetManager::get();
+    auto& am = Strike::AssetManager::get();
 
-    mTerrainTex   = am.loadAsync<StrikeEngine::Texture>("terrain_tex",   "Assets/Textures/terrain.png");
-    mTerrainModel = am.loadAsync<StrikeEngine::Model>  ("terrain_model", "Assets/Models/terrain.obj");
+    mTerrainTex   = am.loadAsync<Strike::Texture>("terrain_tex",   "Assets/Textures/terrain.png");
+    mTerrainModel = am.loadAsync<Strike::Model>  ("terrain_model", "Assets/Models/terrain.obj");
 }
 
 void LevelLoader::onUpdate(float deltaTime) {
@@ -259,8 +259,8 @@ void LevelLoader::onUpdate(float deltaTime) {
 
     if (mTerrainTex->isReady() && mTerrainModel->isReady()) {
         auto terrain = getEntity().getScene()->getEntity("Terrain");
-        if (terrain && terrain.hasComponent<StrikeEngine::RendererComponent>()) {
-            auto& renderer = terrain.getComponent<StrikeEngine::RendererComponent>();
+        if (terrain && terrain.hasComponent<Strike::RendererComponent>()) {
+            auto& renderer = terrain.getComponent<Strike::RendererComponent>();
             renderer.setModel("terrain_model");
             renderer.setTexture("terrain_tex");
         }

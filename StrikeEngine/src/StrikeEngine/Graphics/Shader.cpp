@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace StrikeEngine {
+namespace Strike {
 
     Shader::Shader(const std::string& id)
         : mId(id), mRendererId(0) {

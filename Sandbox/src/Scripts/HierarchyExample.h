@@ -1,11 +1,11 @@
 #pragma once
 #include "StrikeEngine.h"
 
-class HierarchyExample : public StrikeEngine::Script {
+class HierarchyExample : public Strike::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;
-    void onEvent(StrikeEngine::Event& e) override;
+    void onEvent(Strike::Event& e) override;
 
 private:
     void advance();
@@ -28,7 +28,7 @@ private:
     int  mStep = -1;
     bool mSpaceWasDown = false;
 
-    StrikeEngine::Entity mRoot;
-    StrikeEngine::Entity mChild;
-    StrikeEngine::Entity mLabel;
+    Strike::Entity mRoot;
+    Strike::Entity mChild;
+    Strike::Entity mLabel;
 };

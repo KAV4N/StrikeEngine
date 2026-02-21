@@ -2,7 +2,7 @@
 #include "TextComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     REGISTER_COMPONENT(TextComponent)
 

@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Skybox rendering component

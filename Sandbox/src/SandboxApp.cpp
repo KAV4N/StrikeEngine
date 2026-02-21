@@ -3,9 +3,9 @@
 
 
 int main(int argc, char** argv) {
-    StrikeEngine::Application app;
+    Strike::Application app;
 
-    auto& world = StrikeEngine::World::get();
+    auto& world = Strike::World::get();
     world.loadScene("Assets/Scenes/HierarchyShowcase.xml");
 
     app.run();

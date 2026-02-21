@@ -4,7 +4,7 @@
 #include <pugixml.hpp>
 #include <mutex>
 
-namespace StrikeEngine {
+namespace Strike {
     class AssetManager;
 
     /**

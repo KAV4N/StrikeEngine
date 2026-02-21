@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
     /**
      * @brief Key for identifying instance batches
      * 

@@ -68,7 +68,7 @@ StrikeEngine exposes its entire public API through a single header.
 #include <StrikeEngine.h>
 
 int main(int argc, char** argv) {
-    StrikeEngine::Application app;
+    Strike::Application app;
     app.run();
     return 0;
 }

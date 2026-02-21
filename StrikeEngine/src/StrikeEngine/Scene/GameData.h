@@ -6,7 +6,7 @@
 #include <optional>
 #include <vector>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Variant type to hold different data types for game data storage

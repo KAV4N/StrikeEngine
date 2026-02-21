@@ -9,7 +9,7 @@
 class btRigidBody;
 class btCollisionShape;
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Structure representing a raycast hit result.

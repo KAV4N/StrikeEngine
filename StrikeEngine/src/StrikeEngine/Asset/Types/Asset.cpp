@@ -3,7 +3,7 @@
 #include "StrikeEngine/Asset/AssetManager.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
     Asset::Asset(const std::string& id, const std::filesystem::path& path)
         : mId(id),
         mPath(path),

@@ -9,7 +9,7 @@
 // Forward declarations
 struct GLFWwindow;
 
-namespace StrikeEngine {
+namespace Strike {
 
     // Forward declaration
     class GraphicsContext;

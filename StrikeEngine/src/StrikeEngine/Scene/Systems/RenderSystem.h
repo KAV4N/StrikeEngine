@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Model;
     class Texture;

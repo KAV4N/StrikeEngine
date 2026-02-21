@@ -4,7 +4,7 @@
 #include "StrikeEngine/Scene/Systems/RenderSystem.h"
 #include <glad/glad.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Base class for all render passes in the rendering pipeline

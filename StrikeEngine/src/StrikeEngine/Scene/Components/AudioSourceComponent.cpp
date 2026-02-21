@@ -4,7 +4,7 @@
 #include "StrikeEngine/Asset/Types/Audio.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     REGISTER_COMPONENT(AudioSourceComponent);
 

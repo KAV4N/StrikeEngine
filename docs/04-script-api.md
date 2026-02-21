@@ -1,6 +1,6 @@
 # Scripting API
 
-Scripts are how you add gameplay logic to entities in StrikeEngine. A script is a C++ class that inherits from `StrikeEngine::Script`, overrides lifecycle methods, and is registered with the engine so it can be instantiated by name from XML scene files.
+Scripts are how you add gameplay logic to entities in StrikeEngine. A script is a C++ class that inherits from `Strike::Script`, overrides lifecycle methods, and is registered with the engine so it can be instantiated by name from XML scene files.
 
 ---
 
@@ -11,7 +11,7 @@ Scripts are how you add gameplay logic to entities in StrikeEngine. A script is 
 #pragma once
 #include "StrikeEngine.h"
 
-class MyScript : public StrikeEngine::Script {
+class MyScript : public Strike::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;
@@ -77,7 +77,7 @@ setEntity() → onCreate()          ← first time only
 ### Getting the Entity
 
 ```cpp
-const StrikeEngine::Entity& entity = getEntity();
+const Strike::Entity& entity = getEntity();
 ```
 
 ### Activity Control
@@ -96,20 +96,20 @@ All component methods are templated on the component type:
 
 ```cpp
 // Add
-auto& rb = addComponent<StrikeEngine::PhysicsComponent>();
+auto& rb = addComponent<Strike::PhysicsComponent>();
 
 // Get (throws if not present) - mutable and const overloads available
-auto& renderer = getComponent<StrikeEngine::RendererComponent>();
-const auto& renderer = getComponent<StrikeEngine::RendererComponent>(); // from const context
+auto& renderer = getComponent<Strike::RendererComponent>();
+const auto& renderer = getComponent<Strike::RendererComponent>(); // from const context
 
 // Check
-if (hasComponent<StrikeEngine::LightComponent>()) { ... }
+if (hasComponent<Strike::LightComponent>()) { ... }
 
 // Remove
-removeComponent<StrikeEngine::LightComponent>();
+removeComponent<Strike::LightComponent>();
 
 // Get or add
-auto& logic = getOrAddComponent<StrikeEngine::LogicComponent>();
+auto& logic = getOrAddComponent<Strike::LogicComponent>();
 ```
 
 ### scriptEntity Alias
@@ -117,7 +117,7 @@ auto& logic = getOrAddComponent<StrikeEngine::LogicComponent>();
 The protected member `scriptEntity` is a reference to the internal `mEntity` and can be used directly in subclass implementations as a shorthand:
 
 ```cpp
-class MyScript : public StrikeEngine::Script {
+class MyScript : public Strike::Script {
     void onUpdate(float dt) override {
         scriptEntity.move(glm::vec3(0, 0, 1) * dt); // same as getEntity() but writable
     }
@@ -162,7 +162,7 @@ Multiple scripts of **different types** can be attached to a single entity via `
 Scripts are managed by the `LogicComponent`. You can add and query scripts programmatically at runtime rather than through XML:
 
 ```cpp
-auto& logic = entity.getComponent<StrikeEngine::LogicComponent>();
+auto& logic = entity.getComponent<Strike::LogicComponent>();
 
 // Add - will log STRIKE_CORE_ERROR and return existing instance if type is already attached
 MyScript* script = logic.addScript<MyScript>();
@@ -206,14 +206,14 @@ The `ScriptRegistry` is the factory system that backs `REGISTER_SCRIPT`. You gen
 
 ```cpp
 // Check if a script type is registered
-bool exists = StrikeEngine::ScriptRegistry::hasScriptFactory("MyScript");
+bool exists = Strike::ScriptRegistry::hasScriptFactory("MyScript");
 
 // Instantiate by name
-auto script = StrikeEngine::ScriptRegistry::createScript("MyScript");
+auto script = Strike::ScriptRegistry::createScript("MyScript");
 // returns std::unique_ptr<Script>, or nullptr if not registered
 
 // List all registered scripts
-auto names = StrikeEngine::ScriptRegistry::getRegisteredScripts();
+auto names = Strike::ScriptRegistry::getRegisteredScripts();
 ```
 
 ---
@@ -244,7 +244,7 @@ Scripts are instantiated in the order they appear. The `type` value must exactly
 #pragma once
 #include "StrikeEngine.h"
 
-class CameraMovement : public StrikeEngine::Script {
+class CameraMovement : public Strike::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;
@@ -265,9 +265,9 @@ private:
 
 void CameraMovement::onStart()
 {
-    StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+    Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 
-    auto [x, y] = StrikeEngine::Input::getMouseXY();
+    auto [x, y] = Strike::Input::getMouseXY();
     mLastX = x;
     mLastY = y;
 }
@@ -277,27 +277,27 @@ void CameraMovement::onUpdate(float deltaTime)
     glm::vec3 move(0.0f);
     const float speed = 20.0f * deltaTime;
 
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_D)) move.x += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_A)) move.x -= speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_W)) move.z -= speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_S)) move.z += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_SPACE)) move.y += speed;
-    if (StrikeEngine::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_D)) move.x += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_A)) move.x -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_W)) move.z -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_S)) move.z += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE)) move.y += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
 
     if (glm::length(move) > 0.0f) {
         scriptEntity.move(move);
     }
 
     // Toggle rotation and cursor mode on P press (edge detection)
-    bool pPressed = StrikeEngine::Input::isKeyPressed(STRIKE_KEY_P);
+    bool pPressed = Strike::Input::isKeyPressed(STRIKE_KEY_P);
     if (pPressed && !mPKeyWasPressed) {
         mRotationEnabled = !mRotationEnabled;
 
         if (mRotationEnabled) {
-            StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Locked);
+            Strike::Input::setCursorMode(Strike::CursorMode::Locked);
             mFirstMouse = true; // reset to avoid jump when re-enabling
         } else {
-            StrikeEngine::Input::setCursorMode(StrikeEngine::CursorMode::Normal);
+            Strike::Input::setCursorMode(Strike::CursorMode::Normal);
         }
     }
     mPKeyWasPressed = pPressed;
@@ -305,7 +305,7 @@ void CameraMovement::onUpdate(float deltaTime)
     if (!mRotationEnabled)
         return;
 
-    auto [x, y] = StrikeEngine::Input::getMouseXY();
+    auto [x, y] = Strike::Input::getMouseXY();
 
     if (mFirstMouse) {
         mLastX = x;

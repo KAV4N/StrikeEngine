@@ -6,7 +6,7 @@
 #include <string>
 #include "StrikeEngine/Asset/Loaders/AssetLoader.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Asset;
     class Template;

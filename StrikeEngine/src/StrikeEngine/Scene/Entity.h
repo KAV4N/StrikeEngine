@@ -10,7 +10,7 @@
 #include "StrikeEngine/Core/Log.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Scene;
 
@@ -410,8 +410,8 @@ namespace StrikeEngine {
 
 namespace std {
     template<>
-    struct hash<StrikeEngine::Entity> {
-        std::size_t operator()(const StrikeEngine::Entity& e) const noexcept {
+    struct hash<Strike::Entity> {
+        std::size_t operator()(const Strike::Entity& e) const noexcept {
             return std::hash<entt::entity>()(e.getHandle());
         }
     };

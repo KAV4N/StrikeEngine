@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace StrikeEngine {
+namespace Strike {
 
     ModelParser::ModelParser() {}
     ModelParser::~ModelParser() {}

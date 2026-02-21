@@ -2,7 +2,7 @@
 #include "RenderPass.h"
 #include <glm/glm.hpp>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Skybox;
     class Renderer;

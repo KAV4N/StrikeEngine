@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     class KeyEvent : public Event {
     public:

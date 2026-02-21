@@ -5,7 +5,7 @@
 #include "StrikeEngine/Scene/Components/LogicComponent.h"
 #include "StrikeEngine/Scene/World.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     void ScriptSystem::onUpdate(float dt) {
         Scene* scene = World::get().getScene();

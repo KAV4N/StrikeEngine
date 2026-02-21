@@ -20,7 +20,7 @@ void HierarchyExample::onStart() {
     mLabel = scene->createEntity();
     mLabel.setTag("showcase_label");
 
-    auto& text = mLabel.addComponent<StrikeEngine::TextComponent>();
+    auto& text = mLabel.addComponent<Strike::TextComponent>();
     text.setText("Entity Showcase — Press e btn to start");
     text.setColor(glm::uvec3(255, 220, 60));
     text.setPosition(glm::vec2(0.05f, 0.05f));
@@ -33,9 +33,9 @@ void HierarchyExample::onUpdate(float dt) {
 
 }
 
-void HierarchyExample::onEvent(StrikeEngine::Event& event) {
-       if (event.getEventType() == StrikeEngine::EventType::KeyTyped) {
-        auto& mouseEvent = static_cast<StrikeEngine::KeyEvent&>(event);
+void HierarchyExample::onEvent(Strike::Event& event) {
+       if (event.getEventType() == Strike::EventType::KeyTyped) {
+        auto& mouseEvent = static_cast<Strike::KeyEvent&>(event);
         if (mouseEvent.getKeyCode() == STRIKE_KEY_E) {
             advance();
         } 
@@ -125,7 +125,7 @@ void HierarchyExample::updateLabel() {
 
     int idx = glm::clamp(mStep, 0, 15);
 
-    mLabel.getComponent<StrikeEngine::TextComponent>().setText(
+    mLabel.getComponent<Strike::TextComponent>().setText(
         std::string("Entity Showcase  [e btn = next]\nStep ")
         + std::to_string(mStep) + ": "
         + labels[idx]
@@ -144,7 +144,7 @@ void HierarchyExample::spawnRoot() {
     mRoot.setScale(glm::vec3(1));
     mRoot.setEulerAngles(glm::vec3(0));
 
-    auto& renderer = mRoot.addComponent<StrikeEngine::RendererComponent>();
+    auto& renderer = mRoot.addComponent<Strike::RendererComponent>();
     renderer.setMesh("box", 0);
     renderer.setColor(glm::uvec3(255,255,255));
 
@@ -154,7 +154,7 @@ void HierarchyExample::spawnRoot() {
 void HierarchyExample::changeColor() {
     if (!mRoot.isValid()) return;
 
-    mRoot.getComponent<StrikeEngine::RendererComponent>()
+    mRoot.getComponent<Strike::RendererComponent>()
          .setColor(glm::uvec3(220,50,50));
 
     STRIKE_INFO("Color changed to red.");
@@ -169,7 +169,7 @@ void HierarchyExample::spawnChild() {
     mChild.setPosition(glm::vec3(3,0,0));
     mChild.setScale(glm::vec3(0.5f));
 
-    auto& renderer = mChild.addComponent<StrikeEngine::RendererComponent>();
+    auto& renderer = mChild.addComponent<Strike::RendererComponent>();
     renderer.setMesh("box", 0);
     renderer.setColor(glm::uvec3(60,180,255));
 
@@ -229,11 +229,11 @@ void HierarchyExample::reparentChild() {
     
     // Change colors to show the swap
     // Old parent (now child) becomes green
-    mRoot.getComponent<StrikeEngine::RendererComponent>()
+    mRoot.getComponent<Strike::RendererComponent>()
          .setColor(glm::uvec3(60, 255, 60));
     
     // Old child (now parent) becomes purple
-    mChild.getComponent<StrikeEngine::RendererComponent>()
+    mChild.getComponent<Strike::RendererComponent>()
          .setColor(glm::uvec3(180, 60, 255));
     
     // Move the new parent (old child) to a new visible location

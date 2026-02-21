@@ -11,7 +11,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Asset;
     class Model;

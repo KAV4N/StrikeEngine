@@ -204,8 +204,8 @@ Get the index of the selected mesh (or empty if not set).
 Programmatic usage:
 
 ```cpp
-StrikeEngine::Entity entity = scene->createEntity();
-auto& renderer = entity.addComponent<StrikeEngine::RendererComponent>();
+Strike::Entity entity = scene->createEntity();
+auto& renderer = entity.addComponent<Strike::RendererComponent>();
 renderer.setMesh("box", 0);
 ```
 
@@ -321,7 +321,7 @@ Get the angular damping factor.
 Programmatic usage:
 
 ```cpp
-auto& physics = entity.addComponent<StrikeEngine::PhysicsComponent>();
+auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 physics.setCanCollide(true);
 physics.setAnchored(false);
 physics.setMass(1.0f);
@@ -403,7 +403,7 @@ void CameraMovement::spawnLight() {
     auto newEnt = scene->createEntity();
 
     newEnt.setPosition(mCameraEntity.getPosition());
-    auto& pointLight = newEnt.addComponent<StrikeEngine::LightComponent>();
+    auto& pointLight = newEnt.addComponent<Strike::LightComponent>();
 
     float r = static_cast<float>(rand() % 256);
     float g = static_cast<float>(rand() % 256);
@@ -474,7 +474,7 @@ Get the pivot point as normalized coordinates (0-1).
 Programmatic usage:
 
 ```cpp
-entity.getComponent<StrikeEngine::TextComponent>().setText(
+entity.getComponent<Strike::TextComponent>().setText(
     "Time of Day: " + std::to_string(static_cast<int>(mTimeOfDay)) + ":00"
 );
 ```
@@ -569,9 +569,9 @@ Get the maximum distance for distance attenuation.
 Programmatic usage:
 
 ```cpp
-StrikeEngine::Entity ent = scene->getEntity("shotSound");
+Strike::Entity ent = scene->getEntity("shotSound");
 if (ent.isValid()) {
-    auto& audio = ent.getComponent<StrikeEngine::AudioSourceComponent>();
+    auto& audio = ent.getComponent<Strike::AudioSourceComponent>();
     if (audioPlayed == false) {
         audio.play();
         audioPlayed = true;
@@ -660,7 +660,7 @@ Remove all scripts from this component.
 Programmatic usage:
 
 ```cpp
-auto& logic = entity.addComponent<StrikeEngine::LogicComponent>();
+auto& logic = entity.addComponent<Strike::LogicComponent>();
 
 // Add - logs STRIKE_CORE_ERROR and returns existing instance if type is already attached
 logic.addScript<DeathTimer>();

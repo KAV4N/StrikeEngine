@@ -15,7 +15,7 @@
 
 #include "StrikeEngine/Asset/AssetManager.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     World& World::get()
     {

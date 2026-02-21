@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
 
     class FrameBuffer;
     class Renderer;

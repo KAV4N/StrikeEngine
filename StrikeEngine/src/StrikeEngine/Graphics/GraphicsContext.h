@@ -4,7 +4,7 @@
 
 struct GLFWwindow;
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Manages the OpenGL graphics context

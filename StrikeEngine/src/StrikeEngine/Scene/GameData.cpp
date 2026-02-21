@@ -1,7 +1,7 @@
 #include "strikepch.h"
 #include "GameData.h"
 
-namespace StrikeEngine {
+namespace Strike {
 
     // Integer operations
     void GameData::setInt(const std::string& key, int value) {

@@ -2,7 +2,7 @@
 #include "LogicComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 
-namespace StrikeEngine {
+namespace Strike {
     REGISTER_COMPONENT(LogicComponent)
       
     void LogicComponent::clearScripts() {

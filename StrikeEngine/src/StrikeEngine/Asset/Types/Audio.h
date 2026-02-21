@@ -3,7 +3,7 @@
 #include "Asset.h"
 #include <filesystem>
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Audio asset type.

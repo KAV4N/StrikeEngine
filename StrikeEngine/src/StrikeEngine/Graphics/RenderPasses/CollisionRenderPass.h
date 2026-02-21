@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     class Shader;
     class Renderer;

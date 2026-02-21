@@ -166,18 +166,18 @@ int getMouseButton() const; // Mouse button code
 Override `onEvent()` in your script class to receive events:
 
 ```cpp
-class MyScript : public StrikeEngine::Script {
+class MyScript : public Strike::Script {
 public:
-    void onEvent(StrikeEngine::Event& event) override;
+    void onEvent(Strike::Event& event) override;
 };
 ```
 
 ### Usage Pattern
 
 ```cpp
-void MyScript::onEvent(StrikeEngine::Event& event) {
-    if (event.getEventType() == StrikeEngine::EventType::MouseButtonPressed) {
-        auto& mouseEvent = static_cast<StrikeEngine::MouseButtonPressedEvent&>(event);
+void MyScript::onEvent(Strike::Event& event) {
+    if (event.getEventType() == Strike::EventType::MouseButtonPressed) {
+        auto& mouseEvent = static_cast<Strike::MouseButtonPressedEvent&>(event);
 
         if (mouseEvent.getMouseButton() == STRIKE_MOUSE_BUTTON_LEFT) {
             // handle left click

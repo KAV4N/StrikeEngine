@@ -1,7 +1,7 @@
 #pragma once
 #include "StrikeEngine.h"
 
-class AssetShowcase : public StrikeEngine::Script
+class AssetShowcase : public Strike::Script
 {
 public:
     void onStart() override;
@@ -42,8 +42,8 @@ private:
     bool        mWaitingAsync = false;
     std::string mAsyncWaitId;
 
-    StrikeEngine::Entity mLabel;
-    StrikeEngine::Entity mTemplateRoot;
+    Strike::Entity mLabel;
+    Strike::Entity mTemplateRoot;
 
     static constexpr const char* ID_MODEL_SYNC    = "showcase_model_sync";
     static constexpr const char* ID_MODEL_ASYNC   = "showcase_model_async";

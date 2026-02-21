@@ -10,7 +10,7 @@
 #include <typeindex>
 #include <unordered_map>
 
-namespace StrikeEngine {
+namespace Strike {
     class Event;
     class KeyPressedEvent;
     class KeyReleasedEvent;

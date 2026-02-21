@@ -4,7 +4,7 @@
 #include "StrikeEngine/Core/Core.h"
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     /**
      * @brief Enumeration of event types.

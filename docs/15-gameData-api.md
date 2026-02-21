@@ -16,7 +16,7 @@ Data is stored in memory only — persistence across sessions must be handled ex
 Returns the singleton instance of `GameData`.
 
 ```cpp
-StrikeEngine::GameData& data = StrikeEngine::GameData::get();
+Strike::GameData& data = Strike::GameData::get();
 ```
 
 ---
@@ -90,7 +90,7 @@ Prints all stored key-value pairs to the console including their types. Intended
 ## Usage Example
 
 ```cpp
-auto& data = StrikeEngine::GameData::get();
+auto& data = Strike::GameData::get();
 
 // Store values
 data.setInt("score", 100);

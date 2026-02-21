@@ -19,7 +19,7 @@
 #include <glm/gtx/euler_angles.hpp>
 
 
-namespace StrikeEngine {
+namespace Strike {
 
     Scene::Scene(const std::filesystem::path& path, const std::string& tag)
         : mId(tag), mSun() {

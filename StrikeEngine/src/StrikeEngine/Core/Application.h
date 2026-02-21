@@ -9,7 +9,7 @@
 
 #include <memory>
 
-namespace StrikeEngine {
+namespace Strike {
     class World;
 
     /**

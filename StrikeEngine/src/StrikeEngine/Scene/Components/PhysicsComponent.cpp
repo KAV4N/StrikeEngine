@@ -3,7 +3,7 @@
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include <btBulletDynamicsCommon.h>
 
-namespace StrikeEngine {
+namespace Strike {
     REGISTER_COMPONENT(PhysicsComponent)
 
     void PhysicsComponent::deserialize(const pugi::xml_node& node) {
