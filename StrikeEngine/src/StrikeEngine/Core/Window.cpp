@@ -46,6 +46,12 @@ namespace StrikeEngine {
         shutdown();
     }
 
+    void Window::setSize(unsigned int width, unsigned int height) {
+        glfwSetWindowSize(mImpl->window, (int)width, (int)height);
+        mImpl->data.width = width;
+        mImpl->data.height = height;
+    }
+
     void Window::init(const WindowProps& props) {
         mImpl->data.title = props.title;
         mImpl->data.width = props.width;

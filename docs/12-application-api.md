@@ -77,6 +77,10 @@ Returns the current window width in pixels.
 #### `unsigned int getHeight() const`
 Returns the current window height in pixels.
 
+#### `void setSize(unsigned int width, unsigned int height)`
+Sets the window dimensions in pixels. Triggers a resize event after a short debounce delay.
+
+
 #### `void setVSync(bool enabled)`
 Enable or disable VSync (vertical synchronization).
 
@@ -97,6 +101,7 @@ Window& window = Application::get().getWindow();
 unsigned int width  = window.getWidth();
 unsigned int height = window.getHeight();
 
+window.setSize(1920, 1080);
 window.setVSync(true);
 window.setWindowTitle("My Game");
 
@@ -104,8 +109,6 @@ double elapsed = window.getTime();
 ```
 
 ### Notes
-
-**PIMPL Idiom** - The Window class uses the PIMPL (Pointer to Implementation) idiom with a private `WindowImpl` struct, which hides GLFW implementation details from users.
 
 **Restricted Methods** - Private methods like `getNativeWindow()`, `setEventCallback()`, `onUpdate()`, `init()`, and `shutdown()` are not accessible to users. They are reserved for use by the `Application` and `Input` classes only.
 

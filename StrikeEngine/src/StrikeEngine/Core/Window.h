@@ -58,6 +58,14 @@ namespace StrikeEngine {
          * @return Current window height in pixels.
          */
         unsigned int getHeight() const;        
+
+
+        /**
+         * @brief Set the window dimensions.
+         * @param width New window width in pixels.
+         * @param height New window height in pixels.
+         */
+        void setSize(unsigned int width, unsigned int height);
         
         /**
          * @brief Enable or disable VSync.
