@@ -26,7 +26,7 @@ namespace StrikeEngine {
 
         if (!asset->mNeedsPostLoad){
             asset->postLoad();
-            asset->setLoadingState(AssetState::Ready);
+            asset->setState(AssetState::Ready);
         }else{
             LoadingTask postLoadTask;
             postLoadTask.placeholderAsset = asset;
@@ -38,7 +38,7 @@ namespace StrikeEngine {
 
     void AssetLoader::loadAsync(const std::string& id, const std::filesystem::path& path, std::shared_ptr<Asset> placeholderAsset) {
         std::lock_guard<std::mutex> lock(mMutex);
-        placeholderAsset->setLoadingState(AssetState::Loading);
+        placeholderAsset->setState(AssetState::Loading);
 
         if (mLoadingTasks.find(id) != mLoadingTasks.end()) {
             return;
@@ -58,7 +58,7 @@ namespace StrikeEngine {
             auto userAsset = task.placeholderAsset;
             if (userAsset->mNeedsPostLoad && !task.future.valid()){
                 userAsset->postLoad();
-                userAsset->setLoadingState(AssetState::Ready);
+                userAsset->setState(AssetState::Ready);
                 it = mLoadingTasks.erase(it);
             }
             else if (task.future.valid() && task.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -67,10 +67,10 @@ namespace StrikeEngine {
                 if (loadedAsset) {
                     swapData(userAsset, loadedAsset);
                     userAsset->postLoad();
-                    userAsset->setLoadingState(AssetState::Ready);
+                    userAsset->setState(AssetState::Ready);
                 }
                 else {
-                    userAsset->setLoadingState(AssetState::Failed);
+                    userAsset->setState(AssetState::Failed);
                     //AssetManager::get().removeAsset(userAsset->getId()); 
                 }
                 
@@ -99,7 +99,7 @@ namespace StrikeEngine {
             }
             
             if (task.placeholderAsset) {
-                task.placeholderAsset->setLoadingState(AssetState::Failed);
+                task.placeholderAsset->setState(AssetState::Failed);
             }
         }
         

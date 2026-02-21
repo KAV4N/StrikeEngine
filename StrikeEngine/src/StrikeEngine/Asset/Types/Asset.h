@@ -34,6 +34,8 @@ namespace StrikeEngine {
          */
         virtual ~Asset();
 
+        
+
         /**
          * @brief Returns the static type name of the asset.
          * @return Static type name string.
@@ -42,7 +44,7 @@ namespace StrikeEngine {
 
         const std::string& getId() const;
 
-        AssetState getLoadingState() const;
+        AssetState getState() const;
         const std::filesystem::path& getPath() const;
 
 
@@ -50,11 +52,6 @@ namespace StrikeEngine {
         bool isLoading() const;
         bool hasFailed() const;     
 
-        /**
-         * @brief Serialize the asset to an XML node.
-         * @param parent The parent XML node to which this asset's data will be added.
-         */
-        virtual void toNode(pugi::xml_node parent);
     protected:
         /**
          * @brief Called after the asset has been loaded to perform any additional setup.
@@ -65,7 +62,7 @@ namespace StrikeEngine {
          * @brief Set the loading state of the asset.
          * @param state The new loading state.
          */
-        void setLoadingState(AssetState state);
+        void setState(AssetState state);
 
         /**
          * @brief Add the root prefix (@) to a given path.

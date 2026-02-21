@@ -22,7 +22,7 @@ namespace StrikeEngine {
         return mId;
     }
 
-    AssetState Asset::getLoadingState() const {
+    AssetState Asset::getState() const {
         return mLoadingState;
     }
 
@@ -45,14 +45,8 @@ namespace StrikeEngine {
         return mLoadingState == AssetState::Failed;
     }
 
-    void Asset::setLoadingState(AssetState state) {
+    void Asset::setState(AssetState state) {
         mLoadingState = state;
-    }
-
-    void Asset::toNode(pugi::xml_node parent) {
-        pugi::xml_node node = parent.append_child(getTypeName().c_str());
-        node.append_attribute("id") = mId.c_str();
-        node.append_attribute("src") = addRootPrefix(mPath).generic_string().c_str();
     }
 
     std::filesystem::path Asset::addRootPrefix(const std::filesystem::path& path) {

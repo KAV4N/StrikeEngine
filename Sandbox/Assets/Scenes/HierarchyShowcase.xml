@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene tag="EntityShowcaseScene">
+
+   
+    <assets>
+        <model   id="box"     src="../Objects/box/box.obj"/>
+        <cubeMap id="skybox"  src="@/Assets/Skyboxes/mountainSkybox/"/>
+    </assets>
+
+    <!-- Directional light (sun) -->
+    <sun color="255, 240, 210" intensity="1" rotation="-120,0,0" shadows="true"/>
+    <skybox cubeMap="skybox"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Entities
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <entities>
+
+        <!-- ── Camera / controller ──────────────────────────────────────
+             The EntityShowcase script is attached here so it always has
+             a valid scene reference. The camera itself lets you orbit the
+             cubes that the script spawns.
+        ──────────────────────────────────────────────────────────────── -->
+        <entity tag="controller" position="0,5,20" rotation="0,0,0" scale="1,1,1">
+            <components>
+                <camera
+                    near="0.1"
+                    far="500.0"
+                    fov="60.0"
+                    x="0.0" y="0.0"
+                    width="1" height="1"
+                    order="1"
+                />
+                <audiolistener/>
+                <light color="255, 245, 200" intensity="1" radius="30.0"/>
+                <logic>
+                    <!-- Basic fly-cam so you can inspect the cubes -->
+                    <script type="CameraMovement"/>
+                    <!-- The actual entity-management showcase -->
+                    <script type="HierarchyExample"/>
+                    <script type="SwapScene"/>
+                </logic>
+            </components>
+        </entity>
+
+        <!-- ── Ground plane (static reference so the scene isn't empty) ─
+             A flat, anchored box stretched along XZ gives a visual floor.
+        ──────────────────────────────────────────────────────────────── -->
+        <entity tag="ground" position="0,-1,0" rotation="0,0,0" scale="30,0.2,30">
+            <components>
+                <renderer model="box" mesh="0" color="100,100,100"/>
+                <physics  anchored="true" collide="true" mass="0"/>
+            </components>
+        </entity>
+    </entities>
+</scene>

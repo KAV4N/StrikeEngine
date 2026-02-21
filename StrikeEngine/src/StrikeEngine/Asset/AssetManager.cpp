@@ -7,6 +7,8 @@
 #include "StrikeEngine/Asset/Loaders/TextureLoader.h"
 #include "StrikeEngine/Asset/Loaders/AudioLoader.h"
 
+#include "ModelParser.h"
+
 namespace StrikeEngine {
 
     AssetManager& AssetManager::get() {
@@ -151,6 +153,37 @@ namespace StrikeEngine {
     AssetLoader* AssetManager::getLoader(const std::string& typeName) {
         auto it = mLoaders.find(typeName);
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
+    }
+
+    std::shared_ptr<Asset> AssetManager::loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder,  bool async){
+        auto loader = getLoader(assetType);
+        if (!loader) {
+            STRIKE_CORE_ERROR("No loader found for asset type '{}'", assetType);
+            placeholder->setState(AssetState::Failed);
+            return placeholder;
+        }
+
+        if (assetType == Template::getStaticTypeName()) {
+            ModelParser parser;
+            if (!parser.parseModel(filePath)) {
+                placeholder->setState(AssetState::Failed);
+                return placeholder;
+            }
+            filePath.replace_extension(".tmpl");
+        }
+
+
+        placeholder->setState(AssetState::Loading);
+        mLoadedAssets[id] = placeholder;
+
+        if (async){
+            loader->loadAsync(id, filePath, placeholder);
+            return placeholder;
+        }
+        else{
+            return loader->load(id, filePath);
+        }
+
     }
 
     void AssetManager::deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct) {

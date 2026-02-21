@@ -286,7 +286,7 @@ namespace StrikeEngine {
          * @param parent The new parent Entity.
          * @note If parent is invalid, the entity becomes a root entity.
          */
-        void setParent(Entity parent);
+        void setParent(const Entity& parent);
 
         /**
          * @brief Remove the entity from its parent.
@@ -300,7 +300,7 @@ namespace StrikeEngine {
          * @param child The child Entity to add.
          * @note if child is invalid, no action is taken.
          */
-        void addChild(Entity child);
+        void addChild(const Entity& child);
 
         /**
          * @brief Get the child entities of this entity.

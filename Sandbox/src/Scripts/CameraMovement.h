@@ -5,13 +5,12 @@ class CameraMovement : public StrikeEngine::Script {
 public:
     void onStart() override;
     void onUpdate(float deltaTime) override;
-    void onEvent(StrikeEngine::Event& event) override;
-
-    void swapScene();
-    void spawnLight();
-    void printStats(const std::string& state);
 
 private:
-    StrikeEngine::Entity mCameraEntity;
-    int idCounter = 0;
+    float mLastX = 0.0f;
+    float mLastY = 0.0f;
+    bool  mFirstMouse = true;
+    float mSensitivity = 0.1f;
+    bool  mRotationEnabled = true;
+    bool  mPKeyWasPressed = false;
 };

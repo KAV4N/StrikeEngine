@@ -179,11 +179,8 @@ namespace StrikeEngine {
         return parent ? Entity(parent->getEntityId(), mScene) : Entity();
     }
 
-    void Entity::setParent(Entity parent) {
+    void Entity::setParent(const Entity& parent) {
         STRIKE_ASSERT(isValid(), "Entity::setParent called on invalid entity");
-        STRIKE_ASSERT(parent.isValid(), "Entity::setParent called with invalid parent");
-        STRIKE_ASSERT(parent != *this, "Entity cannot be parent of itself");
-
         mScene->setParent(*this, parent);
     }
 
@@ -192,11 +189,8 @@ namespace StrikeEngine {
         mScene->getGraphNode(mHandle)->removeFromParent();
     }
 
-    void Entity::addChild(Entity child) {
+    void Entity::addChild(const Entity& child) {
         STRIKE_ASSERT(isValid(), "Entity::addChild called on invalid entity");
-        STRIKE_ASSERT(child.isValid(), "Entity::addChild called with invalid child");
-        STRIKE_ASSERT(child != *this, "Entity cannot be child of itself");
-
         mScene->addChild(*this, child);
     }
 
@@ -224,8 +218,6 @@ namespace StrikeEngine {
 
     bool Entity::isCollidingWith(const Entity& other) const {
         STRIKE_ASSERT(isValid(), "Entity::isCollidingWith called on invalid entity");
-        STRIKE_ASSERT(other.isValid(), "Entity::isCollidingWith called with invalid entity");
-
         auto* physics = World::get().mPhysicsSystem.get();
         STRIKE_ASSERT(physics, "PhysicsSystem not initialized");
 

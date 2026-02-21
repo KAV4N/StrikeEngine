@@ -35,8 +35,8 @@ namespace StrikeEngine {
             return nullptr;
         }
 
-        std::string sceneId = sceneNode.attribute("sceneId").as_string("DefaultScene");
-        auto scene = std::make_unique<Scene>(sceneId, path);
+        std::string sceneTag = sceneNode.attribute("tag").as_string("DefaultScene");
+        auto scene = std::make_unique<Scene>(path, sceneTag);
 
         pugi::xml_node assetsNode = sceneNode.child("assets");
         if (assetsNode) {

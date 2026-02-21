@@ -21,11 +21,11 @@ namespace StrikeEngine {
     std::shared_ptr<Model> ModelLoader::loadModelWithAssimp(const std::string& id, const std::filesystem::path& filePath) {
         auto asset = std::make_shared<Model>(id, filePath);
         
-        asset->setLoadingState(AssetState::Loading);
+        asset->setState(AssetState::Loading);
 
         if (!std::filesystem::exists(filePath)) {
             STRIKE_CORE_ERROR("Model file does not exist: {}", filePath.string());
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 
@@ -40,7 +40,7 @@ namespace StrikeEngine {
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             STRIKE_CORE_ERROR("Assimp failed to load model {}: {}", filePath.string(), importer.GetErrorString());
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 
@@ -51,7 +51,7 @@ namespace StrikeEngine {
         }
         catch (const std::exception& e) {
             STRIKE_CORE_ERROR("Error processing model {}: {}", filePath.string(), e.what());
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
     }

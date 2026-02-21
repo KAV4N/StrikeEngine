@@ -3,7 +3,6 @@
 #include "TemplateLoader.h"
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/AssetManager.h"
-#include "StrikeEngine/Asset/ModelParser.h"
 
 
 namespace StrikeEngine {
@@ -13,21 +12,21 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> TemplateLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto templateAsset = std::make_shared<Template>(id, path);
-        templateAsset->setLoadingState(AssetState::Loading);
+        templateAsset->setState(AssetState::Loading);
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());
 
         if (!result) {
             STRIKE_CORE_ERROR("Failed to load template XML: {}. Error description: {}", path.string(), result.description());
-            templateAsset->setLoadingState(AssetState::Failed);
+            templateAsset->setState(AssetState::Failed);
             return templateAsset;
         }
 
         pugi::xml_node templateNode = doc.child("template");
         if (!templateNode) {
             STRIKE_CORE_ERROR("Invalid template XML: missing <template> root node in {}", path.string());
-            templateAsset->setLoadingState(AssetState::Failed);
+            templateAsset->setState(AssetState::Failed);
             return templateAsset;
         }
 
@@ -53,19 +52,33 @@ namespace StrikeEngine {
 
     void TemplateLoader::loadAssets(std::shared_ptr<Template> templateAsset,
                                     const pugi::xml_node& assetsNode,
-                                    const std::filesystem::path& basePath
-                                    ) 
+                                    const std::filesystem::path& basePath) 
     {
         auto& assetManager = AssetManager::get();
         for (pugi::xml_node assetNode : assetsNode.children()) {
             std::string assetId = assetNode.attribute("id").as_string();
-            std::filesystem::path src = assetNode.attribute("src").as_string();
-            if (assetId != templateAsset->getId()) {
-                assetManager.deserialize(assetNode, basePath, true);
-                auto asset = assetManager.getAssetBase(assetId);
+            std::filesystem::path src = std::filesystem::weakly_canonical(basePath / assetNode.attribute("src").as_string());
+
+            if (assetId == templateAsset->getId()) {
+                STRIKE_CORE_WARN("Template '{}': skipping self-referencing asset by id '{}'", templateAsset->getId(), assetId);
+                continue;
+            }
+
+            if (src == std::filesystem::weakly_canonical(templateAsset->getPath())) {
+                STRIKE_CORE_WARN("Template '{}': skipping self-referencing asset by path '{}'", templateAsset->getId(), src.string());
+                continue;
+            }
+
+            if (assetManager.hasAsset(assetId)) {
                 if (assetNode.name() != Template::getStaticTypeName()) {
                     templateAsset->mReferencedAssets.push_back(assetId);
                 }
+                continue;
+            }
+
+            assetManager.deserialize(assetNode, basePath, true);
+            if (assetNode.name() != Template::getStaticTypeName()) {
+                templateAsset->mReferencedAssets.push_back(assetId);
             }
         }
     }

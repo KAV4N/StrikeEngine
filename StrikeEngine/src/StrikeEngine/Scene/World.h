@@ -18,7 +18,7 @@ namespace StrikeEngine {
     class AudioSystem;
     class Skybox;
     class Sun;
-    struct Event;
+    class Event;
 
     /**
      * @brief Structure for Fog settings.

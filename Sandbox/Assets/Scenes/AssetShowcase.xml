@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AssetShowcaseScene.xml
+    ======================
+    A minimal scene that runs the AssetShowcase script.
+
+    The scene pre-loads a few assets via XML <assets> (exactly as a normal
+    scene would), then the script loads the rest at runtime – both sync and
+    async – to demonstrate every AssetManager code path.
+
+    Controls
+    ─────────
+    SPACE           – advance to the next showcase step
+    W/A/S/D         – fly camera
+    SPACE / L-SHIFT – camera up / down  (handled by CameraMovement)
+    Arrow keys      – rotate camera
+
+    Audio files expected
+    ─────────────────────
+    Assets/Sounds/shot.mp3      – short one-shot SFX  (already in the project)
+    Assets/Sounds/bgm.mp3       – longer looping music track
+    Assets/Sounds/ambient.mp3   – environmental loop (e.g. wind / room tone)
+
+    If bgm.mp3 / ambient.mp3 don't exist yet, copy any MP3 into those paths;
+    the script gracefully logs a warning and skips playback if a file is missing.
+-->
+<scene>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Pre-loaded assets (XML path — these are ready before onStart fires)
+         The script deliberately reloads some of these at runtime to show that
+         AssetManager::load() returns the cached instance on the second call.
+    ═══════════════════════════════════════════════════════════════════════════ -->
+    <assets>
+        <!-- Model: the trusty box – used as a stand-in for all cube visuals -->
+        <model   id="box"           src="../Objects/box/box.obj"/>
+
+        <!-- Skybox – the script will also load this via code in steps 5 & 6 -->
+        <cubeMap id="skyboxMain"    src="@/Assets/Skyboxes/plainSkybox"/>
+
+        <!-- Textures: pre-load the track textures so the template can use them -->
+        <texture id="BASE_baseColor"  src="@/Assets/Objects/tempoTrack/BASE_baseColor.png"/>
+        <texture id="WINGS_baseColor" src="@/Assets/Objects/tempoTrack/WINGS_baseColor.png"/>
+
+        <!-- Template (the track model scene) -->
+        <template id="track"        src="../Objects/tempoTrack/scene.gltf"/>
+
+        <!-- Audio: only shot.mp3 is guaranteed to exist; bgm & ambient are optional -->
+        <audio   id="shot"          src="../Sounds/shot.mp3"/>
+    </assets>
+
+    <sun    color="255, 240, 210" intensity="1" rotation="-120,0,0" shadows="true"/>
+    <skybox cubeMap="skyboxMain"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Entities
+    ═══════════════════════════════════════════════════════════════════════════ -->
+    <entities>
+
+        <!-- ── Camera + script host ──────────────────────────────────────────
+             AssetShowcase is attached here.  CameraMovement lets you fly
+             around to inspect spawned geometry and test the spatial audio.
+        ──────────────────────────────────────────────────────────────────── -->
+        <entity tag="controller" position="0,3,18" rotation="0,0,0" scale="1,1,1">
+            <components>
+                <camera
+                    near="0.1"
+                    far="500.0"
+                    fov="60.0"
+                    x="0.0" y="0.0"
+                    width="1" height="1"
+                    order="1"
+                />
+                <audiolistener/>
+                <light color="255, 245, 200" intensity="1" radius="40.0"/>
+                <logic>
+                    <script type="CameraMovement"/>
+                    <script type="AssetShowcase"/>
+                    <script type="SwapScene"/>
+                </logic>
+            </components>
+        </entity>
+
+        <!-- ── Ground plane ──────────────────────────────────────────────────
+             A wide, flat box so spawned cubes have something to sit on.
+        ──────────────────────────────────────────────────────────────────── -->
+        <entity tag="ground" position="0,-1,0" rotation="0,0,0" scale="40,0.2,20">
+            <components>
+                <renderer model="box" mesh="0" color="70,70,80"/>
+            </components>
+        </entity>
+
+        <!-- ── Column markers ────────────────────────────────────────────────
+             Static labelled pillars mark the X positions where the script
+             will spawn its showcase cubes, making it easy to see each step.
+
+             X = -6  sync model
+             X = -3  async model
+             X =  0  sync texture
+             X =  3  async texture
+             X =  6  template instance
+             X = 10  spatial audio source (spawned at runtime by the script)
+        ──────────────────────────────────────────────────────────────────── -->
+
+        <!-- Sync Model marker -->
+        <entity tag="marker_sync_model" position="-6,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="255,255,255"/>
+            </components>
+        </entity>
+        <entity tag="label_sync_model" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+
+        <!-- Async Model marker -->
+        <entity tag="marker_async_model" position="-3,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="255,200,80"/>
+            </components>
+        </entity>
+        <entity tag="label_async_model" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+
+        <!-- Sync Texture marker -->
+        <entity tag="marker_sync_tex" position="0,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="255,128,0"/>
+            </components>
+        </entity>
+        <entity tag="label_sync_tex" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+
+        <!-- Async Texture marker -->
+        <entity tag="marker_async_tex" position="3,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="0,180,180"/>
+            </components>
+        </entity>
+        <entity tag="label_async_tex" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+
+        <!-- Template marker -->
+        <entity tag="marker_template" position="6,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="180,80,255"/>
+            </components>
+        </entity>
+        <entity tag="label_template" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+
+        <!-- Spatial audio marker (script spawns the real entity with AudioSource at runtime) -->
+        <entity tag="marker_spatial" position="10,0,0" rotation="0,0,0" scale="0.15,4,0.15">
+            <components>
+                <renderer model="box" mesh="0" color="255,80,255"/>
+            </components>
+        </entity>
+        <entity tag="label_spatial" position="0,0,0" rotation="0,0,0" scale="1,1,1">
+        </entity>
+    </entities>
+</scene>

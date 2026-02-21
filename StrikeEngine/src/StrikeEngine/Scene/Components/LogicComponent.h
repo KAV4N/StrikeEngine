@@ -63,10 +63,11 @@ namespace StrikeEngine {
         void deserialize(const pugi::xml_node& node) override;
         
         /**
-         * @brief Add a script of the specified type to this component
+         * @brief Add a script of the specified type to this component.
+         * If a script of the same type already exists, logs an error and returns the existing one.
          * 
          * @tparam T Script type (must derive from Script)
-         * @return Pointer to the newly created script instance
+         * @return Pointer to the newly created script instance, or existing one if duplicate
          * @note The component takes ownership of the script
          */
         template<typename T>
@@ -129,23 +130,31 @@ namespace StrikeEngine {
         
     private:
         /**
-         * @brief Add a script by type name (internal use)
+         * @brief Add a script by type name (internal use for deserialization)
          * 
          * @param scriptTypeName Name of the script type to create
-         * @return Pointer to the newly created script
+         * @return Pointer to the newly created script, or existing one if duplicate
          */
-       Script* addScript(const std::string& scriptTypeName);
+        Script* addScript(const std::string& scriptTypeName);
        
     private:
-        std::vector<std::unique_ptr<Script>> mScripts; ///< Collection of attached scripts
+        std::vector<std::unique_ptr<Script>> mScripts;      ///< Collection of attached scripts
+        std::vector<std::string> mScriptTypeNames;          ///< Type names matching mScripts entries
     };
 
     template<typename T>
     T* LogicComponent::addScript() {
         static_assert(std::is_base_of_v<Script, T>, "T must derive from Script");
-        
+
+        // Check if a script of this type is already attached
+        if (hasScript<T>()) {
+            STRIKE_CORE_ERROR("LogicComponent::addScript: Script of type '{}' is already attached to this component!", typeid(T).name());
+            return getScript<T>();
+        }
+
         auto script = std::make_unique<T>();
         T* scriptPtr = script.get();
+        mScriptTypeNames.push_back(typeid(T).name());
         mScripts.push_back(std::move(script));
         
         return scriptPtr;
@@ -154,14 +163,14 @@ namespace StrikeEngine {
     template<typename T>
     void LogicComponent::removeScript() {
         static_assert(std::is_base_of_v<Script, T>, "T must derive from Script");
-        
-        mScripts.erase(
-            std::remove_if(mScripts.begin(), mScripts.end(),
-                [](const std::unique_ptr<Script>& script) {
-                    return dynamic_cast<T*>(script.get()) != nullptr;
-                }),
-            mScripts.end()
-        );
+
+        for (size_t i = 0; i < mScripts.size(); ++i) {
+            if (dynamic_cast<T*>(mScripts[i].get()) != nullptr) {
+                mScripts.erase(mScripts.begin() + i);
+                mScriptTypeNames.erase(mScriptTypeNames.begin() + i);
+                return; // Only one instance can exist, early-out is safe
+            }
+        }
     }
 
     template<typename T>

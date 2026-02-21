@@ -6,6 +6,10 @@
 #include "RenderPasses/SkyboxRenderPass.h"
 #include "RenderPasses/ShadowMapPass.h"
 
+#ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
+    #include "RenderPasses/CollisionRenderPass.h"
+#endif
+
 #include "StrikeEngine/Scene/World.h"
 #include "StrikeEngine/Scene/Components/CameraComponent.h"
 #include "StrikeEngine/Asset/Types/Model.h"
@@ -33,6 +37,10 @@ namespace StrikeEngine {
         addPass<LightCullingPass>(PassStage::PreRender, *this);
         addPass<SkyboxRenderPass>(PassStage::MainRender, *this);
         addPass<GeometryRenderPass>(PassStage::MainRender, *this);
+
+        #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
+            addPass<CollisionRenderPass>(PassStage::MainRender, *this);
+        #endif
         
         setupScreenQuad();
         

@@ -25,6 +25,8 @@ namespace StrikeEngine {
         STRIKE_CORE_ASSERT(!sInstance, "Application already exists!");
         sInstance = this;
 
+        StrikeEngine::Log::init();
+
         mWindow = std::make_unique<Window>();
         mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 

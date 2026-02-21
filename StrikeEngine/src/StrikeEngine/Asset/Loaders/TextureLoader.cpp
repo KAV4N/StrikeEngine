@@ -23,14 +23,14 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> TextureLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto texture = std::make_shared<Texture>(id, path);
-        texture->setLoadingState(AssetState::Loading);
+        texture->setState(AssetState::Loading);
 
         int width, height, channels;
         unsigned char* data = loadImageData(path, width, height, channels);
 
         if (!data) {
             STRIKE_CORE_ERROR("Failed to load texture image: {}", path.string());
-            texture->setLoadingState(AssetState::Failed);
+            texture->setState(AssetState::Failed);
             return texture;
         }
 
@@ -107,11 +107,11 @@ namespace StrikeEngine {
 
     std::shared_ptr<Asset> CubeMapLoader::loadAssetInternal(const std::string& id, const std::filesystem::path& path, bool async) {
         auto cubemap = std::make_shared<CubeMap>(id, path);
-        cubemap->setLoadingState(AssetState::Loading);
+        cubemap->setState(AssetState::Loading);
 
         if (!std::filesystem::is_directory(path)) {
             STRIKE_CORE_ERROR("Cubemap path is not a directory: {}", path.string());
-            cubemap->setLoadingState(AssetState::Failed);
+            cubemap->setState(AssetState::Failed);
             return cubemap;
         }
 
@@ -159,7 +159,7 @@ namespace StrikeEngine {
         if (loadSuccess) {
             cubemap->setCubeMapData(width, height, channels, faceData);
         } else {
-            cubemap->setLoadingState(AssetState::Failed);
+            cubemap->setState(AssetState::Failed);
         }
 
         // Free all loaded image data

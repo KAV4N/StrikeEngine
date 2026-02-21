@@ -137,7 +137,7 @@ namespace StrikeEngine {
          */
         void deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct = false);
 
-        private:
+    private:
         AssetManager();
         ~AssetManager();
 
@@ -148,6 +148,10 @@ namespace StrikeEngine {
 
         void removeAssetInternal(const std::string& id);
         AssetLoader* getLoader(const std::string& typeName);
+
+        std::shared_ptr<Asset> loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder, bool async);
+
+        
 
         friend class Asset;
         friend class SceneLoader;
@@ -163,8 +167,11 @@ namespace StrikeEngine {
     std::shared_ptr<T> AssetManager::load(const std::string& id, const std::filesystem::path& filePath) {
         static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
         
+        auto placeholder = std::make_shared<T>(id, filePath);
+
         if (mShuttingDown) {
-            return nullptr;
+            placeholder->setState(AssetState::Failed);
+            return placeholder;
         }
         
         // Check if asset already exists with this ID
@@ -178,32 +185,28 @@ namespace StrikeEngine {
                     T::getStaticTypeName(),
                     it->second->getTypeName()
                 );
-                return nullptr;
+                placeholder->setState(AssetState::Failed);
+                return placeholder;
             }
             
             // Type matches, return existing asset
             return std::static_pointer_cast<T>(it->second);
         }
 
-        auto loader = getLoader(T::getStaticTypeName());
-        if (!loader) {
-            STRIKE_CORE_ERROR("No loader found for asset type '{}'", T::getStaticTypeName());
-            return nullptr;
-        }
 
-        auto loadedAsset = loader->load(id, filePath);
-        if (loadedAsset) {
-            mLoadedAssets[id] = loadedAsset;
-        }
-        return std::static_pointer_cast<T>(loadedAsset);
+        
+        return std::static_pointer_cast<T>(loadInternal(id, filePath, T::getStaticTypeName(), placeholder, false));
     }
 
     template<typename T>
     std::shared_ptr<T> AssetManager::loadAsync(const std::string& id, const std::filesystem::path& filePath) {
         static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
         
+        auto placeholder = std::make_shared<T>(id, filePath);
+
         if (mShuttingDown) {
-            return nullptr;
+            placeholder->setState(AssetState::Failed);
+            return placeholder;
         }
         
         // Check if asset already exists with this ID
@@ -217,25 +220,15 @@ namespace StrikeEngine {
                     T::getStaticTypeName(),
                     it->second->getTypeName()
                 );
-                return nullptr;
+                placeholder->setState(AssetState::Failed);
+                return placeholder;
             }
             
             // Type matches, return existing asset
             return std::static_pointer_cast<T>(it->second);
         }
 
-        auto loader = getLoader(T::getStaticTypeName());
-        if (!loader) {
-            STRIKE_CORE_ERROR("No loader found for asset type '{}'", T::getStaticTypeName());
-            return nullptr;
-        }
-
-        auto placeholder = std::make_shared<T>(id, filePath);
-        placeholder->setLoadingState(AssetState::Loading);
-        mLoadedAssets[id] = placeholder;
-
-        loader->loadAsync(id, filePath, placeholder);
-        return placeholder;
+        return std::static_pointer_cast<T>(loadInternal(id, filePath, T::getStaticTypeName(), placeholder, true));
     }
 
     template<typename T>

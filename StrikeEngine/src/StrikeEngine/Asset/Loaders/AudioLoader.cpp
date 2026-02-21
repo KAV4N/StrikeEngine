@@ -27,18 +27,18 @@ namespace StrikeEngine {
 
     std::shared_ptr<Audio> AudioLoader::loadAudioFile(const std::string& id, const std::filesystem::path& path) {
         auto asset = std::make_shared<Audio>(id, path);
-        asset->setLoadingState(AssetState::Loading);
+        asset->setState(AssetState::Loading);
 
         if (!std::filesystem::exists(path)) {
             STRIKE_CORE_ERROR("Audio file does not exist: {}", path.string());
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 
         ma_decoder decoder;
         if (ma_decoder_init_file(path.string().c_str(), nullptr, &decoder) != MA_SUCCESS) {
             STRIKE_CORE_ERROR("Failed to initialize audio decoder for file: {}", path.string());
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 
@@ -47,7 +47,7 @@ namespace StrikeEngine {
         if (ma_decoder_get_length_in_pcm_frames(&decoder, &frameCount) != MA_SUCCESS) {
             STRIKE_CORE_ERROR("Failed to get audio length for file: {}", path.string());
             ma_decoder_uninit(&decoder);
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 

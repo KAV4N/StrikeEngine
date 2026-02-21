@@ -1,99 +1,96 @@
 #include "strikepch.h"
 #include "GameData.h"
-#include <fstream>
 
 namespace StrikeEngine {
 
-    GameData::GameData() {
-    }
-
     // Integer operations
     void GameData::setInt(const std::string& key, int value) {
-        setValue<int>(key, value);
+        mData[key] = value;
     }
 
     int GameData::getInt(const std::string& key, int defaultValue) const {
-        auto result = getValue<int>(key);
-        return result.has_value() ? result.value() : defaultValue;
+        auto it = mData.find(key);
+        if (it == mData.end()) return defaultValue;
+        try { return std::get<int>(it->second); }
+        catch (const std::bad_variant_access&) { return defaultValue; }
     }
 
     // Float operations
     void GameData::setFloat(const std::string& key, float value) {
-        setValue<float>(key, value);
+        mData[key] = value;
     }
 
     float GameData::getFloat(const std::string& key, float defaultValue) const {
-        auto result = getValue<float>(key);
-        return result.has_value() ? result.value() : defaultValue;
+        auto it = mData.find(key);
+        if (it == mData.end()) return defaultValue;
+        try { return std::get<float>(it->second); }
+        catch (const std::bad_variant_access&) { return defaultValue; }
     }
 
     // Double operations
     void GameData::setDouble(const std::string& key, double value) {
-        setValue<double>(key, value);
+        mData[key] = value;
     }
 
     double GameData::getDouble(const std::string& key, double defaultValue) const {
-        auto result = getValue<double>(key);
-        return result.has_value() ? result.value() : defaultValue;
+        auto it = mData.find(key);
+        if (it == mData.end()) return defaultValue;
+        try { return std::get<double>(it->second); }
+        catch (const std::bad_variant_access&) { return defaultValue; }
     }
 
     // Boolean operations
     void GameData::setBool(const std::string& key, bool value) {
-        setValue<bool>(key, value);
+        mData[key] = value;
     }
 
     bool GameData::getBool(const std::string& key, bool defaultValue) const {
-        auto result = getValue<bool>(key);
-        return result.has_value() ? result.value() : defaultValue;
+        auto it = mData.find(key);
+        if (it == mData.end()) return defaultValue;
+        try { return std::get<bool>(it->second); }
+        catch (const std::bad_variant_access&) { return defaultValue; }
     }
 
     // String operations
     void GameData::setString(const std::string& key, const std::string& value) {
-        setValue<std::string>(key, value);
+        mData[key] = value;
     }
 
     std::string GameData::getString(const std::string& key, const std::string& defaultValue) const {
-        auto result = getValue<std::string>(key);
-        return result.has_value() ? result.value() : defaultValue;
+        auto it = mData.find(key);
+        if (it == mData.end()) return defaultValue;
+        try { return std::get<std::string>(it->second); }
+        catch (const std::bad_variant_access&) { return defaultValue; }
     }
 
     // Key management
     bool GameData::hasKey(const std::string& key) const {
-        std::lock_guard<std::mutex> lock(mDataMutex);
         return mData.find(key) != mData.end();
     }
 
     void GameData::deleteKey(const std::string& key) {
-        std::lock_guard<std::mutex> lock(mDataMutex);
         mData.erase(key);
     }
 
     void GameData::deleteAll() {
-        std::lock_guard<std::mutex> lock(mDataMutex);
         mData.clear();
     }
 
     std::vector<std::string> GameData::getAllKeys() const {
-        std::lock_guard<std::mutex> lock(mDataMutex);
         std::vector<std::string> keys;
         keys.reserve(mData.size());
-
         for (const auto& pair : mData) {
             keys.push_back(pair.first);
         }
-
         return keys;
     }
 
     // Utility
     size_t GameData::getDataCount() const {
-        std::lock_guard<std::mutex> lock(mDataMutex);
         return mData.size();
     }
 
     void GameData::printAllData() const {
-        std::lock_guard<std::mutex> lock(mDataMutex);
-
         std::cout << "=== GameData Contents (" << mData.size() << " entries) ===" << std::endl;
 
         if (mData.empty()) {
@@ -114,7 +111,7 @@ namespace StrikeEngine {
                 else {
                     std::cout << val << " (" << typeid(val).name() << ")";
                 }
-                }, value);
+            }, value);
 
             std::cout << std::endl;
         }
@@ -122,4 +119,4 @@ namespace StrikeEngine {
         std::cout << "=======================================" << std::endl;
     }
 
-} 
+}

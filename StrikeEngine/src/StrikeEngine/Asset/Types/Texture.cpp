@@ -41,7 +41,7 @@ namespace StrikeEngine {
 
         if (mData.empty() || mWidth == 0 || mHeight == 0) {
             STRIKE_CORE_ERROR("Cannot create texture: no data loaded");
-            setLoadingState(AssetState::Failed);
+            setState(AssetState::Failed);
             return;
         }
 
@@ -127,7 +127,7 @@ namespace StrikeEngine {
 
         if (!hasValidData || mWidth == 0 || mHeight == 0) {
             STRIKE_CORE_ERROR("Cannot create cubemap: incomplete face data");
-            setLoadingState(AssetState::Failed);
+            setState(AssetState::Failed);
             return;
         }
 

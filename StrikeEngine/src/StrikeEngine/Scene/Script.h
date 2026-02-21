@@ -159,8 +159,7 @@ namespace StrikeEngine {
         }
 
     protected:
-
-        bool mActive = true; /// Whether the script's entity is active
+        Entity& scriptEntity = mEntity;
 
     private:
         friend class ScriptComponent;
@@ -175,6 +174,7 @@ namespace StrikeEngine {
     private:
         bool mStarted = false;
         Entity mEntity;
+        bool mActive = true; 
         
         std::unordered_map<float, float> mTimers;
     };

@@ -122,26 +122,14 @@ namespace StrikeEngine {
             STRIKE_CORE_ERROR("Invalid asset node: missing id or src attribute");
 
             auto asset = std::make_shared<AssetType>(id, src);
-            asset->setLoadingState(AssetState::Failed);
+            asset->setState(AssetState::Failed);
             return asset;
         }
 
         auto asset = std::make_shared<AssetType>(id, src);
 
         std::filesystem::path fullPath = resolvePath(src, basePath);
-
-        if constexpr (std::is_same_v<AssetType, Template>) {
-            ModelParser parser;
-            if (!parser.parseModel(fullPath)) {
-                if (!std::filesystem::exists(fullPath)) {
-                    STRIKE_CORE_ERROR("Template model file does not exist: {}", fullPath.string());
-                    asset->setLoadingState(AssetState::Failed);
-                    return asset;
-                }
-            }
-            fullPath.replace_extension(".tmpl");
-        }
-
+        
         // always load synchronously
         return AssetManager::get().load<AssetType>(id, fullPath);
     }

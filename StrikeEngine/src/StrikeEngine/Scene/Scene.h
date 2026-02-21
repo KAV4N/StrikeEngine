@@ -28,11 +28,11 @@ namespace StrikeEngine {
     public:
         /**
          * @brief Construct a new Scene object.
-         * @param id Unique identifier for the scene.
+         * @param tag for the scene.
          * @param path File path to the scene asset.
          * @note This does not load the scene; for loading use SceneLoader.
          */
-        Scene(const std::string& id, const std::filesystem::path& path);
+        Scene(const std::filesystem::path& path, const std::string& tag = "");
         ~Scene();
 
         Scene(const Scene&) = delete;
@@ -117,7 +117,7 @@ namespace StrikeEngine {
        * @param entity The EnTT entity handle to destroy.
        * @note This will also remove the entity from its parent's children list if applicable.
        */
-        void destroy(entt::entity entity);
+        void destroy(entt::entity handle);
 
         /**
          * @brief Check if one entity is an ancestor of another in the scene graph.
@@ -220,7 +220,7 @@ namespace StrikeEngine {
          * @brief Get the unique identifier of the scene.
          * @return The scene's unique identifier.
          */
-        const std::string& getId() { return mId; }
+        const std::string& getTag() { return mId; }
 
     private:
         friend class Entity;
@@ -239,7 +239,6 @@ namespace StrikeEngine {
         void updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty = false);
 
         void onPhysicsComponentDestroy(entt::registry& registry, entt::entity entity);
-        void onPhysicsComponentCreate(entt::registry& registry, entt::entity entity);
         void onAudioSourceDestroy(entt::registry& registry, entt::entity entity);
         void setupComponentProtection();
 

@@ -52,6 +52,11 @@ namespace StrikeEngine {
             entity.setEulerAngles(parseVector3(rotStr));
             entity.setScale(parseVector3(scaleStr));
             entity.setActive(active);
+            
+            // Warn on template nesting
+            if (entityNode.attribute("template")) {
+                STRIKE_CORE_WARN("Template '{}': template nesting is not supported — 'template' attribute on entity will be ignored", getId());
+            }
 
             // Parse tag
             std::string tag = entityNode.attribute("tag").as_string("");

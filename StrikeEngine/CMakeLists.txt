@@ -79,55 +79,70 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIR}/miniaudio
 )
 
-# Linking
+# Platform-specific linking
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    GLFW 
-    Glad 
-    assimp 
-    pugixml::pugixml 
-    BulletDynamics 
-    BulletCollision 
+    GLFW
+    Glad
+    assimp
+    pugixml::pugixml
+    BulletDynamics
+    BulletCollision
     LinearMath
-    opengl32
     freetype
 )
 
-# Compile defs
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC opengl32)
+elseif(UNIX)
+    find_package(OpenGL REQUIRED)
+    find_package(Threads REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::GL)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
+endif()
+
+# Compile definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     CRT_SECURE_NO_WARNINGS
-    PLATFORM_WINDOWS
     GLFW_INCLUDE_NONE
     $<$<CONFIG:Debug>:STRIKE_DEBUG>
     $<$<CONFIG:Release>:STRIKE_RELEASE>
     $<$<CONFIG:Dist>:STRIKE_DIST>
+    $<$<BOOL:${STRIKE_COLLISION_DEBUG_EXPERIMENTAL}>:STRIKE_COLLISION_DEBUG_EXPERIMENTAL>
 )
 
 # ============================================================================
-# FUNCTION TO SETUP ENGINE RESOURCES FOR GAME PROJECTS
+# FUNCTION TO SETUP ENGINE RESOURCES AND GAME ASSETS
+# TARGET_NAME  - the game executable target
+# ASSETS_DIR   - the source directory where the user keeps their assets
 # ============================================================================
 set(STRIKE_ENGINE_RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res CACHE PATH "StrikeEngine res directory")
 
-function(strike_setup_resources TARGET_NAME)
+function(strike_setup TARGET_NAME ASSETS_DIR)
+    get_filename_component(ASSETS_NAME "${ASSETS_DIR}" NAME)
+
     if(WIN32)
-        # Debug: Create junction link for fast development
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/res
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
             COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/res\" \"${STRIKE_ENGINE_RES_DIR}\"">
-            COMMENT "Setting up engine resources link for Debug configuration"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+            COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}\" \"${ASSETS_DIR}\"">
+            COMMENT "Creating junction links for res and ${ASSETS_NAME} (Debug)"
         )
     else()
-        # Debug: Create symlink 
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove $<TARGET_FILE_DIR:${TARGET_NAME}>/res
-            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink ${STRIKE_ENGINE_RES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/res
-            COMMENT "Setting up engine resources link for Debug"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink "${STRIKE_ENGINE_RES_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+            COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink "${ASSETS_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+            COMMENT "Creating symlinks for res and ${ASSETS_NAME} (Debug)"
         )
     endif()
 
-    # Release: Copy entire res directory
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/res
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory ${STRIKE_ENGINE_RES_DIR} $<TARGET_FILE_DIR:${TARGET_NAME}>/res
-        COMMENT "Copying engine resources for Release/Dist configuration"
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory "${STRIKE_ENGINE_RES_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory "${ASSETS_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+        COMMENT "Copying res and ${ASSETS_NAME} (Release/Dist)"
     )
 endfunction()

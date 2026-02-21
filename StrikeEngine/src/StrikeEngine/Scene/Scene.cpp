@@ -21,8 +21,8 @@
 
 namespace StrikeEngine {
 
-    Scene::Scene(const std::string& id, const std::filesystem::path& path)
-        : mId(id), mSun() { 
+    Scene::Scene(const std::filesystem::path& path, const std::string& tag)
+        : mId(tag), mSun() {
         setupComponentProtection();
     }
 
@@ -30,12 +30,9 @@ namespace StrikeEngine {
     }
 
     void Scene::setupComponentProtection() {
-        
-        mRegistry.on_construct<PhysicsComponent>().connect<&Scene::onPhysicsComponentCreate>(this);
         mRegistry.on_destroy<PhysicsComponent>().connect<&Scene::onPhysicsComponentDestroy>(this);
         mRegistry.on_destroy<AudioSourceComponent>().connect<&Scene::onAudioSourceDestroy>(this);
     }
-
 
     void Scene::setSkybox(const std::string& cubeMapId) {
         mSkyboxCubeMapId = cubeMapId;
@@ -62,7 +59,7 @@ namespace StrikeEngine {
                 return Entity(entity, this);
             }
         }
-        return Entity(); 
+        return Entity();
     }
 
     std::shared_ptr<GraphNode> Scene::getGraphNode(entt::entity entity) {
@@ -83,12 +80,9 @@ namespace StrikeEngine {
 
     Entity Scene::createEntity() {
         auto entity = mRegistry.create();
-        // Create graph node
         auto graphNode = std::make_shared<GraphNode>(entity);
         mGraphNodes[entity] = graphNode;
-
-        Entity entityWrapper(entity, this);
-        return entityWrapper;
+        return Entity(entity, this);
     }
 
     Entity Scene::createEntity(const Entity& parent) {
@@ -100,31 +94,12 @@ namespace StrikeEngine {
     }
 
     void Scene::setParent(const Entity& child, const Entity& parent) {
-        if (!child.isValid() || !parent.isValid()) {
-            STRIKE_ASSERT(false, "Invalid entity in setParent");
-            return;
-        }
+        STRIKE_ASSERT(child.isValid(), "Scene::setParent called with invalid child entity");
+        STRIKE_ASSERT(child.getHandle() != parent.getHandle(), "Entity cannot be parent of itself");
+        STRIKE_ASSERT(!isAncestor(child, parent), "Scene::setParent would create circular hierarchy");
 
-        entt::entity childHandle = child.getHandle();
-        entt::entity parentHandle = parent.getHandle();
-
-        if (childHandle == parentHandle) {
-            STRIKE_ASSERT(false, "Entity cannot be parent of itself");
-            return;
-        }
-
-        if (isAncestor(child, parent)) {
-            STRIKE_ASSERT(false, "Circular hierarchy detected");
-            return;
-        }
-
-        auto childNode = getGraphNode(childHandle);
-        auto parentNode = getGraphNode(parentHandle);
-
-        if (!childNode || !parentNode) {
-            STRIKE_ASSERT(childNode && parentNode, "Graph nodes not found");
-            return;
-        }
+        auto childNode = getGraphNode(child.getHandle());
+        auto parentNode = getGraphNode(parent.getHandle());
 
         childNode->setParent(parentNode);
     }
@@ -134,18 +109,13 @@ namespace StrikeEngine {
     }
 
     bool Scene::isAncestor(const Entity& ancestor, const Entity& descendant) const {
-        if (!ancestor.isValid() || !descendant.isValid()) {
-            STRIKE_CORE_WARN("isAncestor called with invalid entity");
-            return false;
-        }
+        STRIKE_ASSERT(ancestor.isValid(), "Scene::isAncestor called with invalid ancestor entity");
+        STRIKE_ASSERT(descendant.isValid(), "Scene::isAncestor called with invalid descendant entity");
 
         auto ancestorNode = getGraphNode(ancestor.getHandle());
         auto descendantNode = getGraphNode(descendant.getHandle());
-
-        if (!ancestorNode || !descendantNode) {
-            STRIKE_CORE_WARN("isAncestor: Graph nodes not found");
-            return false;
-        }
+        STRIKE_ASSERT(ancestorNode, "Scene::isAncestor: ancestor graph node not found");
+        STRIKE_ASSERT(descendantNode, "Scene::isAncestor: descendant graph node not found");
 
         auto currentNode = descendantNode->getParent();
         while (currentNode) {
@@ -160,7 +130,6 @@ namespace StrikeEngine {
     bool Scene::isDescendant(const Entity& descendant, const Entity& ancestor) const {
         return isAncestor(ancestor, descendant);
     }
-
 
     void Scene::updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty) {
         if (!node) return;
@@ -185,7 +154,6 @@ namespace StrikeEngine {
             node->mWorldMatrix = worldMatrix;
             node->mIsDirty = false;
 
-            // Update camera
             if (mRegistry.all_of<CameraComponent>(entity)) {
                 auto& renderer = Renderer::get();
                 auto& camera = mRegistry.get<CameraComponent>(entity);
@@ -193,13 +161,12 @@ namespace StrikeEngine {
             }
         }
 
-        // Update children
         for (auto& child : node->getChildren()) {
             updateNodeTransforms(child, wasDirty);
         }
     }
 
-    void Scene::destroy(entt::entity entity) {
+      void Scene::destroy(entt::entity entity) {
         if (!mRegistry.valid(entity)) {
             STRIKE_CORE_WARN("Attempted to destroy invalid entity");
             return;
@@ -221,11 +188,9 @@ namespace StrikeEngine {
     }
 
     void Scene::shutdown() {
-        
-        mRegistry.on_construct<PhysicsComponent>().disconnect<&Scene::onPhysicsComponentCreate>(this);
         mRegistry.on_destroy<PhysicsComponent>().disconnect<&Scene::onPhysicsComponentDestroy>(this);
         mRegistry.on_destroy<AudioSourceComponent>().disconnect<&Scene::onAudioSourceDestroy>(this);
-        
+
         mGraphNodes.clear();
         mRegistry.clear();
     }
@@ -234,14 +199,10 @@ namespace StrikeEngine {
         World::get().mPhysicsSystem->removePhysics(entity);
     }
 
-    void Scene::onPhysicsComponentCreate(entt::registry& registry, entt::entity entity) {
-        // Physics initialization if needed
-    }
 
     void Scene::onAudioSourceDestroy(entt::registry& registry, entt::entity entity) {
         World::get().mAudioSystem->stopEntity(entity);
     }
-
 
     void Scene::onUpdate(float dt) {
         for (auto& [entity, node] : mGraphNodes) {
@@ -254,4 +215,4 @@ namespace StrikeEngine {
     void Scene::onRender() {
     }
 
-} 
+}
