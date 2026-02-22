@@ -59,8 +59,6 @@ namespace Strike {
 
     void LightCullingPass::execute(const CameraRenderData& cameraData)
     {
-        const auto& camera = cameraData.camera;
-
         // Update light SSBO
         if (!cameraData.pointLights.empty())
         {
@@ -118,7 +116,6 @@ namespace Strike {
         mLightCullShader->bind();
         mLightCullShader->setMat4("uViewMatrix", viewMatrix);
 
-        uint32_t numWorkGroups = (TOTAL_CLUSTERS + 127) / 128; // Proper ceiling division
         mLightCullShader->dispatch(27, 1, 1);
         mLightCullShader->waitFinish();
     }

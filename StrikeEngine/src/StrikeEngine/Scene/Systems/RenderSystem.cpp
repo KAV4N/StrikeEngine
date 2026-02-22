@@ -123,9 +123,6 @@ namespace Strike {
     void RenderSystem::processLights(Scene* scene) {
 
         auto& registry = scene->getRegistry();
-        auto& renderer = Renderer::get();
-
-
   
 
         auto pointLightView = registry.view<LightComponent>();

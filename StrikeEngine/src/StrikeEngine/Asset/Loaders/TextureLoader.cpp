@@ -183,8 +183,7 @@ namespace Strike {
 
             // Create temporary pointers to the loaded face data
             unsigned char* faceData[6];
-            size_t faceSize = static_cast<size_t>(width) * height * channels;
-            
+
             for (int i = 0; i < 6; i++) {
                 faceData[i] = loadedCubemap->mFaceData[i].data();
             }
