@@ -4,7 +4,7 @@
 
 The `GameData` class is a singleton for managing persistent game data as key-value pairs. It provides storage and retrieval with support for multiple data types: `int`, `float`, `double`, `bool`, and `std::string`.
 
-Data is stored in memory only — persistence across sessions must be handled externally.
+Data is stored in memory only - persistence across sessions must be handled externally.
 
 > **Note:** `GameData` is not thread-safe. If you access it from multiple threads, synchronization must be handled externally.
 
@@ -117,15 +117,15 @@ data.printAllData();
 
 ## Notes
 
-**Not Thread-Safe** — `GameData` is designed for single-threaded access (main thread game logic). If you need to access it from multiple threads, add external synchronization.
+**Not Thread-Safe** - `GameData` is designed for single-threaded access (main thread game logic). If you need to access it from multiple threads, add external synchronization.
 
-**Singleton Pattern** — Copy and move constructors and assignment operators are all deleted, ensuring only one instance exists throughout the application lifetime.
+**Singleton Pattern** - Copy and move constructors and assignment operators are all deleted, ensuring only one instance exists throughout the application lifetime.
 
-**Supported Types** — Only `int`, `float`, `double`, `bool`, and `std::string` are supported. Use the appropriate typed getter/setter for each type.
+**Supported Types** - Only `int`, `float`, `double`, `bool`, and `std::string` are supported. Use the appropriate typed getter/setter for each type.
 
-**Default Values on Mismatch** — All typed getters return `defaultValue` not only when the key is missing but also when a type mismatch occurs (e.g. calling `getInt()` on a key that holds a `float`).
+**Default Values on Mismatch** - All typed getters return `defaultValue` not only when the key is missing but also when a type mismatch occurs (e.g. calling `getInt()` on a key that holds a `float`).
 
-**Data Persistence** — `GameData` stores data in memory only. It does not save to disk automatically. To persist data between sessions, serialize it yourself using `getAllKeys()` and the typed getters/setters.
+**Data Persistence** - `GameData` stores data in memory only. It does not save to disk automatically. To persist data between sessions, serialize it yourself using `getAllKeys()` and the typed getters/setters.
 
 ## Next Step
 

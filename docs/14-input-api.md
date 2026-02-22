@@ -97,4 +97,4 @@ Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 
 ## Next Step
 
-- [Input API](15-input-api.md)
+- [Game Data](15-gameData-api.md)
