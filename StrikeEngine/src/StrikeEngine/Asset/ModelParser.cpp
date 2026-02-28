@@ -33,7 +33,7 @@ namespace Strike {
 
         mModelDirectory = modelPath.parent_path();
         mModelName = modelPath.stem().string();
-        mModelId = mModelName; 
+        mModelId = mModelName;
 
         const aiScene* scene = mImporter.ReadFile(modelPath.string(),
             aiProcess_Triangulate |
@@ -48,6 +48,7 @@ namespace Strike {
 
         mModel = std::make_shared<Model>(mModelId, modelPath);
         mRootEntities.clear();
+        mMeshCount = 0;
 
         processScene(scene, mModelDirectory);
 
@@ -58,15 +59,7 @@ namespace Strike {
     }
 
     void ModelParser::processScene(const aiScene* scene, const std::filesystem::path& modelDir) {
-        aiNode* root = scene->mRootNode;
-        
-        if (root->mNumChildren > 0) {
-            for (unsigned int i = 0; i < root->mNumChildren; ++i) {
-                processNode(root->mChildren[i], scene, nullptr);
-            }
-        } else if (root->mNumMeshes > 0) {
-            processNode(root, scene, nullptr);
-        }
+        processNode(scene->mRootNode, scene, nullptr);
     }
 
     void ModelParser::processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent) {
@@ -78,20 +71,29 @@ namespace Strike {
 
         decomposeTransform(localTransform, entity->position, entity->rotation, entity->scale);
 
-        if (node->mNumMeshes > 0) {
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
-            
+        for (unsigned int m = 0; m < node->mNumMeshes; ++m) {
+            unsigned int meshIndex = node->mMeshes[m];
+            aiMesh* mesh = scene->mMeshes[meshIndex];
+
             if (mModel) {
+                std::shared_ptr<EntityData> meshOwner = entity;
+                if (node->mNumMeshes > 1) {
+                    meshOwner = std::make_shared<EntityData>();
+                    meshOwner->tag = entity->tag + "_mesh" + std::to_string(m);
+                    meshOwner->position = glm::vec3(0.0f);
+                    meshOwner->rotation = glm::vec3(0.0f);
+                    meshOwner->scale    = glm::vec3(1.0f);
+                    entity->children.push_back(meshOwner);
+                }
+
                 auto meshPtr = std::make_shared<Mesh>();
                 mModel->addMesh(meshPtr);
+                meshOwner->modelId  = mModelId;
+                meshOwner->meshIdx  = static_cast<int32_t>(mMeshCount++);
 
-                entity->modelId = mModelId;
-                entity->meshIdx = static_cast<int32_t>(mModel->getMeshCount() - 1);
-                
-                // Extract color from material
                 if (mesh->mMaterialIndex < scene->mNumMaterials) {
                     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-                    entity->color = extractColor(material);
+                    meshOwner->color = extractColor(material);
                 }
             }
         }
@@ -132,21 +134,18 @@ namespace Strike {
             glm::vec3(transform[1]) / scale.y,
             glm::vec3(transform[2]) / scale.z
         );
-        
+
         glm::quat quat = glm::quat_cast(rotMat);
         rot = glm::degrees(glm::eulerAngles(quat));
     }
 
     glm::uvec3 ModelParser::extractColor(const aiMaterial* material) {
         aiColor3D diffuseColor(1.0f, 1.0f, 1.0f);
-        
-        // Try to get diffuse color
+
         if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) != AI_SUCCESS) {
-            // If diffuse fails, try base color (for PBR materials)
             material->Get(AI_MATKEY_BASE_COLOR, diffuseColor);
         }
-        
-        // Convert from 0-1 range to 0-255 integer range
+
         return glm::uvec3(
             static_cast<unsigned int>(glm::clamp(diffuseColor.r * 255.0f + 0.5f, 0.0f, 255.0f)),
             static_cast<unsigned int>(glm::clamp(diffuseColor.g * 255.0f + 0.5f, 0.0f, 255.0f)),
@@ -157,15 +156,14 @@ namespace Strike {
     void ModelParser::saveTemplateXml(const std::filesystem::path& templatePath) {
         pugi::xml_document doc;
         auto decl = doc.prepend_child(pugi::node_declaration);
-        decl.append_attribute("version") = "1.0";
+        decl.append_attribute("version")  = "1.0";
         decl.append_attribute("encoding") = "UTF-8";
 
         auto templateNode = doc.append_child("template");
 
-        auto assets = templateNode.append_child("assets");
-
+        auto assets    = templateNode.append_child("assets");
         auto modelAsset = assets.append_child("model");
-        modelAsset.append_attribute("id") = mModelId.c_str();
+        modelAsset.append_attribute("id")  = mModelId.c_str();
         modelAsset.append_attribute("src") = mModel->getPath().filename().string().c_str();
 
         auto entities = templateNode.append_child("entities");
@@ -188,19 +186,18 @@ namespace Strike {
 
         auto posStr   = formatFloat(entity->position.x) + "," + formatFloat(entity->position.y) + "," + formatFloat(entity->position.z);
         auto rotStr   = formatFloat(entity->rotation.x) + "," + formatFloat(entity->rotation.y) + "," + formatFloat(entity->rotation.z);
-        auto scaleStr = formatFloat(entity->scale.x) + "," + formatFloat(entity->scale.y) + "," + formatFloat(entity->scale.z);
+        auto scaleStr = formatFloat(entity->scale.x)    + "," + formatFloat(entity->scale.y)    + "," + formatFloat(entity->scale.z);
 
         entityNode.append_attribute("position") = posStr.c_str();
         entityNode.append_attribute("rotation") = rotStr.c_str();
-        entityNode.append_attribute("scale")     = scaleStr.c_str();
+        entityNode.append_attribute("scale")    = scaleStr.c_str();
 
         if (entity->meshIdx >= 0 && !entity->modelId.empty()) {
             auto components = entityNode.append_child("components");
-            auto renderer = components.append_child("renderer");
+            auto renderer   = components.append_child("renderer");
             renderer.append_attribute("model") = entity->modelId.c_str();
             renderer.append_attribute("mesh")  = entity->meshIdx;
-            
-            // Write color as integers (0–255)
+
             char colorStr[32];
             snprintf(colorStr, sizeof(colorStr), "%u,%u,%u",
                      entity->color.r, entity->color.g, entity->color.b);
@@ -212,4 +209,4 @@ namespace Strike {
         }
     }
 
-} 
+}

@@ -20,6 +20,7 @@
 namespace Strike {
 
     class Model;
+
     struct EntityData {
         std::string tag;
 
@@ -28,9 +29,9 @@ namespace Strike {
         glm::vec3 scale{ 1.0f };
 
         std::string modelId;
-        int32_t meshIdx = -1;  // -1 = no mesh/renderer
-        
-        glm::uvec3 color{ 255u, 255u, 255u }; // RGB (0–255 integers)
+        int32_t meshIdx = -1;          // -1 = no mesh/renderer
+
+        glm::uvec3 color{ 255u, 255u, 255u }; // RGB (0-255)
 
         std::vector<std::shared_ptr<EntityData>> children;
     };
@@ -48,28 +49,29 @@ namespace Strike {
         bool parseModel(const std::filesystem::path& modelPath);
 
     private:
-        // Process Assimp scene
+
         void processScene(const aiScene* scene, const std::filesystem::path& modelDir);
         void processNode(aiNode* node, const aiScene* scene, std::shared_ptr<EntityData> parent = nullptr);
 
-        // Helpers
-        glm::mat4 aiMatrixToGlm(const aiMatrix4x4& from);
-        void decomposeTransform(const glm::mat4& transform, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
+        glm::mat4  aiMatrixToGlm(const aiMatrix4x4& from);
+        void       decomposeTransform(const glm::mat4& transform, glm::vec3& pos, glm::vec3& rot, glm::vec3& scale);
         glm::uvec3 extractColor(const aiMaterial* material);
 
-        // Output
+
         void saveTemplateXml(const std::filesystem::path& templatePath);
         void writeEntityToXml(pugi::xml_node& parentNode, const std::shared_ptr<EntityData>& entity);
 
     private:
         Assimp::Importer mImporter;
 
-        std::shared_ptr<Model> mModel;
+        std::shared_ptr<Model>                   mModel;
         std::vector<std::shared_ptr<EntityData>> mRootEntities;
 
         std::filesystem::path mModelDirectory;
-        std::string mModelName;
-        std::string mModelId;
+        std::string           mModelName;
+        std::string           mModelId;
+
+        uint32_t mMeshCount = 0;
     };
 
-} 
+}

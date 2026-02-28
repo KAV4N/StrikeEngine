@@ -45,50 +45,47 @@ namespace Strike {
 
         mShader->bind();
         mShader->setMat4("uViewProjection", cameraData.camera.getViewProjectionMatrix());
-        mShader->setVec4("uColor", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)); // Green wireframe
-        
+        mShader->setVec4("uColor", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
         auto view = registry.view<PhysicsComponent>();
         for (auto entity : view) {
             Entity ent(entity, scene);
-
             auto& physics = registry.get<PhysicsComponent>(entity);
 
-            // Get the full world matrix including position, rotation, and scale
-            glm::mat4 entWorldMatrix = ent.getWorldMatrix();
-            
-            // Get the collider's local size and center
-            glm::vec3 size = physics.getSize();
+            glm::vec3 size   = physics.getSize();
             glm::vec3 center = physics.getCenter();
 
-            // Create model matrix incorporating the entity's world transform and collider offset
-            glm::mat4 model = entWorldMatrix;
-            // Apply collider center offset in local space
+            glm::vec3 worldPos = ent.getWorldPosition();
+            glm::quat worldRot = ent.getWorldRotation();
+
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, worldPos);
+            model = model * glm::mat4_cast(worldRot);
             model = glm::translate(model, center);
-            // Apply collider size (scaled by world scale)
             model = glm::scale(model, size);
 
             renderBox(model, cameraData.camera.getViewProjectionMatrix());
         }
+
         restoreOpenGLState();
     }
 
     void CollisionRenderPass::setupBoxGeometry() {
-        // Define cube vertices (unit cube centered at origin)
         float vertices[] = {
-            -0.5f, -0.5f, -0.5f, // 0
-            0.5f, -0.5f, -0.5f, // 1
-            0.5f,  0.5f, -0.5f, // 2
-            -0.5f,  0.5f, -0.5f, // 3
-            -0.5f, -0.5f,  0.5f, // 4
-            0.5f, -0.5f,  0.5f, // 5
-            0.5f,  0.5f,  0.5f, // 6
-            -0.5f,  0.5f,  0.5f  // 7
+            -0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f,
+             0.5f,  0.5f, -0.5f,
+            -0.5f,  0.5f, -0.5f,
+            -0.5f, -0.5f,  0.5f,
+             0.5f, -0.5f,  0.5f,
+             0.5f,  0.5f,  0.5f,
+            -0.5f,  0.5f,  0.5f
         };
 
         uint32_t indices[] = {
-            0, 1, 1, 2, 2, 3, 3, 0, // Front face
-            4, 5, 5, 6, 6, 7, 7, 4, // Back face
-            0, 4, 1, 5, 2, 6, 3, 7  // Connecting edges
+            0, 1, 1, 2, 2, 3, 3, 0,
+            4, 5, 5, 6, 6, 7, 7, 4,
+            0, 4, 1, 5, 2, 6, 3, 7
         };
 
         mBoxIndexCount = 24;
@@ -128,4 +125,4 @@ namespace Strike {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-} 
+}

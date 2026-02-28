@@ -61,6 +61,36 @@ namespace Strike {
         }
     }
 
+    void PhysicsComponent::setAnchored(bool anchored) {
+        if (mAnchored == anchored) return;
+        mAnchored = anchored;
+
+        if (mRigidBody) {
+            if (anchored) {
+                btVector3 inertia(0, 0, 0);
+                mRigidBody->setMassProps(0.0f, inertia);
+                mRigidBody->updateInertiaTensor();
+                mRigidBody->setCollisionFlags(
+                    mRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+                mRigidBody->setLinearVelocity(btVector3(0, 0, 0));
+                mRigidBody->setAngularVelocity(btVector3(0, 0, 0));
+                mRigidBody->clearForces();
+            } else {
+                mRigidBody->setCollisionFlags(
+                    mRigidBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+                btVector3 inertia(0, 0, 0);
+                if (mMass > 0.0f && mCollisionShape) {
+                    mCollisionShape->calculateLocalInertia(mMass, inertia);
+                }
+                mRigidBody->setMassProps(mMass, inertia);
+                mRigidBody->updateInertiaTensor();
+            }
+            mRigidBody->activate();
+        } else {
+            mNeedsRecreate = true;
+        }
+    }
+
     void PhysicsComponent::setCenter(const glm::vec3& center) {
         if (mCenter != center) {
             mCenter = center;

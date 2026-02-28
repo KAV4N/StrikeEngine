@@ -5,7 +5,8 @@
 #include "RenderPasses/LightCullingPass.h"
 #include "RenderPasses/SkyboxRenderPass.h"
 #include "RenderPasses/ShadowMapPass.h"
-
+#define STRIKE_COLLISION_DEBUG_EXPERIMENTAL
+ 
 #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
     #include "RenderPasses/CollisionRenderPass.h"
 #endif
@@ -37,7 +38,7 @@ namespace Strike {
         addPass<LightCullingPass>(PassStage::PreRender, *this);
         addPass<SkyboxRenderPass>(PassStage::MainRender, *this);
         addPass<GeometryRenderPass>(PassStage::MainRender, *this);
-
+        
         #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
             addPass<CollisionRenderPass>(PassStage::MainRender, *this);
         #endif

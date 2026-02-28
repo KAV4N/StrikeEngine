@@ -97,6 +97,7 @@ Bounds(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c); // Construct
 void unionBounds(const Bounds& bounds);                        // Expand to include another bounding box
 float area() const;                                            // Calculate the surface area
 glm::vec3 getMidPoint() const;                                 // Calculate the midpoint
+glm::vec3 getSize() const;                                 // Calculate AABB size
 ```
 
 ---

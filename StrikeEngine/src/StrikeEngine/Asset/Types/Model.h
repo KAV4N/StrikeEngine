@@ -78,6 +78,15 @@ namespace Strike {
         glm::vec3 getMidPoint() const {
             return (aabbMax + aabbMin) / glm::vec3(2.0);
         }
+
+
+        /**
+         * @brief Calculate the size (extents) of the bounding box.
+         * @return A vec3 representing the width, height, and depth of the bounding box.
+         */
+        glm::vec3 getSize() const {
+            return aabbMax - aabbMin;
+        }
     };
 
     /**

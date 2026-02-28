@@ -14,6 +14,22 @@
 
 namespace Strike {
 
+    // helpers
+
+    static bool isKinematic(const btRigidBody* body) {
+        return (body->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT) != 0;
+    }
+
+    static bool aabbOverlap(const btRigidBody* a, const btRigidBody* b) {
+        btVector3 minA, maxA, minB, maxB;
+        a->getAabb(minA, maxA);
+        b->getAabb(minB, maxB);
+        return (minA.x() <= maxB.x() && maxA.x() >= minB.x()) &&
+               (minA.y() <= maxB.y() && maxA.y() >= minB.y()) &&
+               (minA.z() <= maxB.z() && maxA.z() >= minB.z());
+    }
+
+
     PhysicsSystem::PhysicsSystem() {
         createPhysicsWorld();
     }
@@ -127,6 +143,7 @@ namespace Strike {
         }
     }
 
+    
     std::vector<Entity> PhysicsSystem::getCollidingEntities(const Entity& entity) const {
         std::vector<Entity> colliding;
 
@@ -137,23 +154,42 @@ namespace Strike {
         if (!physics || !physics->getRigidBody() || !physics->isActive()) return colliding;
 
         btRigidBody* body = physics->getRigidBody();
+        const bool queryIsKinematic = isKinematic(body);
 
-        int numManifolds = mDispatcher->getNumManifolds();
-        for (int i = 0; i < numManifolds; ++i) {
-            btPersistentManifold* manifold = mDispatcher->getManifoldByIndexInternal(i);
-            if (manifold->getNumContacts() == 0) continue;
 
-            const btRigidBody* bodyA = static_cast<const btRigidBody*>(manifold->getBody0());
-            const btRigidBody* bodyB = static_cast<const btRigidBody*>(manifold->getBody1());
+        // For dynamic pairs Bullet produces contact manifolds
+        int numObjects = mDynamicsWorld->getNumCollisionObjects();
+        for (int i = 0; i < numObjects; ++i) {
+            const btCollisionObject* obj = mDynamicsWorld->getCollisionObjectArray()[i];
+            const btRigidBody* other = btRigidBody::upcast(obj);
+            if (!other || other == body) continue;
 
-            const btRigidBody* other = (bodyA == body) ? bodyB : (bodyB == body) ? bodyA : nullptr;
-            if (other) {
-                Entity otherEnt = getEntityFromRigidBody(other);
-                auto& collPhys = scene->getRegistry().get<PhysicsComponent>(otherEnt.getHandle()); 
-                if (otherEnt.isValid() && otherEnt.isActive() && collPhys.isActive()) {
-                    colliding.push_back(otherEnt);
+            bool hit = false;
+
+            if (queryIsKinematic && isKinematic(other)) {
+                // Kinematic-vs-kinematic: manifolds don't exist, use AABB.
+                hit = aabbOverlap(body, other);
+            } else {
+                //check manifolds for an active contact.
+                int numManifolds = mDispatcher->getNumManifolds();
+                for (int m = 0; m < numManifolds; ++m) {
+                    btPersistentManifold* manifold = mDispatcher->getManifoldByIndexInternal(m);
+                    if (manifold->getNumContacts() == 0) continue;
+                    const btRigidBody* bA = static_cast<const btRigidBody*>(manifold->getBody0());
+                    const btRigidBody* bB = static_cast<const btRigidBody*>(manifold->getBody1());
+                    if ((bA == body && bB == other) || (bA == other && bB == body)) {
+                        hit = true;
+                        break;
+                    }
                 }
             }
+
+            if (!hit) continue;
+
+            Entity otherEnt = getEntityFromRigidBody(other);
+            if (!otherEnt.isValid() || !otherEnt.isActive()) continue;
+            auto& collPhys = scene->getRegistry().get<PhysicsComponent>(otherEnt.getHandle());
+            if (collPhys.isActive()) colliding.push_back(otherEnt);
         }
 
         return colliding;
@@ -174,17 +210,19 @@ namespace Strike {
         btRigidBody* bodyA = physA->getRigidBody();
         btRigidBody* bodyB = physB->getRigidBody();
 
+        // Single branch: kinematic-vs-kinematic uses AABB (no manifolds exist),
+        // everything else checks contact manifolds.
+        if (isKinematic(bodyA) && isKinematic(bodyB))
+            return aabbOverlap(bodyA, bodyB);
+
         int numManifolds = mDispatcher->getNumManifolds();
         for (int i = 0; i < numManifolds; ++i) {
             btPersistentManifold* manifold = mDispatcher->getManifoldByIndexInternal(i);
             if (manifold->getNumContacts() == 0) continue;
-
             const btRigidBody* bA = static_cast<const btRigidBody*>(manifold->getBody0());
             const btRigidBody* bB = static_cast<const btRigidBody*>(manifold->getBody1());
-
-            if ((bA == bodyA && bB == bodyB) || (bA == bodyB && bB == bodyA)) {
+            if ((bA == bodyA && bB == bodyB) || (bA == bodyB && bB == bodyA))
                 return true;
-            }
         }
         return false;
     }
@@ -270,14 +308,12 @@ namespace Strike {
         Entity ent(entityHandle, scene);
         auto& physics = registry.get<PhysicsComponent>(entityHandle);
 
-        const glm::mat4& worldMat = ent.getWorldMatrix();
-        glm::vec3 pos, scale, skew;
-        glm::quat rot;
-        glm::vec4 persp;
-        glm::decompose(worldMat, scale, rot, pos, skew, persp);
+        glm::vec3 pos = ent.getWorldPosition();
+        glm::quat rot = ent.getWorldRotation();
+        glm::vec3 scale = ent.getWorldScale();
 
-        glm::vec3 size(1.0f);
-        glm::vec3 centerOffset(0.0f);
+        glm::vec3 size = physics.getSize();
+        glm::vec3 centerOffset = physics.getCenter();
 
         auto* renderer = registry.try_get<RendererComponent>(entityHandle);
 
@@ -292,17 +328,16 @@ namespace Strike {
                     bounds = mesh->getBounds();
                 else 
                     bounds = model->getBounds();
-                size = bounds.aabbMax - bounds.aabbMin;
-                centerOffset = (bounds.aabbMax + bounds.aabbMin) * 0.5f;
+                size = bounds.getSize() * scale;
+                centerOffset = ((bounds.aabbMax + bounds.aabbMin) * 0.5f) * scale;
             }
+
+            physics.setSize(size);
+            physics.setCenter(centerOffset);
            
-            
         }
 
-        physics.setSize(size);
-        physics.setCenter(centerOffset);
-
-        glm::vec3 half = size * scale * 0.5f;
+        glm::vec3 half = size * 0.5f;
         btBoxShape* shape = new btBoxShape(btVector3(half.x, half.y, half.z));
         physics.setCollisionShape(shape);
 
@@ -310,7 +345,7 @@ namespace Strike {
         btVector3 inertia(0, 0, 0);
         if (mass > 0.0f) shape->calculateLocalInertia(mass, inertia);
 
-        glm::vec3 offsetRotated = rot * (centerOffset * scale);
+        glm::vec3 offsetRotated = rot * (centerOffset);
         glm::vec3 adjustedPos = pos + offsetRotated;
 
         btTransform startTransform;
@@ -418,7 +453,7 @@ namespace Strike {
         glm::vec3 pos(trans.getOrigin().x(), trans.getOrigin().y(), trans.getOrigin().z());
         glm::quat rot(trans.getRotation().w(), trans.getRotation().x(), trans.getRotation().y(), trans.getRotation().z());
 
-        glm::vec3 offset = physics.getCenter() * ent.getScale();
+        glm::vec3 offset = physics.getCenter();
         glm::vec3 correctedPos = pos - rot * offset;
 
         glm::mat4 world = glm::translate(glm::mat4(1.0f), correctedPos) * glm::mat4_cast(rot) * glm::scale(glm::mat4(1.0f), ent.getScale());
@@ -440,9 +475,8 @@ namespace Strike {
 
         glm::vec3 pos = ent.getWorldPosition();
         glm::quat rot = ent.getWorldRotation();
-        glm::vec3 scale = ent.getWorldScale();
 
-        glm::vec3 offset = physics.getCenter() * scale;
+        glm::vec3 offset = physics.getCenter();
         glm::vec3 adjustedPos = pos + rot * offset;
 
         btTransform trans;
@@ -457,4 +491,4 @@ namespace Strike {
         body->clearForces();
     }
 
-} 
+}
