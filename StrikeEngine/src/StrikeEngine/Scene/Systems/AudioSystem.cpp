@@ -289,4 +289,61 @@ namespace Strike {
         return mMasterVolume;
     }
 
+    float AudioSystem::getAmplitude(entt::entity entity, uint32_t framesToSample) const {
+        if (!mInitialized) {
+            return 0.0f;
+        }
+
+        auto it = mPlayingSounds.find(entity);
+        if (it == mPlayingSounds.end() || it->second.empty()) {
+            return 0.0f;
+        }
+
+        ma_sound* sound = it->second.front().sound.get();
+
+        if (!sound || !ma_sound_is_playing(sound)) {
+            return 0.0f;
+        }
+
+        ma_data_source* dataSource = ma_sound_get_data_source(sound);
+        if (!dataSource) {
+            return 0.0f;
+        }
+
+        // Save current cursor so playback position is unaffected
+        ma_uint64 cursorFrames = 0;
+        if (ma_data_source_get_cursor_in_pcm_frames(dataSource, &cursorFrames) != MA_SUCCESS) {
+            return 0.0f;
+        }
+
+        // Read a small window of interleaved float PCM frames (stereo = 2 channels)
+        const uint32_t channels = 2;
+        std::vector<float> buffer(framesToSample * channels, 0.0f);
+        ma_uint64 framesRead = 0;
+
+        ma_data_source_read_pcm_frames(
+            dataSource,
+            buffer.data(),
+            static_cast<ma_uint64>(framesToSample),
+            &framesRead
+        );
+
+        // Restore cursor — leaves actual playback completely untouched
+        ma_data_source_seek_to_pcm_frame(dataSource, cursorFrames);
+
+        if (framesRead == 0) {
+            return 0.0f;
+        }
+
+        // RMS across all samples in the window
+        float sumSquares = 0.0f;
+        uint64_t totalSamples = framesRead * channels;
+
+        for (uint64_t i = 0; i < totalSamples; ++i) {
+            sumSquares += buffer[i] * buffer[i];
+        }
+
+        return std::sqrt(sumSquares / static_cast<float>(totalSamples));
+    }
+
 } 

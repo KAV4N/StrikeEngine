@@ -34,37 +34,27 @@ namespace Strike {
 
     }
 
-    void World::loadScene(const std::filesystem::path& path)
+    void World::loadScene(const std::filesystem::path& path, bool clearAssets)
     {
 
-        /*
-        std::unique_ptr<Scene> temp = std::make_unique<Scene>("1", std::filesystem::path("test/test/"));
-        mCurrentScene = std::make_unique<Scene>("asd", std::filesystem::path("test/test/"));
-
-        // ─── Create some test entities ────────────────────────────────
-        mCurrentScene->createEntity();
-        mCurrentScene->createEntity();
-
-
-        mCurrentScene->shutdown();
-        mCurrentScene = std::move(temp);
-        */
         if (!std::filesystem::exists(path)) {
             STRIKE_CORE_ERROR("Scene file does not exist: {}", path.string());
             return;
         }
-        mPendingScenePath = path;
-        mSceneLoadPending = true;
+
+        mPendingSceneData.clearAssets = clearAssets;
+        mPendingSceneData.pendingScenePath = path;
+        mPendingSceneData.mSceneLoadPending = true;
         
     }
 
     void World::processSceneLoad()
     {
-        if (!mSceneLoadPending) {
+        if (! mPendingSceneData.mSceneLoadPending) {
             return;
         }
         try {
-            auto newScene = mSceneLoader->loadScene(mPendingScenePath);
+            auto newScene = mSceneLoader->loadScene(mPendingSceneData.pendingScenePath, mPendingSceneData.clearAssets);
             if (newScene) {
                 if (mCurrentScene) {
                     mAudioSystem->stopAll();
@@ -74,15 +64,15 @@ namespace Strike {
                 mCurrentScene = std::move(newScene);
             }
             else {
-                STRIKE_CORE_ERROR("Failed to load scene: {}", mPendingScenePath.string());
+                STRIKE_CORE_ERROR("Failed to load scene: {}", mPendingSceneData.pendingScenePath.string());
             }
         }
         catch (const std::exception& e) {
             STRIKE_CORE_ERROR("Exception while loading scene: {}", e.what());
         }
 
-        mSceneLoadPending = false;
-        mPendingScenePath.clear();
+        mPendingSceneData.mSceneLoadPending = false;
+        mPendingSceneData.pendingScenePath.clear();
     }
 
     Scene* World::getScene() const

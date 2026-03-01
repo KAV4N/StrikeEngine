@@ -10,12 +10,11 @@
 #include "StrikeEngine/Graphics/FontRenderer.h"
 
 #include "StrikeEngine/Scene/World.h"
+#include "StrikeEngine/Scene/Entity.h"
 #include "StrikeEngine/Scene/Systems/AudioSystem.h"
 #include "StrikeEngine/Graphics/FrameBuffer.h"
 
 #include <chrono>
-
-#define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 namespace Strike {
     
@@ -28,7 +27,7 @@ namespace Strike {
         Strike::Log::init();
 
         mWindow = std::make_unique<Window>();
-        mWindow->setEventCallback(BIND_EVENT_FN(Application::onEvent));
+        mWindow->setEventCallback([this](Event& e) { onEvent(e); });
 
         Renderer& renderer = Renderer::get();
         renderer.init();
@@ -43,10 +42,16 @@ namespace Strike {
     }
 
     void Application::onEvent(Event& e) {
-        if (mRunning) {
-            EventDispatcher dispatcher(e);
-            dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
-            dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
+        if (!mRunning)
+            return;
+
+        if (e.getEventType() == EventType::WindowClose) {
+            onWindowClose(static_cast<WindowCloseEvent&>(e));
+        } else if (e.getEventType() == EventType::WindowResize) {
+            onWindowResize(static_cast<WindowResizeEvent&>(e));
+        }
+
+        if (!e.handled) {
             World::get().onEvent(e);
         }
     }
@@ -88,21 +93,30 @@ namespace Strike {
         AssetManager::get().shutdown();
         World::get().shutDownSystems();
 
+        e.handled = true;
         return true;
     }
 
     bool Application::onWindowResize(WindowResizeEvent& e) {
         Renderer::get().resize(e.getWidth(), e.getHeight());
+        e.handled = true;
         return true;
     }
 
-    float Application::getMasterVolume() const{
+    float Application::getMasterVolume() const {
+        STRIKE_ASSERT(sInstance, "Application instance not initialized");
         return World::get().mAudioSystem->getMasterVolume();
     }
 
-    void Application::setMasterVolume(float volume){
+    void Application::setMasterVolume(float volume) {
+        STRIKE_ASSERT(sInstance, "Application instance not initialized");
         World::get().mAudioSystem->setMasterVolume(volume);
     }
 
+    float Application::getAudioAmplitude(const Entity& entity) const {
+        STRIKE_ASSERT(entity.isValid(), "getAudioAmplitude called on invalid Entity");
+        STRIKE_ASSERT(sInstance, "Application instance not initialized");
+        return World::get().mAudioSystem->getAmplitude(entity.getHandle());
+    }
 
 }

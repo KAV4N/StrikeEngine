@@ -329,7 +329,7 @@ namespace Strike {
                 else 
                     bounds = model->getBounds();
                 size = bounds.getSize() * scale;
-                centerOffset = ((bounds.aabbMax + bounds.aabbMin) * 0.5f) * scale;
+                centerOffset = bounds.getMidPoint() * scale;
             }
 
             physics.setSize(size);
@@ -418,14 +418,11 @@ namespace Strike {
 
         removePhysics(entityHandle);
         createRigidBody(entityHandle);
-        
-        mDynamicsWorld->addRigidBody(physics.getRigidBody());
 
         if (preserve && !physics.isAnchored()) {
             physics.setVelocity(vel);
             physics.setAngularVelocity(angVel);
         }
-
     }
 
     void PhysicsSystem::applyPendingValues(PhysicsComponent& physics) {

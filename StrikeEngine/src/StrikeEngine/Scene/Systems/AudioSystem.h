@@ -92,6 +92,19 @@ namespace Strike {
          */
         float getMasterVolume() const;
 
+        /**
+         * @brief Returns the current RMS amplitude [0.0, 1.0] of the first
+         *        playing sound on the given entity.
+         *
+         * Reads a small PCM window from miniaudio's data source without
+         * affecting the actual playback cursor. Returns 0.0 if no sound
+         * is playing or the entity is not found.
+         *
+         * @param entity        The EnTT entity handle owning the AudioSource.
+         * @param framesToSample Number of PCM frames to read for RMS calculation.
+         */
+        float getAmplitude(entt::entity entity, uint32_t framesToSample = 1024) const;
+
     private:
         /**
          * @brief Updates the active audio listener transform.
@@ -124,8 +137,8 @@ namespace Strike {
 
     private:
         ma_engine mEngine;   /**< Miniaudio engine instance */
-        bool mInitialized;  /**< Whether the audio engine is initialized */
-        float mMasterVolume;/**< Global master volume */
+        bool mInitialized;   /**< Whether the audio engine is initialized */
+        float mMasterVolume; /**< Global master volume */
 
         /**
          * @brief Active sounds mapped per entity.

@@ -43,10 +43,11 @@ namespace Strike {
         /**
          * @brief Load a scene from the specified file path.
          * @param path The file path to the scene file.
+         * @param clearAssets the scene load will remove all of the loaded assets in the assetmanager if set to true.
          * @note This initiates the scene loading process; the actual loading happens att the end of the frame.
          * and the new scene becomes active in the next frame.
          */
-        void loadScene(const std::filesystem::path& path);
+        void loadScene(const std::filesystem::path& path, bool clearAssets = true);
         
         /**
          * @brief Get the currently active scene.
@@ -113,6 +114,12 @@ namespace Strike {
         friend class Renderer;
         friend class Application;
 
+        struct PendingSceneData{
+            std::filesystem::path pendingScenePath; 
+            bool clearAssets = true;   
+            bool mSceneLoadPending = false;
+        };
+
         World();
         ~World() = default;
         World(const World&) = delete;
@@ -130,12 +137,12 @@ namespace Strike {
 
         void shutDownSystems();
 
+
     private:
         Fog mFog;
 
         std::unique_ptr<Scene> mCurrentScene;
-        std::filesystem::path mPendingScenePath; 
-        bool mSceneLoadPending = false;
+        PendingSceneData mPendingSceneData;
 
         std::unique_ptr<SceneLoader> mSceneLoader;
 
@@ -143,6 +150,7 @@ namespace Strike {
         std::unique_ptr<ScriptSystem> mScriptSystem;
         std::unique_ptr<PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<AudioSystem> mAudioSystem;
+
     };
 
 }

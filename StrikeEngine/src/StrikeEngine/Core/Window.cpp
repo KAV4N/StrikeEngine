@@ -179,7 +179,7 @@ namespace Strike {
                 WindowResizeEvent event(mImpl->data.pendingWidth, mImpl->data.pendingHeight);
                 mImpl->data.eventCallback(event);
                 
-                STRIKE_CORE_INFO("Framebuffer resized to: {0}x{1}", mImpl->data.pendingWidth, mImpl->data.pendingHeight);
+                //STRIKE_CORE_INFO("Framebuffer resized to: {0}x{1}", mImpl->data.pendingWidth, mImpl->data.pendingHeight);
             }
         }
     }

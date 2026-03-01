@@ -131,7 +131,7 @@ namespace Strike {
             auto& light = registry.get<LightComponent>(entity);
 
             if (!ent.isActive() || !light.isActive()) continue;
-            glm::vec3 position = ent.getPosition();
+            glm::vec3 position = ent.getWorldPosition();
 
             submitPointLight(position, light.getColor(), light.getIntensity(),
                            light.getRadius());

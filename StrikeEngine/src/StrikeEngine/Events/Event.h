@@ -25,7 +25,6 @@ namespace Strike {
      * @brief Base class for all events in StrikeEngine.
      */
     class Event {
-        friend class EventDispatcher;
     public:
         virtual ~Event() = default;
 
@@ -51,34 +50,6 @@ namespace Strike {
         bool handled = false;
     };
 
-    /**
-     * @brief Class for dispatching events to appropriate handlers.
-     * 
-     */
-    class EventDispatcher {
-        template<typename T>
-        using EventFn = std::function<bool(T&)>;
-    public:
-        EventDispatcher(Event& event) : mEvent(event) {}
-
-        /**
-         * @brief Dispatch the event to the appropriate handler if the types match.
-         * @tparam T The specific event type to dispatch.
-         * @param func The function to handle the event.
-         * @return True if the event was dispatched and handled, false otherwise.
-         */
-        template<typename T>
-        bool dispatch(EventFn<T> func) {
-            if (mEvent.getEventType() == T::getStaticType()) {
-                mEvent.handled = func(*(T*)&mEvent);
-                return true;
-            }
-            return false;
-        }
-
-    private:
-        Event& mEvent;
-    };
     /**
      * @brief Format an event as a string.
      * @param e The event to format.

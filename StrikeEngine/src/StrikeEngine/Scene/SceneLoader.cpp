@@ -16,10 +16,10 @@ namespace Strike {
     }
 
 
-    std::unique_ptr<Scene> SceneLoader::loadScene(const std::filesystem::path& path) {
+    std::unique_ptr<Scene> SceneLoader::loadScene(const std::filesystem::path& path, bool clearAssets) {
         mIsLoading = true;
-
-        AssetManager::get().clear();
+        if (clearAssets)
+            AssetManager::get().clear();
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(path.c_str());

@@ -25,7 +25,7 @@ namespace Strike {
          * @return Unique pointer to the loaded Scene object.
          * @note Returns nullptr if loading failed.
          */
-        std::unique_ptr<Scene> loadScene(const std::filesystem::path& path);
+        std::unique_ptr<Scene> loadScene(const std::filesystem::path& path, bool clearAssets);
 
         
         bool isLoading() const { return mIsLoading;}
