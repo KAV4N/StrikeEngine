@@ -147,12 +147,11 @@ namespace Strike {
         /**
          * @brief Syncs transform data from physics to ECS.
          *
-         * @param entity Entity handle.
          * @param physics Physics component.
          * @param ent Entity wrapper.
          */
-        void syncTransformFromPhysics(entt::entity entity,
-                                      PhysicsComponent& physics,
+        void syncTransformFromPhysics(
+                                      const PhysicsComponent& physics,
                                       Entity& ent);
 
         /**
@@ -160,13 +159,12 @@ namespace Strike {
          *
          * Used for kinematic / anchored entities.
          *
-         * @param entity Entity handle.
          * @param physics Physics component.
          * @param ent Entity wrapper.
          */
-        void syncTransformToPhysics(entt::entity entity,
-                                    PhysicsComponent& physics,
-                                    Entity& ent);
+        void syncTransformToPhysics(
+                                    const PhysicsComponent& physics,
+                                    const Entity& ent);
 
         /**
          * @brief Retrieves the ECS entity associated with a Bullet rigid body.

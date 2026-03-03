@@ -124,10 +124,11 @@ namespace Strike {
                 mDynamicsWorld->addRigidBody(physics.getRigidBody());
                 physics.mInPhysicsWorld = true;
             }
-
+            /*
             if (physics.isAnchored()) {
-                syncTransformToPhysics(entity, physics, ent);
+                syncTransformToPhysics(physics, ent);
             }
+            */
         }
 
         mDynamicsWorld->stepSimulation(dt, 10);
@@ -138,7 +139,7 @@ namespace Strike {
             if (!ent.isActive() || !physics.isActive()) continue;
 
             if (!physics.isAnchored()) {
-                syncTransformFromPhysics(entity, physics, ent);
+                syncTransformFromPhysics(physics, ent);
             }
         }
     }
@@ -436,7 +437,7 @@ namespace Strike {
         }
     }
 
-    void PhysicsSystem::syncTransformFromPhysics(entt::entity handle, PhysicsComponent& physics, Entity& ent) {
+    void PhysicsSystem::syncTransformFromPhysics(const PhysicsComponent& physics, Entity& ent) {
         btRigidBody* body = physics.getRigidBody();
         if (!body) return;
 
@@ -466,7 +467,7 @@ namespace Strike {
         ent.setRotation(localRot);
     }
 
-    void PhysicsSystem::syncTransformToPhysics(entt::entity handle, PhysicsComponent& physics, Entity& ent) {
+    void PhysicsSystem::syncTransformToPhysics(const PhysicsComponent& physics, const Entity& ent) {
         btRigidBody* body = physics.getRigidBody();
         if (!body) return;
 

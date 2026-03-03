@@ -4,8 +4,23 @@
 
 namespace Strike {
     REGISTER_COMPONENT(LogicComponent)
-      
+
+    LogicComponent::~LogicComponent() {
+        for (auto& script : mScripts) {
+            if (script) {
+                script->onDestroy();
+            }
+        }
+        mScripts.clear();
+        mScriptTypeNames.clear();
+    }
+
     void LogicComponent::clearScripts() {
+        for (auto& script : mScripts) {
+            if (script) {
+                script->onDestroy();
+            }
+        }
         mScripts.clear();
         mScriptTypeNames.clear();
     }
@@ -16,7 +31,6 @@ namespace Strike {
             return nullptr;
         }
 
-        // Check if a script of this type is already attached
         for (size_t i = 0; i < mScriptTypeNames.size(); ++i) {
             if (mScriptTypeNames[i] == scriptTypeName) {
                 STRIKE_CORE_ERROR("LogicComponent::addScript: Script of type '{}' is already attached to this component!", scriptTypeName);

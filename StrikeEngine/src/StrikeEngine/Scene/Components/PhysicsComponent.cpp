@@ -157,4 +157,20 @@ namespace Strike {
         mAngularDamping = damping;
         if (mRigidBody) mRigidBody->setDamping(mLinearDamping, mAngularDamping);
     }
+
+    glm::mat4 PhysicsComponent::getPhysicsWorldTransform() const {
+        if (!mRigidBody) return glm::mat4(1.0f);
+
+        btTransform trans = mRigidBody->getWorldTransform();
+
+        glm::vec3 pos(
+            trans.getOrigin().x(),
+            trans.getOrigin().y(),
+            trans.getOrigin().z()
+        );
+        btQuaternion btRot = trans.getRotation();
+        glm::quat rot(btRot.w(), btRot.x(), btRot.y(), btRot.z());
+
+        return glm::translate(glm::mat4(1.0f), pos) * glm::mat4_cast(rot);
+    }
 }

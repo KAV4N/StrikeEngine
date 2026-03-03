@@ -268,6 +268,9 @@ namespace Strike {
 
     private:
         friend class PhysicsSystem;
+        friend class CollisionRenderPass;
+
+        glm::mat4 getPhysicsWorldTransform() const;
 
         /**
          * @brief Get the Bullet rigid body pointer (internal)

@@ -7,12 +7,6 @@
 
 namespace Strike {
 
-    Script::Script() = default;
-
-    Script::~Script() {
-        onDestroy();
-    }
-
     void Script::onCreate() {}
     void Script::onStart() {}
     void Script::onUpdate(float deltaTime) {}

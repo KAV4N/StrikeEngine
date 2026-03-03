@@ -133,16 +133,5 @@ namespace Strike {
                          const glm::vec3& center,
                          const glm::vec3& halfExtents) const;
 
-        /**
-         * @brief Tests whether a bounding sphere is inside the camera frustum.
-         *
-         * @param frustum Camera frustum planes.
-         * @param center World-space center of the sphere.
-         * @param radius Sphere radius.
-         * @return True if the sphere is inside or intersects the frustum.
-         */
-        bool isSphereInFrustum(const CameraComponent::Frustum& frustum,
-                               const glm::vec3& center,
-                               float radius) const;
     };
 }

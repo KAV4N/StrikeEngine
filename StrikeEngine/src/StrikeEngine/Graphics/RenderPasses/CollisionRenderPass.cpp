@@ -49,20 +49,17 @@ namespace Strike {
 
         auto view = registry.view<PhysicsComponent>();
         for (auto entity : view) {
+
             Entity ent(entity, scene);
+            if (!ent.isActive()) continue;
+            
             auto& physics = registry.get<PhysicsComponent>(entity);
+            if (!physics.isActive()) continue;
+            
+            glm::vec3 size = physics.getSize();
+            glm::mat4 physicsTrans = physics.getPhysicsWorldTransform();
 
-            glm::vec3 size   = physics.getSize();
-            glm::vec3 center = physics.getCenter();
-
-            glm::vec3 worldPos = ent.getWorldPosition();
-            glm::quat worldRot = ent.getWorldRotation();
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, worldPos);
-            model = model * glm::mat4_cast(worldRot);
-            model = glm::translate(model, center);
-            model = glm::scale(model, size);
+            glm::mat4 model = physicsTrans * glm::scale(glm::mat4(1.0f), size);
 
             renderBox(model, cameraData.camera.getViewProjectionMatrix());
         }

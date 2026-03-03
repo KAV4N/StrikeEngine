@@ -159,6 +159,13 @@ namespace Strike {
                 auto& camera = mRegistry.get<CameraComponent>(entity);
                 camera.update(worldMatrix, renderer.getWidth(), renderer.getHeight());
             }
+
+            if (mRegistry.all_of<PhysicsComponent>(entity)){
+                Entity ent(entity, this);
+                PhysicsComponent& phys = ent.getComponent<PhysicsComponent>();
+                if (phys.isActive())
+                    World::get().mPhysicsSystem->syncTransformToPhysics(phys, ent);
+            }
         }
 
         for (auto& child : node->getChildren()) {

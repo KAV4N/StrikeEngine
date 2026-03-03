@@ -27,8 +27,8 @@ namespace Strike {
      */
     class Script {
     public:
-        Script();
-        ~Script();
+        Script() = default;
+        ~Script() = default;
 
         Script(const Script&) = delete;
         Script& operator=(const Script&) = delete;

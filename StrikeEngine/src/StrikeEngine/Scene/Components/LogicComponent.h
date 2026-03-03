@@ -27,9 +27,9 @@ namespace Strike {
         LogicComponent() = default;
         
         /**
-         * @brief Destructor
+         * @brief Destructor - calls onDestroy() on all scripts before releasing them
          */
-        ~LogicComponent() = default;
+        ~LogicComponent();
 
         LogicComponent(const LogicComponent&) = delete;
         LogicComponent& operator=(const LogicComponent&) = delete;
@@ -74,7 +74,8 @@ namespace Strike {
         T* addScript();
 
         /**
-         * @brief Remove all scripts of the specified type
+         * @brief Remove all scripts of the specified type.
+         * Calls onDestroy() on the script before releasing it.
          * 
          * @tparam T Script type (must derive from Script)
          * @note This removes all instances of the given script type
@@ -124,7 +125,8 @@ namespace Strike {
         std::vector<std::unique_ptr<Script>>& getScripts() { return mScripts; }
 
         /**
-         * @brief Remove all scripts from this component
+         * @brief Remove all scripts from this component.
+         * Calls onDestroy() on each script before releasing it.
          */
         void clearScripts();
         
@@ -146,7 +148,6 @@ namespace Strike {
     T* LogicComponent::addScript() {
         static_assert(std::is_base_of_v<Script, T>, "T must derive from Script");
 
-        // Check if a script of this type is already attached
         if (hasScript<T>()) {
             STRIKE_CORE_ERROR("LogicComponent::addScript: Script of type '{}' is already attached to this component!", typeid(T).name());
             return getScript<T>();
@@ -166,9 +167,10 @@ namespace Strike {
 
         for (size_t i = 0; i < mScripts.size(); ++i) {
             if (dynamic_cast<T*>(mScripts[i].get()) != nullptr) {
+                mScripts[i]->onDestroy();
                 mScripts.erase(mScripts.begin() + i);
                 mScriptTypeNames.erase(mScriptTypeNames.begin() + i);
-                return; // Only one instance can exist, early-out is safe
+                return;
             }
         }
     }
@@ -202,5 +204,4 @@ namespace Strike {
         static_assert(std::is_base_of_v<Script, T>, "T must derive from Script");
         return getScript<T>() != nullptr;
     }
-
 }
