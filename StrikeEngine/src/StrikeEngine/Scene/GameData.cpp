@@ -4,63 +4,63 @@
 namespace Strike {
 
     // Integer operations
-    void GameData::setInt(const std::string& key, int value) {
-        mData[key] = value;
+    int GameData::setInt(const std::string& key, int value) {
+        return std::get<int>(mData[key] = value);
     }
 
-    int GameData::getInt(const std::string& key, int defaultValue) const {
+    int GameData::getInt(const std::string& key) const {
         auto it = mData.find(key);
-        if (it == mData.end()) return defaultValue;
-        try { return std::get<int>(it->second); }
-        catch (const std::bad_variant_access&) { return defaultValue; }
+        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_ASSERT(std::holds_alternative<int>(it->second), "GameData type mismatch: key '{}' is not an int", key);
+        return std::get<int>(it->second);
     }
 
     // Float operations
-    void GameData::setFloat(const std::string& key, float value) {
-        mData[key] = value;
+    float GameData::setFloat(const std::string& key, float value) {
+        return std::get<float>(mData[key] = value);
     }
 
-    float GameData::getFloat(const std::string& key, float defaultValue) const {
+    float GameData::getFloat(const std::string& key) const {
         auto it = mData.find(key);
-        if (it == mData.end()) return defaultValue;
-        try { return std::get<float>(it->second); }
-        catch (const std::bad_variant_access&) { return defaultValue; }
+        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_ASSERT(std::holds_alternative<float>(it->second), "GameData type mismatch: key '{}' is not a float", key);
+        return std::get<float>(it->second);
     }
 
     // Double operations
-    void GameData::setDouble(const std::string& key, double value) {
-        mData[key] = value;
+    double GameData::setDouble(const std::string& key, double value) {
+        return std::get<double>(mData[key] = value);
     }
 
-    double GameData::getDouble(const std::string& key, double defaultValue) const {
+    double GameData::getDouble(const std::string& key) const {
         auto it = mData.find(key);
-        if (it == mData.end()) return defaultValue;
-        try { return std::get<double>(it->second); }
-        catch (const std::bad_variant_access&) { return defaultValue; }
+        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_ASSERT(std::holds_alternative<double>(it->second), "GameData type mismatch: key '{}' is not a double", key);
+        return std::get<double>(it->second);
     }
 
     // Boolean operations
-    void GameData::setBool(const std::string& key, bool value) {
-        mData[key] = value;
+    bool GameData::setBool(const std::string& key, bool value) {
+        return std::get<bool>(mData[key] = value);
     }
 
-    bool GameData::getBool(const std::string& key, bool defaultValue) const {
+    bool GameData::getBool(const std::string& key) const {
         auto it = mData.find(key);
-        if (it == mData.end()) return defaultValue;
-        try { return std::get<bool>(it->second); }
-        catch (const std::bad_variant_access&) { return defaultValue; }
+        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_ASSERT(std::holds_alternative<bool>(it->second), "GameData type mismatch: key '{}' is not a bool", key);
+        return std::get<bool>(it->second);
     }
 
     // String operations
-    void GameData::setString(const std::string& key, const std::string& value) {
-        mData[key] = value;
+    std::string GameData::setString(const std::string& key, const std::string& value) {
+        return std::get<std::string>(mData[key] = value);
     }
 
-    std::string GameData::getString(const std::string& key, const std::string& defaultValue) const {
+    std::string GameData::getString(const std::string& key) const {
         auto it = mData.find(key);
-        if (it == mData.end()) return defaultValue;
-        try { return std::get<std::string>(it->second); }
-        catch (const std::bad_variant_access&) { return defaultValue; }
+        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_ASSERT(std::holds_alternative<std::string>(it->second), "GameData type mismatch: key '{}' is not a string", key);
+        return std::get<std::string>(it->second);
     }
 
     // Key management

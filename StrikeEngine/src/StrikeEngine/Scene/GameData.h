@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <string>
 #include <variant>
-#include <optional>
 #include <vector>
 
 namespace Strike {
@@ -41,15 +40,15 @@ namespace Strike {
          * @param key The key to store the value under
          * @param value The integer value to store
          */
-        void setInt(const std::string& key, int value);
+        int setInt(const std::string& key, int value);
 
         /**
          * @brief Get an integer value for a key
          * @param key The key to retrieve
-         * @param defaultValue Default value if key doesn't exist
-         * @return int The integer value, or defaultValue if not found
+         * @return int The integer value
+         * @note Asserts if key does not exist or is not an int
          */
-        int getInt(const std::string& key, int defaultValue = 0) const;
+        int getInt(const std::string& key) const;
 
         // Float operations
 
@@ -58,15 +57,15 @@ namespace Strike {
          * @param key The key to store the value under
          * @param value The float value to store
          */
-        void setFloat(const std::string& key, float value);
+        float setFloat(const std::string& key, float value);
 
         /**
          * @brief Get a float value for a key
          * @param key The key to retrieve
-         * @param defaultValue Default value if key doesn't exist
-         * @return float The float value, or defaultValue if not found
+         * @return float The float value
+         * @note Asserts if key does not exist or is not a float
          */
-        float getFloat(const std::string& key, float defaultValue = 0.0f) const;
+        float getFloat(const std::string& key) const;
 
         // Double operations
 
@@ -75,15 +74,15 @@ namespace Strike {
          * @param key The key to store the value under
          * @param value The double value to store
          */
-        void setDouble(const std::string& key, double value);
+        double setDouble(const std::string& key, double value);
 
         /**
          * @brief Get a double value for a key
          * @param key The key to retrieve
-         * @param defaultValue Default value if key doesn't exist
-         * @return double The double value, or defaultValue if not found
+         * @return double The double value
+         * @note Asserts if key does not exist or is not a double
          */
-        double getDouble(const std::string& key, double defaultValue = 0.0) const;
+        double getDouble(const std::string& key) const;
 
         // Boolean operations
 
@@ -92,15 +91,15 @@ namespace Strike {
          * @param key The key to store the value under
          * @param value The boolean value to store
          */
-        void setBool(const std::string& key, bool value);
+        bool setBool(const std::string& key, bool value);
 
         /**
          * @brief Get a boolean value for a key
          * @param key The key to retrieve
-         * @param defaultValue Default value if key doesn't exist
-         * @return bool The boolean value, or defaultValue if not found
+         * @return bool The boolean value
+         * @note Asserts if key does not exist or is not a bool
          */
-        bool getBool(const std::string& key, bool defaultValue = false) const;
+        bool getBool(const std::string& key) const;
 
         // String operations
 
@@ -109,15 +108,15 @@ namespace Strike {
          * @param key The key to store the value under
          * @param value The string value to store
          */
-        void setString(const std::string& key, const std::string& value);
+        std::string setString(const std::string& key, const std::string& value);
 
         /**
          * @brief Get a string value for a key
          * @param key The key to retrieve
-         * @param defaultValue Default value if key doesn't exist
-         * @return std::string The string value, or defaultValue if not found
+         * @return std::string The string value
+         * @note Asserts if key does not exist or is not a string
          */
-        std::string getString(const std::string& key, const std::string& defaultValue = "") const;
+        std::string getString(const std::string& key) const;
 
         // Key management
 
