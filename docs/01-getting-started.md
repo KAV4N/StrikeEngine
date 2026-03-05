@@ -49,36 +49,33 @@ MyGame/
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 project(MyGame)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(MSVC)
-    add_compile_options(/W4)
-else()
-    add_compile_options(
-        -Wall
-        -Wextra
-        -Wreorder
-        -Wno-unknown-pragmas
-        -Wno-deprecated-copy
-        -Wno-unused-parameter
-    )
-endif()
+add_subdirectory(StrikeEngine/StrikeEngine)
 
 # Optional: display collision wireframes (experimental, may cause issues)
-option(STRIKE_COLLISION_DEBUG_EXPERIMENTAL "Collision debug" OFF)
-
-# StrikeEngine must be a sibling directory to your project
-add_subdirectory(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../StrikeEngine/StrikeEngine
-    ${CMAKE_CURRENT_BINARY_DIR}/StrikeEngine
-)
+target_compile_definitions(StrikeEngine PRIVATE STRIKE_COLLISION_DEBUG_EXPERIMENTAL)
 
 add_executable(${PROJECT_NAME})
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wall
+    -Wextra
+    -Wreorder
+    -Wno-unknown-pragmas
+    -Wno-deprecated-copy
+    -Wno-unused-parameter
+    $<$<CONFIG:Debug>:-O0 -g>
+    $<$<CONFIG:Release>:-O3 -march=native -funroll-loops -ffast-math -flto>
+)
+
+target_link_options(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Release>:-flto -Wl,-O1>
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE StrikeEngine)
 
@@ -88,6 +85,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 strike_setup(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+
+
 ```
 
 > `strike_setup` automatically creates junction links (Windows Debug), symlinks (Linux/macOS Debug), or full directory copies (Release/Dist) of both the engine's internal resources and your assets folder next to your executable.

@@ -107,7 +107,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug>:STRIKE_DEBUG>
     $<$<CONFIG:Release>:STRIKE_RELEASE>
     $<$<CONFIG:Dist>:STRIKE_DIST>
-    $<$<BOOL:${STRIKE_COLLISION_DEBUG_EXPERIMENTAL}>:STRIKE_COLLISION_DEBUG_EXPERIMENTAL>
 )
 
 # ============================================================================

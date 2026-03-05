@@ -1,6 +1,5 @@
 # StrikeEngine Application & Window API Documentation
 
----
 
 ## Application
 
@@ -46,18 +45,15 @@ Returns the current global master volume.
 #### `void setMasterVolume(float volume)`
 Sets the global master volume. Accepted range is `0.0` (silent) to `1.0` (full volume).
 
+#### `float getAudioAmplitude(const Entity& entity) const`
+Returns the current RMS amplitude in the range `[0.0, 1.0]` of the first playing sound on the given entity. Reads a small PCM window from the audio source without affecting the playback cursor. Returns `0.0` if the entity has no active `AudioSourceComponent`, no sound is currently playing, or the audio system is unavailable.
+
 ```cpp
 Application::get().setMasterVolume(0.5f); // set to 50%
 float vol = Application::get().getMasterVolume();
+
+float amp = Application::get().getAudioAmplitude(entity); // 0.0 – 1.0
 ```
-
-### Notes
-
-**Singleton Pattern** - The `Application` class follows the singleton pattern, so only one instance can exist at a time.
-
-**Event Handling** - Event handling is managed internally through private methods (`onEvent`, `onWindowClose`, `onWindowResize`) and is not directly exposed as public API. Events are automatically routed from the Window to the Application and then forwarded to the World system.
-
-**Main Loop** - The main application loop in `run()` calculates delta time, tracks FPS, and optionally limits frame rate based on the target FPS setting. Window close and resize events are handled automatically by the Application class.
 
 ---
 
@@ -79,7 +75,6 @@ Returns the current window height in pixels.
 
 #### `void setSize(unsigned int width, unsigned int height)`
 Sets the window dimensions in pixels. Triggers a resize event after a short debounce delay.
-
 
 #### `void setVSync(bool enabled)`
 Enable or disable VSync (vertical synchronization).
@@ -108,12 +103,7 @@ window.setWindowTitle("My Game");
 double elapsed = window.getTime();
 ```
 
-### Notes
-
-**Restricted Methods** - Private methods like `getNativeWindow()`, `setEventCallback()`, `onUpdate()`, `init()`, and `shutdown()` are not accessible to users. They are reserved for use by the `Application` and `Input` classes only.
-
-**Ownership** - The Window is owned by the Application as a `std::unique_ptr<Window>` member variable and must always be accessed through `Application::getWindow()`.
-
+---
 
 ## Next Step
 

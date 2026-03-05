@@ -14,8 +14,6 @@
 
 namespace Strike {
 
-    // helpers
-
     static bool isKinematic(const btRigidBody* body) {
         return (body->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT) != 0;
     }
@@ -28,7 +26,6 @@ namespace Strike {
                (minA.y() <= maxB.y() && maxA.y() >= minB.y()) &&
                (minA.z() <= maxB.z() && maxA.z() >= minB.z());
     }
-
 
     PhysicsSystem::PhysicsSystem() {
         createPhysicsWorld();
@@ -57,7 +54,6 @@ namespace Strike {
                 if (body->getMotionState()) {
                     delete body->getMotionState();
                 }
-               
                 if (body->getUserPointer()) {
                     delete static_cast<entt::entity*>(body->getUserPointer());
                     body->setUserPointer(nullptr);
@@ -101,7 +97,7 @@ namespace Strike {
         auto& registry = scene->getRegistry();
         auto view = registry.view<PhysicsComponent>();
 
-       for (auto entity : view) {
+        for (auto entity : view) {
             auto& physics = view.get<PhysicsComponent>(entity);
             Entity ent(entity, scene);
             bool shouldBeActive = ent.isActive() && physics.isActive();
@@ -115,7 +111,7 @@ namespace Strike {
             }
 
             if (!physics.getRigidBody()) {
-                createRigidBody(entity);
+                createRigidBody(entity, true);
                 physics.mInPhysicsWorld = true;
             } else if (physics.needsRecreate()) {
                 recreatePhysicsBody(entity);
@@ -124,11 +120,6 @@ namespace Strike {
                 mDynamicsWorld->addRigidBody(physics.getRigidBody());
                 physics.mInPhysicsWorld = true;
             }
-            /*
-            if (physics.isAnchored()) {
-                syncTransformToPhysics(physics, ent);
-            }
-            */
         }
 
         mDynamicsWorld->stepSimulation(dt, 10);
@@ -144,7 +135,6 @@ namespace Strike {
         }
     }
 
-    
     std::vector<Entity> PhysicsSystem::getCollidingEntities(const Entity& entity) const {
         std::vector<Entity> colliding;
 
@@ -157,8 +147,6 @@ namespace Strike {
         btRigidBody* body = physics->getRigidBody();
         const bool queryIsKinematic = isKinematic(body);
 
-
-        // For dynamic pairs Bullet produces contact manifolds
         int numObjects = mDynamicsWorld->getNumCollisionObjects();
         for (int i = 0; i < numObjects; ++i) {
             const btCollisionObject* obj = mDynamicsWorld->getCollisionObjectArray()[i];
@@ -168,10 +156,8 @@ namespace Strike {
             bool hit = false;
 
             if (queryIsKinematic && isKinematic(other)) {
-                // Kinematic-vs-kinematic: manifolds don't exist, use AABB.
                 hit = aabbOverlap(body, other);
             } else {
-                //check manifolds for an active contact.
                 int numManifolds = mDispatcher->getNumManifolds();
                 for (int m = 0; m < numManifolds; ++m) {
                     btPersistentManifold* manifold = mDispatcher->getManifoldByIndexInternal(m);
@@ -211,8 +197,6 @@ namespace Strike {
         btRigidBody* bodyA = physA->getRigidBody();
         btRigidBody* bodyB = physB->getRigidBody();
 
-        // Single branch: kinematic-vs-kinematic uses AABB (no manifolds exist),
-        // everything else checks contact manifolds.
         if (isKinematic(bodyA) && isKinematic(bodyB))
             return aabbOverlap(bodyA, bodyB);
 
@@ -244,7 +228,7 @@ namespace Strike {
             if (body) {
                 Entity ent = getEntityFromRigidBody(body);
                 Scene* scene = ent.getScene();
-                auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+                auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle());
 
                 if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                     hit.entity = ent;
@@ -272,9 +256,8 @@ namespace Strike {
                 const btRigidBody* body = btRigidBody::upcast(callback.m_collisionObjects[i]);
                 if (body) {
                     Entity ent = getEntityFromRigidBody(body);
-
                     Scene* scene = ent.getScene();
-                    auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle()); 
+                    auto& collPhys = scene->getRegistry().get<PhysicsComponent>(ent.getHandle());
 
                     if (ent.isValid() && ent.isActive() && collPhys.isActive()) {
                         RayHit hit;
@@ -301,7 +284,7 @@ namespace Strike {
         return Entity();
     }
 
-    void PhysicsSystem::createRigidBody(entt::entity entityHandle) {
+    void PhysicsSystem::createRigidBody(entt::entity entityHandle, bool initFromRenderer) {
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
@@ -316,26 +299,25 @@ namespace Strike {
         glm::vec3 size = physics.getSize();
         glm::vec3 centerOffset = physics.getCenter();
 
-        auto* renderer = registry.try_get<RendererComponent>(entityHandle);
+        if (initFromRenderer) {
+            auto* renderer = registry.try_get<RendererComponent>(entityHandle);
+            if (renderer && renderer->isActive()) {
+                auto model = renderer->getModel();
+                auto mesh = renderer->getMesh();
 
-        if (renderer && renderer->isActive()) {
-            auto model = renderer->getModel();
-            auto mesh = renderer->getMesh();
+                if (model) {
+                    Bounds bounds;
+                    if (mesh)
+                        bounds = mesh->getBounds();
+                    else
+                        bounds = model->getBounds();
+                    size = bounds.getSize() * scale;
+                    centerOffset = bounds.getMidPoint() * scale;
+                }
 
-            if (model)
-            {
-                Bounds bounds;
-                if (mesh) 
-                    bounds = mesh->getBounds();
-                else 
-                    bounds = model->getBounds();
-                size = bounds.getSize() * scale;
-                centerOffset = bounds.getMidPoint() * scale;
+                physics.setSize(size);
+                physics.setCenter(centerOffset);
             }
-
-            physics.setSize(size);
-            physics.setCenter(centerOffset);
-           
         }
 
         glm::vec3 half = size * 0.5f;
@@ -418,7 +400,7 @@ namespace Strike {
         }
 
         removePhysics(entityHandle);
-        createRigidBody(entityHandle);
+        createRigidBody(entityHandle, false);
 
         if (preserve && !physics.isAnchored()) {
             physics.setVelocity(vel);

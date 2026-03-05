@@ -5,7 +5,7 @@
 #include "RenderPasses/LightCullingPass.h"
 #include "RenderPasses/SkyboxRenderPass.h"
 #include "RenderPasses/ShadowMapPass.h"
-#define STRIKE_COLLISION_DEBUG_EXPERIMENTAL
+
  
 #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
     #include "RenderPasses/CollisionRenderPass.h"

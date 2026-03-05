@@ -25,7 +25,6 @@ namespace Strike {
             return true;
         }
 
-
         if (ma_engine_init(NULL, &mEngine) != MA_SUCCESS) {
             STRIKE_CORE_ERROR("Failed to initialize miniaudio engine");
             return false;
@@ -90,7 +89,7 @@ namespace Strike {
             ma_engine_listener_set_direction(&mEngine, 0, forward.x, forward.y, forward.z);
             ma_engine_listener_set_world_up(&mEngine, 0, up.x, up.y, up.z);
             
-            break; // Only use first active listener
+            break;
         }
     }
 
@@ -131,7 +130,6 @@ namespace Strike {
 
             ma_uint32 flags = MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_ASYNC;
 
-            
             if (ma_sound_init_from_file(&mEngine, 
                                        audioAsset->getPath().string().c_str(),
                                        flags, 
@@ -143,7 +141,6 @@ namespace Strike {
                 continue;
             }
 
-            // Configure sound properties
             ma_sound_set_volume(playingSound.sound.get(), source.getVolume());
             ma_sound_set_looping(playingSound.sound.get(), source.isLoop());
 
@@ -157,7 +154,6 @@ namespace Strike {
                 ma_sound_set_spatialization_enabled(playingSound.sound.get(), MA_FALSE);
             }
 
-            // Start playback (will play when async loading completes)
             if (ma_sound_start(playingSound.sound.get()) != MA_SUCCESS) {
                 ma_sound_uninit(playingSound.sound.get());
                 STRIKE_CORE_ERROR("Failed to start sound");
@@ -209,15 +205,12 @@ namespace Strike {
                 continue;
             }
 
-            // Update all playing sounds for this entity
             for (auto& playingSound : it->second) {
-                // Update volume if changed
                 if (playingSound.cachedVolume != source.getVolume()) {
                     ma_sound_set_volume(playingSound.sound.get(), source.getVolume());
                     playingSound.cachedVolume = source.getVolume();
                 }
 
-                // Update position for spatial sounds
                 if (playingSound.isSpatial) {
                     glm::vec3 pos = e.getWorldPosition();
                     ma_sound_set_position(playingSound.sound.get(), pos.x, pos.y, pos.z);
@@ -230,21 +223,18 @@ namespace Strike {
         for (auto it = mPlayingSounds.begin(); it != mPlayingSounds.end();) {
             auto& soundsVector = it->second;
             
-            // Remove sounds that have finished playing
             soundsVector.erase(
                 std::remove_if(soundsVector.begin(), soundsVector.end(),
                     [](PlayingSound& playingSound) {
-                        // Check if sound has finished (non-looping sounds only)
                         if (ma_sound_at_end(playingSound.sound.get())) {
                             ma_sound_uninit(playingSound.sound.get());
-                            return true; // Remove this sound
+                            return true;
                         }
-                        return false; // Keep this sound
+                        return false;
                     }),
                 soundsVector.end()
             );
 
-            // Remove entity entry if no sounds are playing
             if (soundsVector.empty()) {
                 it = mPlayingSounds.erase(it);
             } else {
@@ -259,7 +249,6 @@ namespace Strike {
             return;
         }
 
-        // Stop and uninit all sounds for this entity
         for (auto& playingSound : it->second) {
             ma_sound_stop(playingSound.sound.get());
             ma_sound_uninit(playingSound.sound.get());
@@ -310,13 +299,11 @@ namespace Strike {
             return 0.0f;
         }
 
-        // Save current cursor so playback position is unaffected
         ma_uint64 cursorFrames = 0;
         if (ma_data_source_get_cursor_in_pcm_frames(dataSource, &cursorFrames) != MA_SUCCESS) {
             return 0.0f;
         }
 
-        // Read a small window of interleaved float PCM frames (stereo = 2 channels)
         const uint32_t channels = 2;
         std::vector<float> buffer(framesToSample * channels, 0.0f);
         ma_uint64 framesRead = 0;
@@ -328,14 +315,12 @@ namespace Strike {
             &framesRead
         );
 
-        // Restore cursor — leaves actual playback completely untouched
         ma_data_source_seek_to_pcm_frame(dataSource, cursorFrames);
 
         if (framesRead == 0) {
             return 0.0f;
         }
 
-        // RMS across all samples in the window
         float sumSquares = 0.0f;
         uint64_t totalSamples = framesRead * channels;
 
@@ -346,4 +331,4 @@ namespace Strike {
         return std::sqrt(sumSquares / static_cast<float>(totalSamples));
     }
 
-} 
+}

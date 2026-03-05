@@ -120,8 +120,11 @@ namespace Strike {
          * @brief Creates a rigid body for an entity.
          *
          * @param entity Entity handle.
+         * @param initFromRenderer If true (default), size/center will be derived
+         *        from the RendererComponent bounds on first creation. Pass false
+         *        when recreating to preserve the already-stored size/center.
          */
-        void createRigidBody(entt::entity entity);
+        void createRigidBody(entt::entity entity, bool initFromRenderer = true);
 
         /**
          * @brief Removes and destroys an entity's physics representation.
@@ -132,6 +135,7 @@ namespace Strike {
 
         /**
          * @brief Recreates a rigid body when physics parameters change.
+         *        Does NOT re-derive size from the RendererComponent.
          *
          * @param entity Entity handle.
          */
@@ -184,4 +188,4 @@ namespace Strike {
         glm::vec3 mGravity = glm::vec3(0.0f, -9.81f, 0.0f);
     };
 
-} 
+}

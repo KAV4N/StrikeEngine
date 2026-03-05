@@ -28,7 +28,7 @@ Construct camera with custom projection parameters.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "camera" for this component.
+Returns the static type name `"camera"` for this component.
 
 ### Projection Settings
 
@@ -56,7 +56,7 @@ Get the far clipping plane distance.
 ### Viewport Management
 
 #### `void setViewportRect(float x, float y, float width, float height)`
-Set the viewport rectangle using normalized coordinates (0-1).
+Set the viewport rectangle using normalized coordinates (0–1).
 
 #### `const Rect& getViewportRect() const`
 Get the viewport rectangle.
@@ -64,10 +64,10 @@ Get the viewport rectangle.
 ### Matrix Access
 
 #### `glm::mat4 getProjectionMatrix() const`
-Get the 4x4 projection matrix.
+Get the 4×4 projection matrix.
 
 #### `glm::mat4 getViewMatrix() const`
-Get the 4x4 view matrix.
+Get the 4×4 view matrix.
 
 #### `glm::mat4 getViewProjectionMatrix() const`
 Get the combined view-projection matrix.
@@ -141,7 +141,7 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "renderer" for this component.
+Returns the static type name `"renderer"` for this component.
 
 ### Model Management
 
@@ -158,7 +158,7 @@ Check if a model is assigned.
 Get the ID of the currently assigned model.
 
 #### `std::shared_ptr<Model> getModel() const`
-Get the model resource object (or nullptr if not set).
+Get the model resource object (or `nullptr` if not set).
 
 ### Texture Management
 
@@ -175,15 +175,15 @@ Check if a texture is assigned.
 Get the ID of the currently assigned texture.
 
 #### `std::shared_ptr<Texture> getTexture() const`
-Get the texture resource object (or nullptr if not set).
+Get the texture resource object (or `nullptr` if not set).
 
 ### Color Tinting
 
 #### `void setColor(const glm::uvec3& color)`
-Set the color tint for rendering with RGB values (0-255 per channel).
+Set the color tint for rendering with RGB values (0–255 per channel).
 
 #### `glm::uvec3 getColor() const`
-Get the color tint as RGB values (0-255).
+Get the color tint as RGB values (0–255).
 
 ### Mesh Selection
 
@@ -191,7 +191,7 @@ Get the color tint as RGB values (0-255).
 Set a specific mesh from a model to render (for rendering only a single mesh from a multi-mesh model).
 
 #### `std::shared_ptr<Mesh> getMesh() const`
-Get the currently selected mesh (or nullptr if no specific mesh is set).
+Get the currently selected mesh (or `nullptr` if no specific mesh is set).
 
 #### `bool hasMesh() const`
 Check if a specific mesh is selected.
@@ -229,12 +229,12 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "physics" for this component.
+Returns the static type name `"physics"` for this component.
 
-### Anchored/Static Body Control
+### Anchored / Static Body Control
 
 #### `void setAnchored(bool anchored)`
-Set whether the physics body is anchored/static (true) or dynamic (false). Anchored bodies have infinite mass and don't respond to forces.
+Set whether the physics body is anchored/static (`true`) or dynamic (`false`). Anchored bodies have infinite mass and don't respond to forces.
 
 #### `bool isAnchored() const`
 Check if the physics body is anchored.
@@ -250,21 +250,34 @@ Check if collision detection is enabled.
 ### Mass
 
 #### `void setMass(float mass)`
-Set the mass in kilograms (ignored for anchored bodies).
+Set the mass in kilograms. Ignored for anchored bodies.
 
 #### `float getMass() const`
 Get the mass in kilograms.
 
 ### Collision Shape
 
+> **Important — Size and Scale Behavior:**
+>
+> The collision box size is **not automatically derived from the entity's transform scale**. How size is determined depends on whether a `RendererComponent` is present on the same entity, and whether this is the first creation or a recreation:
+>
+> - **With a `RendererComponent` (first body creation only):** On the very first creation of the physics body (at scene load or when the body is first initialized), the system reads the bounds from the assigned model or mesh and multiplies them by the entity's world scale to compute the collision size and center offset. This result is written back into the component. **Any manual calls to `setSize()` or `setCenter()` — including those made in `onStart()` — will be overridden and ignored during this initial creation.**
+>
+> - The entity's transform scale is **never applied automatically** after changing scale. You must account for scale yourself and pass the fully scaled dimensions to `setSize()`.
+
+
 #### `void setSize(const glm::vec3& size)`
-Set the collision box dimensions in world units.
+Set the collision box dimensions in world units. Triggers body recreation if the value changes.
+
+> **Note:** Ignored on initial body creation when a `RendererComponent` is present — the size is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
 
 #### `const glm::vec3& getSize() const`
-Get the collision box dimensions.
+Get the current collision box dimensions.
 
 #### `void setCenter(const glm::vec3& center)`
-Set the collision box center offset from entity position.
+Set the collision box center offset from the entity's position. Triggers body recreation if the value changes.
+
+> **Note:** Ignored on initial body creation when a `RendererComponent` is present — the center offset is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
 
 #### `const glm::vec3& getCenter() const`
 Get the collision box center offset.
@@ -272,73 +285,53 @@ Get the collision box center offset.
 ### Velocity Control
 
 #### `void setVelocity(const glm::vec3& velocity)`
-Set the linear velocity in world space.
+Set the linear velocity in world space. Has no effect on anchored bodies.
 
 #### `glm::vec3 getVelocity() const`
-Get the current linear velocity in world space.
+Get the current linear velocity in world space. Returns the pending velocity if the rigid body has not yet been created.
 
 #### `void setAngularVelocity(const glm::vec3& angularVel)`
-Set the angular velocity (axis-angle representation).
+Set the angular velocity (axis-angle representation). Has no effect on anchored bodies.
 
 #### `glm::vec3 getAngularVelocity() const`
-Get the current angular velocity.
+Get the current angular velocity. Returns the pending angular velocity if the rigid body has not yet been created.
 
 ### Force Application
 
 #### `void applyImpulse(const glm::vec3& impulse)`
-Apply an impulse force in world space at the center of mass.
+Apply an impulse force in world space at the center of mass. Has no effect on anchored bodies.
 
 ### Physical Properties
 
 #### `void setFriction(float friction)`
-Set the friction coefficient (typically 0.0 to 1.0).
+Set the friction coefficient (typically `0.0` to `1.0`).
 
 #### `float getFriction() const`
-Get the friction coefficient.
+Get the friction coefficient. Default: `0.5`.
 
 #### `void setBounciness(float restitution)`
-Set the bounciness/restitution coefficient (0.0 = no bounce, 1.0 = perfect bounce).
+Set the bounciness/restitution coefficient (`0.0` = no bounce, `1.0` = perfect bounce).
 
 #### `float getBounciness() const`
-Get the bounciness coefficient.
+Get the bounciness coefficient. Default: `0.0`.
 
 ### Damping
 
 #### `void setLinearDamping(float damping)`
-Set the linear damping factor to gradually reduce linear velocity over time (0.0 = no damping).
+Set the linear damping factor to gradually reduce linear velocity over time. `0.0` = no damping.
 
 #### `float getLinearDamping() const`
-Get the linear damping factor.
+Get the linear damping factor. Default: `0.0`.
 
 #### `void setAngularDamping(float damping)`
-Set the angular damping factor to gradually reduce angular velocity over time (0.0 = no damping).
+Set the angular damping factor to gradually reduce angular velocity over time. `0.0` = no damping.
 
 #### `float getAngularDamping() const`
-Get the angular damping factor.
-
-### Usage Example
-
-Programmatic usage:
-
-```cpp
-auto& physics = entity.addComponent<Strike::PhysicsComponent>();
-physics.setCanCollide(true);
-physics.setAnchored(false);
-physics.setMass(1.0f);
-float throwSpeed = 500.0f;
-physics.setVelocity(forward * throwSpeed);
-physics.setAngularVelocity(glm::vec3(100, 0, 0));
-```
-
-XML scene configuration:
-
-```xml
-<physics anchored="true" collide="true" mass="1" size="10,10,10"/>
-```
+Get the angular damping factor. Default: `0.05`.
 
 ### RayHit Structure
 
-Used for raycast results:
+Used for raycast results returned by `PhysicsSystem`:
 
 ```cpp
 struct RayHit {
@@ -350,6 +343,72 @@ struct RayHit {
 };
 ```
 
+### Usage Example
+
+**Dynamic body with a renderer (size auto-derived on first creation only):**
+
+```cpp
+// Size is derived from the RendererComponent's model bounds × world scale on first body creation.
+// Do NOT call setSize() in onStart() — it will be overwritten during the initial creation.
+// After the body exists, setSize() CAN be used to override the collision box.
+auto& physics = entity.addComponent<Strike::PhysicsComponent>();
+physics.setCanCollide(true);
+physics.setAnchored(false);
+physics.setMass(1.0f);
+
+float throwSpeed = 500.0f;
+physics.setVelocity(forward * throwSpeed);
+physics.setAngularVelocity(glm::vec3(100.0f, 0.0f, 0.0f));
+```
+
+**Dynamic body without a renderer (manual size required):**
+
+```cpp
+// No RendererComponent — entity scale is NEVER applied automatically.
+// You must bake the entity scale into the size yourself.
+auto& physics = entity.addComponent<Strike::PhysicsComponent>();
+glm::vec3 entityScale = entity.getScale();
+physics.setSize(glm::vec3(1.0f, 2.0f, 1.0f) * entityScale); // apply scale manually
+physics.setMass(5.0f);
+physics.setFriction(0.4f);
+```
+
+**Overriding the collision box after initial creation (with renderer):**
+
+```cpp
+// The renderer set the size on first creation. To override it later, call setSize() after
+// the body has been created — recreation will use your value, not the renderer bounds.
+void MyScript::onUpdate(float dt) {
+    auto& physics = getEntity().getComponent<Strike::PhysicsComponent>();
+    physics.setSize(glm::vec3(0.5f, 0.5f, 0.5f)); // takes effect on next recreation
+}
+```
+
+XML scene configuration:
+
+```xml
+<!-- anchored static body with renderer (size auto-derived on first creation) -->
+<physics anchored="true" collide="true" mass="1"/>
+
+<!-- dynamic body without renderer (manual size, scale not auto-applied) -->
+<physics anchored="false" collide="true" mass="2" friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05">
+    <size x="2.0" y="2.0" z="2.0"/>
+</physics>
+```
+
+**XML attributes:**
+
+| Attribute     | Type  | Default | Description                                                              |
+|--------------|-------|---------|--------------------------------------------------------------------------|
+| `anchored`   | bool  | `false` | Static/kinematic body                                                    |
+| `collide`    | bool  | `true`  | Enable collision response                                                |
+| `mass`       | float | `1.0`   | Mass in kg (ignored when anchored)                                       |
+| `friction`   | float | `0.5`   | Friction coefficient                                                     |
+| `restitution`| float | `0.0`   | Bounciness coefficient                                                   |
+| `lDamping`   | float | `0.0`   | Linear damping                                                           |
+| `aDamping`   | float | `0.05`  | Angular damping                                                          |
+| `<size>`     | vec3  | `1,1,1` | Collision box. Overridden by renderer bounds on first creation only.     |
+
 ---
 
 ## LightComponent
@@ -359,7 +418,7 @@ The `LightComponent` represents a point light source with color, intensity, and 
 ### Constructors
 
 #### `LightComponent()`
-Default constructor creating a white light with default intensity (1.0) and radius (10.0).
+Default constructor creating a white light with default intensity (`1.0`) and radius (`10.0`).
 
 #### `LightComponent(const glm::uvec3& color, float intensity, float radius)`
 Construct light with specific properties.
@@ -367,20 +426,20 @@ Construct light with specific properties.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "light" for this component.
+Returns the static type name `"light"` for this component.
 
 ### Color
 
 #### `void setColor(const glm::uvec3& color)`
-Set the light color with RGB values (0-255 per channel). Values are automatically clamped to the valid range.
+Set the light color with RGB values (0–255 per channel). Values are automatically clamped to the valid range.
 
 #### `const glm::uvec3& getColor() const`
-Get the light color as RGB values (0-255).
+Get the light color as RGB values (0–255).
 
 ### Intensity
 
 #### `void setIntensity(float intensity)`
-Set the light intensity multiplier (>= 0.0). Negative values are clamped to 0.0.
+Set the light intensity multiplier (`>= 0.0`). Negative values are clamped to `0.0`.
 
 #### `float getIntensity() const`
 Get the light intensity multiplier.
@@ -425,7 +484,7 @@ XML scene configuration:
 
 ## TextComponent
 
-The `TextComponent` manages 2D text rendering with properties for content, color, position, and pivot point. Positions and pivots use normalized coordinates (0-1).
+The `TextComponent` manages 2D text rendering with properties for content, color, position, and pivot point. Positions and pivots use normalized coordinates (0–1).
 
 ### Constructor
 
@@ -435,7 +494,7 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "text" for this component.
+Returns the static type name `"text"` for this component.
 
 ### Text Content
 
@@ -448,26 +507,26 @@ Get the text content.
 ### Color
 
 #### `void setColor(const glm::uvec3& color)`
-Set the text color with RGB values (0-255 per channel). Values are automatically clamped to the valid range.
+Set the text color with RGB values (0–255 per channel). Values are automatically clamped to the valid range.
 
 #### `const glm::uvec3& getColor() const`
-Get the text color as RGB values (0-255).
+Get the text color as RGB values (0–255).
 
 ### Position
 
 #### `void setPosition(const glm::vec2& position)`
-Set the screen position using normalized coordinates (0-1), where (0,0) = top-left and (1,1) = bottom-right.
+Set the screen position using normalized coordinates (0–1), where `(0,0)` = top-left and `(1,1)` = bottom-right.
 
 #### `const glm::vec2& getPosition() const`
-Get the screen position as normalized coordinates (0-1).
+Get the screen position as normalized coordinates (0–1).
 
 ### Pivot
 
 #### `void setPivot(const glm::vec2& pivot)`
-Set the pivot point for text alignment using normalized coordinates (0-1), where (0,0) = top-left corner, (0.5,0.5) = center, (1,1) = bottom-right.
+Set the pivot point for text alignment using normalized coordinates (0–1), where `(0,0)` = top-left, `(0.5,0.5)` = center, `(1,1)` = bottom-right.
 
 #### `const glm::vec2& getPivot() const`
-Get the pivot point as normalized coordinates (0-1).
+Get the pivot point as normalized coordinates (0–1).
 
 ### Usage Example
 
@@ -499,7 +558,7 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "audiosource" for this component.
+Returns the static type name `"audiosource"` for this component.
 
 ### Audio Asset Management
 
@@ -513,7 +572,7 @@ Remove the currently assigned audio clip.
 Get the ID of the currently assigned audio clip.
 
 #### `std::shared_ptr<Audio> getAudio() const`
-Get the audio resource object (or nullptr if not set).
+Get the audio resource object (or `nullptr` if not set).
 
 #### `bool hasAudio() const`
 Check if an audio clip is assigned.
@@ -521,15 +580,15 @@ Check if an audio clip is assigned.
 ### Playback Control
 
 #### `void play()`
-Start playing the audio clip. Playback will begin on the next audio system update.
+Start playing the audio clip. Playback begins on the next audio system update.
 
 #### `void stop()`
-Stop playing the audio clip. Playback will stop on the next audio system update.
+Stop playing the audio clip. Playback stops on the next audio system update.
 
 ### Volume
 
 #### `void setVolume(float volume)`
-Set the playback volume (0.0 to 1.0+, where 1.0 is full volume).
+Set the playback volume (`0.0` to `1.0+`, where `1.0` is full volume).
 
 #### `float getVolume() const`
 Get the current playback volume.
@@ -537,7 +596,7 @@ Get the current playback volume.
 ### Looping
 
 #### `void setLoop(bool loop)`
-Enable or disable audio looping (true to loop, false to play once).
+Enable or disable audio looping (`true` to loop, `false` to play once).
 
 #### `bool isLoop() const`
 Check if audio looping is enabled.
@@ -545,7 +604,7 @@ Check if audio looping is enabled.
 ### Spatial Audio
 
 #### `void setSpatial(bool spatial)`
-Enable or disable 3D spatial audio (true for 3D, false for 2D). Spatial audio is affected by distance and position relative to the AudioListener.
+Enable or disable 3D spatial audio (`true` for 3D, `false` for 2D). Spatial audio is affected by distance and position relative to the `AudioListenerComponent`.
 
 #### `bool isSpatial() const`
 Check if spatial audio is enabled.
@@ -601,11 +660,11 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "audiolistener" for this component.
+Returns the static type name `"audiolistener"` for this component.
 
 ### Usage Example
 
-XML scene configuration (typically attached to camera entity):
+XML scene configuration (typically attached to the camera entity):
 
 ```xml
 <audiolistener/>
@@ -615,9 +674,9 @@ XML scene configuration (typically attached to camera entity):
 
 ## LogicComponent
 
-The `LogicComponent` allows multiple Script instances to be attached to an entity, providing custom behavior and game logic. Scripts are stored and managed internally as unique pointers.
+The `LogicComponent` allows multiple `Script` instances to be attached to an entity, providing custom behavior and game logic. Scripts are stored and managed internally as unique pointers.
 
-> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a `STRIKE_CORE_ERROR` log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
+> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type — either programmatically via `addScript<T>()` or through XML — will be rejected with a `STRIKE_CORE_ERROR` log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
 
 ### Constructor
 
@@ -627,7 +686,7 @@ Default constructor.
 ### Static Methods
 
 #### `static const std::string& getStaticTypeName()`
-Returns the static type name "logic" for this component.
+Returns the static type name `"logic"` for this component.
 
 ### Script Management
 
@@ -638,10 +697,10 @@ Add a script of the specified type to this component. Returns a pointer to the n
 Remove the script of the specified type.
 
 #### `template<typename T> T* getScript()`
-Get the script of the specified type. Returns nullptr if not found.
+Get the script of the specified type. Returns `nullptr` if not found.
 
 #### `template<typename T> const T* getScript() const`
-Get the script of the specified type (const overload). Returns nullptr if not found.
+Get the script of the specified type (const overload). Returns `nullptr` if not found.
 
 #### `template<typename T> bool hasScript() const`
 Check if a script of the specified type is attached.
@@ -690,6 +749,8 @@ XML scene configuration:
   <script type="HealthSystem"/>
 </logic>
 ```
+
+---
 
 ## Next Step
 
