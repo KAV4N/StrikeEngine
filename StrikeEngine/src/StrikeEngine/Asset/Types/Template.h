@@ -56,7 +56,6 @@ namespace Strike {
     private:
         void setTemplateDoc(const pugi::xml_document& doc);
         void createEntities(Scene& scene, const pugi::xml_node& entitiesNode, Entity parentEntity);
-        glm::vec3 parseVector3(const std::string& str);
 
         friend class TemplateLoader;
 

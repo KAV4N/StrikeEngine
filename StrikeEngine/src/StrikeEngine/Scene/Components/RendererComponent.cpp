@@ -4,13 +4,14 @@
 #include "StrikeEngine/Asset/Types/Model.h"
 #include "StrikeEngine/Asset/Types/Texture.h"
 #include "StrikeEngine/Asset/AssetManager.h"
+#include "StrikeEngine/Core/ParserUtils.h"
 
 namespace Strike {
 
     REGISTER_COMPONENT(RendererComponent)
 
     RendererComponent::RendererComponent()
-        : mColor(255, 255, 255) // Default white color
+        : mColor(255, 255, 255)
     {}
 
     void RendererComponent::setModel(const std::string& modelId) {
@@ -28,9 +29,8 @@ namespace Strike {
     }
 
     std::shared_ptr<Model> RendererComponent::getModel() const {
-        if (mModelId.empty()) {
+        if (mModelId.empty())
             return nullptr;
-        }
         return AssetManager::get().getAsset<Model>(mModelId);
     }
 
@@ -47,9 +47,8 @@ namespace Strike {
     }
 
     std::shared_ptr<Texture> RendererComponent::getTexture() const {
-        if (mTextureId.empty()) {
+        if (mTextureId.empty())
             return nullptr;
-        }
         return AssetManager::get().getAsset<Texture>(mTextureId);
     }
 
@@ -63,14 +62,12 @@ namespace Strike {
     }
 
     std::shared_ptr<Mesh> RendererComponent::getMesh() const {
-        if (mModelId.empty() || !mMeshIdx.has_value()) {
+        if (mModelId.empty() || !mMeshIdx.has_value())
             return nullptr;
-        }
 
         auto model = AssetManager::get().getAsset<Model>(mModelId);
-        if (!model || mMeshIdx.value() >= model->getMeshes().size()) {
+        if (!model || mMeshIdx.value() >= model->getMeshes().size())
             return nullptr;
-        }
 
         return model->getMesh(mMeshIdx.value());
     }
@@ -80,28 +77,19 @@ namespace Strike {
         mTextureId.clear();
         mMeshIdx.reset();
 
-        if (auto attr = node.attribute("model")) {
+        if (auto attr = node.attribute("model"))
             mModelId = attr.as_string();
-        }
 
-        if (auto attr = node.attribute("texture")) {
+        if (auto attr = node.attribute("texture"))
             mTextureId = attr.as_string();
-        }
 
-        if (auto attr = node.attribute("color")) {
-            unsigned int r = 255, g = 255, b = 255;
-            if (sscanf(attr.as_string(), "%u,%u,%u", &r, &g, &b) == 3) {
-                setColor(glm::uvec3(r, g, b));
-            }
-        }
+        if (auto attr = node.attribute("color"))
+            setColor(ParserUtils::parseUVec3(attr.as_string(), glm::uvec3(255, 255, 255)));
 
-
-        if (auto attr = node.attribute("mesh")) {
+        if (auto attr = node.attribute("mesh"))
             mMeshIdx = attr.as_uint();
-        }
 
-        if (auto attr = node.attribute("active")) {
+        if (auto attr = node.attribute("active"))
             setActive(attr.as_bool(true));
-        }
     }
 }

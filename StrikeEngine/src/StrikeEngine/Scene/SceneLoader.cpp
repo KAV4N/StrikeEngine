@@ -1,4 +1,5 @@
 #include "strikepch.h"
+#include "StrikeEngine/Core/ParserUtils.h"
 #include "SceneLoader.h"
 #include "Scene.h"
 #include "Entity.h"
@@ -85,9 +86,9 @@ namespace Strike {
             std::string scaleStr = entityNode.attribute("scale").as_string("1,1,1");
             bool active = entityNode.attribute("active").as_bool(true);
 
-            entity.setPosition(parseVector3(posStr));
-            entity.setEulerAngles(parseVector3(rotStr));
-            entity.setScale(parseVector3(scaleStr));
+            entity.setPosition(ParserUtils::parseVec3(posStr));
+            entity.setEulerAngles(ParserUtils::parseVec3(rotStr));
+            entity.setScale(ParserUtils::parseVec3(scaleStr));
             entity.setActive(active);
 
             // Parse tag
@@ -149,7 +150,7 @@ namespace Strike {
             }
 
             sun.setIntensity(intensity);
-            sun.setRotationEuler(parseVector3(rotStr));
+            sun.setRotationEuler(ParserUtils::parseVec3(rotStr));
             sun.setCastShadows(shadows);
         }
     }
@@ -165,7 +166,7 @@ namespace Strike {
             float density = fogNode.attribute("density").as_float(0.015f);
             std::string colorStr = fogNode.attribute("color").as_string("128,153,179");
             
-            glm::vec3 color = parseVector3(colorStr);
+            glm::vec3 color = ParserUtils::parseVec3(colorStr);
             
             renderer.setFogStart(start);
             renderer.setFogEnd(end);
@@ -179,15 +180,4 @@ namespace Strike {
             renderer.setFogColor(glm::uvec3(128, 153, 179));
         }
     }
-
-    glm::vec3 SceneLoader::parseVector3(const std::string& str) {
-        glm::vec3 result(0.0f);
-        std::stringstream ss(str);
-        char comma;
-        ss >> result.x >> comma >> result.y >> comma >> result.z;
-        return result;
-    }
-
-
-
 } 

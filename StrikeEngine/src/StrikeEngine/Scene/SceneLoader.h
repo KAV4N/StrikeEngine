@@ -39,9 +39,7 @@ namespace Strike {
         void setupSkybox(Scene& scene, const pugi::xml_node& sceneNode);
         void setupSun(Scene& scene, const pugi::xml_node& sceneNode);
         void setupFog(const pugi::xml_node& sceneNode);  
-        
-        glm::vec3 parseVector3(const std::string& str);
-
+    
     private:
         bool mIsLoading = false;
     };

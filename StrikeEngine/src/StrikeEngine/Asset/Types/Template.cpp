@@ -1,4 +1,5 @@
 #include "strikepch.h"
+#include "StrikeEngine/Core/ParserUtils.h"
 #include "Template.h"
 #include "StrikeEngine/Scene/Scene.h"
 #include "StrikeEngine/Scene/Entity.h"
@@ -48,9 +49,9 @@ namespace Strike {
             std::string scaleStr = entityNode.attribute("scale").as_string("1,1,1");
             bool active = entityNode.attribute("active").as_bool(true);
 
-            entity.setPosition(parseVector3(posStr));
-            entity.setEulerAngles(parseVector3(rotStr));
-            entity.setScale(parseVector3(scaleStr));
+            entity.setPosition(ParserUtils::parseVec3(posStr));
+            entity.setEulerAngles(ParserUtils::parseVec3(rotStr));
+            entity.setScale(ParserUtils::parseVec3(scaleStr, glm::vec3(1.0f)));
             entity.setActive(active);
             
             // Warn on template nesting
@@ -86,13 +87,6 @@ namespace Strike {
         }
     }
 
-    glm::vec3 Template::parseVector3(const std::string& str) {
-        glm::vec3 result(0.0f);
-        std::stringstream ss(str);
-        char comma;
-        ss >> result.x >> comma >> result.y >> comma >> result.z;
-        return result;
-    }
 
     void Template::setTemplateDoc(const pugi::xml_document& doc) {
         mDoc.reset(doc);
