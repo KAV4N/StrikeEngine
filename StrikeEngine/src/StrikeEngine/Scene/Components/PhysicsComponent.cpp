@@ -1,4 +1,5 @@
 #include "strikepch.h"
+#include "StrikeEngine/Core/ParserUtils.h"
 #include "PhysicsComponent.h"
 #include "StrikeEngine/Scene/ComponentRegistry.h"
 #include <btBulletDynamicsCommon.h>
@@ -15,6 +16,12 @@ namespace Strike {
         mLinearDamping = node.attribute("lDamping").as_float(0.0f);
         mAngularDamping = node.attribute("aDamping").as_float(0.05f);
 
+        if (auto attr = node.attribute("lockRot")) {
+            std::string val = attr.as_string("0,0,0");
+            glm::uvec3 data = ParserUtils::parseVec3(val, glm::uvec3(0,0,0));
+            mLockRotation = glm::bvec3(data.x != 0, data.y != 0,data.z != 0);
+        }
+
         if (auto sizeNode = node.child("size")) {
             mSize.x = sizeNode.attribute("x").as_float(1.0f);
             mSize.y = sizeNode.attribute("y").as_float(1.0f);
@@ -23,13 +30,29 @@ namespace Strike {
 
         mNeedsRecreate = true;
 
-        
         if (auto attr = node.attribute("active")) {
             setActive(attr.as_bool(true));
         }
-
     }
 
+    void PhysicsComponent::applyAngularFactor() {
+        if (!mRigidBody || mAnchored) return;
+
+        btVector3 factor(
+            mLockRotation.x ? 0.0f : 1.0f,
+            mLockRotation.y ? 0.0f : 1.0f,
+            mLockRotation.z ? 0.0f : 1.0f
+        );
+        mRigidBody->setAngularFactor(factor);
+        mRigidBody->activate();
+    }
+
+    void PhysicsComponent::setLockRotation(const glm::bvec3& locks)
+    {
+        if (mLockRotation == locks) return;
+        mLockRotation = locks;
+        applyAngularFactor();
+    }
 
     void PhysicsComponent::setCanCollide(bool canCollide) {
         mCanCollide = canCollide;
@@ -75,6 +98,7 @@ namespace Strike {
                 mRigidBody->setLinearVelocity(btVector3(0, 0, 0));
                 mRigidBody->setAngularVelocity(btVector3(0, 0, 0));
                 mRigidBody->clearForces();
+                mRigidBody->setAngularFactor(btVector3(1, 1, 1));
             } else {
                 mRigidBody->setCollisionFlags(
                     mRigidBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
@@ -84,6 +108,7 @@ namespace Strike {
                 }
                 mRigidBody->setMassProps(mMass, inertia);
                 mRigidBody->updateInertiaTensor();
+                applyAngularFactor();
             }
             mRigidBody->activate();
         } else {

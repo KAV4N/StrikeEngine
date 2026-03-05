@@ -33,7 +33,7 @@ namespace Strike {
         ma_engine_set_volume(&mEngine, mMasterVolume);
         mInitialized = true;
         
-        STRIKE_CORE_INFO("AudioSystem initialized");
+
         return true;
     }
 
@@ -46,7 +46,7 @@ namespace Strike {
         ma_engine_uninit(&mEngine);
         mInitialized = false;
         
-        STRIKE_CORE_INFO("AudioSystem shut down");
+  
     }
 
     void AudioSystem::onUpdate(float dt) {

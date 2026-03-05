@@ -219,7 +219,7 @@ XML scene configuration:
 
 ## PhysicsComponent
 
-The `PhysicsComponent` provides rigid body physics using the Bullet physics engine. It supports properties like mass, velocity, friction, and collision detection.
+The `PhysicsComponent` provides rigid body physics using the Bullet physics engine. It supports properties like mass, velocity, friction, collision detection, and per-axis rotation locking.
 
 ### Constructor
 
@@ -264,7 +264,6 @@ Get the mass in kilograms.
 > - **With a `RendererComponent` (first body creation only):** On the very first creation of the physics body (at scene load or when the body is first initialized), the system reads the bounds from the assigned model or mesh and multiplies them by the entity's world scale to compute the collision size and center offset. This result is written back into the component. **Any manual calls to `setSize()` or `setCenter()` — including those made in `onStart()` — will be overridden and ignored during this initial creation.**
 >
 > - The entity's transform scale is **never applied automatically** after changing scale. You must account for scale yourself and pass the fully scaled dimensions to `setSize()`.
-
 
 #### `void setSize(const glm::vec3& size)`
 Set the collision box dimensions in world units. Triggers body recreation if the value changes.
@@ -329,6 +328,17 @@ Set the angular damping factor to gradually reduce angular velocity over time. `
 #### `float getAngularDamping() const`
 Get the angular damping factor. Default: `0.05`.
 
+### Rotation Locking
+
+Rotation locks prevent physics forces and impulses from rotating the body around the specified world axes. This is useful for characters or objects that should remain upright, or constrain motion to a specific plane.
+
+> **Note:** Rotation locks only apply to **dynamic (non-anchored)** bodies. Anchored/kinematic bodies are unaffected. Locks are applied immediately if the rigid body already exists, or on body creation if set beforehand.
+
+
+
+#### `glm::bvec3 getLockRotation() const`
+Get the current lock state for all three axes as a `glm::bvec3` (x, y, z).
+
 ### RayHit Structure
 
 Used for raycast results returned by `PhysicsSystem`:
@@ -343,18 +353,51 @@ struct RayHit {
 };
 ```
 
-### Usage Example
+### Usage Examples
+
+**Keeping an object upright (lock all rotation):**
+
+```cpp
+auto& physics = entity.addComponent<Strike::PhysicsComponent>();
+physics.setMass(5.0f);
+physics.setAnchored(false);
+// Prevent the body from tipping over on any axis
+physics.setLockRotation(glm::bvec3(true, true, true));
+```
+
+**2D-style side-scroller (allow only Z rotation, lock X and Y):**
+
+```cpp
+auto& physics = entity.addComponent<Strike::PhysicsComponent>();
+physics.setMass(1.0f);
+// Z rotation remains free for rolling/spinning effects
+physics.setLockRotation(glm::bvec3(true, true, false));
+```
+
+**Lock a single axis at runtime:**
+
+```cpp
+void MyScript::onUpdate(float dt) {
+    auto& physics = getEntity().getComponent<Strike::PhysicsComponent>();
+    // Prevent the object from spinning around Y mid-game, preserve X and Z state
+    if (someCondition) {
+        auto locks = physics.getLockRotation();
+        locks.y = true;
+        physics.setLockRotation(locks);
+    }
+}
+```
 
 **Dynamic body with a renderer (size auto-derived on first creation only):**
 
 ```cpp
 // Size is derived from the RendererComponent's model bounds × world scale on first body creation.
 // Do NOT call setSize() in onStart() — it will be overwritten during the initial creation.
-// After the body exists, setSize() CAN be used to override the collision box.
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 physics.setCanCollide(true);
 physics.setAnchored(false);
 physics.setMass(1.0f);
+physics.setLockRotation(glm::bvec3(true, false, false)); // keep upright on X
 
 float throwSpeed = 500.0f;
 physics.setVelocity(forward * throwSpeed);
@@ -365,49 +408,44 @@ physics.setAngularVelocity(glm::vec3(100.0f, 0.0f, 0.0f));
 
 ```cpp
 // No RendererComponent — entity scale is NEVER applied automatically.
-// You must bake the entity scale into the size yourself.
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 glm::vec3 entityScale = entity.getScale();
-physics.setSize(glm::vec3(1.0f, 2.0f, 1.0f) * entityScale); // apply scale manually
+physics.setSize(glm::vec3(1.0f, 2.0f, 1.0f) * entityScale);
 physics.setMass(5.0f);
 physics.setFriction(0.4f);
-```
-
-**Overriding the collision box after initial creation (with renderer):**
-
-```cpp
-// The renderer set the size on first creation. To override it later, call setSize() after
-// the body has been created — recreation will use your value, not the renderer bounds.
-void MyScript::onUpdate(float dt) {
-    auto& physics = getEntity().getComponent<Strike::PhysicsComponent>();
-    physics.setSize(glm::vec3(0.5f, 0.5f, 0.5f)); // takes effect on next recreation
-}
+physics.setLockRotation(glm::bvec3(true, false, true)); // only Y rotation free
 ```
 
 XML scene configuration:
 
 ```xml
-<!-- anchored static body with renderer (size auto-derived on first creation) -->
+<!-- anchored static body -->
 <physics anchored="true" collide="true" mass="1"/>
 
-<!-- dynamic body without renderer (manual size, scale not auto-applied) -->
-<physics anchored="false" collide="true" mass="2" friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05">
+<!-- dynamic body, locked on X and Z rotation (only Y free) -->
+<physics anchored="false" collide="true" mass="2"
+         friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05"
+         lockRot="1,0,1">
     <size x="2.0" y="2.0" z="2.0"/>
 </physics>
+
+<!-- character controller style: all rotation locked -->
+<physics anchored="false" collide="true" mass="80" lockRot="1,1,1"/>
 ```
 
 **XML attributes:**
 
-| Attribute     | Type  | Default | Description                                                              |
-|--------------|-------|---------|--------------------------------------------------------------------------|
-| `anchored`   | bool  | `false` | Static/kinematic body                                                    |
-| `collide`    | bool  | `true`  | Enable collision response                                                |
-| `mass`       | float | `1.0`   | Mass in kg (ignored when anchored)                                       |
-| `friction`   | float | `0.5`   | Friction coefficient                                                     |
-| `restitution`| float | `0.0`   | Bounciness coefficient                                                   |
-| `lDamping`   | float | `0.0`   | Linear damping                                                           |
-| `aDamping`   | float | `0.05`  | Angular damping                                                          |
-| `<size>`     | vec3  | `1,1,1` | Collision box. Overridden by renderer bounds on first creation only.     |
+| Attribute  | Type   | Default  | Description                                                                        |
+|------------|--------|----------|------------------------------------------------------------------------------------|
+| `anchored` | bool   | `false`  | Static/kinematic body                                                              |
+| `collide`  | bool   | `true`   | Enable collision response                                                          |
+| `mass`     | float  | `1.0`    | Mass in kg (ignored when anchored)                                                 |
+| `friction` | float  | `0.5`    | Friction coefficient                                                               |
+| `restitution`| float| `0.0`   | Bounciness coefficient                                                             |
+| `lDamping` | float  | `0.0`    | Linear damping                                                                     |
+| `aDamping` | float  | `0.05`   | Angular damping                                                                    |
+| `lockRot`  | string | `"0,0,0"`| Per-axis rotation lock as `"X,Y,Z"` where `1` = locked, `0` = free               |
+| `<size>`   | vec3   | `1,1,1`  | Collision box. Overridden by renderer bounds on first creation only.               |
 
 ---
 

@@ -358,6 +358,16 @@ namespace Strike {
         body->setUserPointer(new entt::entity(entityHandle));
 
         physics.setRigidBody(body);
+
+        if (!physics.isAnchored()) {
+            const glm::bvec3& locks = physics.getLockRotation();
+            body->setAngularFactor(btVector3(
+                locks.x ? 0.0f : 1.0f,
+                locks.y ? 0.0f : 1.0f,
+                locks.z ? 0.0f : 1.0f
+            ));
+        }
+
         mDynamicsWorld->addRigidBody(body);
         applyPendingValues(physics);
         physics.clearRecreate();

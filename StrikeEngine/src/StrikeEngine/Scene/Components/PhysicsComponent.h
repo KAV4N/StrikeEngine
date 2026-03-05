@@ -41,6 +41,8 @@ namespace Strike {
      * 
      * The PhysicsComponent provides rigid body physics using the Bullet physics engine.
      * It supports properties like mass, velocity, friction, and collision detection.
+     * Per-axis rotation locking is available for dynamic (non-anchored) bodies via
+     * setLockRotationX/Y/Z or setLockRotation(glm::bvec3).
      * 
      * @note This class is non-copyable and non-movable. Physics bodies are managed by the PhysicsSystem
      */
@@ -251,6 +253,25 @@ namespace Strike {
          */
         float getAngularDamping() const { return mAngularDamping; }
 
+        // -----------------------------------------------------------------------
+        // Rotation Locking
+        // -----------------------------------------------------------------------
+
+
+        /** 
+         * @brief Set the lock for the rotation around the axis (has no effect on anchored bodies)
+         * 
+         * @param locks Boolean vector where x/y/z components correspond to each axis lock state
+         */
+        void setLockRotation(const glm::bvec3& locks);
+
+        /**
+         * @brief Get the rotation lock state for all axes
+         * 
+         * @return Boolean vector where x/y/z indicate whether each axis is locked
+         */
+        glm::bvec3 getLockRotation() const { return mLockRotation; }
+
         /**
          * @brief Check if the physics body needs to be recreated
          * 
@@ -271,6 +292,13 @@ namespace Strike {
         friend class CollisionRenderPass;
 
         glm::mat4 getPhysicsWorldTransform() const;
+
+        /**
+         * @brief Apply the current rotation lock state to the rigid body's angular factor.
+         * 
+         * Called internally whenever a lock flag changes and a rigid body exists.
+         */
+        void applyAngularFactor();
 
         /**
          * @brief Get the Bullet rigid body pointer (internal)
@@ -311,6 +339,8 @@ namespace Strike {
         float mRestitution = 0.0f;                     ///< Bounciness coefficient
         float mLinearDamping = 0.0f;                   ///< Linear velocity damping
         float mAngularDamping = 0.05f;                 ///< Angular velocity damping
+
+        glm::bvec3 mLockRotation = glm::bvec3(false); ///< Per-axis rotation lock flags (X, Y, Z)
 
         glm::vec3 mPendingVelocity = glm::vec3(0.0f);        ///< Pending velocity change
         glm::vec3 mPendingAngularVelocity = glm::vec3(0.0f); ///< Pending angular velocity change

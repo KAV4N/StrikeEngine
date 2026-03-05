@@ -143,12 +143,8 @@ namespace Strike {
             std::string rotStr = sunNode.attribute("rotation").as_string("0,0,0");
             bool shadows = sunNode.attribute("shadows").as_bool(false);
 
-
-            unsigned int r = 255, g = 255, b = 255;
-            if (sscanf(colorStr.c_str(), "%u,%u,%u", &r, &g, &b) == 3) {
-                sun.setColor(glm::uvec3(r, g, b));
-            }
-
+            sun.setColor(ParserUtils::parseUVec3(colorStr, glm::uvec3(255)));
+            
             sun.setIntensity(intensity);
             sun.setRotationEuler(ParserUtils::parseVec3(rotStr));
             sun.setCastShadows(shadows);
