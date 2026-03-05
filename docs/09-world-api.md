@@ -11,8 +11,11 @@ Returns the singleton instance of the World class.
 
 ## Scene Management
 
-#### `void loadScene(const std::filesystem::path& path)`
+#### `void loadScene(const std::filesystem::path& path, bool clearAssets = true)`
 Loads a scene from the specified file path. The actual loading is deferred to the end of the frame, and the new scene becomes active in the next frame.
+
+- `path` — File path to the scene file. If the file does not exist, an error is logged and the load is aborted.
+- `clearAssets` — If `true` (default), all assets currently loaded in the `AssetManager` will be cleared before the new scene is loaded. Set to `false` to retain existing assets across scene transitions.
 
 #### `Scene* getScene() const`
 Returns a pointer to the currently active scene (may be nullptr if no scene is loaded).
@@ -54,12 +57,11 @@ Returns a const reference to the current fog settings.
 ### Fog Structure
 
 The `Fog` struct contains the following properties:
-
 ```cpp
 struct Fog {
-    float start = 0.0f;                          // Distance at which fog starts
-    float end = 100.0f;                          // Distance at which fog ends
-    float density = 0.0f;                        // Fog density (0 = disabled)
+    float start = 0.0f;                           // Distance at which fog starts
+    float end = 100.0f;                           // Distance at which fog ends
+    float density = 0.0f;                         // Fog density (0 = disabled)
     glm::uvec3 color = glm::uvec3(255, 255, 255); // Fog color in RGB (default: white)
 };
 ```
@@ -67,7 +69,6 @@ struct Fog {
 ### RayHit Structure
 
 The `RayHit` struct returned by raycasting methods contains:
-
 ```cpp
 struct RayHit {
     Entity entity;                      // The entity that was hit
@@ -84,6 +85,7 @@ struct RayHit {
 
 The `World` class follows the singleton pattern and is designed to be accessed via `World::get()`. It manages the entire engine's state including the current scene and all major systems (`RenderSystem`, `PhysicsSystem`, `AudioSystem`, `ScriptSystem`). The class is non-copyable and non-movable by design, ensuring there is only one instance throughout the application lifetime.
 
+---
 
 ## Next Step
 
