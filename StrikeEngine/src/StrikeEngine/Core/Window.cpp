@@ -60,7 +60,7 @@ namespace Strike {
         mImpl->data.pendingWidth = props.width;
         mImpl->data.pendingHeight = props.height;
 
-        STRIKE_CORE_INFO("Creating window {0} ({1}, {2})", props.title, props.width, props.height);
+        //STRIKE_CORE_INFO("Creating window {0} ({1}, {2})", props.title, props.width, props.height);
 
         if (!sGLFWInitialized) {
             int success = glfwInit();

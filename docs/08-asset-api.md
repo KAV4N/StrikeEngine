@@ -97,7 +97,7 @@ Bounds(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c); // Construct
 void unionBounds(const Bounds& bounds);                        // Expand to include another bounding box
 float area() const;                                            // Calculate the surface area
 glm::vec3 getMidPoint() const;                                 // Calculate the midpoint
-glm::vec3 getSize() const;                                 // Calculate AABB size
+glm::vec3 getSize() const;                                     // Calculate AABB size
 ```
 
 ---
@@ -189,6 +189,17 @@ Returns the type name (overrides Asset base class).
 
 #### `float getDuration() const`
 Returns the duration of the audio in seconds.
+
+#### `const std::vector<float>& getAmplitudeEnvelope() const`
+Returns the pre-baked RMS amplitude envelope. Each value represents the RMS amplitude of one hop window.
+
+#### `float getEnvelopeFrameDuration() const`
+Returns the duration in seconds of each envelope hop frame.
+
+### Utility Methods
+
+#### `float sampleAmplitudeAt(float timeSeconds) const`
+Samples the amplitude envelope at a given playback time. Returns the RMS amplitude in [0.0, 1.0] at the specified time, or 0.0 if the envelope is unavailable.
 
 ---
 

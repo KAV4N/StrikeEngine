@@ -58,7 +58,7 @@ namespace Strike {
     }
 
     glm::vec3 Sun::getDirection() const {
-        glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+        glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
         return mRotation * forward;
     }
 

@@ -81,7 +81,11 @@ namespace Strike {
         const std::string& getTypeName() const override { return getStaticTypeName(); }
 
         /**
-         * @brief Deserialize physics data from XML node
+         * @brief Deserialize physics data from XML node.
+         * 
+         * Reads all physics properties from XML attributes. The collision box size
+         * is read from the "size" attribute as a comma-separated "x,y,z" string
+         * (e.g. size="2,4,1").
          * 
          * @param node The XML node containing physics configuration
          */

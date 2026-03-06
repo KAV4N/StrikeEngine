@@ -6,6 +6,7 @@ namespace Strike {
     Audio::Audio(const std::string& id, const std::filesystem::path& path)
         : Asset(id, path)
         , mDuration(0.0f)
+        , mEnvelopeFrameDuration(0.0f)
     {
     }
 

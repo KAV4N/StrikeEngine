@@ -19,13 +19,12 @@ namespace Strike {
         if (auto attr = node.attribute("lockRot")) {
             std::string val = attr.as_string("0,0,0");
             glm::uvec3 data = ParserUtils::parseVec3(val, glm::uvec3(0,0,0));
-            mLockRotation = glm::bvec3(data.x != 0, data.y != 0,data.z != 0);
+            mLockRotation = glm::bvec3(data.x != 0, data.y != 0, data.z != 0);
         }
 
-        if (auto sizeNode = node.child("size")) {
-            mSize.x = sizeNode.attribute("x").as_float(1.0f);
-            mSize.y = sizeNode.attribute("y").as_float(1.0f);
-            mSize.z = sizeNode.attribute("z").as_float(1.0f);
+        if (auto attr = node.attribute("size")) {
+            glm::vec3 size = ParserUtils::parseVec3(attr.as_string("1,1,1"), glm::vec3(1.0f));
+            mSize = size;
         }
 
         mNeedsRecreate = true;

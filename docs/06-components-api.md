@@ -334,8 +334,6 @@ Rotation locks prevent physics forces and impulses from rotating the body around
 
 > **Note:** Rotation locks only apply to **dynamic (non-anchored)** bodies. Anchored/kinematic bodies are unaffected. Locks are applied immediately if the rigid body already exists, or on body creation if set beforehand.
 
-
-
 #### `glm::bvec3 getLockRotation() const`
 Get the current lock state for all three axes as a `glm::bvec3` (x, y, z).
 
@@ -425,9 +423,7 @@ XML scene configuration:
 <!-- dynamic body, locked on X and Z rotation (only Y free) -->
 <physics anchored="false" collide="true" mass="2"
          friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05"
-         lockRot="1,0,1">
-    <size x="2.0" y="2.0" z="2.0"/>
-</physics>
+         lockRot="1,0,1" size="2.0,2.0,2.0"/>
 
 <!-- character controller style: all rotation locked -->
 <physics anchored="false" collide="true" mass="80" lockRot="1,1,1"/>
@@ -435,17 +431,17 @@ XML scene configuration:
 
 **XML attributes:**
 
-| Attribute  | Type   | Default  | Description                                                                        |
-|------------|--------|----------|------------------------------------------------------------------------------------|
-| `anchored` | bool   | `false`  | Static/kinematic body                                                              |
-| `collide`  | bool   | `true`   | Enable collision response                                                          |
-| `mass`     | float  | `1.0`    | Mass in kg (ignored when anchored)                                                 |
-| `friction` | float  | `0.5`    | Friction coefficient                                                               |
-| `restitution`| float| `0.0`   | Bounciness coefficient                                                             |
-| `lDamping` | float  | `0.0`    | Linear damping                                                                     |
-| `aDamping` | float  | `0.05`   | Angular damping                                                                    |
-| `lockRot`  | string | `"0,0,0"`| Per-axis rotation lock as `"X,Y,Z"` where `1` = locked, `0` = free               |
-| `<size>`   | vec3   | `1,1,1`  | Collision box. Overridden by renderer bounds on first creation only.               |
+| Attribute    | Type   | Default   | Description                                                                  |
+|--------------|--------|-----------|------------------------------------------------------------------------------|
+| `anchored`   | bool   | `false`   | Static/kinematic body                                                        |
+| `collide`    | bool   | `true`    | Enable collision response                                                    |
+| `mass`       | float  | `1.0`     | Mass in kg (ignored when anchored)                                           |
+| `friction`   | float  | `0.5`     | Friction coefficient                                                         |
+| `restitution`| float  | `0.0`     | Bounciness coefficient                                                       |
+| `lDamping`   | float  | `0.0`     | Linear damping                                                               |
+| `aDamping`   | float  | `0.05`    | Angular damping                                                              |
+| `lockRot`    | string | `"0,0,0"` | Per-axis rotation lock as `"X,Y,Z"` where `1` = locked, `0` = free         |
+| `size`       | string | `"1,1,1"` | Collision box dimensions as `"X,Y,Z"`. Overridden by renderer bounds on first creation only. |
 
 ---
 

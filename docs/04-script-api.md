@@ -77,8 +77,10 @@ setEntity() → onCreate()          ← first time only
 ### Getting the Entity
 
 ```cpp
-const Strike::Entity& entity = getEntity();
+Strike::Entity entity = getEntity();
 ```
+
+`getEntity()` returns a copy of the entity handle. Since `Entity` is a lightweight value type (a registry pointer + an ID), copying it is cheap and safe. There is no risk of a dangling reference if the script is destroyed.
 
 ### Activity Control
 
@@ -114,17 +116,17 @@ auto& logic = getOrAddComponent<Strike::LogicComponent>();
 
 ### scriptEntity Alias
 
-The protected member `scriptEntity` is a reference to the internal `mEntity` and can be used directly in subclass implementations as a shorthand:
+The protected member `scriptEntity` is a reference to the internal `mEntity` and can be used directly in subclass implementations as a shorthand for calling non-const methods on the entity:
 
 ```cpp
 class MyScript : public Strike::Script {
     void onUpdate(float dt) override {
-        scriptEntity.move(glm::vec3(0, 0, 1) * dt); // same as getEntity() but writable
+        scriptEntity.move(glm::vec3(0, 0, 1) * dt);
     }
 };
 ```
 
-`getEntity()` returns a `const Entity&`. Use `scriptEntity` when you need to call non-const methods on the entity directly from within a subclass.
+`getEntity()` returns a copy of the entity. Use `scriptEntity` when you need to call non-const methods on the entity directly from within a subclass without the copy overhead.
 
 ---
 

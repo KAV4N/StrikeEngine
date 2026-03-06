@@ -22,7 +22,7 @@ namespace Strike {
     }
     
 
-    const Entity& Script::getEntity() const {
+    Entity Script::getEntity() const {
         return mEntity;
     }
 

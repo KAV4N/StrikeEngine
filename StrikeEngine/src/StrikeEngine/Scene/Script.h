@@ -69,7 +69,7 @@ namespace Strike {
          * @brief Get the entity to which this script is attached.
          * @return Const reference to the Entity.
          */
-        const Entity& getEntity() const;
+        Entity getEntity() const;
 
         /**
          * @brief Check if the entity is currently active.

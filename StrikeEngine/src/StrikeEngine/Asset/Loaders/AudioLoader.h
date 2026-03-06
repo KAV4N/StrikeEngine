@@ -29,6 +29,14 @@ namespace Strike {
 
     private:
         std::shared_ptr<Audio> loadAudioFile(const std::string& id, const std::filesystem::path& path);
+
+        /**
+         * @brief Bakes a downsampled RMS amplitude envelope into the Audio asset.
+         * Called once at load time. Zero runtime cost during playback.
+         * @param asset The audio asset to bake into.
+         * @param path  File path of the audio file.
+         */
+        void bakeAmplitudeEnvelope(Audio& asset, const std::filesystem::path& path);
     };
 
 }

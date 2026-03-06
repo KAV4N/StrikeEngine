@@ -64,7 +64,7 @@ Rotates the sun around a specified axis by a given angle in degrees. Yaw (Y-axis
 ### Light Direction
 
 #### `glm::vec3 getDirection() const`
-Returns the light direction vector calculated from the rotation quaternion applied to the forward vector (0, 0, -1).
+Returns the light direction vector calculated from the rotation quaternion applied to the forward vector (0, 0, 1).
 
 ---
 
@@ -90,7 +90,7 @@ Calculates the light space matrix (`projection * view`) for shadow mapping. The 
 The Sun is configured in scene XML files using the `<sun>` tag:
 
 ```xml
-<sun color="255,245,230" intensity="0.5" rotation="-30,0,0" shadows="false"/>
+<sun color="255,245,230" intensity="0.5" rotation="30,0,0" shadows="false"/>
 ```
 
 | Attribute   | Description                                      |
@@ -174,7 +174,6 @@ The Sun is automatically used by the rendering system for directional lighting:
 - Color values are clamped to the 0-255 range when set.
 - Intensity values are clamped to a minimum of 0.0.
 - Only one Sun exists per scene - it is a global directional light source.
-- The light direction is the rotation quaternion applied to the forward vector (0, 0, -1), returned without additional normalization.
 - Shadow distance is capped internally at `MAX_SHADOW_DISTANCE = 40.0f` world units.
 
 ## Next Step
