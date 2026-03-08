@@ -27,7 +27,7 @@
 <scene>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         Pre-loaded assets (XML path — these are ready before onStart fires)
+         Pre-loaded assets (XML path - these are ready before onStart fires)
          The script deliberately reloads some of these at runtime to show that
          AssetManager::load() returns the cached instance on the second call.
     ═══════════════════════════════════════════════════════════════════════════ -->

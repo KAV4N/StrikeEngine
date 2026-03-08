@@ -13,7 +13,7 @@ Scenes are defined in XML and loaded at runtime. The file must begin with an XML
 
 | Attribute | Type | Default | Description |
 |---|---|---|---|
-| `tag` | string | `"DefaultScene"` |Optional identifier for this scene |
+| `tag` | string | `"DefaultScene"` | Optional identifier for this scene |
 
 ---
 
@@ -139,99 +139,161 @@ Components are defined inside a `<components>` element. All components support t
 
 ### `<camera>`
 
-| Attribute | Description |
-|---|---|
-| `near` / `nearPlane` | Near clipping plane |
-| `far` / `farPlane` | Far clipping plane |
-| `fov` | Field of view in degrees |
-| `order` / `renderOrder` | Render order priority |
-| `x` / `viewportX` | Viewport X position (0.0–1.0) |
-| `y` / `viewportY` | Viewport Y position (0.0–1.0) |
-| `width` / `viewportWidth` | Viewport width (0.0–1.0) |
-| `height` / `viewportHeight` | Viewport height (0.0–1.0) |
+Defines perspective projection, view frustum, and viewport for rendering. Supports frustum culling.
+
+| Attribute | Alias | Default | Description |
+|---|---|---|---|
+| `fov` | - | `45` | Field of view in degrees |
+| `near` | `nearPlane` | `0.1` | Near clipping plane distance |
+| `far` | `farPlane` | `1000` | Far clipping plane distance |
+| `order` | `renderOrder` | - | Render order priority (lower values render first) |
+| `x` | `viewportX` | `0.0` | Viewport X position (0.0–1.0) |
+| `y` | `viewportY` | `0.0` | Viewport Y position (0.0–1.0) |
+| `width` | `viewportWidth` | `1.0` | Viewport width (0.0–1.0) |
+| `height` | `viewportHeight` | `1.0` | Viewport height (0.0–1.0) |
+
+```xml
+<camera fov="75" near="0.1" far="500"
+        viewportX="0.0" viewportY="0.0"
+        viewportWidth="1.0" viewportHeight="1.0"
+        renderOrder="0"/>
+```
 
 ---
 
 ### `<renderer>`
 
-| Attribute | Description |
-|---|---|
-| `model` | Model asset ID |
-| `texture` | Texture asset ID (optional) |
-| `color` | RGB color tint `"R,G,B"` (default: `"255,255,255"`) |
-| `mesh` | Specific mesh index from the model (optional) |
+Manages the visual representation of an entity, including model/mesh assignment, texture mapping, and color tinting.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `model` | - | Model asset ID |
+| `texture` | - | Texture asset ID (optional) |
+| `color` | `"255,255,255"` | RGB color tint `"R,G,B"` |
+| `mesh` | - | Specific mesh index from the model (optional) |
+
+```xml
+<renderer model="player_model" texture="player_tex" color="255,255,255" mesh="0"/>
+```
 
 ---
 
 ### `<physics>`
 
+Provides rigid body physics using the Bullet physics engine. Supports mass, velocity, friction, collision detection, and per-axis rotation locking.
+
 | Attribute | Default | Description |
 |---|---|---|
-| `anchored` | `false` | Static body (does not move) |
+| `anchored` | `false` | Static body (does not move; infinite mass, ignores forces) |
 | `collide` | `true` | Enable collision detection |
-| `mass` | `1.0` | Mass in kilograms |
+| `mass` | `1.0` | Mass in kilograms (ignored when anchored) |
 | `friction` | `0.5` | Friction coefficient |
-| `restitution` | `0.0` | Bounciness |
-| `lDamping` | `0.0` | Linear damping |
-| `aDamping` | `0.05` | Angular damping |
+| `restitution` | `0.0` | Bounciness coefficient (`0.0` = no bounce, `1.0` = perfect bounce) |
+| `lDamping` | `0.0` | Linear damping (reduces linear velocity over time) |
+| `aDamping` | `0.05` | Angular damping (reduces angular velocity over time) |
+| `lockRot` | `"0,0,0"` | Per-axis rotation lock as `"X,Y,Z"` where `1` = locked, `0` = free |
+| `size` | `"1,1,1"` | Collision box dimensions as `"X,Y,Z"`. Overridden by renderer bounds on first creation only. |
 
-Collision box size is defined with a child element:
+Collision box size can also be set with a `<size>` child element:
 
 ```xml
-<physics anchored="false" mass="70" friction="0.6">
+<physics anchored="false" mass="70" friction="0.6" lDamping="0.2" aDamping="0.5">
   <size x="1" y="2" z="1"/>
 </physics>
 ```
 
-> **Note:** The `size="X,Y,Z"` attribute format is not supported. Use the `<size x="" y="" z=""/>` child element.
+> **Note:** The `size="X,Y,Z"` attribute format and the `<size x="" y="" z=""/>` child element are both supported for defining the collision box. When a `<renderer>` is also present on the entity, the collision size is automatically derived from the model/mesh bounds on the **first** body creation and will override any `size` value set in XML or in `onStart()`. Use the `size` attribute or child element on subsequent recreations.
+
+> **Rotation locking** only applies to dynamic (non-anchored) bodies.
+
+```xml
+<!-- Static ground -->
+<physics anchored="true" collide="true"/>
+
+<!-- Character controller: all rotation locked -->
+<physics anchored="false" collide="true" mass="80" lockRot="1,1,1">
+  <size x="1" y="2" z="1"/>
+</physics>
+
+<!-- Dynamic body, only Y rotation free -->
+<physics anchored="false" collide="true" mass="2"
+         friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05"
+         lockRot="1,0,1" size="2.0,2.0,2.0"/>
+```
 
 ---
 
 ### `<light>`
 
+Represents a point light source with color, intensity, and radius.
+
 | Attribute | Default | Description |
 |---|---|---|
-| `color` | `"255,255,255"` | RGB color (0–255) |
-| `intensity` | - | Light intensity |
-| `radius` | - | Light radius |
+| `color` | `"255,255,255"` | RGB color (0–255 per channel) |
+| `intensity` | `1.0` | Light intensity multiplier (`>= 0.0`) |
+| `radius` | `10.0` | Light influence radius in world units |
 | `fallOff` | - | Falloff distance (optional) |
+
+```xml
+<light color="255,245,200" intensity="8" radius="100.0" fallOff="25"/>
+```
 
 ---
 
 ### `<text>`
 
+Manages 2D text rendering with screen-space positioning using normalized coordinates (0–1).
+
 | Attribute | Default | Description |
 |---|---|---|
 | `text` | - | Text content to display |
-| `color` | `"255,255,255"` | RGB color |
-| `pivot` | - | Pivot point `"X,Y"` (0.0–1.0) |
-| `x` | - | Horizontal screen position (0.0–1.0) |
-| `y` | - | Vertical screen position (0.0–1.0) |
+| `color` | `"255,255,255"` | RGB color (0–255 per channel) |
+| `x` | - | Horizontal screen position (0.0–1.0), where `0` = left, `1` = right |
+| `y` | - | Vertical screen position (0.0–1.0), where `0` = top, `1` = bottom |
+| `pivot` | - | Pivot/alignment point `"X,Y"` (0.0–1.0). `"0.5,0.5"` = center |
+
+```xml
+<text text="Strike Engine Demo" color="255,255,255" pivot="0.5,0.5" x="0.5" y="0.5"/>
+```
 
 ---
 
 ### `<audiosource>`
 
+Manages audio playback with optional 3D spatial audio and distance attenuation.
+
 | Attribute | Default | Description |
 |---|---|---|
 | `audio` | - | Audio asset ID |
-| `volume` | `1.0` | Volume level |
+| `volume` | `1.0` | Volume level (`0.0` to `1.0+`) |
 | `loop` | `false` | Loop the audio |
-| `spatial` | `false` | Enable 3D spatial audio |
-| `minDistance` | `1.0` | Minimum attenuation distance |
-| `maxDistance` | `50.0` | Maximum attenuation distance |
+| `spatial` | `false` | Enable 3D spatial audio (requires an `<audiolistener>` in the scene) |
+| `minDistance` | `1.0` | Distance at which audio plays at full volume |
+| `maxDistance` | `50.0` | Distance at which audio volume reaches zero |
+
+```xml
+<audiosource audio="ambient" loop="true" volume="0.4" spatial="true" minDistance="2" maxDistance="30"/>
+```
 
 ---
 
 ### `<audiolistener>`
 
-Marks the entity as the audio listener for 3D spatial audio. No attributes beyond `active`.
+Marks the entity as the audio listener for 3D spatial audio. Only one active audio listener should exist in the scene at a time. Typically attached to the player or camera entity.
+
+No attributes beyond `active`.
+
+```xml
+<audiolistener/>
+```
 
 ---
 
 ### `<logic>`
 
-Attaches scripts to the entity. Add one `<script>` child per script class.
+Attaches one or more scripts to the entity. Each `<script>` child binds a registered script class.
+
+> **Note:** Only one instance of each script type can exist on a given entity at a time. Duplicate types will be rejected with a `STRIKE_CORE_ERROR` and the existing instance will be returned instead. To replace a script, remove it first via `removeScript<T>()`.
 
 ```xml
 <logic>
@@ -265,7 +327,8 @@ The `type` attribute must match the registered script class name exactly.
 
   <entities>
 
-    <entity template="player_template" tag="Ground" position="0,0,0">
+    <!-- Static ground plane -->
+    <entity tag="Ground" position="0,0,0">
       <components>
         <renderer model="ground_model" texture="ground_tex"/>
         <physics anchored="true">
@@ -274,11 +337,13 @@ The `type` attribute must match the registered script class name exactly.
       </components>
     </entity>
 
+    <!-- Template instance -->
     <entity template="player_template"/>
 
+    <!-- Player with physics, audio listener, and scripted logic -->
     <entity tag="Player" position="0,2,0">
       <components>
-        <physics mass="70" lDamping="0.2" aDamping="0.5">
+        <physics anchored="false" mass="70" lDamping="0.2" aDamping="0.5" lockRot="1,1,1">
           <size x="1" y="2" z="1"/>
         </physics>
         <audiolistener/>
@@ -286,6 +351,8 @@ The `type` attribute must match the registered script class name exactly.
           <script type="PlayerController"/>
         </logic>
       </components>
+
+      <!-- Child camera entity -->
       <entity tag="Camera" position="0,1,0">
         <components>
           <camera fov="75" near="0.1" far="500"/>
@@ -293,9 +360,24 @@ The `type` attribute must match the registered script class name exactly.
       </entity>
     </entity>
 
+    <!-- Ambient audio -->
     <entity tag="Ambient" position="0,0,0">
       <components>
         <audiosource audio="ambient" loop="true" volume="0.4"/>
+      </components>
+    </entity>
+
+    <!-- Point light -->
+    <entity tag="SunLight" position="0,10,0">
+      <components>
+        <light color="255,245,200" intensity="8" radius="100.0" fallOff="25"/>
+      </components>
+    </entity>
+
+    <!-- HUD text -->
+    <entity tag="HUD">
+      <components>
+        <text text="Strike Engine" color="255,255,255" pivot="0.5,0.0" x="0.5" y="0.05"/>
       </components>
     </entity>
 
@@ -303,9 +385,10 @@ The `type` attribute must match the registered script class name exactly.
 
 </scene>
 ```
+
+---
+
 ### Load Your Scene
-
-
 
 ```cpp
 #include <StrikeEngine.h>
@@ -316,12 +399,13 @@ int main(int argc, char** argv) {
     auto& world = Strike::World::get();
     world.loadScene("Assets/Scenes/ExampleScene.xml");
 
-
     app.run();
     return 0;
 }
 ```
 
+---
+
 ## Next Step
 
-- [Template Format](03-template-format.md) - Learn how the templates work in XML
+- [Template Format](03-template-format.md) - Learn how templates work in XML

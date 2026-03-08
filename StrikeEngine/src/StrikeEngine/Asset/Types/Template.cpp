@@ -56,7 +56,7 @@ namespace Strike {
             
             // Warn on template nesting
             if (entityNode.attribute("template")) {
-                STRIKE_CORE_WARN("Template '{}': template nesting is not supported — 'template' attribute on entity will be ignored", getId());
+                STRIKE_CORE_WARN("Template '{}': template nesting is not supported - 'template' attribute on entity will be ignored", getId());
             }
 
             // Parse tag

@@ -21,7 +21,7 @@ void HierarchyExample::onStart() {
     mLabel.setTag("showcase_label");
 
     auto& text = mLabel.addComponent<Strike::TextComponent>();
-    text.setText("Entity Showcase — Press e btn to start");
+    text.setText("Entity Showcase - Press e btn to start");
     text.setColor(glm::uvec3(255, 220, 60));
     text.setPosition(glm::vec2(0.05f, 0.05f));
     text.setPivot(glm::vec2(0.0f, 0.0f));

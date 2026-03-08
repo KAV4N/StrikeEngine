@@ -25,11 +25,11 @@ namespace Strike {
     }
 
     void AssetManager::registerAssetLoaders() {
-        mLoaders[Model::getStaticTypeName()]     = std::make_unique<ModelLoader>();
-        mLoaders[Template::getStaticTypeName()]   = std::make_unique<TemplateLoader>();
-        mLoaders[Texture::getStaticTypeName()]    = std::make_unique<TextureLoader>();
-        mLoaders[CubeMap::getStaticTypeName()]    = std::make_unique<CubeMapLoader>();
-        mLoaders[Audio::getStaticTypeName()]      = std::make_unique<AudioLoader>();
+        mLoaders[Model::getStaticTypeName()]    = std::make_unique<ModelLoader>();
+        mLoaders[Template::getStaticTypeName()] = std::make_unique<TemplateLoader>();
+        mLoaders[Texture::getStaticTypeName()]  = std::make_unique<TextureLoader>();
+        mLoaders[CubeMap::getStaticTypeName()]  = std::make_unique<CubeMapLoader>();
+        mLoaders[Audio::getStaticTypeName()]    = std::make_unique<AudioLoader>();
     }
 
     std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) const {
@@ -64,23 +64,21 @@ namespace Strike {
 
     void AssetManager::clear() {
         mShuttingDown = true;
-        
-        // Clear all loading tasks first
+
         for (auto& [type, loader] : mLoaders) {
             loader->clearLoadingTasks();
         }
-        
-        // Then clear loaded assets
+
         mLoadedAssets.clear();
-        
+
         mShuttingDown = false;
     }
 
     void AssetManager::shutdown() {
         if (mShuttingDown) {
-            return; 
+            return;
         }
-        
+
         mShuttingDown = true;
 
         for (auto& [type, loader] : mLoaders) {
@@ -92,9 +90,9 @@ namespace Strike {
 
     void AssetManager::update() {
         if (mShuttingDown) {
-            return; 
+            return;
         }
-        
+
         for (auto& [type, loader] : mLoaders) {
             loader->update();
         }
@@ -155,69 +153,56 @@ namespace Strike {
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
     }
 
-    std::shared_ptr<Asset> AssetManager::loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder,  bool async){
+    std::shared_ptr<Asset> AssetManager::loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder, bool async) {
         auto loader = getLoader(assetType);
-        if (!loader) {
-            STRIKE_CORE_ERROR("No loader found for asset type '{}'", assetType);
-            placeholder->setState(AssetState::Failed);
-            return placeholder;
-        }
+        STRIKE_ASSERT(loader, "No loader found for asset type '{}'", assetType);
 
         if (assetType == Template::getStaticTypeName()) {
-            ModelParser parser;
-            if (!parser.parseModel(filePath)) {
-                placeholder->setState(AssetState::Failed);
-                return placeholder;
-            }
-            filePath.replace_extension(".tmpl");
-        }
+            std::filesystem::path tmplPath = filePath;
+            tmplPath.replace_extension(".tmpl");
 
+            if (!std::filesystem::exists(tmplPath)) {
+                ModelParser parser;
+                if (!parser.parseModel(filePath)) {
+                    placeholder->setState(AssetState::Failed);
+                    return placeholder;
+                }
+            }
+
+            filePath = tmplPath;
+        }
 
         placeholder->setState(AssetState::Loading);
         mLoadedAssets[id] = placeholder;
 
-        if (async){
+        if (async) {
             loader->loadAsync(id, filePath, placeholder);
             return placeholder;
-        }
-        else{
+        } else {
             return loader->load(id, filePath);
         }
-
     }
 
     void AssetManager::deserialize(const pugi::xml_node& node, const std::filesystem::path& basePath, bool direct) {
         if (mShuttingDown) {
             return;
         }
-        
+
         if (direct) {
             const std::string assetId = node.attribute("id").as_string();
-            
-            // Check if asset already exists
+
             auto it = mLoadedAssets.find(assetId);
             if (it != mLoadedAssets.end()) {
-                const std::string typeName = node.name();
-                
-                // Check if type matches
-                if (it->second->getTypeName() != typeName) {
-                    STRIKE_CORE_ERROR(
-                        "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
-                        assetId,
-                        typeName,
-                        it->second->getTypeName()
-                    );
-                }
+                STRIKE_ASSERT(it->second->getTypeName() == node.name(),
+                    "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                    assetId, node.name(), it->second->getTypeName()
+                );
                 return;
             }
-            
-            const std::string typeName = node.name();
-            auto loader = getLoader(typeName);
-            if (!loader) {
-                STRIKE_CORE_ERROR("No loader found for asset type '{}'", typeName);
-                return;
-            }
-            
+
+            auto loader = getLoader(node.name());
+            STRIKE_ASSERT(loader, "No loader found for asset type '{}'", node.name());
+
             auto asset = loader->loadFromNode(node, basePath);
             if (asset) {
                 mLoadedAssets[asset->getId()] = asset;
@@ -225,31 +210,19 @@ namespace Strike {
         } else {
             for (const pugi::xml_node& assetNode : node.children()) {
                 const std::string assetId = assetNode.attribute("id").as_string();
-                
-                // Check if asset already exists
+
                 auto it = mLoadedAssets.find(assetId);
                 if (it != mLoadedAssets.end()) {
-                    const std::string typeName = assetNode.name();
-                    
-                    // Check if type matches
-                    if (it->second->getTypeName() != typeName) {
-                        STRIKE_CORE_ERROR(
-                            "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
-                            assetId,
-                            typeName,
-                            it->second->getTypeName()
-                        );
-                    }
+                    STRIKE_ASSERT(it->second->getTypeName() == assetNode.name(),
+                        "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                        assetId, assetNode.name(), it->second->getTypeName()
+                    );
                     continue;
                 }
-                
-                const std::string typeName = assetNode.name();
-                auto loader = getLoader(typeName);
-                if (!loader) {
-                    STRIKE_CORE_ERROR("No loader found for asset type '{}'", typeName);
-                    continue;
-                }
-                
+
+                auto loader = getLoader(assetNode.name());
+                STRIKE_ASSERT(loader, "No loader found for asset type '{}'", assetNode.name());
+
                 auto asset = loader->loadFromNode(assetNode, basePath);
                 if (asset) {
                     mLoadedAssets[asset->getId()] = asset;
@@ -258,4 +231,4 @@ namespace Strike {
         }
     }
 
-} 
+}

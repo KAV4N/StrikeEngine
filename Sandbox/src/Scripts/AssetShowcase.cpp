@@ -26,7 +26,7 @@ void AssetShowcase::onStart()
 
     mLabel = scene->createEntity();
     auto& text = mLabel.addComponent<Strike::TextComponent>();
-    text.setText("Asset Showcase — Auto-advancing every 2 seconds");
+    text.setText("Asset Showcase - Auto-advancing every 2 seconds");
     text.setColor(glm::uvec3(80,220,255));
     text.setPosition(glm::vec2(0.03f,0.03f));
     text.setPivot(glm::vec2(0,0));

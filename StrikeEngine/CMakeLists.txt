@@ -111,7 +111,7 @@ elseif(UNIX)
 endif()
 
 # Compile definitions
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(${PROJECT_NAME} PUBLIC
     CRT_SECURE_NO_WARNINGS
     GLFW_INCLUDE_NONE
     $<$<CONFIG:Debug>:STRIKE_DEBUG>

@@ -16,11 +16,11 @@ Strike::AssetManager& am = Strike::AssetManager::get();
 
 | Type | XML tag | File formats |
 |---|---|---|
-| `Model` | `<model>` | OBJ, FBX, GLTF |
-| `Texture` | `<texture>` | PNG, JPG |
-| `CubeMap` | `<cubeMap>` | PNG, JPG |
-| `Audio` | `<audio>` | WAV, MP3, OGG, FLAC |
-| `Template` | `<template>` | `.tmpl` (auto-generated from 3D models) |
+| `Model` | `<Model>` | OBJ, FBX, GLTF |
+| `Texture` | `<Texture>` | PNG, JPG |
+| `CubeMap` | `<CubeMap>` | PNG, JPG |
+| `Audio` | `<Audio>` | WAV, MP3, OGG, FLAC |
+| `Template` | `<Template>` | `.tmpl` (auto-generated from 3D models) |
 
 ---
 
@@ -56,23 +56,32 @@ Blocks until the asset is fully loaded and ready. Safe to use immediately after 
 void MyScript::onStart() {
     auto& am = Strike::AssetManager::get();
 
-    auto model = am.load<Strike::Model>("crate", "Assets/Models/crate.obj");
+    auto model   = am.load<Strike::Model>  ("crate",     "Assets/Models/crate.obj");
     auto texture = am.load<Strike::Texture>("crate_tex", "Assets/Textures/crate.png");
-    auto audio = am.load<Strike::Audio>("explosion", "Assets/Sounds/explosion.wav");
+    auto audio   = am.load<Strike::Audio>  ("explosion", "Assets/Sounds/explosion.wav");
 }
 ```
 
-If an asset with the same ID is already loaded and the type matches, the cached instance is returned immediately. If the type doesn't match, `nullptr` is returned and an error is logged.
+If an asset with the same ID is already loaded and the type matches, the cached instance is returned immediately. If the type doesn't match, an assertion fires in Debug builds and the cast result is returned regardless — treat a type mismatch as a bug in calling code.
+
+> **Template note:** Always pass the source model path (e.g. `.obj`) when loading a `Template` — never the `.tmpl` path directly. The engine generates and caches the `.tmpl` file automatically.
+
+```cpp
+// Correct
+auto tmpl = am.load<Strike::Template>("player_tmpl", "Assets/Models/player.obj");
+
+// Wrong - assertion fires in Debug
+auto tmpl = am.load<Strike::Template>("player_tmpl", "Assets/Models/player.tmpl");
+```
 
 ### Asynchronous
 
-Returns a placeholder immediately in `Loading` state. The asset becomes `Ready` after `update()` processes the background thread result. Call `isReady()` before use.
+Returns a placeholder immediately in `Loading` state. The asset transitions to `Ready` after `update()` processes the background thread result. Always check `isReady()` before use.
 
 ```cpp
 void MyScript::onStart() {
     auto& am = Strike::AssetManager::get();
 
-    // Kick off background loading
     mTexture = am.loadAsync<Strike::Texture>("terrain_tex", "Assets/Textures/terrain.png");
 }
 
@@ -83,7 +92,7 @@ void MyScript::onUpdate(float deltaTime) {
 }
 ```
 
-> **Important:** `AssetManager::update()` must be called each frame for async assets to complete GPU initialization. This is handled automatically by the engine loop - you do not need to call it manually.
+> **Important:** `AssetManager::update()` must be called each frame for async assets to complete GPU initialization. This is handled automatically by the engine loop — you do not need to call it manually.
 
 ### Path Resolution
 
@@ -93,13 +102,13 @@ Paths starting with `Assets` are resolved relative to the engine root (your `Ass
 
 ## Retrieving Assets by ID
 
-Use `getAsset<T>()` to retrieve an already-loaded asset by its ID. This is the primary way to access assets declared in your scene XML from script code.
+Use `getAsset<T>()` to retrieve an already-loaded asset by its ID. Returns `nullptr` if the asset is not found. If the asset exists but the type doesn't match, an assertion fires in Debug builds.
 
 ```cpp
 void MyScript::onStart() {
     auto& am = Strike::AssetManager::get();
 
-    // Returns shared_ptr<Model>, or nullptr if not found or type mismatch
+    // Returns shared_ptr<Model>, or nullptr if not found
     auto model = am.getAsset<Strike::Model>("player_model");
 
     if (model && model->isReady()) {
@@ -131,13 +140,13 @@ void MyScript::onUpdate(float deltaTime) {
     auto& am = Strike::AssetManager::get();
 
     // Does an asset with this ID exist in the cache?
-    if (am.hasAsset("terrain_tex")) { Assets. }
+    if (am.hasAsset("terrain_tex")) { ... }
 
     // Is a specific asset still loading?
-    if (am.isAssetLoading("terrain_tex")) { Assets. }
+    if (am.isAssetLoading("terrain_tex")) { ... }
 
     // Are any assets still loading?
-    if (am.isLoading()) { Assets. }
+    if (am.isLoading()) { ... }
 
     // Is the manager shutting down?
     if (am.isShuttingDown()) { return; }
@@ -186,8 +195,6 @@ Note that `removeAsset()` only removes the cache entry. If other `shared_ptr` ow
 
 ## Complete Example - Runtime Asset Loading
 
-This example shows a script that spawns a new entity with a dynamically loaded model and texture, then removes the assets when the entity is destroyed.
-
 ```cpp
 // SpawnOnEvent.h
 std::shared_ptr<Strike::Model>   mSpawnModel;
@@ -199,7 +206,7 @@ std::shared_ptr<Strike::Texture> mSpawnTexture;
 void SpawnOnEvent::onStart() {
     auto& am = Strike::AssetManager::get();
 
-    mSpawnModel   = am.load<Strike::Model>("crate",     "Assets/Models/crate.obj");
+    mSpawnModel   = am.load<Strike::Model>  ("crate",     "Assets/Models/crate.obj");
     mSpawnTexture = am.load<Strike::Texture>("crate_tex", "Assets/Textures/crate.png");
 }
 
@@ -275,13 +282,13 @@ REGISTER_SCRIPT(LevelLoader)
 
 ## Notes
 
-**Caching** - Assets are keyed by ID. Calling `load<T>()` or `loadAsync<T>()` with an ID that already exists returns the cached instance without re-loading. The type must match, otherwise `nullptr` is returned and an error is logged.
+**Caching** — Assets are keyed by ID. Calling `load<T>()` or `loadAsync<T>()` with an ID that already exists returns the cached instance without re-loading. Requesting a cached ID with a mismatched type triggers an assertion in Debug builds — treat this as a bug, not a recoverable condition.
 
-**Reference counting** - Assets are managed by `std::shared_ptr`. The `AssetManager` holds one reference; every `getAsset<T>()` caller holds another. Calling `removeAsset()` drops the manager's reference but the asset stays alive as long as any other owner holds a copy.
+**Reference counting** — Assets are managed by `std::shared_ptr`. The `AssetManager` holds one reference; every `getAsset<T>()` caller holds another. Calling `removeAsset()` drops the manager's reference but the asset stays alive as long as any other owner holds a copy.
 
-**Thread safety** - Background loading threads only write to a staging buffer. GPU initialization always happens on the main thread inside `update()`, which is driven by the engine loop automatically.
+**Type safety** — All template methods enforce `T` must derive from `Asset` via `static_assert` at compile time. Type mismatches at runtime (ID exists but wrong type) trigger an assertion in Debug builds via `STRIKE_ASSERT`.
 
-**Type safety** - All template methods enforce `T` must derive from `Asset` via `static_assert` at compile time. Type mismatches at runtime (ID exists but wrong type) are caught, logged, and return `nullptr`Assets
+---
 
 ## Next Step
 

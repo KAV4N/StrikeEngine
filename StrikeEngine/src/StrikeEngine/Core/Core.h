@@ -16,8 +16,8 @@
 #endif
 
 #ifdef STRIKE_ENABLE_ASSERTS
-    #define STRIKE_ASSERT(x, ...) { if(!(x)) { STRIKE_ERROR("Assertion Failed: {0}", ##__VA_ARGS__); STRIKE_DEBUGBREAK(); } }
-    #define STRIKE_CORE_ASSERT(x, ...) { if(!(x)) { STRIKE_CORE_ERROR("Assertion Failed: {0}", ##__VA_ARGS__); STRIKE_DEBUGBREAK(); } }
+    #define STRIKE_ASSERT(x, ...) { if(!(x)) { STRIKE_ERROR("Assertion Failed: {}", fmt::format(__VA_ARGS__)); STRIKE_DEBUGBREAK(); } }
+    #define STRIKE_CORE_ASSERT(x, ...) { if(!(x)) { STRIKE_CORE_ERROR("Assertion Failed: {}", fmt::format(__VA_ARGS__)); STRIKE_DEBUGBREAK(); } }
 #else
     #define STRIKE_ASSERT(x, ...)
     #define STRIKE_CORE_ASSERT(x, ...)

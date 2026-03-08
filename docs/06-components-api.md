@@ -257,18 +257,18 @@ Get the mass in kilograms.
 
 ### Collision Shape
 
-> **Important — Size and Scale Behavior:**
+> **Important - Size and Scale Behavior:**
 >
 > The collision box size is **not automatically derived from the entity's transform scale**. How size is determined depends on whether a `RendererComponent` is present on the same entity, and whether this is the first creation or a recreation:
 >
-> - **With a `RendererComponent` (first body creation only):** On the very first creation of the physics body (at scene load or when the body is first initialized), the system reads the bounds from the assigned model or mesh and multiplies them by the entity's world scale to compute the collision size and center offset. This result is written back into the component. **Any manual calls to `setSize()` or `setCenter()` — including those made in `onStart()` — will be overridden and ignored during this initial creation.**
+> - **With a `RendererComponent` (first body creation only):** On the very first creation of the physics body (at scene load or when the body is first initialized), the system reads the bounds from the assigned model or mesh and multiplies them by the entity's world scale to compute the collision size and center offset. This result is written back into the component. **Any manual calls to `setSize()` or `setCenter()` - including those made in `onStart()` - will be overridden and ignored during this initial creation.**
 >
 > - The entity's transform scale is **never applied automatically** after changing scale. You must account for scale yourself and pass the fully scaled dimensions to `setSize()`.
 
 #### `void setSize(const glm::vec3& size)`
 Set the collision box dimensions in world units. Triggers body recreation if the value changes.
 
-> **Note:** Ignored on initial body creation when a `RendererComponent` is present — the size is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
+> **Note:** Ignored on initial body creation when a `RendererComponent` is present - the size is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
 
 #### `const glm::vec3& getSize() const`
 Get the current collision box dimensions.
@@ -276,7 +276,7 @@ Get the current collision box dimensions.
 #### `void setCenter(const glm::vec3& center)`
 Set the collision box center offset from the entity's position. Triggers body recreation if the value changes.
 
-> **Note:** Ignored on initial body creation when a `RendererComponent` is present — the center offset is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
+> **Note:** Ignored on initial body creation when a `RendererComponent` is present - the center offset is derived from the model/mesh bounds at that point. Respected on all subsequent recreations.
 
 #### `const glm::vec3& getCenter() const`
 Get the collision box center offset.
@@ -390,7 +390,7 @@ void MyScript::onUpdate(float dt) {
 
 ```cpp
 // Size is derived from the RendererComponent's model bounds × world scale on first body creation.
-// Do NOT call setSize() in onStart() — it will be overwritten during the initial creation.
+// Do NOT call setSize() in onStart() - it will be overwritten during the initial creation.
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 physics.setCanCollide(true);
 physics.setAnchored(false);
@@ -405,7 +405,7 @@ physics.setAngularVelocity(glm::vec3(100.0f, 0.0f, 0.0f));
 **Dynamic body without a renderer (manual size required):**
 
 ```cpp
-// No RendererComponent — entity scale is NEVER applied automatically.
+// No RendererComponent - entity scale is NEVER applied automatically.
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 glm::vec3 entityScale = entity.getScale();
 physics.setSize(glm::vec3(1.0f, 2.0f, 1.0f) * entityScale);
@@ -710,7 +710,7 @@ XML scene configuration (typically attached to the camera entity):
 
 The `LogicComponent` allows multiple `Script` instances to be attached to an entity, providing custom behavior and game logic. Scripts are stored and managed internally as unique pointers.
 
-> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type — either programmatically via `addScript<T>()` or through XML — will be rejected with a `STRIKE_CORE_ERROR` log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
+> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a `STRIKE_CORE_ERROR` log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
 
 ### Constructor
 

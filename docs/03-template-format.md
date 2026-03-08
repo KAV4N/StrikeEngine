@@ -12,7 +12,7 @@ A template file has three parts:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<template name="my_object" source="../Models/my_object.obj">
+<template>
 
   <assets>
     <!-- model and texture declarations -->
@@ -25,12 +25,7 @@ A template file has three parts:
 </template>
 ```
 
-### `<template>` Root Attributes
-
-| Attribute | Description |
-|---|---|
-| `name` | Identifier for this template (optional) |
-| `source` | Path to the originating 3D model file (optional) |
+The `<template>` root element takes no attributes.
 
 ---
 
@@ -45,7 +40,7 @@ Declares the models and textures referenced by the entities inside this template
 </assets>
 ```
 
-See [Scene Format - Assets](scene-format.md#assets) for the full list of supported asset types and attributes.
+See [Scene Format - Assets](02-scene-format.md#assets) for the full list of supported asset types and attributes.
 
 ---
 
@@ -70,6 +65,106 @@ Defines the entity hierarchy. This mirrors the scene format, with full support f
 
 ---
 
+## Supported Components in Templates
+
+All scene components are valid inside template entity hierarchies. The most commonly used in templates are:
+
+### `<renderer>`
+
+Assigns a model mesh and optional texture or color tint to the entity.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `model` | - | Model asset ID (declared in the template's `<assets>`) |
+| `texture` | - | Texture asset ID (optional) |
+| `color` | `"255,255,255"` | RGB color tint `"R,G,B"` |
+| `mesh` | - | Specific mesh index from the model. Used to target a single submesh in multi-mesh models. |
+
+```xml
+<renderer model="crate_model" texture="crate_tex" mesh="0" color="255,255,255"/>
+```
+
+---
+
+### `<physics>`
+
+Adds a rigid body to the entity. When a `<renderer>` is also present, collision size is automatically derived from the model/mesh bounds on the **first** body creation.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `anchored` | `false` | Static body (infinite mass, ignores forces) |
+| `collide` | `true` | Enable collision detection |
+| `mass` | `1.0` | Mass in kilograms (ignored when anchored) |
+| `friction` | `0.5` | Friction coefficient |
+| `restitution` | `0.0` | Bounciness (`0.0` = no bounce, `1.0` = perfect bounce) |
+| `lDamping` | `0.0` | Linear damping |
+| `aDamping` | `0.05` | Angular damping |
+| `lockRot` | `"0,0,0"` | Per-axis rotation lock `"X,Y,Z"` where `1` = locked, `0` = free |
+| `size` | `"1,1,1"` | Collision box dimensions `"X,Y,Z"`. Overridden by renderer bounds on first creation only. |
+
+Collision box size can also be defined with a `<size>` child element:
+
+```xml
+<physics anchored="false" mass="20" friction="0.6" restitution="0.1">
+  <size x="1" y="1" z="1"/>
+</physics>
+```
+
+> **Note:** When a `<renderer>` is present, `size` set in XML or in `onStart()` is overridden during initial body creation — the engine reads bounds from the model/mesh at that point. The `size` value is respected on all subsequent recreations.
+
+---
+
+### `<light>`
+
+Adds a point light source to the entity.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `color` | `"255,255,255"` | RGB color (0–255 per channel) |
+| `intensity` | `1.0` | Light intensity multiplier |
+| `radius` | `10.0` | Light influence radius in world units |
+| `fallOff` | - | Falloff distance (optional) |
+
+```xml
+<light color="255,200,100" intensity="4" radius="15.0"/>
+```
+
+---
+
+### `<audiosource>`
+
+Attaches an audio source to the entity with optional spatial audio.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `audio` | - | Audio asset ID |
+| `volume` | `1.0` | Volume level |
+| `loop` | `false` | Loop the audio |
+| `spatial` | `false` | Enable 3D spatial audio |
+| `minDistance` | `1.0` | Full-volume distance |
+| `maxDistance` | `50.0` | Silent distance |
+
+```xml
+<audiosource audio="engine_sfx" loop="true" volume="0.6" spatial="true" minDistance="2" maxDistance="20"/>
+```
+
+---
+
+### `<logic>`
+
+Attaches one or more scripts to the entity. Only one instance of each script type can exist per entity.
+
+```xml
+<logic>
+  <script type="RotateScript"/>
+  <script type="DamageZone"/>
+</logic>
+```
+
+The `type` attribute must match the registered script class name exactly.
+
+---
+
 ## Automatic Generation
 
 Template files are generated automatically by the `ModelParser` when a `<template>` asset is declared in your scene file pointing to a 3D model. You generally don't need to write them by hand.
@@ -91,7 +186,6 @@ Template files are generated automatically by the `ModelParser` when a `<templat
 
 The engine will parse `vehicle.obj`, generate `vehicle.tmpl` alongside it, and cache it for reuse.
 
-
 ---
 
 ## Instantiating a Template in a Scene
@@ -109,7 +203,7 @@ Once declared as an asset, use the `template` attribute on any `<entity>` to sta
 </entities>
 ```
 
-Each instance is independent - overriding `position`, `rotation`, and `scale` on the entity affects only that instance.
+Each instance is independent — overriding `position`, `rotation`, and `scale` on the entity affects only that instance.
 
 ---
 
@@ -117,7 +211,7 @@ Each instance is independent - overriding `position`, `rotation`, and `scale` on
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<template name="crate" source="../Models/crate.obj">
+<template>
 
   <assets>
     <model id="crate_model" src="@/Assets/Models/crate.obj"/>
@@ -142,9 +236,13 @@ Each instance is independent - overriding `position`, `rotation`, and `scale` on
 
 ## Limitations
 
-- **No nested templates** - a `.tmpl` file cannot reference another template asset. Use scene-level entity nesting instead.
-- **Asset paths are relative to the template file** - use the `../` prefix to reference paths from the project root.
-- **Auto-generated files may be overwritten** - if you manually edit a `.tmpl` file, avoid re-triggering generation from the same source model or your edits will be lost.
+- **No nested templates** — a `.tmpl` file cannot reference another template asset. Use scene-level entity nesting instead.
+- **Asset paths are relative to the template file** — use the `../` prefix to reference paths from the project root, or `@/` for root-relative paths.
+- **Auto-generated files may be overwritten** — if you manually edit a `.tmpl` file, avoid re-triggering generation from the same source model or your edits will be lost.
+- **Physics size auto-derivation applies on first creation only** — when a `<renderer>` is present, the physics body size is derived from the model bounds on initial creation. Manual `size` values take effect on subsequent body recreations.
+- **One script type per entity** — duplicate `<script type="..."/>` entries on the same entity will be rejected at runtime with a `STRIKE_CORE_ERROR`.
+
+---
 
 ## Next Step
 

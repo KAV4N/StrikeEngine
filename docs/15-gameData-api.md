@@ -104,7 +104,7 @@ float health     = data.setFloat("health", 0.75f);  // 0.75f
 bool complete    = data.setBool("levelComplete", true);
 std::string name = data.setString("playerName", "Hero");
 
-// Retrieve values — always check hasKey() first to avoid assertion failures
+// Retrieve values - always check hasKey() first to avoid assertion failures
 if (data.hasKey("score")) {
     int s = data.getInt("score");  // 100
 }

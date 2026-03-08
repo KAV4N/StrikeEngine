@@ -151,8 +151,6 @@ namespace Strike {
 
         std::shared_ptr<Asset> loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder, bool async);
 
-        
-
         friend class Asset;
         friend class SceneLoader;
         friend class TemplateLoader;
@@ -166,65 +164,55 @@ namespace Strike {
     template<typename T>
     std::shared_ptr<T> AssetManager::load(const std::string& id, const std::filesystem::path& filePath) {
         static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
-        
+
         auto placeholder = std::make_shared<T>(id, filePath);
 
         if (mShuttingDown) {
             placeholder->setState(AssetState::Failed);
             return placeholder;
         }
+
+
+       if constexpr (std::is_same_v<T, Template>) {
+            STRIKE_ASSERT(filePath.extension() != ".tmpl",
+                "Asset '{}': use the model path (e.g. .obj) not .tmpl directly", id);
+        }
         
-        // Check if asset already exists with this ID
+        
+
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
-            // Asset exists - check if type matches
-            if (it->second->getTypeName() != T::getStaticTypeName()) {
-                STRIKE_CORE_ERROR(
-                    "Asset with id '{}' already exists with different type. Expected '{}', got '{}'",
-                    id,
-                    T::getStaticTypeName(),
-                    it->second->getTypeName()
-                );
-                placeholder->setState(AssetState::Failed);
-                return placeholder;
-            }
-            
-            // Type matches, return existing asset
+            STRIKE_ASSERT(it->second->getTypeName() == T::getStaticTypeName(),
+                "Asset '{}': already exists with different type. Expected '{}', got '{}'",
+                id, T::getStaticTypeName(), it->second->getTypeName()
+            );
             return std::static_pointer_cast<T>(it->second);
         }
 
-
-        
         return std::static_pointer_cast<T>(loadInternal(id, filePath, T::getStaticTypeName(), placeholder, false));
     }
 
     template<typename T>
     std::shared_ptr<T> AssetManager::loadAsync(const std::string& id, const std::filesystem::path& filePath) {
         static_assert(std::is_base_of<Asset, T>::value, "T must derive from Asset");
-        
+
         auto placeholder = std::make_shared<T>(id, filePath);
 
         if (mShuttingDown) {
             placeholder->setState(AssetState::Failed);
             return placeholder;
         }
-        
-        // Check if asset already exists with this ID
+
+        if constexpr (std::is_same_v<T, Template>) {
+            STRIKE_ASSERT(filePath.extension() != ".tmpl", "Asset '{}': use the model path (e.g. .obj) not .tmpl directly", id);
+        }
+
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
-            // Asset exists - check if type matches
-            if (it->second->getTypeName() != T::getStaticTypeName()) {
-                STRIKE_CORE_ERROR(
-                    "Asset with id '{}' already exists with different type. Expected '{}', got '{}'",
-                    id,
-                    T::getStaticTypeName(),
-                    it->second->getTypeName()
-                );
-                placeholder->setState(AssetState::Failed);
-                return placeholder;
-            }
-            
-            // Type matches, return existing asset
+            STRIKE_ASSERT(it->second->getTypeName() == T::getStaticTypeName(),
+                "Asset '{}': already exists with different type. Expected '{}', got '{}'",
+                id, T::getStaticTypeName(), it->second->getTypeName()
+            );
             return std::static_pointer_cast<T>(it->second);
         }
 
@@ -241,16 +229,10 @@ namespace Strike {
             return nullptr;
         }
 
-        if (it->second->getTypeName() != T::getStaticTypeName())
-        {
-            STRIKE_CORE_ERROR(
-                "Type mismatch for asset '{}': expected '{}', got '{}'",
-                id,
-                T::getStaticTypeName(),
-                it->second->getTypeName()
-            );
-            return nullptr;
-        }
+        STRIKE_ASSERT(it->second->getTypeName() == T::getStaticTypeName(),
+            "Type mismatch for asset '{}': expected '{}', got '{}'",
+            id, T::getStaticTypeName(), it->second->getTypeName()
+        );
 
         return std::static_pointer_cast<T>(it->second);
     }

@@ -14,8 +14,8 @@ Returns the singleton instance of the World class.
 #### `void loadScene(const std::filesystem::path& path, bool clearAssets = true)`
 Loads a scene from the specified file path. The actual loading is deferred to the end of the frame, and the new scene becomes active in the next frame.
 
-- `path` — File path to the scene file. If the file does not exist, an error is logged and the load is aborted.
-- `clearAssets` — If `true` (default), all assets currently loaded in the `AssetManager` will be cleared before the new scene is loaded. Set to `false` to retain existing assets across scene transitions.
+- `path` - File path to the scene file. If the file does not exist, an error is logged and the load is aborted.
+- `clearAssets` - If `true` (default), all assets currently loaded in the `AssetManager` will be cleared before the new scene is loaded. Set to `false` to retain existing assets across scene transitions.
 
 #### `Scene* getScene() const`
 Returns a pointer to the currently active scene (may be nullptr if no scene is loaded).

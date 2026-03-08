@@ -20,7 +20,7 @@ namespace Strike {
      */
     struct PlayingSound {
         std::unique_ptr<ma_sound>  sound;          /**< Miniaudio sound instance */
-        std::shared_ptr<Audio>     audioAsset;     /**< Cached asset — avoids per-frame AssetManager lookup */
+        std::shared_ptr<Audio>     audioAsset;     /**< Cached asset - avoids per-frame AssetManager lookup */
         bool                       isSpatial    = false;
         float                      cachedVolume = 1.0f;
     };
