@@ -1,17 +1,16 @@
 # StrikeEngine
 
-A C++17 game engine built on OpenGL 4.3, featuring an XML-driven scene system, ECS architecture, physics simulation, and spatial audio. StrikeEngine is an learning and research project. 
+A C++17 game engine built on OpenGL 4.3, featuring an XML-driven scene system, ECS architecture, physics simulation, and spatial audio. StrikeEngine is a learning and research project.
 
 ---
 
 ## Features
 
 - **XML Scene System** - Define your entire scene in a single `.xml` file: entities, components, assets, lighting, fog, and skybox
-- **C++ Scripting** - similiar to Unity
-
-- **Clustered Forward Rendering** - OpenGL 3D world rendering - shader implementation based on [Dave H's clustered shading tutorial](https://github.com/DaveH355/clustered-shading) for building clusteres
+- **C++ Scripting** - Similar to Unity
+- **Clustered Forward Rendering** - OpenGL 3D world rendering - shader implementation based on [Dave H's clustered shading tutorial](https://github.com/DaveH355/clustered-shading) for building clusters
 - **Font Rendering** - UI text via FreeType
-- **Entity Component System** - Powered vie EnTT
+- **Entity Component System** - Powered via EnTT
 - **Physics Simulation** - Rigid body dynamics and collision detection via Bullet3
 - **3D Audio** - Spatial audio with distance attenuation via miniaudio
 - **Model Loading** - OBJ, FBX, and GLTF support via Assimp
@@ -23,6 +22,19 @@ A C++17 game engine built on OpenGL 4.3, featuring an XML-driven scene system, E
 
 ![render](docs/imgs/demoRender.png)
 
+---
+
+## Built With StrikeEngine
+
+### [SpaceRacer](https://github.com/KAV4N/SpaceRacer)
+
+A fast-paced endless space racing game built entirely on StrikeEngine. Fly through procedurally generated asteroid fields, collect coins, and survive as long as possible — while obstacles pulse and grow in real-time to the beat of the soundtrack.
+
+![SpaceRacer gameplay](https://github.com/KAV4N/SpaceRacer/blob/main/imgs/gameplay.gif?raw=true)
+
+
+
+---
 
 ## Inspirations
 
@@ -31,8 +43,6 @@ StrikeEngine's architecture and API design were inspired by:
 - **[PlayCanvas](https://playcanvas.com)** - Entity hierarchy management
 - **[Unity](https://unity.com)** - Component-based entity model, script lifecycle (`onCreate`, `onStart`, `onUpdate`, `onDestroy`)
 - **[Hazel](https://github.com/TheCherno/Hazel)** - Application lifecycle, event system design, and logging architecture, based on the [Hazel game engine tutorial series](https://www.youtube.com/playlist?list=PLlrATfBNZ98dC-V-N3m0Go4deliWHPFwT) by [TheCherno](https://github.com/TheCherno)
-
-
 
 ---
 
