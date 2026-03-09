@@ -29,7 +29,8 @@ void SwapScene::onUpdate(float dt)
     if (tDown && !mTWasDown)
     {
         auto& gd = Strike::GameData::get();
-        bool current = gd.getBool("swap_sound_enabled", true);
+        bool current = gd.getBool("swap_sound_enabled");
+
         gd.setBool("swap_sound_enabled", !current);
 
         STRIKE_INFO("swap_sound_enabled toggled -> {}", !current ? "ON" : "OFF");
@@ -48,13 +49,13 @@ void SwapScene::doSwap()
 
     onSceneLeave();
 
-    int swapCount = gd.getInt("swap_count", 0);
+    int swapCount = gd.getInt("swap_count");
     int nextIndex = swapCount % SCENE_COUNT;
     std::string nextScene = SCENES[nextIndex];
 
     gd.setInt("swap_count", swapCount + 1);
 
-    int score = gd.getInt("player_score", 0);
+    int score = gd.getInt("player_score");
     gd.setInt("player_score", score + 100);
 
     gd.setString("current_scene", nextScene);
@@ -86,13 +87,13 @@ void SwapScene::onSceneEnter()
 {
     auto& gd = Strike::GameData::get();
 
-    int    swapCount = gd.getInt("swap_count", 0);
-    int    score     = gd.getInt("player_score", 0);
-    float  lastSwap  = gd.getFloat("last_swap_time", 0.0f);
-    double totalTime = gd.getDouble("total_time", 0.0);
-    bool   soundOn   = gd.getBool("swap_sound_enabled", true);
-    std::string sid  = gd.getString("session_id", "?");
-    std::string scene = gd.getString("current_scene", "?");
+    int    swapCount = gd.getInt("swap_count");
+    int    score     = gd.getInt("player_score");
+    float  lastSwap  = gd.getFloat("last_swap_time");
+    double totalTime = gd.getDouble("total_time");
+    bool   soundOn   = gd.getBool("swap_sound_enabled");
+    std::string sid  = gd.getString("session_id");
+    std::string scene = gd.getString("current_scene");
 
     STRIKE_INFO("=== Scene entered ===");
     STRIKE_INFO("session_id        = {}", sid);
@@ -114,7 +115,7 @@ void SwapScene::onSceneLeave()
 {
     auto& gd = Strike::GameData::get();
 
-    double prev = gd.getDouble("total_time", 0.0);
+    double prev = gd.getDouble("total_time");
     gd.setDouble("total_time", prev + static_cast<double>(mTimeInScene));
 
     if (gd.hasKey("temp_swap_flag"))
@@ -126,7 +127,7 @@ void SwapScene::onSceneLeave()
     gd.setBool("temp_swap_flag", true);
 
     STRIKE_INFO("onSceneLeave – total_time accumulated to {}s",
-        gd.getDouble("total_time", 0.0));
+        gd.getDouble("total_time"));
 }
 
 void SwapScene::printGameDataSummary()
@@ -163,10 +164,10 @@ void SwapScene::updateHUD()
 {
     auto& gd = Strike::GameData::get();
 
-    std::string scene = gd.getString("current_scene", "?");
-    int swaps         = gd.getInt("swap_count", 0);
-    int score         = gd.getInt("player_score", 0);
-    bool soundOn      = gd.getBool("swap_sound_enabled", true);
+    std::string scene = gd.getString("current_scene");
+    int swaps         = gd.getInt("swap_count");
+    int score         = gd.getInt("player_score");
+    bool soundOn      = gd.getBool("swap_sound_enabled");
     size_t keyCount   = gd.getDataCount();
 
     auto slash = scene.rfind('/');
