@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.4 GLX - www.glfw.org
+// GLFW 3.5 GLX - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2019 Camilla Löwy <elmindreda@glfw.org>
@@ -119,9 +119,7 @@ static GLFWbool chooseGLXFBConfig(const _GLFWfbconfig* desired,
         u->accumAlphaBits = getGLXFBConfigAttrib(n, GLX_ACCUM_ALPHA_SIZE);
 
         u->auxBuffers = getGLXFBConfigAttrib(n, GLX_AUX_BUFFERS);
-
-        if (getGLXFBConfigAttrib(n, GLX_STEREO))
-            u->stereo = GLFW_TRUE;
+        u->stereo = getGLXFBConfigAttrib(n, GLX_STEREO);
 
         if (_glfw.glx.ARB_multisample)
             u->samples = getGLXFBConfigAttrib(n, GLX_SAMPLES);
@@ -253,8 +251,6 @@ static void destroyContextGLX(_GLFWwindow* window)
 //////                       GLFW internal API                      //////
 //////////////////////////////////////////////////////////////////////////
 
-// Initialize GLX
-//
 GLFWbool _glfwInitGLX(void)
 {
     const char* sonames[] =
@@ -426,18 +422,13 @@ GLFWbool _glfwInitGLX(void)
     return GLFW_TRUE;
 }
 
-// Terminate GLX
-//
 void _glfwTerminateGLX(void)
 {
     // NOTE: This function must not call any X11 functions, as it is called
     //       after XCloseDisplay (see _glfwTerminateX11 for details)
 
-    if (_glfw.glx.handle)
-    {
-        _glfwPlatformFreeModule(_glfw.glx.handle);
-        _glfw.glx.handle = NULL;
-    }
+    _glfwPlatformFreeModule(_glfw.glx.handle);
+    _glfw.glx.handle = NULL;
 }
 
 #define SET_ATTRIB(a, v) \
@@ -447,8 +438,6 @@ void _glfwTerminateGLX(void)
     attribs[index++] = v; \
 }
 
-// Create the OpenGL or OpenGL ES context
-//
 GLFWbool _glfwCreateContextGLX(_GLFWwindow* window,
                                const _GLFWctxconfig* ctxconfig,
                                const _GLFWfbconfig* fbconfig)
@@ -626,6 +615,8 @@ GLFWbool _glfwCreateContextGLX(_GLFWwindow* window,
         return GLFW_FALSE;
     }
 
+    window->context.glx.fbconfig = native;
+
     window->context.makeCurrent = makeContextCurrentGLX;
     window->context.swapBuffers = swapBuffersGLX;
     window->context.swapInterval = swapIntervalGLX;
@@ -677,7 +668,6 @@ GLFWbool _glfwChooseVisualGLX(const _GLFWwndconfig* wndconfig,
 
 GLFWAPI GLXContext glfwGetGLXContext(GLFWwindow* handle)
 {
-    _GLFWwindow* window = (_GLFWwindow*) handle;
     _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
 
     if (_glfw.platform.platformID != GLFW_PLATFORM_X11)
@@ -685,6 +675,9 @@ GLFWAPI GLXContext glfwGetGLXContext(GLFWwindow* handle)
         _glfwInputError(GLFW_PLATFORM_UNAVAILABLE, "GLX: Platform not initialized");
         return NULL;
     }
+
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
 
     if (window->context.source != GLFW_NATIVE_CONTEXT_API)
     {
@@ -697,7 +690,6 @@ GLFWAPI GLXContext glfwGetGLXContext(GLFWwindow* handle)
 
 GLFWAPI GLXWindow glfwGetGLXWindow(GLFWwindow* handle)
 {
-    _GLFWwindow* window = (_GLFWwindow*) handle;
     _GLFW_REQUIRE_INIT_OR_RETURN(None);
 
     if (_glfw.platform.platformID != GLFW_PLATFORM_X11)
@@ -706,6 +698,9 @@ GLFWAPI GLXWindow glfwGetGLXWindow(GLFWwindow* handle)
         return None;
     }
 
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+
     if (window->context.source != GLFW_NATIVE_CONTEXT_API)
     {
         _glfwInputError(GLFW_NO_WINDOW_CONTEXT, NULL);
@@ -713,6 +708,30 @@ GLFWAPI GLXWindow glfwGetGLXWindow(GLFWwindow* handle)
     }
 
     return window->context.glx.window;
+}
+
+GLFWAPI int glfwGetGLXFBConfig(GLFWwindow* handle, GLXFBConfig* config)
+{
+    _GLFW_REQUIRE_INIT_OR_RETURN(GLFW_FALSE);
+
+    if (_glfw.platform.platformID != GLFW_PLATFORM_X11)
+    {
+        _glfwInputError(GLFW_PLATFORM_UNAVAILABLE, "GLX: Platform not initialized");
+        return GLFW_FALSE;
+    }
+
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+    assert(config != NULL);
+
+    if (window->context.source != GLFW_NATIVE_CONTEXT_API)
+    {
+        _glfwInputError(GLFW_NO_WINDOW_CONTEXT, NULL);
+        return GLFW_FALSE;
+    }
+
+    *config = window->context.glx.fbconfig;
+    return GLFW_TRUE;
 }
 
 #endif // _GLFW_X11

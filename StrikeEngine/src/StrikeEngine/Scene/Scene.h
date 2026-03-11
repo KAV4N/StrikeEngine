@@ -222,6 +222,12 @@ namespace Strike {
          */
         const std::string& getTag() { return mId; }
 
+
+        //only for testing
+        #ifdef STRIKE_BUILD_TESTS
+            void flushTransforms() { onUpdate(0.0f); }
+        #endif
+
     private:
         friend class Entity;
         friend class World;
@@ -246,6 +252,7 @@ namespace Strike {
 
     private:
         friend class AudioSystem;
+
 
         std::string mId;
         entt::registry mRegistry;

@@ -95,6 +95,7 @@ namespace Strike {
 
     void Scene::setParent(const Entity& child, const Entity& parent) {
         STRIKE_ASSERT(child.isValid(), "Scene::setParent called with invalid child entity");
+        STRIKE_ASSERT(parent.isValid(), "Scene::setParent called with invalid parent entity");
         STRIKE_ASSERT(child.getHandle() != parent.getHandle(), "Entity cannot be parent of itself");
         STRIKE_ASSERT(!isAncestor(child, parent), "Scene::setParent would create circular hierarchy");
 
