@@ -198,12 +198,20 @@ void main()
     radiance += calculateSunLight(viewDirection, albedo);
     
     uint clusterIndex = getClusterIndex();
-
+    
+    // clustering
     uint lightCount = clusters[clusterIndex].count;
     for (uint i = 0u; i < lightCount; ++i) {
         uint lightIndex = clusters[clusterIndex].lightIndices[i];
         radiance += calculatePointLight(pointLight[lightIndex], viewDirection, albedo);
     }
+    /*
+    // no clustering
+    uint lightCount = pointLight.length();
+    for (int i = 0; i < lightCount; ++i){
+        radiance += calculatePointLight(pointLight[i], viewDirection, albedo);
+    }*/
+       
 
     // Ambient
     vec3 ambient = vec3(0.03) * albedo;

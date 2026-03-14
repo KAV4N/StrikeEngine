@@ -155,6 +155,7 @@ The `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER` paths below point to a MinGW/MSY
 ### 5. Build
 
 The executable and all required resources will be placed in `out/build/x64-debug/MyGame/`.
+Inside the MyGame folder you will also see  a `/res` folder filled with resources like fonts and shaders that the engine uses.
 
 ---
 

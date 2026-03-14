@@ -244,65 +244,52 @@ Scripts are instantiated in the order they appear. The `type` value must exactly
 #pragma once
 #include "StrikeEngine.h"
 
-class CameraMovement : public Strike::Script {
+class CameraMovement : public Strike::Script
+{
 public:
-    void onStart() override;
+    void onStart()  override;
     void onUpdate(float deltaTime) override;
 
 private:
-    float mSensitivity     = 0.1f;
-    bool  mRotationEnabled = true;
-    bool  mPKeyWasPressed  = false;
+    float mMoveSpeed = 20.0f;
+    float mLookSpeed = 90.0f;
 };
 ```
 ```cpp
 // CameraMovement.cpp
 #include "CameraMovement.h"
 
-void CameraMovement::onStart()
-{
-    Strike::Input::setCursorMode(Strike::CursorMode::Locked);
-}
 
 void CameraMovement::onUpdate(float deltaTime)
 {
-    glm::vec3 move(0.0f);
-    const float speed = 20.0f * deltaTime;
 
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_D))          move.x += speed;
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_A))          move.x -= speed;
+    // Movement
+    glm::vec3 move(0.0f);
+    float speed = mMoveSpeed * deltaTime;
+
     if (Strike::Input::isKeyPressed(STRIKE_KEY_W))          move.z -= speed;
     if (Strike::Input::isKeyPressed(STRIKE_KEY_S))          move.z += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_A))          move.x -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_D))          move.x += speed;
     if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE))      move.y += speed;
     if (Strike::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
 
     if (glm::length(move) > 0.0f)
         scriptEntity.move(move);
 
-    // Toggle rotation and cursor mode on P press (edge detection)
-    bool pPressed = Strike::Input::isKeyPressed(STRIKE_KEY_P);
-    if (pPressed && !mPKeyWasPressed) {
-        mRotationEnabled = !mRotationEnabled;
-        Strike::Input::setCursorMode(
-            mRotationEnabled ? Strike::CursorMode::Locked : Strike::CursorMode::Normal
-        );
-    }
-    mPKeyWasPressed = pPressed;
+    // Look
+    float look = mLookSpeed * deltaTime;
+    glm::vec3 euler(0);
 
-    if (!mRotationEnabled)
-        return;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_LEFT))  euler.y += look;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_RIGHT)) euler.y -= look;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_UP))    euler.x += look;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_DOWN))  euler.x -= look;
 
-    auto [dX, dY] = Strike::Input::getMouseDelta();
-
-    glm::vec3 rotation(0.0f);
-    rotation.y = -dX * mSensitivity;  // yaw
-    rotation.x = -dY * mSensitivity;  // pitch
-
-    if (glm::length(rotation) > 0.0f)
-        scriptEntity.rotate(rotation);
+    scriptEntity.rotate(euler);
 }
 
-REGISTER_SCRIPT(CameraMovement);
+REGISTER_SCRIPT(CameraMovement)
 ```
 
 ---

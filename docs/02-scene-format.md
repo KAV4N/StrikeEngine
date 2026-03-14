@@ -25,7 +25,7 @@ The `<scene>` element supports five child elements in any order: `<assets>`, `<s
 
 ## `<assets>`
 
-Declares all resources used in the scene. Supports the `@/` prefix for root-relative paths.
+Declares all resources used in the scene. Paths support the `@/` prefix for root-relative references. For both scene and template formats, the root directory is the location of the executable (.exe). For example, to access the Assets folder located next to the executable, use `@/Assets`.
 
 | Element | Description |
 |---|---|

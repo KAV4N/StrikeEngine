@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scene tag="MainScene">
+
+  <assets>
+    <!-- Ground model — huge FBX, scaled to 500x500 in the entity transform -->
+    <model id="ground_model" src="@/Assets/Objects/ground/ground.fbx"/>
+  </assets>
+
+  <sun color="255,255,255" intensity="0.5" rotation="55,25,0" shadows="false"/>
+
+  <fog density="0.0"/>
+
+  <entities>
+
+    <!-- ═══════════════════════════════════════════════
+         Ground plane — anchored, scaled 500 × 1 × 500
+         ═══════════════════════════════════════════════ -->
+    <entity tag="Ground" position="0,0,0" scale="500,1,500">
+      <components>
+        <renderer model="ground_model" color="50,50,50"/>
+      </components>
+    </entity>
+
+    <!-- ═══════════════════════════════════════════════
+         Player — floating camera + LightSpawner logic
+         ═══════════════════════════════════════════════ -->
+    <entity tag="Player" position="0,5,0">
+      <components>
+        <audiolistener/>
+        <logic>
+          <script type="CameraMovement"/>
+          <script type="LightBatchSpawner"/>
+        </logic>
+      </components>
+
+      <!-- First-person camera, child of Player -->
+      <entity tag="Camera" position="0,1,0">
+        <components>
+          <camera fov="75" near="0.1" far="600"
+                  x="0.0" y="0.0" width="1.0" height="1.0" order="0"/>
+        </components>
+      </entity>
+    </entity>
+
+    <!-- ═══════════════════════════════════════════════
+         HUD — instruction text
+         ═══════════════════════════════════════════════ -->
+    <entity tag="HUD">
+      <components>
+        <text text="[F] Spawn lights   [WASD] Move   [SHIFT] Down   [ARROWS] Look"
+              color="255,255,255" pivot="0.5,0.0" x="0.5" y="0.03"/>
+      </components>
+    </entity>
+  </entities>
+
+</scene>
