@@ -10,9 +10,6 @@ public:
 private:
     Strike::Entity mCameraEntity;
 
-    float mLastX       = 0.0f;
-    float mLastY       = 0.0f;
-    bool  mFirstMouse  = true;
     float mSensitivity = 0.1f;
     float mPitch       = 0.0f;
     float mPitchLimit  = 89.0f;
@@ -24,6 +21,28 @@ private:
     float mPlayerHalfH  = 16.0f;
     float mGroundRayExt = 3.0f;
     bool  mIsGrounded   = false;
+
+    
+    
+    
+    
+    
+    static constexpr const char* kFootstepAudioIdA = "footstep_a";
+    static constexpr const char* kFootstepAudioIdB = "footstep_b";
+
+    static constexpr float kWalkStepInterval   = 0.45f;
+    static constexpr float kSprintStepInterval = 0.28f;
+
+    
+    
+    Strike::Entity mFootstepEntityA;
+    Strike::Entity mFootstepEntityB;
+
+    bool  mNextIsA   = true;
+    bool  mWasMoving = false;
+
+    void loadFootstepSounds();
+    void updateFootsteps(bool isMoving, bool isSprinting);
 
     bool isGrounded();
 };

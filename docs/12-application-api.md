@@ -43,7 +43,7 @@ Returns the actual current frames per second being achieved.
 Returns the current global master volume.
 
 #### `void setMasterVolume(float volume)`
-Sets the global master volume. Accepted range is `0.0` (silent) to `1.0` (full volume).
+Sets the global master volume. Accepted range is `0.0` (silent) to `1.0`+.
 
 #### `float getAudioAmplitude(const Entity& entity) const`
 Returns the current RMS amplitude in the range `[0.0, 1.0]` of the first playing sound on the given entity. Reads a small PCM window from the audio source without affecting the playback cursor. Returns `0.0` if the entity has no active `AudioSourceComponent`, no sound is currently playing, or the audio system is unavailable.

@@ -148,7 +148,7 @@ namespace Strike {
         if (mRegistry.all_of<PhysicsComponent>(entity)) {
             Entity ent(entity, this);
             auto& phys = ent.getComponent<PhysicsComponent>();
-            if (phys.isActive())
+            if (phys.isActive() && phys.isAnchored())
                 World::get().mPhysicsSystem->syncTransformToPhysics(phys, ent);
         }
 

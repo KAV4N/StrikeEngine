@@ -35,7 +35,6 @@ namespace Strike {
 
         setupOpenGLState();
 
-        // Bind shadow map FBO
         mShadowMap->bind();
         glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -49,30 +48,29 @@ namespace Strike {
         depthShader->bind();
         depthShader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
 
-        // Render all shadow-casting instance batches
         for (const auto& [key, batch] : cameraData.sunData.shadowBatches) {
-            if (!batch.mesh || !batch.mesh->getVAO() || batch.worldMatrices.empty())
+            if (!batch.mesh || !batch.mesh->isReady() || !batch.mesh->getVAO() || batch.worldMatrices.empty())
                 continue;
 
             glBindVertexArray(batch.mesh->getVAO());
-            const auto& indices = batch.mesh->getIndices();
-            size_t indiceCount = indices.size();
-            size_t totalInstances = batch.worldMatrices.size();
-            size_t offset = 0;
+
+            const auto& indices    = batch.mesh->getIndices();
+            size_t indiceCount     = indices.size();
+            size_t totalInstances  = batch.worldMatrices.size();
+            size_t offset          = 0;
 
             while (offset < totalInstances) {
-                size_t instanceCount = std::min(totalInstances - offset, (size_t)Renderer::MAX_INSTANCES);
-                const glm::mat4* matrixPtr = batch.worldMatrices.data() + offset;
+                size_t instanceCount  = std::min(totalInstances - offset, (size_t)Renderer::MAX_INSTANCES);
+                const glm::mat4* ptr  = batch.worldMatrices.data() + offset;
 
-                batch.mesh->updateInstanceBuffer(matrixPtr, instanceCount);
+                batch.mesh->updateInstanceBuffer(ptr, instanceCount);
 
                 glDrawElementsInstanced(
                     GL_TRIANGLES,
-                    indiceCount,
+                    static_cast<GLsizei>(indiceCount),
                     GL_UNSIGNED_INT,
-                    0, 
-                    instanceCount);
-
+                    0,
+                    static_cast<GLsizei>(instanceCount));
 
                 offset += instanceCount;
             }
@@ -81,7 +79,6 @@ namespace Strike {
         }
 
         mShadowMap->unBind();
-
         restoreOpenGLState(mRenderer.getWidth(), mRenderer.getHeight());
     }
 
@@ -89,7 +86,7 @@ namespace Strike {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);  // Front-face culling reduces peter-panning artifacts
+        glCullFace(GL_FRONT);
         glViewport(0, 0, mShadowMapSize, mShadowMapSize);
     }
 
@@ -102,5 +99,4 @@ namespace Strike {
     GLuint ShadowMapPass::getShadowMapTexture() const {
         return mShadowMap->getDepthTextureID();
     }
-
-} 
+}

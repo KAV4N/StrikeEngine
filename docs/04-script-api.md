@@ -238,9 +238,7 @@ Attach scripts to entities in your scene file using the `<logic>` component:
 Scripts are instantiated in the order they appear. The `type` value must exactly match the registered class name. Each `type` may only appear **once per `<logic>` block** - duplicate entries will be rejected with a `STRIKE_CORE_ERROR` and the second entry will be ignored.
 
 ---
-
 ## Camera Movement Example
-
 ```cpp
 // CameraMovement.h
 #pragma once
@@ -252,15 +250,11 @@ public:
     void onUpdate(float deltaTime) override;
 
 private:
-    float mLastX = 0.0f;
-    float mLastY = 0.0f;
-    bool  mFirstMouse = true;
-    float mSensitivity = 0.1f;
+    float mSensitivity     = 0.1f;
     bool  mRotationEnabled = true;
-    bool  mPKeyWasPressed = false;
+    bool  mPKeyWasPressed  = false;
 };
 ```
-
 ```cpp
 // CameraMovement.cpp
 #include "CameraMovement.h"
@@ -268,10 +262,6 @@ private:
 void CameraMovement::onStart()
 {
     Strike::Input::setCursorMode(Strike::CursorMode::Locked);
-
-    auto [x, y] = Strike::Input::getMouseXY();
-    mLastX = x;
-    mLastY = y;
 }
 
 void CameraMovement::onUpdate(float deltaTime)
@@ -279,51 +269,34 @@ void CameraMovement::onUpdate(float deltaTime)
     glm::vec3 move(0.0f);
     const float speed = 20.0f * deltaTime;
 
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_D)) move.x += speed;
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_A)) move.x -= speed;
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_W)) move.z -= speed;
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_S)) move.z += speed;
-    if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE)) move.y += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_D))          move.x += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_A))          move.x -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_W))          move.z -= speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_S))          move.z += speed;
+    if (Strike::Input::isKeyPressed(STRIKE_KEY_SPACE))      move.y += speed;
     if (Strike::Input::isKeyPressed(STRIKE_KEY_LEFT_SHIFT)) move.y -= speed;
 
-    if (glm::length(move) > 0.0f) {
+    if (glm::length(move) > 0.0f)
         scriptEntity.move(move);
-    }
 
     // Toggle rotation and cursor mode on P press (edge detection)
     bool pPressed = Strike::Input::isKeyPressed(STRIKE_KEY_P);
     if (pPressed && !mPKeyWasPressed) {
         mRotationEnabled = !mRotationEnabled;
-
-        if (mRotationEnabled) {
-            Strike::Input::setCursorMode(Strike::CursorMode::Locked);
-            mFirstMouse = true; // reset to avoid jump when re-enabling
-        } else {
-            Strike::Input::setCursorMode(Strike::CursorMode::Normal);
-        }
+        Strike::Input::setCursorMode(
+            mRotationEnabled ? Strike::CursorMode::Locked : Strike::CursorMode::Normal
+        );
     }
     mPKeyWasPressed = pPressed;
 
     if (!mRotationEnabled)
         return;
 
-    auto [x, y] = Strike::Input::getMouseXY();
-
-    if (mFirstMouse) {
-        mLastX = x;
-        mLastY = y;
-        mFirstMouse = false;
-    }
-
-    float deltaX = x - mLastX;
-    float deltaY = y - mLastY;
-
-    mLastX = x;
-    mLastY = y;
+    auto [dX, dY] = Strike::Input::getMouseDelta();
 
     glm::vec3 rotation(0.0f);
-    rotation.y = -deltaX * mSensitivity;  // yaw
-    rotation.x = -deltaY * mSensitivity;  // pitch
+    rotation.y = -dX * mSensitivity;  // yaw
+    rotation.x = -dY * mSensitivity;  // pitch
 
     if (glm::length(rotation) > 0.0f)
         scriptEntity.rotate(rotation);

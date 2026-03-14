@@ -66,7 +66,7 @@ namespace Strike {
             return nullptr;
 
         auto model = AssetManager::get().getAsset<Model>(mModelId);
-        if (!model || mMeshIdx.value() >= model->getMeshes().size())
+        if (!model || mMeshIdx.value() >= model->getMeshCount())
             return nullptr;
 
         return model->getMesh(mMeshIdx.value());

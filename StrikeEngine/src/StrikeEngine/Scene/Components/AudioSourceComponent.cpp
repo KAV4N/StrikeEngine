@@ -60,7 +60,7 @@ namespace Strike {
     }
 
     void AudioSourceComponent::setVolume(float volume) {
-        mVolume = glm::clamp(volume, 0.0f, 1.0f);
+        mVolume = glm::max(0.f, volume);
     }
 
 }

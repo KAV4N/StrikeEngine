@@ -28,7 +28,7 @@ A C++17 game engine built on OpenGL 4.3, featuring an XML-driven scene system, E
 
 ### [SpaceRacer](https://github.com/KAV4N/SpaceRacer)
 
-A fast-paced endless space racing game built entirely on StrikeEngine. Fly through procedurally generated asteroid fields, collect coins, and survive as long as possible — while obstacles pulse and grow in real-time to the beat of the soundtrack.
+A fast-paced endless space racing game built entirely on StrikeEngine. Fly through procedurally generated asteroid fields, collect coins, and survive as long as possible - while obstacles pulse and grow in real-time to the beat of the soundtrack.
 
 ![SpaceRacer gameplay](https://github.com/KAV4N/SpaceRacer/blob/main/imgs/gameplay.gif?raw=true)
 

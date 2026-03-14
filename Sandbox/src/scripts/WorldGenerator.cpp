@@ -43,40 +43,55 @@ int WorldGenerator::getHeight(int x, int z) const {
             + smoothNoise(nx * 2.1f, nz * 2.1f) * 0.35f;
 
     float t = (n + 1.0f) * 0.5f;
-    int height = BASE_HEIGHT + static_cast<int>(std::round(t * HEIGHT_RANGE));
-    return height;
+    return BASE_HEIGHT + static_cast<int>(std::round(t * HEIGHT_RANGE));
+}
+
+glm::vec3 WorldGenerator::scaleForModel(const char* modelId) const
+{
+    auto& am = Strike::AssetManager::get();
+    auto  model = am.getAsset<Strike::Model>(modelId);
+    if (!model || !model->isReady()) {
+        STRIKE_WARN("WorldGenerator: model '{}' not ready, falling back to target size", modelId);
+        return mTargetBlockSize;
+    }
+    glm::vec3 meshSize = model->getBounds().getSize();
+    return glm::vec3(
+        mTargetBlockSize.x / meshSize.x,
+        mTargetBlockSize.y / meshSize.y,
+        mTargetBlockSize.z / meshSize.z
+    );
 }
 
 void WorldGenerator::onStart()
 {
     auto& am = Strike::AssetManager::get();
 
-    auto cubeModel = am.getAsset<Strike::Model>("dirt");
-
-    if (!cubeModel || !cubeModel->isReady()) {
-        STRIKE_ERROR("WorldGenerator: failed to load cube model!");
+    auto refModel = am.getAsset<Strike::Model>("dirt");
+    if (!refModel || !refModel->isReady()) {
+        STRIKE_ERROR("WorldGenerator: 'dirt' model not ready - cannot determine block size");
         return;
     }
 
-    const Strike::Bounds& bounds = cubeModel->getBounds();
-    glm::vec3 cubeSize = bounds.getSize();
+    mTargetBlockSize = refModel->getBounds().getSize() * CUBE_SCALE;
 
-    STRIKE_INFO("WorldGenerator: cube bounds size = ({:.3f}, {:.3f}, {:.3f})",
-                cubeSize.x, cubeSize.y, cubeSize.z);
+    Strike::GameData::get().setFloat("blockStep",  mTargetBlockSize.y);
+    Strike::GameData::get().setFloat("blockSizeX", mTargetBlockSize.x);
+    Strike::GameData::get().setFloat("blockSizeY", mTargetBlockSize.y);
+    Strike::GameData::get().setFloat("blockSizeZ", mTargetBlockSize.z);
 
-    float stepX = cubeSize.x * CUBE_SCALE;
-    float stepY = cubeSize.y * CUBE_SCALE;
-    float stepZ = cubeSize.z * CUBE_SCALE;
+    float stepX = mTargetBlockSize.x;
+    float stepY = mTargetBlockSize.y;
+    float stepZ = mTargetBlockSize.z;
 
-    Strike::GameData::get().setFloat("blockStep",  stepY);
-    Strike::GameData::get().setFloat("cubeScale",  CUBE_SCALE);
-
-    float offsetX = -(WORLD_WIDTH * stepX) * 0.5f;
-    float offsetZ = -(WORLD_DEPTH * stepZ) * 0.5f;
+    float offsetX = -(WORLD_WIDTH  * stepX) * 0.5f;
+    float offsetZ = -(WORLD_DEPTH  * stepZ) * 0.5f;
 
     auto scene = getEntity().getScene();
+
     int blockCount   = 0;
     int maxColHeight = 0;
+
+    mBlocks.reserve(WORLD_WIDTH * WORLD_DEPTH * (BASE_HEIGHT + HEIGHT_RANGE));
 
     for (int x = 0; x < WORLD_WIDTH; ++x) {
         for (int z = 0; z < WORLD_DEPTH; ++z) {
@@ -92,33 +107,30 @@ void WorldGenerator::onStart()
                     offsetZ + z * stepZ + stepZ * 0.5f
                 );
 
+                BlockType type;
+                if (y == columnHeight - 1)
+                    type = BlockType::Grass;
+                else if (y >= columnHeight - 2)
+                    type = BlockType::Dirt;
+                else
+                    type = BlockType::Stone;
+
+                const char* mid = (type == BlockType::Grass) ? "grass"
+                                : (type == BlockType::Dirt)  ? "dirt"
+                                :                              "stone";
+
                 Strike::Entity block = scene->createEntity();
                 block.setTag("Block");
                 block.setWorldPosition(pos);
-                block.setScale(glm::vec3(CUBE_SCALE));
+                block.setScale(scaleForModel(mid));
 
-                auto& renderer = block.addComponent<Strike::RendererComponent>();
-                
-                renderer.setTexture("block_texture");
-
-                if (y == columnHeight - 1) {
-                    renderer.setModel("grass");                    
-                } else if (y >= columnHeight - 3) {
-                    renderer.setModel("dirt");
-                } else {
-                    renderer.setModel("stone");
-                }
-
-                auto& physics = block.addComponent<Strike::PhysicsComponent>();
-                physics.setAnchored(true);
-                physics.setCanCollide(true);
-
+                mBlocks.push_back({ block, pos, type, false });
                 ++blockCount;
             }
         }
     }
 
-    STRIKE_INFO("WorldGenerator: spawned {} blocks ({}x{}, max height {})",
+    STRIKE_INFO("WorldGenerator: registered {} bare block entities ({}x{}, max height {})",
                 blockCount, WORLD_WIDTH, WORLD_DEPTH, BASE_HEIGHT + HEIGHT_RANGE);
 }
 

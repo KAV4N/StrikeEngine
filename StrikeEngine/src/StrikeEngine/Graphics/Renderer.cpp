@@ -6,7 +6,6 @@
 #include "RenderPasses/SkyboxRenderPass.h"
 #include "RenderPasses/ShadowMapPass.h"
 
- 
 #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
     #include "RenderPasses/CollisionRenderPass.h"
 #endif
@@ -33,18 +32,17 @@ namespace Strike {
 
     void Renderer::init() {
         mFrameBuffer = std::make_unique<FrameBuffer>(mWidth, mHeight);
-        
+
         addPass<ShadowMapPass>(PassStage::PreRender, *this);
         addPass<LightCullingPass>(PassStage::PreRender, *this);
         addPass<SkyboxRenderPass>(PassStage::MainRender, *this);
         addPass<GeometryRenderPass>(PassStage::MainRender, *this);
-        
+
         #ifdef STRIKE_COLLISION_DEBUG_EXPERIMENTAL
             addPass<CollisionRenderPass>(PassStage::MainRender, *this);
         #endif
-        
+
         setupScreenQuad();
-        
         mScreenShader = ShaderManager::get().getShader("finalPass.glsl");
     }
 
@@ -52,13 +50,11 @@ namespace Strike {
         mCurrentCameraData.clear();
         mCurrentCameraData.camera = camera;
         mCurrentCameraData.cameraPosition = position;
-        
         mCameraActive = true;
     }
 
-    void Renderer::endCamera() {       
+    void Renderer::endCamera() {
         if (!mCameraActive) return;
-
         renderCamera(mCurrentCameraData);
         mCurrentCameraData.clear();
         mCameraActive = false;
@@ -88,9 +84,9 @@ namespace Strike {
 
         batch.worldMatrices.push_back(transform);
 
-        if (mCurrentCameraData.sunData.sun) {
-            addToShadowBatch(mesh, transform);
-        }
+        // FIX: shadow batch is no longer populated here.
+        // addShadowCaster() is called by RenderSystem before camera culling,
+        // so all scene objects reach the shadow pass regardless of camera visibility.
     }
 
     void Renderer::submitModel(const std::shared_ptr<Model>& model,
@@ -102,10 +98,15 @@ namespace Strike {
         uint32_t meshCount = model->getMeshCount();
         for (uint32_t i = 0; i < meshCount; ++i) {
             auto mesh = model->getMesh(i);
-            if (mesh) {
-                submitMesh(mesh, texture, color, transform);
-            }
+            if (mesh) submitMesh(mesh, texture, color, transform);
         }
+    }
+
+    void Renderer::addShadowCaster(const std::shared_ptr<Mesh>& mesh,
+                                   const glm::mat4& transform) {
+        if (!mCameraActive || !mesh) return;
+        if (!mCurrentCameraData.sunData.sun) return;
+        addToShadowBatch(mesh, transform);
     }
 
     void Renderer::submitPointLight(const glm::vec3& position,
@@ -115,17 +116,16 @@ namespace Strike {
         if (!mCameraActive) return;
 
         PointLight light;
-        light.position = glm::vec4(position, 1.0f);
-        light.color = glm::vec4(glm::vec3(color) / 255.0f, 1.0f);
+        light.position  = glm::vec4(position, 1.0f);
+        light.color     = glm::vec4(glm::vec3(color) / 255.0f, 1.0f);
         light.intensity = intensity;
-        light.radius = radius;
+        light.radius    = radius;
 
         mCurrentCameraData.pointLights.push_back(light);
     }
 
     void Renderer::submitSun(Sun* sun, const glm::mat4& lightSpaceMatrix) {
         if (!mCameraActive || !sun) return;
-
         mCurrentCameraData.sunData.sun = sun;
         mCurrentCameraData.sunData.lightSpaceMatrix = lightSpaceMatrix;
     }
@@ -135,7 +135,7 @@ namespace Strike {
         mCurrentCameraData.mSkyboxTexture = skybox;
     }
 
-    void Renderer::addToShadowBatch(const std::shared_ptr<Mesh>& mesh, 
+    void Renderer::addToShadowBatch(const std::shared_ptr<Mesh>& mesh,
                                     const glm::mat4& transform) {
         if (!mesh) return;
 
@@ -153,56 +153,48 @@ namespace Strike {
     }
 
     void Renderer::renderCamera(const CameraRenderData& cameraData) {
-
         preRender(cameraData);
         mainRender(cameraData);
         postRender(cameraData);
     }
 
     void Renderer::preRender(const CameraRenderData& cameraData) {
-
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PreRender)];
-        for (auto& pass : passes) {
+        for (auto& pass : passes)
             pass->execute(cameraData);
-        }
     }
 
     void Renderer::mainRender(const CameraRenderData& cameraData) {
-
         mFrameBuffer->bind();
 
         const CameraComponent::Rect& viewportRect = cameraData.camera.getViewportRect();
-        GLint viewportX = static_cast<GLint>(viewportRect.x * mWidth);
-        GLint viewportY = static_cast<GLint>(viewportRect.y * mHeight);
-        GLsizei viewportWidth = static_cast<GLsizei>(viewportRect.width * mWidth);
+        GLint   viewportX      = static_cast<GLint>(viewportRect.x * mWidth);
+        GLint   viewportY      = static_cast<GLint>(viewportRect.y * mHeight);
+        GLsizei viewportWidth  = static_cast<GLsizei>(viewportRect.width * mWidth);
         GLsizei viewportHeight = static_cast<GLsizei>(viewportRect.height * mHeight);
 
         glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
         glEnable(GL_SCISSOR_TEST);
         glScissor(viewportX, viewportY, viewportWidth, viewportHeight);
-        
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::MainRender)];
-        for (auto& pass : passes) {
+        for (auto& pass : passes)
             pass->execute(cameraData);
-        }
 
         glDisable(GL_SCISSOR_TEST);
         mFrameBuffer->unBind();
     }
 
     void Renderer::postRender(const CameraRenderData& cameraData) {
-
         auto& passes = mStagePasses[static_cast<size_t>(PassStage::PostRender)];
-        for (auto& pass : passes) {
+        for (auto& pass : passes)
             pass->execute(cameraData);
-        }
     }
 
     void Renderer::display() {
-        
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, mWidth, mHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -210,21 +202,18 @@ namespace Strike {
         if (mScreenShader) {
             mScreenShader->bind();
 
-            // slot 0 = color
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, mFrameBuffer->getColorTextureID());
             mScreenShader->setInt("uScreenTexture", 0);
 
-            // slot 1 = depth
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, mFrameBuffer->getDepthTextureID());
             mScreenShader->setInt("uDepthTexture", 1);
-            
-            // Fog uniforms - normalize color from 0-255 to 0-1
-            mScreenShader->setFloat("uFogStart", mFogStart);
-            mScreenShader->setFloat("uFogEnd", mFogEnd);
+
+            mScreenShader->setFloat("uFogStart",   mFogStart);
+            mScreenShader->setFloat("uFogEnd",     mFogEnd);
             mScreenShader->setFloat("uFogDensity", mFogDensity);
-            mScreenShader->setVec3("uFogColor", glm::vec3(mFogColor) / 255.0f);
+            mScreenShader->setVec3("uFogColor",    glm::vec3(mFogColor) / 255.0f);
 
             glBindVertexArray(mScreenVAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -234,15 +223,12 @@ namespace Strike {
         }
     }
 
-    GLuint Renderer::getFinalTexture() const {
-        return mFrameBuffer->getColorTextureID();
-    }
-
-    uint32_t Renderer::getWidth() const { return mWidth; }
-    uint32_t Renderer::getHeight() const { return mHeight; }
+    GLuint   Renderer::getFinalTexture() const { return mFrameBuffer->getColorTextureID(); }
+    uint32_t Renderer::getWidth()        const { return mWidth; }
+    uint32_t Renderer::getHeight()       const { return mHeight; }
 
     void Renderer::resize(uint32_t width, uint32_t height) {
-        mWidth = width;
+        mWidth  = width;
         mHeight = height;
         World::get().resize(width, height);
         mFrameBuffer->resize(width, height);
@@ -251,12 +237,11 @@ namespace Strike {
 
     void Renderer::setupScreenQuad() {
         float vertices[] = {
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f
+            -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+             1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+             1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+            -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
         };
-
         uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
 
         glGenVertexArrays(1, &mScreenVAO);

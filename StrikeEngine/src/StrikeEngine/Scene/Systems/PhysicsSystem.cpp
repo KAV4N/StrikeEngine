@@ -475,12 +475,9 @@ namespace Strike {
         trans.setRotation(btQuaternion(rot.x, rot.y, rot.z, rot.w));
 
         body->setWorldTransform(trans);
-        if (body->getMotionState()) body->getMotionState()->setWorldTransform(trans);
-        /*
-        body->setLinearVelocity(btVector3(0,0,0));
-        body->setAngularVelocity(btVector3(0,0,0));
-        body->clearForces();
-        */
+        if (body->getMotionState()) 
+            body->getMotionState()->setWorldTransform(trans);
+        body->activate(true);
     }
 
 }

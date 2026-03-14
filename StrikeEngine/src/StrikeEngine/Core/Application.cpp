@@ -57,6 +57,7 @@ namespace Strike {
     }
 
     void Application::onUpdate(float deltaTime) {
+        Input::update();
         World& world = World::get();
         world.onUpdate(deltaTime);
         AssetManager::get().update();   

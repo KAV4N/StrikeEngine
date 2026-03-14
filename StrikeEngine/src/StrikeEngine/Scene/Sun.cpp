@@ -130,8 +130,16 @@ namespace Strike {
             minZ = glm::min(minZ, ls.z); maxZ = glm::max(maxZ, ls.z);
         }
 
-        constexpr float zPullback = 10.0f;
-        minZ -= zPullback;
+
+        constexpr float padding = 0.05f; 
+
+        float sizeX = (maxX - minX) * 0.5f * padding;
+        float sizeY = (maxY - minY) * 0.5f * padding;
+        float sizeZ = (maxZ - minZ) * 0.5f * padding;
+
+        minX -= sizeX; maxX += sizeX;
+        minY -= sizeY; maxY += sizeY;
+        minZ -= sizeZ; maxZ += sizeZ;
 
         glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
         return lightProjection * lightView;

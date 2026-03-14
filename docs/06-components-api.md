@@ -621,7 +621,7 @@ Stop playing the audio clip. Playback stops on the next audio system update.
 ### Volume
 
 #### `void setVolume(float volume)`
-Set the playback volume (`0.0` to `1.0+`, where `1.0` is full volume).
+Set the playback volume (`0.0` to `1.0+`).
 
 #### `float getVolume() const`
 Get the current playback volume.

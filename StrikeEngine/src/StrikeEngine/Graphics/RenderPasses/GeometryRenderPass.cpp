@@ -20,18 +20,17 @@ namespace Strike {
     }
 
     void GeometryRenderPass::createWhiteTexture() {
-        // Create 1x1 white texture
         glGenTextures(1, &mWhiteTextureID);
         glBindTexture(GL_TEXTURE_2D, mWhiteTextureID);
-        
+
         unsigned char whitePixel[] = { 255, 255, 255, 255 };
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
-        
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
+
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -65,23 +64,21 @@ namespace Strike {
     }
 
     void GeometryRenderPass::renderInstanceBatch(const InstanceBatch& batch,
-                                              const CameraRenderData& cameraData) {
-        if (batch.worldMatrices.empty()) return;
+                                                 const CameraRenderData& cameraData) {
+        if (!batch.mesh || !batch.mesh->isReady() || batch.worldMatrices.empty()) return;
+        if (batch.texture && !batch.texture->isReady()) return;
 
-        auto camera = cameraData.camera;
+        auto camera         = cameraData.camera;
         glm::vec3 cameraPos = cameraData.cameraPosition;
 
         mShader->bind();
 
-        // Set separate view and projection matrices instead of combined
-        mShader->setMat4("uView", camera.getViewMatrix());
+        mShader->setMat4("uView",       camera.getViewMatrix());
         mShader->setMat4("uProjection", camera.getProjectionMatrix());
-        mShader->setVec3("uViewPos", cameraPos);
+        mShader->setVec3("uViewPos",    cameraPos);
 
-        // Set color with blend (RGB in 0-255 range converted to 0-1, A is blend in 0-1 range)
         mShader->setVec3("uColor", glm::vec3(batch.color) / 255.0f);
 
-        // Always bind a texture (either actual texture or white texture)
         glActiveTexture(GL_TEXTURE0);
         if (batch.texture) {
             batch.texture->bind(0);
@@ -90,34 +87,30 @@ namespace Strike {
         }
         mShader->setInt("uTexture", 0);
 
-        // Clustered lighting uniforms
         auto lightPass = mRenderer.getPass<LightCullingPass>();
         mShader->setFloat("uZNear", camera.getNearPlane());
-        mShader->setFloat("uZFar", camera.getFarPlane());
+        mShader->setFloat("uZFar",  camera.getFarPlane());
         mShader->setUVec3("uGridSize", glm::uvec3(
-            lightPass->CLUSTER_X, 
-            lightPass->CLUSTER_Y, 
+            lightPass->CLUSTER_X,
+            lightPass->CLUSTER_Y,
             lightPass->CLUSTER_Z
         ));
 
-        const auto& viewport = camera.getViewportRect();
-        
-        float viewportWidth = viewport.width * mRenderer.getWidth();
-        float viewportHeight = viewport.height * mRenderer.getHeight();
+        const auto& viewport    = camera.getViewportRect();
+        float viewportWidth     = viewport.width  * mRenderer.getWidth();
+        float viewportHeight    = viewport.height * mRenderer.getHeight();
 
         mShader->setUVec2("uScreenDimensions", glm::uvec2(
-            viewportWidth, 
-            viewportHeight
+            static_cast<uint32_t>(viewportWidth),
+            static_cast<uint32_t>(viewportHeight)
         ));
 
-        // Sun
         Sun* sun = cameraData.sunData.sun;
-        mShader->setVec3("uSun.direction", sun->getDirection());
-        mShader->setVec3("uSun.color", glm::vec3(sun->getColor()) / 255.0f);
+        mShader->setVec3("uSun.direction",  sun->getDirection());
+        mShader->setVec3("uSun.color",      glm::vec3(sun->getColor()) / 255.0f);
         mShader->setFloat("uSun.intensity", sun->getIntensity());
-        mShader->setInt("uCastShadows", sun->getCastShadows() ? 1 : 0);
+        mShader->setInt("uCastShadows",     sun->getCastShadows() ? 1 : 0);
 
-        // Shadows
         ShadowMapPass* shadowPass = mRenderer.getPass<ShadowMapPass>();
         if (shadowPass && sun->getCastShadows()) {
             mShader->setMat4("uLightSpaceMatrix", cameraData.sunData.lightSpaceMatrix);
@@ -126,26 +119,24 @@ namespace Strike {
             mShader->setInt("uShadowMap", 1);
         }
 
-        // Render instanced
-        GLuint vao = batch.mesh->getVAO();
-        glBindVertexArray(vao);
+        glBindVertexArray(batch.mesh->getVAO());
 
-        const auto& indices = batch.mesh->getIndices();
-        size_t indiceCount = indices.size();
+        const auto& indices   = batch.mesh->getIndices();
+        size_t indiceCount    = indices.size();
         size_t totalInstances = batch.worldMatrices.size();
-        size_t offset = 0;
+        size_t offset         = 0;
 
         while (offset < totalInstances) {
-            size_t instanceCount = std::min(totalInstances - offset, (size_t)Renderer::MAX_INSTANCES);
-            const glm::mat4* matrixPtr = batch.worldMatrices.data() + offset;
-            batch.mesh->updateInstanceBuffer(matrixPtr, instanceCount);
-            
+            size_t instanceCount  = std::min(totalInstances - offset, (size_t)Renderer::MAX_INSTANCES);
+            const glm::mat4* ptr  = batch.worldMatrices.data() + offset;
+            batch.mesh->updateInstanceBuffer(ptr, instanceCount);
+
             glDrawElementsInstanced(GL_TRIANGLES,
                                     static_cast<GLsizei>(indiceCount),
                                     GL_UNSIGNED_INT,
                                     0,
                                     static_cast<GLsizei>(instanceCount));
-            
+
             offset += instanceCount;
         }
 
@@ -159,7 +150,6 @@ namespace Strike {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
-        
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -169,5 +159,4 @@ namespace Strike {
         glDisable(GL_BLEND);
         glDisable(GL_CULL_FACE);
     }
-
 }

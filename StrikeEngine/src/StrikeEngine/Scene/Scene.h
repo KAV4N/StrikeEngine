@@ -236,7 +236,7 @@ namespace Strike {
 
         // Recursively recomputes world matrices for a node and its children if dirty.
         // parentDirty propagates the dirty state down even if the child itself was not
-        // directly marked — needed when a parent moves and children must follow.
+        // directly marked - needed when a parent moves and children must follow.
         void updateNode(GraphNode* node, bool parentDirty);
 
         std::shared_ptr<GraphNode> getGraphNode(entt::entity entity);

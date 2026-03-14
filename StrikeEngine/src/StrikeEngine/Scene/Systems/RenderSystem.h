@@ -105,9 +105,12 @@ namespace Strike {
         void processScene(Scene* scene);
 
         /**
-         * @brief Submits visible renderable entities to the renderer.
+         * @brief Submits shadow casters and visible renderables to the renderer.
          *
-         * Performs frustum culling before submitting meshes or models.
+         * Every active renderable is submitted as a shadow caster first,
+         * then frustum-culled against the camera before being submitted
+         * for geometry rendering. This ensures objects behind or outside
+         * the camera view still cast shadows into the scene.
          *
          * @param scene Active scene.
          * @param camera Camera used for visibility checks.
@@ -132,6 +135,5 @@ namespace Strike {
         bool isInFrustum(const CameraComponent::Frustum& frustum,
                          const glm::vec3& center,
                          const glm::vec3& halfExtents) const;
-
     };
 }

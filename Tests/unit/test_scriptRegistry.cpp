@@ -150,7 +150,7 @@ TEST(ScriptRegistryTest, GetRegisteredScripts_EveryEntryCanBeInstantiated) {
 
 
 // ============================================================
-//  registerScriptFactory — duplicate registration asserts
+//  registerScriptFactory - duplicate registration asserts
 // ============================================================
 
 TEST(ScriptRegistryTest, RegisterFactory_DuplicateClassName_Asserts) {

@@ -68,12 +68,18 @@ namespace Strike {
     }
 
     void Texture::bind(unsigned int slot) const {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D, mTextureID);
+        if (isReady()){
+            glActiveTexture(GL_TEXTURE0 + slot);
+            glBindTexture(GL_TEXTURE_2D, mTextureID);
+        }
+
     }
 
     void Texture::unbind() const {
-        glBindTexture(GL_TEXTURE_2D, 0);
+        if (isReady()){
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+
     }
 
     // ============ CubeMap ============
@@ -159,12 +165,17 @@ namespace Strike {
     }
 
     void CubeMap::bind(unsigned int slot) const {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureID);
+        if (isReady()){
+            glActiveTexture(GL_TEXTURE0 + slot);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureID);
+        }
+       
     }
 
     void CubeMap::unbind() const {
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        if (isReady()){
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
     }
 
 }

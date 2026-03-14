@@ -2,12 +2,22 @@
 <scene tag="MinecraftWorld">
 
   <assets>
-    <model id="dirt" src="@/Assets/Objects/cube/dirt.gltf"/>
+    <model id="dirt"  src="@/Assets/Objects/cube/dirt.gltf"/>
     <model id="stone" src="@/Assets/Objects/cube/stone.gltf"/>
     <model id="grass" src="@/Assets/Objects/cube/dirt_with_snow.gltf"/>
-    <texture id="block_texture" src="@/Assets/Objects/cube/block_bits_texture.png"></texture>
+    <model id="sand"  src="@/Assets/Objects/cube/sand_B.gltf"/>
+
+    <audio id="footstep_a" src="@/Assets/Sounds/footstep_a.mp3"/>
+    <audio id="footstep_b" src="@/Assets/Sounds/footstep_b.mp3"/>
+
+    <audio id="block_place"   src="@/Assets/Sounds/block_place.mp3"/>
+    <audio id="block_break"   src="@/Assets/Sounds/block_break.mp3"/>
+    <audio id="ambient_music" src="@/Assets/Sounds/ambient_music.mp3"/>
+    <audio id="light_hum"     src="@/Assets/Sounds/light_hum.mp3"/>
+
+    <texture id="block_texture" src="@/Assets/Objects/cube/block_bits_texture.png"/>
     <cubeMap id="cubemap" src="@/Assets/Skyboxes/plain"/>
-  </assets>
+</assets>
 
   <sun color="255,245,220" intensity="1.2" rotation="50,30,0" shadows="true"/>
   <fog start="40" end="120" density="0.0" color="180,200,220"/>
@@ -21,20 +31,30 @@
       </components>
     </entity>
 
+    <entity tag="SunCycle">
+      <components>
+        <logic>
+          <script type="SunCycle"/>
+        </logic>
+      </components>
+    </entity>
+
     <entity tag="test" position="0,200,-20" rotation="50,0,0">
       <components>
-        <renderer model="cube"/>
+        <renderer model="dirt"/>
         <physics anchored="false" collide="true" lockRot="1,0,1"/>
       </components>
     </entity>
 
     <entity tag="Player" position="0,100,0">
       <components>
-        <physics anchored="false" collide="true" mass="50" friction="0.6" lockRot="1,1,1" size="4,16,4"/>
+        <physics anchored="false" collide="true" mass="50" lockRot="1,1,1" friction="0.6" size="4,16,4"/>
         <audiolistener/>
         <logic>
           <script type="PlayerController"/>
           <script type="BlockInteraction"/>
+          <script type="LightSpawner"/>
+          
         </logic>
       </components>
       <entity tag="Camera" position="0,8,0">
@@ -50,6 +70,7 @@
       <components>
         <logic>
           <script type="WorldGenerator"/>
+          <script type="ChunkManager"/>
         </logic>
       </components>
     </entity>

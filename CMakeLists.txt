@@ -10,9 +10,19 @@ else()
     add_compile_options(
         -Wall
         -Wextra
+        -Wreorder
         -Wno-unknown-pragmas
         -Wno-deprecated-copy
         -Wno-unused-parameter
+    )
+
+    add_compile_options(
+        $<$<CONFIG:Debug>:-O0>
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:Release>:-march=native>
+        $<$<CONFIG:Release>:-funroll-loops>
+        $<$<CONFIG:Release>:-ffast-math>
     )
 endif()
 
@@ -20,7 +30,10 @@ endif()
 add_subdirectory(StrikeEngine)
 add_subdirectory(Sandbox)
 
-target_compile_definitions(StrikeEngine PRIVATE STRIKE_COLLISION_DEBUG_EXPERIMENTAL)
+
+
+
+#target_compile_definitions(StrikeEngine PRIVATE STRIKE_COLLISION_DEBUG_EXPERIMENTAL)
 
 
 option(STRIKE_BUILD_TESTS "Build StrikeEngine tests" ON)

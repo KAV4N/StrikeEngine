@@ -2,6 +2,7 @@
 
 int main(int argc, char** argv) {
     Strike::Application app;
+    //app.getWindow().setVSync(true);
 
     auto& world = Strike::World::get();
     world.loadScene("Assets/Scenes/game.xml");

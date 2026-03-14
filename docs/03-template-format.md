@@ -199,7 +199,7 @@ Once declared as an asset, use the `template` attribute on any `<entity>` to sta
 </entities>
 ```
 
-Each instance is independent — overriding `position`, `rotation`, and `scale` on the entity affects only that instance.
+Each instance is independent - overriding `position`, `rotation`, and `scale` on the entity affects only that instance.
 
 ---
 
@@ -230,11 +230,11 @@ Each instance is independent — overriding `position`, `rotation`, and `scale` 
 
 ## Limitations
 
-- **No nested templates** — a `.tmpl` file cannot reference another template asset. Use scene-level entity nesting instead.
-- **Asset paths are relative to the template file** — use the `../` prefix to reference paths from the project root, or `@/` for root-relative paths.
-- **Auto-generated files may be overwritten** — if you manually edit a `.tmpl` file, avoid re-triggering generation from the same source model or your edits will be lost.
-- **Physics size auto-derivation applies on first creation only** — when a `<renderer>` is present, the physics body size is derived from the model bounds on initial creation. Manual `size` values take effect on subsequent body recreations.
-- **One script type per entity** — duplicate `<script type="..."/>` entries on the same entity will be rejected at runtime with a `STRIKE_CORE_ERROR`.
+- **No nested templates** - a `.tmpl` file cannot reference another template asset. Use scene-level entity nesting instead.
+- **Asset paths are relative to the template file** - use the `../` prefix to reference paths from the project root, or `@/` for root-relative paths.
+- **Auto-generated files may be overwritten** - if you manually edit a `.tmpl` file, avoid re-triggering generation from the same source model or your edits will be lost.
+- **Physics size auto-derivation applies on first creation only** - when a `<renderer>` is present, the physics body size is derived from the model bounds on initial creation. Manual `size` values take effect on subsequent body recreations.
+- **One script type per entity** - duplicate `<script type="..."/>` entries on the same entity will be rejected at runtime with a `STRIKE_CORE_ERROR`.
 
 ---
 

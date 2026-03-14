@@ -55,7 +55,7 @@ namespace Strike {
          * @brief Set the target frames per second.
          * @param fps Target FPS (0 for unlimited).
          */
-        inline void setTargetFPS(int fps) {
+        inline void setTargetFPS(uint32_t fps) {
             STRIKE_ASSERT(sInstance, "Application instance not initialized");
             mTargetFPS = fps; 
         }
@@ -80,13 +80,13 @@ namespace Strike {
 
         /**
          * @brief Get the Master Volume of the game.
-         * @return float volume in range [0.0, 1.0].
+         * @return float volume in range [0.0, 1.0+].
          */
         float getMasterVolume() const;
 
         /**
          * @brief Sets the global master volume.
-         * @param volume Volume in range [0.0, 1.0].
+         * @param volume Volume in range [0.0, 1.0+].
          */
         void setMasterVolume(float volume);
 
@@ -117,7 +117,7 @@ namespace Strike {
     private:
         std::unique_ptr<Window> mWindow;
         bool mRunning = true;
-        int mTargetFPS = 0;
+        uint32_t mTargetFPS = 0;
         float mCurrentFPS = 0.0f;
 
         static Application* sInstance;

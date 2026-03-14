@@ -99,7 +99,7 @@ namespace Strike {
         /**
          * @brief Set the playback volume
          * 
-         * @param volume Volume level (0.0 to 1.0+, where 1.0 is full volume)
+         * @param volume Volume level (0.0 to 1.0+)
          */
         void setVolume(float volume);
         

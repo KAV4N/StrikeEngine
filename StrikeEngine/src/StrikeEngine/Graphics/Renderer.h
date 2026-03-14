@@ -126,6 +126,15 @@ namespace Strike {
         void submitSkybox(const std::shared_ptr<CubeMap>& skybox);
 
         /**
+         * @brief Submit a shadow casting mesh for rendering
+         * 
+         * @param mesh for rendering
+         * @param transform of the  mesh
+         */
+        void addShadowCaster(const std::shared_ptr<Mesh>& mesh,
+                                   const glm::mat4& transform);
+
+        /**
          * @brief Display the final rendered frame
          * 
          * Renders the framebuffer contents to the screen with post-processing.

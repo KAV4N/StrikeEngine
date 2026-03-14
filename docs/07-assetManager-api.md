@@ -62,9 +62,9 @@ void MyScript::onStart() {
 }
 ```
 
-If an asset with the same ID is already loaded and the type matches, the cached instance is returned immediately. If the type doesn't match, an assertion fires in Debug builds and the cast result is returned regardless — treat a type mismatch as a bug in calling code.
+If an asset with the same ID is already loaded and the type matches, the cached instance is returned immediately. If the type doesn't match, an assertion fires in Debug builds and the cast result is returned regardless - treat a type mismatch as a bug in calling code.
 
-> **Template note:** Always pass the source model path (e.g. `.obj`) when loading a `Template` — never the `.tmpl` path directly. The engine generates and caches the `.tmpl` file automatically.
+> **Template note:** Always pass the source model path (e.g. `.obj`) when loading a `Template` - never the `.tmpl` path directly. The engine generates and caches the `.tmpl` file automatically.
 
 ```cpp
 // Correct
@@ -92,7 +92,7 @@ void MyScript::onUpdate(float deltaTime) {
 }
 ```
 
-> **Important:** `AssetManager::update()` must be called each frame for async assets to complete GPU initialization. This is handled automatically by the engine loop — you do not need to call it manually.
+> **Important:** `AssetManager::update()` must be called each frame for async assets to complete GPU initialization. This is handled automatically by the engine loop - you do not need to call it manually.
 
 ### Path Resolution
 
@@ -282,11 +282,11 @@ REGISTER_SCRIPT(LevelLoader)
 
 ## Notes
 
-**Caching** — Assets are keyed by ID. Calling `load<T>()` or `loadAsync<T>()` with an ID that already exists returns the cached instance without re-loading. Requesting a cached ID with a mismatched type triggers an assertion in Debug builds — treat this as a bug, not a recoverable condition.
+**Caching** - Assets are keyed by ID. Calling `load<T>()` or `loadAsync<T>()` with an ID that already exists returns the cached instance without re-loading. Requesting a cached ID with a mismatched type triggers an assertion in Debug builds - treat this as a bug, not a recoverable condition.
 
-**Reference counting** — Assets are managed by `std::shared_ptr`. The `AssetManager` holds one reference; every `getAsset<T>()` caller holds another. Calling `removeAsset()` drops the manager's reference but the asset stays alive as long as any other owner holds a copy.
+**Reference counting** - Assets are managed by `std::shared_ptr`. The `AssetManager` holds one reference; every `getAsset<T>()` caller holds another. Calling `removeAsset()` drops the manager's reference but the asset stays alive as long as any other owner holds a copy.
 
-**Type safety** — All template methods enforce `T` must derive from `Asset` via `static_assert` at compile time. Type mismatches at runtime (ID exists but wrong type) trigger an assertion in Debug builds via `STRIKE_ASSERT`.
+**Type safety** - All template methods enforce `T` must derive from `Asset` via `static_assert` at compile time. Type mismatches at runtime (ID exists but wrong type) trigger an assertion in Debug builds via `STRIKE_ASSERT`.
 
 ---
 

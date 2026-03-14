@@ -233,7 +233,7 @@ namespace Strike {
     }
 
     void AudioSystem::setMasterVolume(float volume) {
-        mMasterVolume = glm::clamp(volume, 0.0f, 1.0f);
+        mMasterVolume = glm::max( 0.0f, volume);
         if (mInitialized)
             ma_engine_set_volume(&mEngine, mMasterVolume);
     }

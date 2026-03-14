@@ -1,20 +1,67 @@
 #include "PlayerController.h"
 
+void PlayerController::loadFootstepSounds()
+{
+    auto& am = Strike::AssetManager::get();
+
+    auto  scene  = getEntity().getScene();
+    auto  player = getEntity();
+
+    mFootstepEntityA = scene->createEntity();
+    mFootstepEntityA.setTag("FootstepA");
+    mFootstepEntityA.setParent(player);
+    {
+        auto& src = mFootstepEntityA.addComponent<Strike::AudioSourceComponent>();
+        src.setAudio(kFootstepAudioIdA);
+        src.setVolume(0.6f);
+        src.setLoop(false);
+        src.setSpatial(false);
+    }
+
+    mFootstepEntityB = scene->createEntity();
+    mFootstepEntityB.setTag("FootstepB");
+    mFootstepEntityB.setParent(player);
+    {
+        auto& src = mFootstepEntityB.addComponent<Strike::AudioSourceComponent>();
+        src.setAudio(kFootstepAudioIdB);
+        src.setVolume(0.6f);
+        src.setLoop(false);
+        src.setSpatial(false);
+    }
+}
+
+void PlayerController::updateFootsteps(bool isMoving, bool isSprinting)
+{
+    if (!isMoving || !mIsGrounded) {
+        mWasMoving = false;
+        return;
+    }
+
+    float interval = isSprinting ? kSprintStepInterval : kWalkStepInterval;
+
+    if (tick(interval)) {
+        Strike::Entity& current = mNextIsA ? mFootstepEntityA : mFootstepEntityB;
+        mNextIsA = !mNextIsA;
+
+        if (current.isValid() && current.hasComponent<Strike::AudioSourceComponent>())
+            current.getComponent<Strike::AudioSourceComponent>().play();
+    }
+
+    mWasMoving = true;
+}
+
 void PlayerController::onStart()
 {
     Strike::Input::setCursorMode(Strike::CursorMode::Locked);
 
-    auto [x, y] = Strike::Input::getMouseXY();
-    mLastX = x;
-    mLastY = y;
-
     mCameraEntity = getEntity().getScene()->getEntity("Camera");
-
     if (!mCameraEntity.isValid())
         STRIKE_WARN("PlayerController: could not find child entity tagged 'Camera'");
 
     if (mCameraEntity.isValid())
         mPitch = mCameraEntity.getEulerAngles().x;
+
+    loadFootstepSounds();
 }
 
 bool PlayerController::isGrounded()
@@ -27,7 +74,7 @@ bool PlayerController::isGrounded()
 
 void PlayerController::onUpdate(float deltaTime)
 {
-     Strike::Application::get().getWindow()
+    Strike::Application::get().getWindow()
         .setWindowTitle("FPS: " + std::to_string(
             static_cast<int>(Strike::Application::get().getCurrentFPS())));
 
@@ -35,25 +82,17 @@ void PlayerController::onUpdate(float deltaTime)
 
     auto& physics = getComponent<Strike::PhysicsComponent>();
 
-    auto [mx, my] = Strike::Input::getMouseXY();
-
-    if (mFirstMouse) {
-        mLastX = mx;
-        mLastY = my;
-        mFirstMouse = false;
-    }
-
-    float dX = mx - mLastX;
-    float dY = my - mLastY;
-    mLastX = mx;
-    mLastY = my;
+    auto [dX, dY] = Strike::Input::getMouseDelta();
 
     if (glm::abs(dX) > 0.0001f)
     {
-        float yawDelta = -dX * mSensitivity;
-        glm::quat yawQ = glm::angleAxis(glm::radians(yawDelta), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::quat newRot = glm::normalize(yawQ * scriptEntity.getRotation());
-        scriptEntity.setRotation(newRot);
+      
+        float yawSpeed = (-dX * mSensitivity) / deltaTime;
+        physics.setAngularVelocity(glm::vec3(0.0f, glm::radians(yawSpeed), 0.0f));
+    }
+    else
+    {
+        physics.setAngularVelocity(glm::vec3(0.0f));
     }
 
     if (mCameraEntity.isValid() && glm::abs(dY) > 0.0001f)
@@ -79,8 +118,8 @@ void PlayerController::onUpdate(float deltaTime)
     if (Strike::Input::isKeyPressed(STRIKE_KEY_D)) moveDir += right;
     if (Strike::Input::isKeyPressed(STRIKE_KEY_A)) moveDir -= right;
 
-    if (glm::length(moveDir) > 0.001f)
-        moveDir = glm::normalize(moveDir);
+    bool isMoving = glm::length(moveDir) > 0.001f;
+    if (isMoving) moveDir = glm::normalize(moveDir);
 
     glm::vec3 currentVel = physics.getVelocity();
     glm::vec3 targetVel  = moveDir * speed;
@@ -88,7 +127,7 @@ void PlayerController::onUpdate(float deltaTime)
 
     physics.setVelocity(targetVel);
 
-    physics.setAngularVelocity(glm::vec3(0.0f));
+    updateFootsteps(isMoving, isSprinting);
 }
 
 void PlayerController::onEvent(Strike::Event& e)
@@ -115,7 +154,6 @@ void PlayerController::onEvent(Strike::Event& e)
 
     if (key.getKeyCode() == STRIKE_KEY_TAB)
     {
-        mFirstMouse = true;
         Strike::Input::setCursorMode(Strike::CursorMode::Locked);
         e.handled = true;
     }

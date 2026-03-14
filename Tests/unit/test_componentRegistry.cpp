@@ -230,7 +230,7 @@ TEST_F(ComponentRegistryTest, AddComponentToEntity_WithTextXmlAttributes_SetsVal
 
 
 // ============================================================
-//  registerComponentFactory — registering a custom component
+//  registerComponentFactory - registering a custom component
 // ============================================================
 
 class TestRegistrationComponent : public Strike::Component {
@@ -316,7 +316,7 @@ TEST_F(ComponentRegistryTest, RegisterComponent_Macro_DeserializeDefaultsToZeroO
 
 
 // ============================================================
-//  registerComponentFactory — duplicate registration asserts
+//  registerComponentFactory - duplicate registration asserts
 // ============================================================
 
 TEST_F(ComponentRegistryTest, RegisterFactory_DuplicateTypeName_Asserts) {
