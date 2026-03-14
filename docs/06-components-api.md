@@ -98,16 +98,15 @@ Get the view frustum containing 6 planes for culling tests.
 XML scene configuration:
 
 ```xml
-<camera
-    nearPlane="0.1"
-    farPlane="100.0"
-    fov="60.0"
-    viewportX="0.0"
-    viewportY="0.0"
-    viewportWidth="1.0"
-    viewportHeight="1.0"
-    renderOrder="2"
-/>
+<camera fov="75" 
+        near="0.1" 
+        far="500"
+        x="0.0" 
+        y="0.0"
+        width="1.0" 
+        height="1.0"
+        order="0"
+    />
 ```
 
 Script usage for camera movement:
@@ -212,7 +211,7 @@ renderer.setMesh("box", 0);
 XML scene configuration:
 
 ```xml
-<renderer model="gizmo" material="gizmo_DefaultMaterial"/>
+<renderer model="gizmo" texture="gizmo_DefaultTexture"/>
 ```
 
 ---

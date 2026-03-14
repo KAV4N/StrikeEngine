@@ -10,10 +10,6 @@
 
 namespace Strike {
 
-
-    /**
-     * @brief Represents a node in the scene graph, managing local and world transforms.
-     */
     class GraphNode : public std::enable_shared_from_this<GraphNode> {
     public:
         explicit GraphNode(entt::entity entityId);
@@ -21,10 +17,11 @@ namespace Strike {
 
         GraphNode(const GraphNode&) = delete;
         GraphNode& operator=(const GraphNode&) = delete;
+
         entt::entity getEntityId() const { return mEntityId; }
 
         // ===============================
-        // Local Transform 
+        // Local Transform
         // ===============================
         const glm::vec3& getPosition() const { return mPosition; }
         void setPosition(const glm::vec3& position);
@@ -65,6 +62,8 @@ namespace Strike {
         // ===============================
         // Matrices
         // ===============================
+        void updateLocalMatrix() const;
+        void updateWorldMatrix() const;
         const glm::mat4& getLocalMatrix() const;
         const glm::mat4& getWorldMatrix() const;
 
@@ -87,18 +86,16 @@ namespace Strike {
         bool isActive() const { return mIsActive; }
         void setActive(bool active) { mIsActive = active; }
 
-        void updateLocalMatrix() const;
-        void updateWorldMatrix() const;
-
         void markDirty();
         bool isDirty() const { return mIsDirty; }
+        int getDepth() const { return mDepth; }
 
         bool isRoot() const { return mParent.expired(); }
 
     private:
         friend class Scene;
         void removeChild(GraphNode* child);
-
+        void updateDepth();
 
     private:
         entt::entity mEntityId;
@@ -106,17 +103,22 @@ namespace Strike {
         bool mIsActive = true;
         std::string mTag;
 
-        // Local transform data
-        glm::vec3 mPosition{0.0f};
-        glm::quat mRotation{1.0f, 0.0f, 0.0f, 0.0f};
-        glm::vec3 mScale{1.0f};
+        glm::vec3 mPosition{ 0.0f };
+        glm::quat mRotation{ 1.0f, 0.0f, 0.0f, 0.0f };
+        glm::vec3 mScale{ 1.0f };
 
         mutable bool mIsDirty = true;
-        mutable glm::mat4 mLocalMatrix{1.0f};
-        mutable glm::mat4 mWorldMatrix{1.0f};
+        mutable glm::mat4 mLocalMatrix{ 1.0f };
+        mutable glm::mat4 mWorldMatrix{ 1.0f };
+
+        int mDepth = 0;
+
+        // Non-owning pointer to Scene's dirty list.
+        // Scene owns both the list and all nodes so lifetime is always valid.
+        std::vector<GraphNode*>* mDirtyList = nullptr;
 
         std::weak_ptr<GraphNode> mParent;
         std::vector<std::shared_ptr<GraphNode>> mChildren;
     };
 
-} 
+}

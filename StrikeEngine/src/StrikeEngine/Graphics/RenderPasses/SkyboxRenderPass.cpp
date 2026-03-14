@@ -31,27 +31,28 @@ namespace Strike {
 
         auto camera = cameraData.camera;
         auto cubeMap = cameraData.mSkyboxTexture;
+        if (cubeMap && cubeMap->isReady()){
+            setupOpenGLState();
 
-        setupOpenGLState();
+            glm::mat4 view = camera.getViewMatrix();
+            view = glm::mat4(glm::mat3(view)); 
+            glm::mat4 projection = camera.getProjectionMatrix();
+            glm::mat4 viewProjection = projection * view;
 
-        glm::mat4 view = camera.getViewMatrix();
-        view = glm::mat4(glm::mat3(view)); 
-        glm::mat4 projection = camera.getProjectionMatrix();
-        glm::mat4 viewProjection = projection * view;
+            auto shader = mSkybox->getShader();
+            
 
-        auto shader = mSkybox->getShader();
-        
+            shader->bind();
+            shader->setMat4("uViewProjection", viewProjection);
+            shader->setInt("uSkybox", 0);
 
-        shader->bind();
-        shader->setMat4("uViewProjection", viewProjection);
-        shader->setInt("uSkybox", 0);
-
-        glBindVertexArray(mSkybox->getVAO());
-        cubeMap->bind(0);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-        
-        restoreOpenGLState();
+            glBindVertexArray(mSkybox->getVAO());
+            cubeMap->bind(0);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+            
+            restoreOpenGLState();
+        }
     }
 
     void SkyboxRenderPass::setupOpenGLState() {

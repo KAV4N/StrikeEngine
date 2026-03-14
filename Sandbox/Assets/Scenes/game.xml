@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scene tag="MinecraftWorld">
+
+  <assets>
+    <model id="dirt" src="@/Assets/Objects/cube/dirt.gltf"/>
+    <model id="stone" src="@/Assets/Objects/cube/stone.gltf"/>
+    <model id="grass" src="@/Assets/Objects/cube/dirt_with_snow.gltf"/>
+    <texture id="block_texture" src="@/Assets/Objects/cube/block_bits_texture.png"></texture>
+    <cubeMap id="cubemap" src="@/Assets/Skyboxes/plain"/>
+  </assets>
+
+  <sun color="255,245,220" intensity="1.2" rotation="50,30,0" shadows="true"/>
+  <fog start="40" end="120" density="0.0" color="180,200,220"/>
+  <skybox cubeMap="cubemap"></skybox>
+  <entities>
+
+  
+    <entity tag="Crosshair">
+      <components>
+        <text text="+" color="255,255,255" pivot="0.5,0.5" x="0.5" y="0.5"/>
+      </components>
+    </entity>
+
+    <entity tag="test" position="0,200,-20" rotation="50,0,0">
+      <components>
+        <renderer model="cube"/>
+        <physics anchored="false" collide="true" lockRot="1,0,1"/>
+      </components>
+    </entity>
+
+    <entity tag="Player" position="0,100,0">
+      <components>
+        <physics anchored="false" collide="true" mass="50" friction="0.6" lockRot="1,1,1" size="4,16,4"/>
+        <audiolistener/>
+        <logic>
+          <script type="PlayerController"/>
+          <script type="BlockInteraction"/>
+        </logic>
+      </components>
+      <entity tag="Camera" position="0,8,0">
+        <components>
+          <camera fov="75" near="0.05" far="300"
+                  x="0.0" y="0.0" width="1.0" height="1.0" order="0"/>
+        </components>
+      </entity>
+    </entity>
+
+      <!-- World generator: reads cube bounds and spawns all blocks -->
+    <entity tag="WorldGenerator" position="0,0,0">
+      <components>
+        <logic>
+          <script type="WorldGenerator"/>
+        </logic>
+      </components>
+    </entity>
+
+
+  </entities>
+
+</scene>

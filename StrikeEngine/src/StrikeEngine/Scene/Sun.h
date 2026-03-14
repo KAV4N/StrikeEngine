@@ -103,7 +103,7 @@ namespace Strike {
         glm::mat4 calculateLightSpaceMatrix(const CameraComponent& camera);
 
     private:
-        static constexpr float MAX_SHADOW_DISTANCE = 40.0f;
+        static constexpr float MAX_SHADOW_DISTANCE = 80.0f;
 
         glm::uvec3 mColor = glm::uvec3(255);
         float mIntensity = 1.0f;

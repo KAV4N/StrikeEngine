@@ -105,12 +105,8 @@ Adds a rigid body to the entity. When a `<renderer>` is also present, collision 
 Collision box size can also be defined with a `<size>` child element:
 
 ```xml
-<physics anchored="false" mass="20" friction="0.6" restitution="0.1">
-  <size x="1" y="1" z="1"/>
-</physics>
+<physics anchored="false" mass="20" friction="0.6" restitution="0.1" size="1,1,1"/>
 ```
-
-> **Note:** When a `<renderer>` is present, `size` set in XML or in `onStart()` is overridden during initial body creation — the engine reads bounds from the model/mesh at that point. The `size` value is respected on all subsequent recreations.
 
 ---
 
@@ -222,9 +218,7 @@ Each instance is independent — overriding `position`, `rotation`, and `scale` 
     <entity tag="Crate" position="0,0,0" rotation="0,0,0" scale="1,1,1">
       <components>
         <renderer model="crate_model" texture="crate_tex" mesh="0" color="255,255,255"/>
-        <physics anchored="false" mass="20" friction="0.6" restitution="0.1">
-          <size x="1" y="1" z="1"/>
-        </physics>
+        <physics anchored="false" mass="20" friction="0.6" restitution="0.1" size="1,1,1"/>
       </components>
     </entity>
   </entities>

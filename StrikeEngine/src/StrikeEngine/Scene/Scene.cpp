@@ -17,7 +17,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-
+#include <algorithm>
 
 namespace Strike {
 
@@ -43,9 +43,7 @@ namespace Strike {
     }
 
     std::shared_ptr<CubeMap> Scene::getSkybox() const {
-        if (mSkyboxCubeMapId.empty()) {
-            return nullptr;
-        }
+        if (mSkyboxCubeMapId.empty()) return nullptr;
         return AssetManager::get().getAsset<CubeMap>(mSkyboxCubeMapId);
     }
 
@@ -55,41 +53,37 @@ namespace Strike {
 
     Entity Scene::getEntity(std::string tag) {
         for (const auto& [entity, node] : mGraphNodes) {
-            if (node->getTag() == tag) {
+            if (node->getTag() == tag)
                 return Entity(entity, this);
-            }
         }
         return Entity();
     }
 
     std::shared_ptr<GraphNode> Scene::getGraphNode(entt::entity entity) {
         auto it = mGraphNodes.find(entity);
-        if (it != mGraphNodes.end()) {
-            return it->second;
-        }
+        if (it != mGraphNodes.end()) return it->second;
         return nullptr;
     }
 
     const std::shared_ptr<GraphNode> Scene::getGraphNode(entt::entity entity) const {
         auto it = mGraphNodes.find(entity);
-        if (it != mGraphNodes.end()) {
-            return it->second;
-        }
+        if (it != mGraphNodes.end()) return it->second;
         return nullptr;
     }
 
     Entity Scene::createEntity() {
         auto entity = mRegistry.create();
         auto graphNode = std::make_shared<GraphNode>(entity);
+        graphNode->mDirtyList = &mDirtyNodes;
         mGraphNodes[entity] = graphNode;
+        mDirtyNodes.push_back(graphNode.get());
         return Entity(entity, this);
     }
 
     Entity Scene::createEntity(const Entity& parent) {
         auto entity = createEntity();
-        if (parent.isValid()) {
+        if (parent.isValid())
             setParent(entity, parent);
-        }
         return entity;
     }
 
@@ -101,7 +95,6 @@ namespace Strike {
 
         auto childNode = getGraphNode(child.getHandle());
         auto parentNode = getGraphNode(parent.getHandle());
-
         childNode->setParent(parentNode);
     }
 
@@ -120,9 +113,7 @@ namespace Strike {
 
         auto currentNode = descendantNode->getParent();
         while (currentNode) {
-            if (currentNode->getEntityId() == ancestor.getHandle()) {
-                return true;
-            }
+            if (currentNode->getEntityId() == ancestor.getHandle()) return true;
             currentNode = currentNode->getParent();
         }
         return false;
@@ -132,49 +123,53 @@ namespace Strike {
         return isAncestor(ancestor, descendant);
     }
 
-    void Scene::updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty) {
-        if (!node) return;
-        if (!node->isActive()) return;
+    void Scene::updateNode(GraphNode* node, bool parentDirty) {
+        if (!node || !node->isActive()) return;
+
+        bool wasDirty = node->mIsDirty || parentDirty;
+        if (!wasDirty) return;
 
         entt::entity entity = node->getEntityId();
-        if (!mRegistry.valid(entity)) {
-            STRIKE_CORE_WARN("updateNodeTransforms: Invalid entity in graph node");
-            return;
+        if (!mRegistry.valid(entity)) return;
+
+        glm::mat4 worldMatrix = node->getLocalMatrix();
+        if (!node->isRoot()) {
+            if (auto* parent = node->getParent())
+                worldMatrix = parent->mWorldMatrix * worldMatrix;
+        }
+        node->mWorldMatrix = worldMatrix;
+        node->mIsDirty = false;
+
+        if (mRegistry.all_of<CameraComponent>(entity)) {
+            auto& camera = mRegistry.get<CameraComponent>(entity);
+            camera.update(worldMatrix, Renderer::get().getWidth(), Renderer::get().getHeight());
         }
 
-        bool wasDirty = node->isDirty() || parentDirty;
-
-        if (wasDirty) {
-            glm::mat4 worldMatrix = node->getLocalMatrix();
-            if (!node->isRoot()) {
-                auto parent = node->getParent();
-                if (parent) {
-                    worldMatrix = parent->getWorldMatrix() * worldMatrix;
-                }
-            }
-            node->mWorldMatrix = worldMatrix;
-            node->mIsDirty = false;
-
-            if (mRegistry.all_of<CameraComponent>(entity)) {
-                auto& renderer = Renderer::get();
-                auto& camera = mRegistry.get<CameraComponent>(entity);
-                camera.update(worldMatrix, renderer.getWidth(), renderer.getHeight());
-            }
-
-            if (mRegistry.all_of<PhysicsComponent>(entity)){
-                Entity ent(entity, this);
-                PhysicsComponent& phys = ent.getComponent<PhysicsComponent>();
-                if (phys.isActive())
-                    World::get().mPhysicsSystem->syncTransformToPhysics(phys, ent);
-            }
+        if (mRegistry.all_of<PhysicsComponent>(entity)) {
+            Entity ent(entity, this);
+            auto& phys = ent.getComponent<PhysicsComponent>();
+            if (phys.isActive())
+                World::get().mPhysicsSystem->syncTransformToPhysics(phys, ent);
         }
 
-        for (auto& child : node->getChildren()) {
-            updateNodeTransforms(child, wasDirty);
-        }
+        for (auto& child : node->getChildren())
+            updateNode(child.get(), wasDirty);
     }
 
-      void Scene::destroy(entt::entity entity) {
+    void Scene::onUpdate(float dt) {
+        if (mDirtyNodes.empty()) return;
+
+        std::sort(mDirtyNodes.begin(), mDirtyNodes.end(), [](const GraphNode* a, const GraphNode* b) {
+            return a->getDepth() < b->getDepth();
+        });
+
+        for (GraphNode* node : mDirtyNodes)
+            updateNode(node, false);
+
+        mDirtyNodes.clear();
+    }
+
+    void Scene::destroy(entt::entity entity) {
         if (!mRegistry.valid(entity)) {
             STRIKE_CORE_WARN("Attempted to destroy invalid entity");
             return;
@@ -182,23 +177,30 @@ namespace Strike {
 
         auto node = getGraphNode(entity);
         if (node) {
-           
+
+
+
             auto children = node->getChildren();
-            for (auto& child : children) {
+            for (auto& child : children)
                 destroy(child->getEntityId());
-            }
 
             node->removeFromParent();
+            
             mGraphNodes.erase(entity);
+            mDirtyNodes.erase(
+                std::remove(mDirtyNodes.begin(), mDirtyNodes.end(), node.get()),
+                mDirtyNodes.end()
+            );
+            mRegistry.destroy(entity);
         }
 
-        mRegistry.destroy(entity);
     }
 
     void Scene::shutdown() {
         mRegistry.on_destroy<PhysicsComponent>().disconnect<&Scene::onPhysicsComponentDestroy>(this);
         mRegistry.on_destroy<AudioSourceComponent>().disconnect<&Scene::onAudioSourceDestroy>(this);
 
+        mDirtyNodes.clear();
         mGraphNodes.clear();
         mRegistry.clear();
     }
@@ -207,17 +209,8 @@ namespace Strike {
         World::get().mPhysicsSystem->removePhysics(entity);
     }
 
-
     void Scene::onAudioSourceDestroy(entt::registry& registry, entt::entity entity) {
         World::get().mAudioSystem->stopEntity(entity);
-    }
-
-    void Scene::onUpdate(float dt) {
-        for (auto& [entity, node] : mGraphNodes) {
-            if (node->isRoot() && node->isActive()) {
-                updateNodeTransforms(node);
-            }
-        }
     }
 
     void Scene::onRender() {

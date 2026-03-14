@@ -17,8 +17,7 @@
 
 namespace Strike {
 
-    World& World::get()
-    {
+    World& World::get() {
         static World instance;
         return instance;
     }
@@ -29,14 +28,9 @@ namespace Strike {
         , mScriptSystem(std::make_unique<ScriptSystem>())
         , mPhysicsSystem(std::make_unique<PhysicsSystem>())
         , mAudioSystem(std::make_unique<AudioSystem>())
-    {
+    {}
 
-
-    }
-
-    void World::loadScene(const std::filesystem::path& path, bool clearAssets)
-    {
-
+    void World::loadScene(const std::filesystem::path& path, bool clearAssets) {
         if (!std::filesystem::exists(path)) {
             STRIKE_CORE_ERROR("Scene file does not exist: {}", path.string());
             return;
@@ -45,14 +39,11 @@ namespace Strike {
         mPendingSceneData.clearAssets = clearAssets;
         mPendingSceneData.pendingScenePath = path;
         mPendingSceneData.mSceneLoadPending = true;
-        
     }
 
-    void World::processSceneLoad()
-    {
-        if (! mPendingSceneData.mSceneLoadPending) {
-            return;
-        }
+    void World::processSceneLoad() {
+        if (!mPendingSceneData.mSceneLoadPending) return;
+
         try {
             auto newScene = mSceneLoader->loadScene(mPendingSceneData.pendingScenePath, mPendingSceneData.clearAssets);
             if (newScene) {
@@ -62,12 +53,10 @@ namespace Strike {
                     mCurrentScene->shutdown();
                 }
                 mCurrentScene = std::move(newScene);
-            }
-            else {
+            } else {
                 STRIKE_CORE_ERROR("Failed to load scene: {}", mPendingSceneData.pendingScenePath.string());
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             STRIKE_CORE_ERROR("Exception while loading scene: {}", e.what());
         }
 
@@ -75,84 +64,68 @@ namespace Strike {
         mPendingSceneData.pendingScenePath.clear();
     }
 
-    Scene* World::getScene() const
-    {
-        //return nullptr;
+    Scene* World::getScene() const {
         return mCurrentScene.get();
     }
 
-    void World::onUpdate(float dt)
-    {
-        
+    void World::onUpdate(float dt) {
         if (mCurrentScene) {
-
-            mCurrentScene->onUpdate(dt);       
             mScriptSystem->onUpdate(dt);
+
+            mCurrentScene->onUpdate(dt);
             mPhysicsSystem->onUpdate(dt);
+            mCurrentScene->onUpdate(0.0f); // sync up the physycs changes
+
             mAudioSystem->onUpdate(dt);
             mRenderSystem->onUpdate(dt);
-            
         }
-        
-        // process scene load at end of frame (after all updates)
+
         processSceneLoad();
     }
 
-    RayHit World::rayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const
-    {       
+    RayHit World::rayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const {
         return mPhysicsSystem->rayCast(origin, direction, maxDistance);
     }
 
-    std::vector<RayHit> World::rayCastAll(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const
-    {
+    std::vector<RayHit> World::rayCastAll(const glm::vec3& origin, const glm::vec3& direction, float maxDistance) const {
         return mPhysicsSystem->rayCastAll(origin, direction, maxDistance);
     }
-    
-    void World::setGravity(const glm::vec3& gravity)
-    {
+
+    void World::setGravity(const glm::vec3& gravity) {
         mPhysicsSystem->setGravity(gravity);
     }
 
-    glm::vec3 World::getGravity() const
-    {
+    glm::vec3 World::getGravity() const {
         return mPhysicsSystem->getGravity();
     }
 
-    void World::onRender()
-    {
+    void World::onRender() {
         mRenderSystem->onRender();
     }
 
-    void World::onEvent(Event& e)
-    {
+    void World::onEvent(Event& e) {
         if (mCurrentScene) {
             mScriptSystem->onEvent(e);
         }
     }
 
-
-    void World::setFog(float start, float end, float density, const glm::uvec3& color)
-    {
+    void World::setFog(float start, float end, float density, const glm::uvec3& color) {
         mFog.start = start;
         mFog.end = end;
         mFog.density = density;
         mFog.color = color;
 
-        // Apply to renderer immediately
         Renderer::get().setFogStart(start);
         Renderer::get().setFogEnd(end);
         Renderer::get().setFogDensity(density);
         Renderer::get().setFogColor(color);
     }
 
-
-    void World::resize(uint32_t width, uint32_t height)
-    {
+    void World::resize(uint32_t width, uint32_t height) {
         mRenderSystem->resize(width, height);
     }
 
-    void World::clearPhysicsWorld()
-    {
+    void World::clearPhysicsWorld() {
         if (mPhysicsSystem && mCurrentScene) {
             auto& registry = mCurrentScene->getRegistry();
             auto view = registry.view<PhysicsComponent>();
@@ -162,8 +135,7 @@ namespace Strike {
         }
     }
 
-    void World::shutDownSystems()
-    {
+    void World::shutDownSystems() {
         if (mAudioSystem) {
             mAudioSystem->stopAll();
         }

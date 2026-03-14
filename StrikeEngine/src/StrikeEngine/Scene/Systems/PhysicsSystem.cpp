@@ -457,6 +457,7 @@ namespace Strike {
 
         ent.setPosition(localPos);
         ent.setRotation(localRot);
+
     }
 
     void PhysicsSystem::syncTransformToPhysics(const PhysicsComponent& physics, const Entity& ent) {
@@ -475,10 +476,11 @@ namespace Strike {
 
         body->setWorldTransform(trans);
         if (body->getMotionState()) body->getMotionState()->setWorldTransform(trans);
-
+        /*
         body->setLinearVelocity(btVector3(0,0,0));
         body->setAngularVelocity(btVector3(0,0,0));
         body->clearForces();
+        */
     }
 
 }

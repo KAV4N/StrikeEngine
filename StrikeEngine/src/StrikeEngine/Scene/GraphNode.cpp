@@ -17,31 +17,14 @@ namespace Strike {
         markDirty();
     }
 
-    void GraphNode::move(const glm::vec3& delta)
-    {
-        // Local basis vectors (object space)
-        const glm::vec3 localRight   = glm::vec3(1.0f, 0.0f, 0.0f);
-        const glm::vec3 localUp      = glm::vec3(0.0f, 1.0f, 0.0f);
-        const glm::vec3 localForward = glm::vec3(0.0f, 0.0f, 1.0f);
+    void GraphNode::move(const glm::vec3& delta) {
+        const glm::vec3 worldRight   = mRotation * glm::vec3(1.0f, 0.0f, 0.0f);
+        const glm::vec3 worldUp      = mRotation * glm::vec3(0.0f, 1.0f, 0.0f);
+        const glm::vec3 worldForward = mRotation * glm::vec3(0.0f, 0.0f, 1.0f);
 
-        // Rotate basis vectors into world space using local rotation
-        const glm::vec3 worldRight   = mRotation * localRight;
-        const glm::vec3 worldUp      = mRotation * localUp;
-        const glm::vec3 worldForward = mRotation * localForward;
-
-        // Compose movement in world space
-        glm::vec3 worldDelta =
-            worldRight   * delta.x +
-            worldUp      * delta.y +
-            worldForward * delta.z;
-
-        // Apply to local position
-        mPosition += worldDelta;
-
+        mPosition += worldRight * delta.x + worldUp * delta.y + worldForward * delta.z;
         markDirty();
     }
-
-
 
     void GraphNode::setRotation(const glm::quat& rotation) {
         mRotation = glm::normalize(rotation);
@@ -55,22 +38,16 @@ namespace Strike {
         markDirty();
     }
 
-    void GraphNode::rotateQuaternion(float angleDegrees, const glm::vec3& axis)
-    {
+    void GraphNode::rotateQuaternion(float angleDegrees, const glm::vec3& axis) {
         glm::vec3 normAxis = glm::normalize(axis);
-
-        glm::quat angleQuat = glm::angleAxis(
-            glm::radians(angleDegrees),
-            normAxis
-        );
+        glm::quat angleQuat = glm::angleAxis(glm::radians(angleDegrees), normAxis);
 
         if (normAxis.y == 1.0f)
             mRotation = angleQuat * mRotation;
         else
             mRotation = mRotation * angleQuat;
 
-        mRotation = glm::normalize(mRotation);  
-        
+        mRotation = glm::normalize(mRotation);
         markDirty();
     }
 
@@ -106,18 +83,16 @@ namespace Strike {
     }
 
     glm::quat GraphNode::getWorldRotation() const {
-        if (auto parent = mParent.lock()) {
+        if (auto parent = mParent.lock())
             return parent->getWorldRotation() * mRotation;
-        }
         return mRotation;
     }
 
     void GraphNode::setWorldRotation(const glm::quat& rotation) {
-        if (auto parent = mParent.lock()) {
+        if (auto parent = mParent.lock())
             mRotation = glm::inverse(parent->getWorldRotation()) * rotation;
-        } else {
+        else
             mRotation = rotation;
-        }
         mRotation = glm::normalize(mRotation);
         markDirty();
     }
@@ -132,9 +107,8 @@ namespace Strike {
 
     glm::vec3 GraphNode::getWorldScale() const {
         glm::vec3 result = mScale;
-        if (auto parent = mParent.lock()) {
+        if (auto parent = mParent.lock())
             result *= parent->getWorldScale();
-        }
         return result;
     }
 
@@ -162,22 +136,15 @@ namespace Strike {
         glm::mat4 R = glm::mat4_cast(mRotation);
         glm::mat4 S = glm::scale(glm::mat4(1.0f), mScale);
         mLocalMatrix = T * R * S;
-    
     }
 
     void GraphNode::updateWorldMatrix() const {
         if (!mIsDirty) return;
-
         updateLocalMatrix();
-
-        if (auto parent = mParent.lock()) {
+        if (auto parent = mParent.lock())
             mWorldMatrix = parent->getWorldMatrix() * mLocalMatrix;
-        } else {
+        else
             mWorldMatrix = mLocalMatrix;
-        }
-
-
-
     }
 
     const glm::mat4& GraphNode::getLocalMatrix() const {
@@ -191,6 +158,16 @@ namespace Strike {
     }
 
     // ===============================
+    // Dirty flag
+    // ===============================
+    void GraphNode::markDirty() {
+        if (mIsDirty) return; // already queued this frame
+        mIsDirty = true;
+        if (mDirtyList)
+            mDirtyList->push_back(this);
+    }
+
+    // ===============================
     // Hierarchy
     // ===============================
     GraphNode* GraphNode::getParent() const {
@@ -199,16 +176,19 @@ namespace Strike {
     }
 
     void GraphNode::setParent(std::shared_ptr<GraphNode> parent) {
-        if (auto oldParent = mParent.lock()) {
+        if (auto oldParent = mParent.lock())
             oldParent->removeChild(this);
-        }
 
         mParent = parent;
 
         if (parent) {
             parent->mChildren.push_back(shared_from_this());
+            mDepth = parent->mDepth + 1;
+        } else {
+            mDepth = 0;
         }
 
+        updateDepth();
         markDirty();
     }
 
@@ -216,6 +196,8 @@ namespace Strike {
         if (auto oldParent = mParent.lock()) {
             oldParent->removeChild(this);
             mParent.reset();
+            mDepth = 0;
+            updateDepth();
             markDirty();
         }
     }
@@ -230,22 +212,15 @@ namespace Strike {
             [child](const std::shared_ptr<GraphNode>& node) {
                 return node.get() == child;
             });
-
-        if (it != mChildren.end()) {
+        if (it != mChildren.end())
             mChildren.erase(it);
-        }
     }
 
-    // ===============================
-    // Dirty propagation
-    // ===============================
-    void GraphNode::markDirty() {
-        mIsDirty = true;
-        /*
+    void GraphNode::updateDepth() {
         for (auto& child : mChildren) {
-            child->markDirty();
+            child->mDepth = mDepth + 1;
+            child->updateDepth();
         }
-        */  
     }
 
-} 
+}

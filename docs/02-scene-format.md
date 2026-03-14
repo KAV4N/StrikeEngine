@@ -141,22 +141,23 @@ Components are defined inside a `<components>` element. All components support t
 
 Defines perspective projection, view frustum, and viewport for rendering. Supports frustum culling.
 
-| Attribute | Alias | Default | Description |
-|---|---|---|---|
-| `fov` | - | `45` | Field of view in degrees |
-| `near` | `nearPlane` | `0.1` | Near clipping plane distance |
-| `far` | `farPlane` | `1000` | Far clipping plane distance |
-| `order` | `renderOrder` | - | Render order priority (lower values render first) |
-| `x` | `viewportX` | `0.0` | Viewport X position (0.0–1.0) |
-| `y` | `viewportY` | `0.0` | Viewport Y position (0.0–1.0) |
-| `width` | `viewportWidth` | `1.0` | Viewport width (0.0–1.0) |
-| `height` | `viewportHeight` | `1.0` | Viewport height (0.0–1.0) |
+| Attribute | Default | Description                                       |
+| --------- | ------- | ------------------------------------------------- |
+| `fov`     | `45`    | Field of view in degrees                          |
+| `near`    | `0.1`   | Near clipping plane distance                      |
+| `far`     | `1000`  | Far clipping plane distance                       |
+| `order`   | `0`      | Render order priority (lower values render first) |
+| `x`       | `0.0`   | Viewport X position (0.0–1.0)                     |
+| `y`       | `0.0`   | Viewport Y position (0.0–1.0)                     |
+| `width`   | `1.0`   | Viewport width (0.0–1.0)                          |
+| `height`  | `1.0`   | Viewport height (0.0–1.0)                         |
+
 
 ```xml
 <camera fov="75" near="0.1" far="500"
-        viewportX="0.0" viewportY="0.0"
-        viewportWidth="1.0" viewportHeight="1.0"
-        renderOrder="0"/>
+        x="0.0" y="0.0"
+        width="1.0" height="1.0"
+        order="0"/>
 ```
 
 ---
@@ -200,25 +201,6 @@ Collision box size can also be set with a `<size>` child element:
 <physics anchored="false" mass="70" friction="0.6" lDamping="0.2" aDamping="0.5">
   <size x="1" y="2" z="1"/>
 </physics>
-```
-
-> **Note:** The `size="X,Y,Z"` attribute format and the `<size x="" y="" z=""/>` child element are both supported for defining the collision box. When a `<renderer>` is also present on the entity, the collision size is automatically derived from the model/mesh bounds on the **first** body creation and will override any `size` value set in XML or in `onStart()`. Use the `size` attribute or child element on subsequent recreations.
-
-> **Rotation locking** only applies to dynamic (non-anchored) bodies.
-
-```xml
-<!-- Static ground -->
-<physics anchored="true" collide="true"/>
-
-<!-- Character controller: all rotation locked -->
-<physics anchored="false" collide="true" mass="80" lockRot="1,1,1">
-  <size x="1" y="2" z="1"/>
-</physics>
-
-<!-- Dynamic body, only Y rotation free -->
-<physics anchored="false" collide="true" mass="2"
-         friction="0.4" restitution="0.1" lDamping="0.0" aDamping="0.05"
-         lockRot="1,0,1" size="2.0,2.0,2.0"/>
 ```
 
 ---

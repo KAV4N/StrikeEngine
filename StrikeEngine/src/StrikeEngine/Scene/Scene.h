@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <unordered_map>
+#include <vector>
 
 namespace Strike {
 
@@ -28,8 +29,8 @@ namespace Strike {
     public:
         /**
          * @brief Construct a new Scene object.
-         * @param tag for the scene.
          * @param path File path to the scene asset.
+         * @param tag Unique identifier for the scene.
          * @note This does not load the scene; for loading use SceneLoader.
          */
         Scene(const std::filesystem::path& path, const std::string& tag = "");
@@ -110,20 +111,19 @@ namespace Strike {
          * @note Returns nullptr if no skybox is set.
          */
         std::shared_ptr<CubeMap> getSkybox() const;
-        
-       
-      /**
-       * @brief Destroy an entity and its associated graph node.
-       * @param entity The EnTT entity handle to destroy.
-       * @note This will also remove the entity from its parent's children list if applicable.
-       */
+
+        /**
+         * @brief Destroy an entity and its associated graph node.
+         * @param handle The EnTT entity handle to destroy.
+         * @note Also destroys all children and removes the entity from its parent.
+         */
         void destroy(entt::entity handle);
 
         /**
          * @brief Check if one entity is an ancestor of another in the scene graph.
          * @param ancestor The potential ancestor entity.
          * @param descendant The potential descendant entity.
-         * @return True if 'ancestor' is an ancestor of 'descendant', false otherwise
+         * @return True if 'ancestor' is an ancestor of 'descendant', false otherwise.
          */
         bool isAncestor(const Entity& ancestor, const Entity& descendant) const;
 
@@ -131,7 +131,7 @@ namespace Strike {
          * @brief Check if one entity is a descendant of another in the scene graph.
          * @param descendant The potential descendant entity.
          * @param ancestor The potential ancestor entity.
-         * @return True if 'descendant' is a descendant of 'ancestor', false otherwise
+         * @return True if 'descendant' is a descendant of 'ancestor', false otherwise.
          */
         bool isDescendant(const Entity& descendant, const Entity& ancestor) const;
 
@@ -186,7 +186,7 @@ namespace Strike {
          * @brief Get a const component from an entity.
          * @tparam Component The type of the component to get.
          * @param entity The EnTT entity handle.
-         * @return Reference to the requested component.
+         * @return Const reference to the requested component.
          */
         template<typename Component>
         const Component& getComponent(entt::entity entity) const {
@@ -218,12 +218,10 @@ namespace Strike {
 
         /**
          * @brief Get the unique identifier of the scene.
-         * @return The scene's unique identifier.
+         * @return The scene's unique identifier string.
          */
         const std::string& getTag() { return mId; }
 
-
-        //only for testing
         #ifdef STRIKE_BUILD_TESTS
             void flushTransforms() { onUpdate(0.0f); }
         #endif
@@ -231,37 +229,34 @@ namespace Strike {
     private:
         friend class Entity;
         friend class World;
-        
-        void shutdown();
 
-                
+        void shutdown();
         void onUpdate(float dt);
         void onRender();
 
-        // Internal graph node access (for Entity class only)
+        // Recursively recomputes world matrices for a node and its children if dirty.
+        // parentDirty propagates the dirty state down even if the child itself was not
+        // directly marked — needed when a parent moves and children must follow.
+        void updateNode(GraphNode* node, bool parentDirty);
+
         std::shared_ptr<GraphNode> getGraphNode(entt::entity entity);
         const std::shared_ptr<GraphNode> getGraphNode(entt::entity entity) const;
-
-        void updateNodeTransforms(std::shared_ptr<GraphNode> node, bool parentDirty = false);
 
         void onPhysicsComponentDestroy(entt::registry& registry, entt::entity entity);
         void onAudioSourceDestroy(entt::registry& registry, entt::entity entity);
         void setupComponentProtection();
 
-        void setPhysicsSystem(PhysicsSystem* physicsSystem);
-
     private:
         friend class AudioSystem;
 
-
         std::string mId;
         entt::registry mRegistry;
-        Sun mSun; 
+        Sun mSun;
 
         std::string mSkyboxCubeMapId;
-        
-        // Graph node storage
+
         std::unordered_map<entt::entity, std::shared_ptr<GraphNode>> mGraphNodes;
+        std::vector<GraphNode*> mDirtyNodes;
     };
 
-} 
+}

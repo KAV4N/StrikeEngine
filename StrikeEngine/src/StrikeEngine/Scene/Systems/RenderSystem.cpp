@@ -104,7 +104,7 @@ namespace Strike {
         for (const auto& [renderOrder, camData] : cameras) {
             renderer.beginCamera(camData.camera, camData.cameraPosition);
 
-            if (skybox && skybox->isReady()) renderer.submitSkybox(skybox); 
+            renderer.submitSkybox(skybox); 
             processLights(scene);
 
             auto& sun = scene->getSun();

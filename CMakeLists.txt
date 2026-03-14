@@ -16,8 +16,12 @@ else()
     )
 endif()
 
+
 add_subdirectory(StrikeEngine)
 add_subdirectory(Sandbox)
+
+target_compile_definitions(StrikeEngine PRIVATE STRIKE_COLLISION_DEBUG_EXPERIMENTAL)
+
 
 option(STRIKE_BUILD_TESTS "Build StrikeEngine tests" ON)
 if(STRIKE_BUILD_TESTS)

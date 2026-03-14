@@ -23,15 +23,17 @@ namespace Strike {
         }
 
         auto asset = loadAssetInternal(id, path);
-
-        if (!asset->mNeedsPostLoad){
-            asset->postLoad();
-            asset->setState(AssetState::Ready);
-        }else{
-            LoadingTask postLoadTask;
-            postLoadTask.placeholderAsset = asset;
-            mLoadingTasks.emplace(asset->getId(), std::move(postLoadTask));
+        if (!asset->hasFailed()){
+            if (!asset->mNeedsPostLoad){
+                asset->postLoad();
+                asset->setState(AssetState::Ready);
+            }else{
+                LoadingTask postLoadTask;
+                postLoadTask.placeholderAsset = asset;
+                mLoadingTasks.emplace(asset->getId(), std::move(postLoadTask));
+            }
         }
+
 
         return asset;
     }
