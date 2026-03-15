@@ -70,7 +70,7 @@ void BlockInteraction::onStart()
 {
     mCameraEntity = getEntity().getScene()->getEntity("Camera");
     if (!mCameraEntity.isValid())
-        STRIKE_WARN("BlockInteraction: could not find 'Camera'");
+        STRIKE_CORE_WARN("BlockInteraction: could not find 'Camera'");
 
     if (mCameraEntity.isValid()) {
         auto scene  = getEntity().getScene();
@@ -253,7 +253,7 @@ void BlockInteraction::placeBlock()
         wg = wgEntity.getComponent<Strike::LogicComponent>().getScript<WorldGenerator>();
 
     if (!wg) {
-        STRIKE_WARN("BlockInteraction: WorldGenerator not found, cannot place block");
+        STRIKE_CORE_WARN("BlockInteraction: WorldGenerator not found, cannot place block");
         return;
     }
 
@@ -263,7 +263,7 @@ void BlockInteraction::placeBlock()
     auto& am    = Strike::AssetManager::get();
     auto  model = am.getAsset<Strike::Model>(selectedModelId());
     if (!model || !model->isReady()) {
-        STRIKE_WARN("BlockInteraction: model '{}' not ready", selectedModelId());
+        STRIKE_CORE_WARN("BlockInteraction: model '{}' not ready", selectedModelId());
         return;
     }
 

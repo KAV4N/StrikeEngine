@@ -10,7 +10,7 @@ namespace Strike {
 
     void ComponentRegistry::registerComponentFactory(const std::string& typeName, ComponentFactory factory) {
         auto& factories = getFactories();
-        STRIKE_ASSERT(factories.find(typeName) == factories.end(), 
+        STRIKE_CORE_ASSERT(factories.find(typeName) == factories.end(), 
                       "Component '{}' is already registered!", typeName);
         
         factories[typeName] = factory;

@@ -28,7 +28,7 @@ void SunCycle::onStart()
         mSkyboxVisible = true;
         STRIKE_INFO("SunCycle: captured skybox id '{}'", mSkyboxId);
     } else {
-        STRIKE_WARN("SunCycle: no skybox found in scene - night sky toggle disabled");
+        STRIKE_CORE_WARN("SunCycle: no skybox found in scene - night sky toggle disabled");
     }
 
     applySunState();

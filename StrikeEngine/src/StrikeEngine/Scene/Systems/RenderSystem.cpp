@@ -21,9 +21,10 @@ namespace Strike {
     RenderSystem::RenderSystem() {}
 
     void RenderSystem::onUpdate(float dt) {
+        Renderer::get().beginFrame();
         Scene* scene = World::get().getScene();
-        if (!scene) return;
-
+        if (!scene) 
+            return;
         processScene(scene);
     }
 
@@ -31,11 +32,13 @@ namespace Strike {
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
-        Renderer::get().display();
 
         auto& renderer    = Renderer::get();
         uint32_t screenWidth  = renderer.getWidth();
         uint32_t screenHeight = renderer.getHeight();
+
+
+        renderer.display();
 
         auto& registry = scene->getRegistry();
         auto view = registry.view<TextComponent>();

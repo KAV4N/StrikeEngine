@@ -51,7 +51,7 @@ glm::vec3 WorldGenerator::scaleForModel(const char* modelId) const
     auto& am = Strike::AssetManager::get();
     auto  model = am.getAsset<Strike::Model>(modelId);
     if (!model || !model->isReady()) {
-        STRIKE_WARN("WorldGenerator: model '{}' not ready, falling back to target size", modelId);
+        STRIKE_CORE_WARN("WorldGenerator: model '{}' not ready, falling back to target size", modelId);
         return mTargetBlockSize;
     }
     glm::vec3 meshSize = model->getBounds().getSize();

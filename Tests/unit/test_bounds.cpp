@@ -3,6 +3,13 @@
 
 static constexpr float kEps = 1e-5f;
 
+class BoundsTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        Strike::Log::init();
+    }
+};
+
 
 // ============================================================
 // Default constructor

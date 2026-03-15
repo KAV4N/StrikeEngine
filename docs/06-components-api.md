@@ -96,7 +96,6 @@ Get the view frustum containing 6 planes for culling tests.
 ### Usage Example
 
 XML scene configuration:
-
 ```xml
 <camera fov="75" 
         near="0.1" 
@@ -110,7 +109,6 @@ XML scene configuration:
 ```
 
 Script usage for camera movement:
-
 ```cpp
 void CameraMovement::onStart() {
     mCameraEntity = getEntity();
@@ -201,7 +199,6 @@ Get the index of the selected mesh (or empty if not set).
 ### Usage Example
 
 Programmatic usage:
-
 ```cpp
 Strike::Entity entity = scene->createEntity();
 auto& renderer = entity.addComponent<Strike::RendererComponent>();
@@ -209,7 +206,6 @@ renderer.setMesh("box", 0);
 ```
 
 XML scene configuration:
-
 ```xml
 <renderer model="gizmo" texture="gizmo_DefaultTexture"/>
 ```
@@ -339,7 +335,6 @@ Get the current lock state for all three axes as a `glm::bvec3` (x, y, z).
 ### RayHit Structure
 
 Used for raycast results returned by `PhysicsSystem`:
-
 ```cpp
 struct RayHit {
     Entity entity;                      // The entity that was hit
@@ -353,7 +348,6 @@ struct RayHit {
 ### Usage Examples
 
 **Keeping an object upright (lock all rotation):**
-
 ```cpp
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 physics.setMass(5.0f);
@@ -363,7 +357,6 @@ physics.setLockRotation(glm::bvec3(true, true, true));
 ```
 
 **2D-style side-scroller (allow only Z rotation, lock X and Y):**
-
 ```cpp
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
 physics.setMass(1.0f);
@@ -372,7 +365,6 @@ physics.setLockRotation(glm::bvec3(true, true, false));
 ```
 
 **Lock a single axis at runtime:**
-
 ```cpp
 void MyScript::onUpdate(float dt) {
     auto& physics = getEntity().getComponent<Strike::PhysicsComponent>();
@@ -386,7 +378,6 @@ void MyScript::onUpdate(float dt) {
 ```
 
 **Dynamic body with a renderer (size auto-derived on first creation only):**
-
 ```cpp
 // Size is derived from the RendererComponent's model bounds × world scale on first body creation.
 // Do NOT call setSize() in onStart() - it will be overwritten during the initial creation.
@@ -402,7 +393,6 @@ physics.setAngularVelocity(glm::vec3(100.0f, 0.0f, 0.0f));
 ```
 
 **Dynamic body without a renderer (manual size required):**
-
 ```cpp
 // No RendererComponent - entity scale is NEVER applied automatically.
 auto& physics = entity.addComponent<Strike::PhysicsComponent>();
@@ -414,7 +404,6 @@ physics.setLockRotation(glm::bvec3(true, false, true)); // only Y rotation free
 ```
 
 XML scene configuration:
-
 ```xml
 <!-- anchored static body -->
 <physics anchored="true" collide="true" mass="1"/>
@@ -488,7 +477,6 @@ Get the light influence radius in world units.
 ### Usage Example
 
 Programmatic usage (spawning lights dynamically):
-
 ```cpp
 void CameraMovement::spawnLight() {
     auto scene = mCameraEntity.getScene();
@@ -508,7 +496,6 @@ void CameraMovement::spawnLight() {
 ```
 
 XML scene configuration:
-
 ```xml
 <light color="255,245,200" intensity="8" radius="100.0" fallOff="25"/>
 ```
@@ -564,7 +551,6 @@ Get the pivot point as normalized coordinates (0–1).
 ### Usage Example
 
 Programmatic usage:
-
 ```cpp
 entity.getComponent<Strike::TextComponent>().setText(
     "Time of Day: " + std::to_string(static_cast<int>(mTimeOfDay)) + ":00"
@@ -572,7 +558,6 @@ entity.getComponent<Strike::TextComponent>().setText(
 ```
 
 XML scene configuration:
-
 ```xml
 <text text="Strike Engine Demo" color="255,255,255" pivot="0.5,0.5" x="0.5" y="0.5"/>
 ```
@@ -659,7 +644,6 @@ Get the maximum distance for distance attenuation.
 ### Usage Example
 
 Programmatic usage:
-
 ```cpp
 Strike::Entity ent = scene->getEntity("shotSound");
 if (ent.isValid()) {
@@ -674,7 +658,6 @@ if (ent.isValid()) {
 ```
 
 XML scene configuration:
-
 ```xml
 <audiosource audio="shot" autoplay="true" volume="0.1" spatial="true"/>
 ```
@@ -698,7 +681,6 @@ Returns the static type name `"audiolistener"` for this component.
 ### Usage Example
 
 XML scene configuration (typically attached to the camera entity):
-
 ```xml
 <audiolistener/>
 ```
@@ -709,7 +691,7 @@ XML scene configuration (typically attached to the camera entity):
 
 The `LogicComponent` allows multiple `Script` instances to be attached to an entity, providing custom behavior and game logic. Scripts are stored and managed internally as unique pointers.
 
-> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a `STRIKE_CORE_ERROR` log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
+> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a warning log, and a reference to the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
 
 ### Constructor
 
@@ -723,11 +705,11 @@ Returns the static type name `"logic"` for this component.
 
 ### Script Management
 
-#### `template<typename T> T* addScript()`
-Add a script of the specified type to this component. Returns a pointer to the newly created script instance. The component takes ownership of the script. If a script of the same type is already attached, logs a `STRIKE_CORE_ERROR` and returns the existing instance instead.
+#### `template<typename T> T& addScript()`
+Add a script of the specified type to this component. Always returns a valid reference to the script. The component takes ownership of the script. Asserts if the script type has not been registered with `REGISTER_SCRIPT`. If a script of the same type is already attached, logs a warning and returns a reference to the existing instance instead.
 
 #### `template<typename T> void removeScript()`
-Remove the script of the specified type.
+Remove the script of the specified type. Calls `onDestroy()` before releasing it. Does nothing if the type is not attached.
 
 #### `template<typename T> T* getScript()`
 Get the script of the specified type. Returns `nullptr` if not found.
@@ -745,17 +727,18 @@ Get all scripts attached to this component (const).
 Get all scripts attached to this component.
 
 #### `void clearScripts()`
-Remove all scripts from this component.
+Remove all scripts from this component. Calls `onDestroy()` on each script before releasing it.
 
 ### Usage Example
 
 Programmatic usage:
-
 ```cpp
 auto& logic = entity.addComponent<Strike::LogicComponent>();
 
-// Add - logs STRIKE_CORE_ERROR and returns existing instance if type is already attached
-logic.addScript<DeathTimer>();
+// Add - always returns a valid reference.
+// Asserts if the type is not registered with REGISTER_SCRIPT.
+// Logs a warning and returns the existing instance if the type is already attached.
+auto& script = logic.addScript<DeathTimer>();
 
 // Get (returns nullptr if not found)
 DeathTimer* timer = logic.getScript<DeathTimer>();
@@ -768,14 +751,12 @@ logic.removeScript<DeathTimer>();
 ```
 
 **To replace a script of a given type:**
-
 ```cpp
 logic.removeScript<DeathTimer>(); // remove existing instance first
 logic.addScript<DeathTimer>();    // then add a fresh one
 ```
 
 XML scene configuration:
-
 ```xml
 <logic>
   <script type="PlayerController"/>

@@ -8,7 +8,7 @@ void LightSpawner::onStart()
 
     mCameraEntity = getEntity().getScene()->getEntity("Camera");
     if (!mCameraEntity.isValid())
-        STRIKE_WARN("LightSpawner: could not find 'Camera' - lights will spawn at origin");
+        STRIKE_CORE_WARN("LightSpawner: could not find 'Camera' - lights will spawn at origin");
 
     auto& am = Strike::AssetManager::get();
 
@@ -91,7 +91,7 @@ void LightSpawner::spawnLight()
 void LightSpawner::removeLastLight()
 {
     if (mLights.empty()) {
-        STRIKE_WARN("LightSpawner: no spawned lights to remove");
+        STRIKE_CORE_WARN("LightSpawner: no spawned lights to remove");
         return;
     }
 

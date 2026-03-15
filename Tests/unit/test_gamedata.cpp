@@ -5,6 +5,7 @@
 class GameDataTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        Strike::Log::init();
         Strike::GameData::get().deleteAll();
     }
 

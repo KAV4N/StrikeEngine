@@ -25,29 +25,23 @@ namespace Strike {
         mScriptTypeNames.clear();
     }
 
-    Script* LogicComponent::addScript(const std::string& scriptTypeName) {
-        if (!ScriptRegistry::hasScriptFactory(scriptTypeName)) {
-            STRIKE_CORE_ERROR("LogicComponent::addScript: No factory registered for script type '{}'!", scriptTypeName);
-            return nullptr;
-        }
+    Script& LogicComponent::addScript(const std::string& scriptTypeName) {
+        STRIKE_CORE_ASSERT(ScriptRegistry::hasScriptFactory(scriptTypeName),
+            "LogicComponent::addScript: No factory registered for script type '{}'!", scriptTypeName);
 
         for (size_t i = 0; i < mScriptTypeNames.size(); ++i) {
             if (mScriptTypeNames[i] == scriptTypeName) {
-                STRIKE_CORE_ERROR("LogicComponent::addScript: Script of type '{}' is already attached to this component!", scriptTypeName);
-                return mScripts[i].get();
+                STRIKE_CORE_WARN("LogicComponent::addScript: Script of type '{}' is already attached to this component!", scriptTypeName);
+                return *mScripts[i];
             }
         }
 
         auto script = ScriptRegistry::createScript(scriptTypeName);
-        if (!script) {
-            return nullptr;
-        }
-
-        Script* scriptPtr = script.get();
+        Script& ref = *script;
         mScriptTypeNames.push_back(scriptTypeName);
         mScripts.push_back(std::move(script));
-        
-        return scriptPtr;
+
+        return ref;
     }
 
     void LogicComponent::deserialize(const pugi::xml_node& node) {
@@ -64,4 +58,5 @@ namespace Strike {
             setActive(attr.as_bool(true));
         }
     }
+
 }

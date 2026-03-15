@@ -235,6 +235,13 @@ namespace Strike {
          */
         void resize(uint32_t width, uint32_t height);
 
+        
+        /**
+         * @brief clear the frameBuffer
+         * 
+         */
+        void beginFrame(); 
+
     private:
         Renderer();
         ~Renderer();

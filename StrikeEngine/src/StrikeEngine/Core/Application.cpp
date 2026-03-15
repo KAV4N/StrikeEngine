@@ -105,18 +105,18 @@ namespace Strike {
     }
 
     float Application::getMasterVolume() const {
-        STRIKE_ASSERT(sInstance, "Application instance not initialized");
+        STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
         return World::get().mAudioSystem->getMasterVolume();
     }
 
     void Application::setMasterVolume(float volume) {
-        STRIKE_ASSERT(sInstance, "Application instance not initialized");
+        STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
         World::get().mAudioSystem->setMasterVolume(volume);
     }
 
     float Application::getAudioAmplitude(const Entity& entity) const {
-        STRIKE_ASSERT(entity.isValid(), "getAudioAmplitude called on invalid Entity");
-        STRIKE_ASSERT(sInstance, "Application instance not initialized");
+        STRIKE_CORE_ASSERT(entity.isValid(), "getAudioAmplitude called on invalid Entity");
+        STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
         return World::get().mAudioSystem->getAmplitude(entity.getHandle());
     }
 

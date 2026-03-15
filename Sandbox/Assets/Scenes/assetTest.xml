@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scene tag="AssetTestScene">
+
+  <entities>
+
+    <!-- Single entity — just needs a logic component to run the test script -->
+    <entity tag="AssetTester">
+      <components>
+        <logic>
+          <script type="AssetManagerTest"/>
+          <script type="SceneCycler"/>
+        </logic>
+      </components>
+    </entity>
+
+  </entities>
+
+</scene>

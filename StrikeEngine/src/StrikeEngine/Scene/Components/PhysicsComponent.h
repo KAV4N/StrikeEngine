@@ -41,8 +41,6 @@ namespace Strike {
      * 
      * The PhysicsComponent provides rigid body physics using the Bullet physics engine.
      * It supports properties like mass, velocity, friction, and collision detection.
-     * Per-axis rotation locking is available for dynamic (non-anchored) bodies via
-     * setLockRotationX/Y/Z or setLockRotation(glm::bvec3).
      * 
      * @note This class is non-copyable and non-movable. Physics bodies are managed by the PhysicsSystem
      */

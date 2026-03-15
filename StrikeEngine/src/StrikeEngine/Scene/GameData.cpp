@@ -10,8 +10,8 @@ namespace Strike {
 
     int GameData::getInt(const std::string& key) const {
         auto it = mData.find(key);
-        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
-        STRIKE_ASSERT(std::holds_alternative<int>(it->second), "GameData type mismatch: key '{}' is not an int", key);
+        STRIKE_CORE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_CORE_ASSERT(std::holds_alternative<int>(it->second), "GameData type mismatch: key '{}' is not an int", key);
         return std::get<int>(it->second);
     }
 
@@ -22,8 +22,8 @@ namespace Strike {
 
     float GameData::getFloat(const std::string& key) const {
         auto it = mData.find(key);
-        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
-        STRIKE_ASSERT(std::holds_alternative<float>(it->second), "GameData type mismatch: key '{}' is not a float", key);
+        STRIKE_CORE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_CORE_ASSERT(std::holds_alternative<float>(it->second), "GameData type mismatch: key '{}' is not a float", key);
         return std::get<float>(it->second);
     }
 
@@ -34,8 +34,8 @@ namespace Strike {
 
     double GameData::getDouble(const std::string& key) const {
         auto it = mData.find(key);
-        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
-        STRIKE_ASSERT(std::holds_alternative<double>(it->second), "GameData type mismatch: key '{}' is not a double", key);
+        STRIKE_CORE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_CORE_ASSERT(std::holds_alternative<double>(it->second), "GameData type mismatch: key '{}' is not a double", key);
         return std::get<double>(it->second);
     }
 
@@ -46,8 +46,8 @@ namespace Strike {
 
     bool GameData::getBool(const std::string& key) const {
         auto it = mData.find(key);
-        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
-        STRIKE_ASSERT(std::holds_alternative<bool>(it->second), "GameData type mismatch: key '{}' is not a bool", key);
+        STRIKE_CORE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_CORE_ASSERT(std::holds_alternative<bool>(it->second), "GameData type mismatch: key '{}' is not a bool", key);
         return std::get<bool>(it->second);
     }
 
@@ -58,8 +58,8 @@ namespace Strike {
 
     std::string GameData::getString(const std::string& key) const {
         auto it = mData.find(key);
-        STRIKE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
-        STRIKE_ASSERT(std::holds_alternative<std::string>(it->second), "GameData type mismatch: key '{}' is not a string", key);
+        STRIKE_CORE_ASSERT(it != mData.end(), "GameData: key '{}' does not exist", key);
+        STRIKE_CORE_ASSERT(std::holds_alternative<std::string>(it->second), "GameData type mismatch: key '{}' is not a string", key);
         return std::get<std::string>(it->second);
     }
 

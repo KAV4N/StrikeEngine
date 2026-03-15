@@ -4,6 +4,7 @@
 class ComponentRegistryTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        Strike::Log::init();
         std::filesystem::path path = "test";
         mScene = new Strike::Scene(path, "ComponentRegistryTestScene");
         ASSERT_NE(mScene, nullptr);

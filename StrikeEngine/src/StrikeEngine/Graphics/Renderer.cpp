@@ -46,6 +46,12 @@ namespace Strike {
         mScreenShader = ShaderManager::get().getShader("finalPass.glsl");
     }
 
+    void Renderer::beginFrame() {
+        mFrameBuffer->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        mFrameBuffer->unBind();
+    }
+
     void Renderer::beginCamera(const CameraComponent& camera, const glm::vec3& position) {
         mCurrentCameraData.clear();
         mCurrentCameraData.camera = camera;
@@ -84,9 +90,6 @@ namespace Strike {
 
         batch.worldMatrices.push_back(transform);
 
-        // FIX: shadow batch is no longer populated here.
-        // addShadowCaster() is called by RenderSystem before camera culling,
-        // so all scene objects reach the shadow pass regardless of camera visibility.
     }
 
     void Renderer::submitModel(const std::shared_ptr<Model>& model,
@@ -221,6 +224,8 @@ namespace Strike {
 
             mScreenShader->unbind();
         }
+
+
     }
 
     GLuint   Renderer::getFinalTexture() const { return mFrameBuffer->getColorTextureID(); }

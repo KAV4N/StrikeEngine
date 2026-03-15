@@ -30,8 +30,8 @@ namespace Strike {
     private:
         void loadAssets(std::shared_ptr<Template> templateAsset, 
                         const pugi::xml_node& assetsNode, 
-                        const std::filesystem::path& basePath
-                        );
+                        const std::filesystem::path& basePath,
+                        bool async);
     };
 
 }

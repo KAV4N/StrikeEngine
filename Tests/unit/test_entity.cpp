@@ -16,6 +16,7 @@ constexpr float ROT_EPS       = 0.001f;
 class EntityTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        Strike::Log::init();
         std::filesystem::path path = "test";
         mScene = new Strike::Scene(path, "tagTestScene");
         ASSERT_NE(mScene, nullptr);

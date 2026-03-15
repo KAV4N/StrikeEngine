@@ -33,15 +33,18 @@ namespace Strike {
     }
 
     std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         auto it = mLoadedAssets.find(id);
         return (it != mLoadedAssets.end()) ? it->second : nullptr;
     }
 
     bool AssetManager::hasAsset(const std::string& id) const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         return mLoadedAssets.find(id) != mLoadedAssets.end();
     }
 
     bool AssetManager::isAssetLoading(const std::string& id) const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
             return it->second->isLoading();
@@ -50,6 +53,7 @@ namespace Strike {
     }
 
     bool AssetManager::isLoading() const {
+        // mLoaders is write-once at init, no lock needed here
         for (const auto& [type, loader] : mLoaders) {
             if (loader->hasLoadingTasks()) {
                 return true;
@@ -69,22 +73,28 @@ namespace Strike {
             loader->clearLoadingTasks();
         }
 
-        mLoadedAssets.clear();
+        {
+            std::unique_lock lock(mAssetsMutex);  // write lock
+            mLoadedAssets.clear();
+        }
 
         mShuttingDown = false;
     }
 
     void AssetManager::shutdown() {
-        if (mShuttingDown) {
-            return;
+        if (mShuttingDown.exchange(true)) {
+            return;  // already shutting down
         }
-
-        mShuttingDown = true;
 
         for (auto& [type, loader] : mLoaders) {
             loader->clearLoadingTasks();
         }
-        mLoadedAssets.clear();
+
+        {
+            std::unique_lock lock(mAssetsMutex);  // write lock
+            mLoadedAssets.clear();
+        }
+
         mLoaders.clear();
     }
 
@@ -99,10 +109,12 @@ namespace Strike {
     }
 
     void AssetManager::removeAsset(const std::string& id) {
+        std::unique_lock lock(mAssetsMutex);  // write lock
         mLoadedAssets.erase(id);
     }
 
     std::vector<std::string> AssetManager::getLoadedAssetIds() const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         std::vector<std::string> ids;
         ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
@@ -114,6 +126,7 @@ namespace Strike {
     }
 
     std::vector<std::string> AssetManager::getLoadingAssetIds() const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         std::vector<std::string> ids;
         ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
@@ -125,37 +138,39 @@ namespace Strike {
     }
 
     size_t AssetManager::getLoadedAssetCount() const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
-            if (asset->isReady()) {
-                ++count;
-            }
+            if (asset->isReady()) ++count;
         }
         return count;
     }
 
     size_t AssetManager::getLoadingAssetCount() const {
+        std::shared_lock lock(mAssetsMutex);  // read lock
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
-            if (asset->isLoading()) {
-                ++count;
-            }
+            if (asset->isLoading()) ++count;
         }
         return count;
     }
 
     void AssetManager::removeAssetInternal(const std::string& id) {
+        std::unique_lock lock(mAssetsMutex);  // write lock
         mLoadedAssets.erase(id);
     }
 
     AssetLoader* AssetManager::getLoader(const std::string& typeName) {
+        // mLoaders is write-once at init, no lock needed
         auto it = mLoaders.find(typeName);
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
     }
 
     std::shared_ptr<Asset> AssetManager::loadInternal(const std::string& id, std::filesystem::path filePath, const std::string& assetType, std::shared_ptr<Asset> placeholder, bool async) {
         auto loader = getLoader(assetType);
-        STRIKE_ASSERT(loader, "No loader found for asset type '{}'", assetType);
+        STRIKE_CORE_ASSERT(loader, "No loader found for asset type '{}'", assetType);
+
+        placeholder->setState(AssetState::Loading);
 
         if (assetType == Template::getStaticTypeName()) {
             std::filesystem::path tmplPath = filePath;
@@ -172,14 +187,20 @@ namespace Strike {
             filePath = tmplPath;
         }
 
-        placeholder->setState(AssetState::Loading);
-        mLoadedAssets[id] = placeholder;
-
         if (async) {
+            {
+                std::unique_lock lock(mAssetsMutex);  // write lock
+                mLoadedAssets[id] = placeholder;
+            }
             loader->loadAsync(id, filePath, placeholder);
             return placeholder;
         } else {
-            return loader->load(id, filePath);
+            auto loaded = loader->load(id, filePath);
+            {
+                std::unique_lock lock(mAssetsMutex);  // write lock
+                mLoadedAssets[id] = loaded;
+            }
+            return loaded;
         }
     }
 
@@ -191,44 +212,49 @@ namespace Strike {
         if (direct) {
             const std::string assetId = node.attribute("id").as_string();
 
-            auto it = mLoadedAssets.find(assetId);
-            if (it != mLoadedAssets.end()) {
-                STRIKE_ASSERT(it->second->getTypeName() == node.name(),
-                    "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
-                    assetId, node.name(), it->second->getTypeName()
-                );
-                return;
+            {
+                std::shared_lock lock(mAssetsMutex);  // read lock for check
+                auto it = mLoadedAssets.find(assetId);
+                if (it != mLoadedAssets.end()) {
+                    STRIKE_CORE_ASSERT(it->second->getTypeName() == node.name(),
+                        "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                        assetId, node.name(), it->second->getTypeName());
+                    return;
+                }
             }
 
             auto loader = getLoader(node.name());
-            STRIKE_ASSERT(loader, "No loader found for asset type '{}'", node.name());
+            STRIKE_CORE_ASSERT(loader, "No loader found for asset type '{}'", node.name());
 
             auto asset = loader->loadFromNode(node, basePath);
             if (asset) {
+                std::unique_lock lock(mAssetsMutex);  // write lock
                 mLoadedAssets[asset->getId()] = asset;
             }
         } else {
             for (const pugi::xml_node& assetNode : node.children()) {
                 const std::string assetId = assetNode.attribute("id").as_string();
 
-                auto it = mLoadedAssets.find(assetId);
-                if (it != mLoadedAssets.end()) {
-                    STRIKE_ASSERT(it->second->getTypeName() == assetNode.name(),
-                        "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
-                        assetId, assetNode.name(), it->second->getTypeName()
-                    );
-                    continue;
+                {
+                    std::shared_lock lock(mAssetsMutex);  // read lock for check
+                    auto it = mLoadedAssets.find(assetId);
+                    if (it != mLoadedAssets.end()) {
+                        STRIKE_CORE_ASSERT(it->second->getTypeName() == assetNode.name(),
+                            "Cannot deserialize asset '{}': already exists with different type. Expected '{}', got '{}'",
+                            assetId, assetNode.name(), it->second->getTypeName());
+                        continue;
+                    }
                 }
 
                 auto loader = getLoader(assetNode.name());
-                STRIKE_ASSERT(loader, "No loader found for asset type '{}'", assetNode.name());
+                STRIKE_CORE_ASSERT(loader, "No loader found for asset type '{}'", assetNode.name());
 
                 auto asset = loader->loadFromNode(assetNode, basePath);
                 if (asset) {
+                    std::unique_lock lock(mAssetsMutex);  // write lock
                     mLoadedAssets[asset->getId()] = asset;
                 }
             }
         }
     }
-
 }

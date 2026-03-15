@@ -30,6 +30,8 @@
         <logic>
           <script type="CameraMovement"/>
           <script type="LightBatchSpawner"/>
+           <script type="SkyboxTest"/>
+           <script type="SceneCycler"/>
         </logic>
       </components>
 

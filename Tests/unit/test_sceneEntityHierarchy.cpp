@@ -4,6 +4,7 @@
 class SceneEntityHierarchyTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        Strike::Log::init();
         std::filesystem::path path = "test";
         mScene = new Strike::Scene(path, "tagTestScene");
         ASSERT_NE(mScene, nullptr);

@@ -7,6 +7,13 @@ static constexpr float kDeg  = 0.01f;
 static constexpr float kDir  = 0.001f;
 
 
+class SunTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        Strike::Log::init();
+    }
+};
+
 // ============================================================
 //  Default state
 // ============================================================

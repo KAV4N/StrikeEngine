@@ -8,6 +8,9 @@ namespace Strike {
     std::shared_ptr<spdlog::logger> Log::sClientLogger;
 
     void Log::init() {
+        if (sCoreLogger && sClientLogger)
+            return;
+
         spdlog::set_pattern("%^[%T] %n: %v%$");
         sCoreLogger = spdlog::stdout_color_mt("STRIKE");
         sCoreLogger->set_level(spdlog::level::trace);

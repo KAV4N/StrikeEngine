@@ -88,10 +88,10 @@ namespace Strike {
     }
 
     void Scene::setParent(const Entity& child, const Entity& parent) {
-        STRIKE_ASSERT(child.isValid(), "Scene::setParent called with invalid child entity");
-        STRIKE_ASSERT(parent.isValid(), "Scene::setParent called with invalid parent entity");
-        STRIKE_ASSERT(child.getHandle() != parent.getHandle(), "Entity cannot be parent of itself");
-        STRIKE_ASSERT(!isAncestor(child, parent), "Scene::setParent would create circular hierarchy");
+        STRIKE_CORE_ASSERT(child.isValid(), "Scene::setParent called with invalid child entity");
+        STRIKE_CORE_ASSERT(parent.isValid(), "Scene::setParent called with invalid parent entity");
+        STRIKE_CORE_ASSERT(child.getHandle() != parent.getHandle(), "Entity cannot be parent of itself");
+        STRIKE_CORE_ASSERT(!isAncestor(child, parent), "Scene::setParent would create circular hierarchy");
 
         auto childNode = getGraphNode(child.getHandle());
         auto parentNode = getGraphNode(parent.getHandle());
@@ -103,13 +103,13 @@ namespace Strike {
     }
 
     bool Scene::isAncestor(const Entity& ancestor, const Entity& descendant) const {
-        STRIKE_ASSERT(ancestor.isValid(), "Scene::isAncestor called with invalid ancestor entity");
-        STRIKE_ASSERT(descendant.isValid(), "Scene::isAncestor called with invalid descendant entity");
+        STRIKE_CORE_ASSERT(ancestor.isValid(), "Scene::isAncestor called with invalid ancestor entity");
+        STRIKE_CORE_ASSERT(descendant.isValid(), "Scene::isAncestor called with invalid descendant entity");
 
         auto ancestorNode = getGraphNode(ancestor.getHandle());
         auto descendantNode = getGraphNode(descendant.getHandle());
-        STRIKE_ASSERT(ancestorNode, "Scene::isAncestor: ancestor graph node not found");
-        STRIKE_ASSERT(descendantNode, "Scene::isAncestor: descendant graph node not found");
+        STRIKE_CORE_ASSERT(ancestorNode, "Scene::isAncestor: ancestor graph node not found");
+        STRIKE_CORE_ASSERT(descendantNode, "Scene::isAncestor: descendant graph node not found");
 
         auto currentNode = descendantNode->getParent();
         while (currentNode) {

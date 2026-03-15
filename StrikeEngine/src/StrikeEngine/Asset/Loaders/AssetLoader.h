@@ -1,9 +1,11 @@
 #pragma once
 
+#include "StrikeEngine/Core/Log.h"
+
 #include "StrikeEngine/Asset/Types/Asset.h"
 #include "StrikeEngine/Asset/Types/Template.h"
 #include "StrikeEngine/Asset/ModelParser.h"
-#include "StrikeEngine/Core/Log.h"
+
 #include "StrikeEngine/Asset/AssetManager.h"
 
 #include <string>

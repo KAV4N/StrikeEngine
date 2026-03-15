@@ -372,25 +372,25 @@ namespace Strike {
     // ===============================
     template<typename T, typename... Args>
     inline T& Entity::addComponent(Args&&... args) {
-        STRIKE_ASSERT(isValid(), "Entity::addComponent called on invalid entity");
+        STRIKE_CORE_ASSERT(isValid(), "Entity::addComponent called on invalid entity");
         return mScene->addComponent<T>(mHandle, std::forward<Args>(args)...);
     }
 
     template<typename T>
     inline void Entity::removeComponent() {
-        STRIKE_ASSERT(isValid(), "Entity::removeComponent called on invalid entity");   
+        STRIKE_CORE_ASSERT(isValid(), "Entity::removeComponent called on invalid entity");   
         mScene->removeComponent<T>(mHandle);
     }
 
     template<typename T>
     inline T& Entity::getComponent() {
-        STRIKE_ASSERT(isValid(), "Entity::getComponent called on invalid entity");
+        STRIKE_CORE_ASSERT(isValid(), "Entity::getComponent called on invalid entity");
         return mScene->getComponent<T>(mHandle);
     }
 
     template<typename T>
     inline const T& Entity::getComponent() const {
-        STRIKE_ASSERT(isValid(), "Entity::getComponent called on invalid entity");
+        STRIKE_CORE_ASSERT(isValid(), "Entity::getComponent called on invalid entity");
         return mScene->getComponent<T>(mHandle);
     }
 

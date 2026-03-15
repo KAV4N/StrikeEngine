@@ -16,6 +16,15 @@ REGISTER_SCRIPT(TestScriptB)
 
 
 
+class ScriptRegistryTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        Strike::Log::init();
+    }
+};
+
+
+
 
 
 // ============================================================

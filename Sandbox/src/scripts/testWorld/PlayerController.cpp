@@ -56,7 +56,7 @@ void PlayerController::onStart()
 
     mCameraEntity = getEntity().getScene()->getEntity("Camera");
     if (!mCameraEntity.isValid())
-        STRIKE_WARN("PlayerController: could not find child entity tagged 'Camera'");
+        STRIKE_CORE_WARN("PlayerController: could not find child entity tagged 'Camera'");
 
     if (mCameraEntity.isValid())
         mPitch = mCameraEntity.getEulerAngles().x;

@@ -29,7 +29,7 @@ void LightBatchSpawner::spawnLightBatch()
     auto* scene = getEntity().getScene();
     if (!scene)
     {
-        STRIKE_WARN("LightBatchSpawner: no active scene, cannot spawn lights");
+        STRIKE_CORE_WARN("LightBatchSpawner: no active scene, cannot spawn lights");
         return;
     }
 

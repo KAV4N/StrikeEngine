@@ -7,6 +7,7 @@ static constexpr float kEps = 0.001f;
 class SceneWorldTransformTest : public ::testing::Test {
 protected:
     void SetUp() override {
+        Strike::Log::init();
         std::filesystem::path path = "test";
         mScene = new Strike::Scene(path, "WorldTransformTestScene");
         ASSERT_NE(mScene, nullptr);

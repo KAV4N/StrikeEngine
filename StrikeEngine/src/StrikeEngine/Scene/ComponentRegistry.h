@@ -69,12 +69,14 @@ namespace Strike {
  * @param ComponentClass The component to register.
  */
 #define REGISTER_COMPONENT(ComponentClass) \
-    static bool ComponentClass##_registered = []() { \
-        Strike::ComponentRegistry::registerComponentFactory(ComponentClass::getStaticTypeName(), \
-            [](Strike::Entity& entity, const pugi::xml_node& node) -> Strike::Component* { \
-                auto& component = entity.addComponent<ComponentClass>(); \
-                component.deserialize(node); \
-                return &component; \
-            }); \
-        return true; \
-    }();
+    namespace { \   
+        const bool ComponentClass##_registered = []() { \
+            Strike::ComponentRegistry::registerComponentFactory(ComponentClass::getStaticTypeName(), \
+                [](Strike::Entity& entity, const pugi::xml_node& node) -> Strike::Component* { \
+                    auto& component = entity.addComponent<ComponentClass>(); \
+                    component.deserialize(node); \
+                    return &component; \
+                }); \
+            return true; \
+        }(); \
+    }

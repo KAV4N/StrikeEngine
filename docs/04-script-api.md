@@ -5,7 +5,6 @@ Scripts are how you add gameplay logic to entities in StrikeEngine. A script is 
 ---
 
 ## Quick Start
-
 ```cpp
 // MyScript.h
 #pragma once
@@ -17,7 +16,6 @@ public:
     void onUpdate(float deltaTime) override;
 };
 ```
-
 ```cpp
 // MyScript.cpp
 #include "MyScript.h"
@@ -32,7 +30,6 @@ void MyScript::onUpdate(float deltaTime) {
 
 REGISTER_SCRIPT(MyScript)
 ```
-
 ```xml
 <!-- Scene XML -->
 <logic>
@@ -55,7 +52,6 @@ Override any of these in your script class. All have empty default implementatio
 | `onEvent(Event& event)` | When an input or system event is dispatched |
 
 **Execution order per frame:**
-
 ```
 setEntity() → onCreate()          ← first time only
              → onStart()          ← first update only
@@ -75,7 +71,6 @@ setEntity() → onCreate()          ← first time only
 ## Entity & Component Access
 
 ### Getting the Entity
-
 ```cpp
 Strike::Entity entity = getEntity();
 ```
@@ -83,7 +78,6 @@ Strike::Entity entity = getEntity();
 `getEntity()` returns a copy of the entity handle. Since `Entity` is a lightweight value type (a registry pointer + an ID), copying it is cheap and safe. There is no risk of a dangling reference if the script is destroyed.
 
 ### Activity Control
-
 ```cpp
 bool active = isActive();   // checks mActive on the script itself
 setActive(false);           // deactivates the script itself
@@ -95,7 +89,6 @@ bool started = isStarted(); // true after onStart() has been called
 ### Component Methods
 
 All component methods are templated on the component type:
-
 ```cpp
 // Add
 auto& rb = addComponent<Strike::PhysicsComponent>();
@@ -117,7 +110,6 @@ auto& logic = getOrAddComponent<Strike::LogicComponent>();
 ### scriptEntity Alias
 
 The protected member `scriptEntity` is a reference to the internal `mEntity` and can be used directly in subclass implementations as a shorthand for calling non-const methods on the entity:
-
 ```cpp
 class MyScript : public Strike::Script {
     void onUpdate(float dt) override {
@@ -133,7 +125,6 @@ class MyScript : public Strike::Script {
 ## Timer Utility
 
 `tick(float seconds)` returns `true` once per interval - useful for cooldowns and periodic logic without managing your own timer variables:
-
 ```cpp
 void onUpdate(float deltaTime) override {
     if (tick(2.0f)) {
@@ -143,7 +134,6 @@ void onUpdate(float deltaTime) override {
 ```
 
 Each unique interval value is tracked independently, so you can have multiple independent timers in one script:
-
 ```cpp
 void onUpdate(float deltaTime) override {
     if (tick(0.5f)) spawnParticle();
@@ -157,17 +147,18 @@ Timers are stored internally as a `float`-keyed map, so the interval value itsel
 
 ## LogicComponent
 
-Multiple scripts of **different types** can be attached to a single entity via `LogicComponent`. Each script type may only appear **once per entity** - adding the same script type more than once is not allowed and will log a `STRIKE_CORE_ERROR` at runtime.
+Multiple scripts of **different types** can be attached to a single entity via `LogicComponent`. Each script type may only appear **once per entity** - adding the same script type more than once is not allowed and will log a warning at runtime.
 
-> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with an error log, and the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
+> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a warning log, and a reference to the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
 
 Scripts are managed by the `LogicComponent`. You can add and query scripts programmatically at runtime rather than through XML:
-
 ```cpp
 auto& logic = entity.getComponent<Strike::LogicComponent>();
 
-// Add - will log STRIKE_CORE_ERROR and return existing instance if type is already attached
-MyScript* script = logic.addScript<MyScript>();
+// Add - always returns a valid reference.
+// Asserts if the type is not registered.
+// Logs a warning and returns the existing instance if the type is already attached.
+auto& script = logic.addScript<MyScript>();
 
 // Get (returns nullptr if not found)
 MyScript* existing = logic.getScript<MyScript>();
@@ -180,7 +171,6 @@ logic.removeScript<MyScript>();
 ```
 
 **To replace a script of a given type:**
-
 ```cpp
 logic.removeScript<MyScript>(); // remove existing instance first
 logic.addScript<MyScript>();    // then add a fresh one
@@ -190,8 +180,7 @@ logic.addScript<MyScript>();    // then add a fresh one
 
 ## REGISTER_SCRIPT Macro
 
-Every script **must** be registered at the bottom of its `.cpp` file. Without this, the engine cannot instantiate the script from XML.
-
+Every script **must** be registered at the bottom of its `.cpp` file. Without this, the engine cannot instantiate the script from XML, and any call to `addScript<T>()` for that type will trigger an assertion.
 ```cpp
 REGISTER_SCRIPT(MyScript)
 ```
@@ -205,7 +194,6 @@ Under the hood, the macro expands to a static initializer that calls `ScriptRegi
 ## ScriptRegistry (Advanced)
 
 The `ScriptRegistry` is the factory system that backs `REGISTER_SCRIPT`. You generally don't need to use it directly, but it can be useful for tooling or debugging:
-
 ```cpp
 // Check if a script type is registered
 bool exists = Strike::ScriptRegistry::hasScriptFactory("MyScript");
@@ -223,7 +211,6 @@ auto names = Strike::ScriptRegistry::getRegisteredScripts();
 ## XML Integration
 
 Attach scripts to entities in your scene file using the `<logic>` component:
-
 ```xml
 <entity tag="Player">
   <components>
@@ -235,7 +222,7 @@ Attach scripts to entities in your scene file using the `<logic>` component:
 </entity>
 ```
 
-Scripts are instantiated in the order they appear. The `type` value must exactly match the registered class name. Each `type` may only appear **once per `<logic>` block** - duplicate entries will be rejected with a `STRIKE_CORE_ERROR` and the second entry will be ignored.
+Scripts are instantiated in the order they appear. The `type` value must exactly match the registered class name. Each `type` may only appear **once per `<logic>` block** - duplicate entries will be rejected with a warning and the second entry will be ignored. Unknown type names will be rejected with an error log and skipped - they do not assert, since a bad XML value is a content error rather than a programmer error.
 
 ---
 ## Camera Movement Example
@@ -259,10 +246,8 @@ private:
 // CameraMovement.cpp
 #include "CameraMovement.h"
 
-
 void CameraMovement::onUpdate(float deltaTime)
 {
-
     // Movement
     glm::vec3 move(0.0f);
     float speed = mMoveSpeed * deltaTime;
@@ -298,11 +283,12 @@ REGISTER_SCRIPT(CameraMovement)
 
 ### One Script Type Per Entity
 
-Each script type can only be attached **once per entity**. Attempting to add a duplicate type - via `addScript<T>()` at runtime or via a duplicate `<script type="..."/>` entry in XML - will be rejected. A `STRIKE_CORE_ERROR` will be logged and the call will return the existing instance rather than creating a new one. Use `removeScript<T>()` before re-adding if a fresh instance is needed.
+Each script type can only be attached **once per entity**. Attempting to add a duplicate type - via `addScript<T>()` at runtime or via a duplicate `<script type="..."/>` entry in XML - will be rejected with a warning log and a reference to the existing instance will be returned. Use `removeScript<T>()` before re-adding if a fresh instance is needed.
 
-### Thread Safety
+### addScript Always Returns a Valid Reference
 
-Scripts execute on the main thread as part of the `ScriptSystem` update cycle and are not thread-safe. Do not call script methods from other threads.
+`addScript<T>()` always returns a valid reference - it either creates a new script or returns the already-attached one. It asserts at startup if the type was never registered with `REGISTER_SCRIPT`.
+
 
 ### Memory Management
 

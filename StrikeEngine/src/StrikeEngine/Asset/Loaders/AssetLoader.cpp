@@ -25,7 +25,6 @@ namespace Strike {
         auto asset = loadAssetInternal(id, path);
         if (!asset->hasFailed()){
             if (!asset->mNeedsPostLoad){
-                asset->postLoad();
                 asset->setState(AssetState::Ready);
             }else{
                 LoadingTask postLoadTask;
@@ -66,14 +65,13 @@ namespace Strike {
             else if (task.future.valid() && task.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 auto loadedAsset = task.future.get();
                 
-                if (loadedAsset) {
+                if (loadedAsset && !loadedAsset->hasFailed()) {
                     swapData(userAsset, loadedAsset);
                     userAsset->postLoad();
                     userAsset->setState(AssetState::Ready);
                 }
                 else {
                     userAsset->setState(AssetState::Failed);
-                    //AssetManager::get().removeAsset(userAsset->getId()); 
                 }
                 
                 it = mLoadingTasks.erase(it);

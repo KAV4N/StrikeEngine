@@ -248,7 +248,7 @@ enum class AssetState {
 ```
 
 ### Two-Phase Loading
-Some assets (`Model`, `Texture`, `CubeMap`) require a two-phase loading process with a `postLoad()` method that performs GPU resource initialization.
+Some assets (`Model`, `Texture`, `CubeMap`) require a two-phase loading process with a `postLoad()` method that performs GPU resource initialization. These assets will be set ready the next frame if succesfully loaded (for sync and async loading).
 
 ### Reference Validity
 Several getter methods return const references with the caveat that these references become invalid if the asset is destroyed. Do not store these references long-term.

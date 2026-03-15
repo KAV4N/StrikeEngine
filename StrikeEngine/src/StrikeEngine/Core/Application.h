@@ -38,7 +38,7 @@ namespace Strike {
          * @return Reference to the Window object.
          */
         inline Window& getWindow() { 
-            STRIKE_ASSERT(sInstance, "Application instance not initialized");
+            STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
             return *mWindow; 
         }
         
@@ -47,7 +47,7 @@ namespace Strike {
          * @return Reference to the Application instance.
          */
         inline static Application& get() { 
-            STRIKE_ASSERT(sInstance, "Application instance not initialized");
+            STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
             return *sInstance; 
         }
         
@@ -56,7 +56,7 @@ namespace Strike {
          * @param fps Target FPS (0 for unlimited).
          */
         inline void setTargetFPS(uint32_t fps) {
-            STRIKE_ASSERT(sInstance, "Application instance not initialized");
+            STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
             mTargetFPS = fps; 
         }
         
@@ -65,7 +65,7 @@ namespace Strike {
          * @return Target FPS.
          */
         inline int getTargetFPS() const { 
-            STRIKE_ASSERT(sInstance, "Application instance not initialized");
+            STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
             return mTargetFPS; 
         }
         
@@ -74,7 +74,7 @@ namespace Strike {
          * @return Current FPS.
          */
         inline float getCurrentFPS() const { 
-            STRIKE_ASSERT(sInstance, "Application instance not initialized");
+            STRIKE_CORE_ASSERT(sInstance, "Application instance not initialized");
             return mCurrentFPS; 
         }
 

@@ -36,15 +36,7 @@ namespace Strike {
         // Load all assets referenced in the template
         pugi::xml_node assetsNode = templateNode.child("assets");
         if (assetsNode) {
-            loadAssets(templateAsset, assetsNode, path.parent_path());
-        }
-
-        // WAIT FOR ASYNC ASSET LOADING TO BE READY
-        while (!templateAsset->areAssetsReady()) {
-            if (!async){
-                AssetManager::get().update(); // UPDATE REQUIRED TO INIT LIKE MESH OR MODEL TO BE FULLY READY
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            loadAssets(templateAsset, assetsNode, path.parent_path(), async);
         }
 
         return templateAsset;
@@ -52,7 +44,8 @@ namespace Strike {
 
     void TemplateLoader::loadAssets(std::shared_ptr<Template> templateAsset,
                                     const pugi::xml_node& assetsNode,
-                                    const std::filesystem::path& basePath) 
+                                    const std::filesystem::path& basePath, 
+                                    bool async) 
     {
         auto& assetManager = AssetManager::get();
         for (pugi::xml_node assetNode : assetsNode.children()) {

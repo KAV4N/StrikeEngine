@@ -32,13 +32,13 @@ void ChunkManager::onStart()
 
     mPlayerEntity = getEntity().getScene()->getEntity("Player");
     if (!mPlayerEntity.isValid())
-        STRIKE_WARN("ChunkManager: could not find entity tagged 'Player' - using origin");
+        STRIKE_CORE_WARN("ChunkManager: could not find entity tagged 'Player' - using origin");
 
     auto& gd = Strike::GameData::get();
     if (gd.hasKey("blockStep"))
         mBlockStep = gd.getFloat("blockStep");
     else
-        STRIKE_WARN("ChunkManager: 'blockStep' not in GameData, defaulting to 1.0");
+        STRIKE_CORE_WARN("ChunkManager: 'blockStep' not in GameData, defaulting to 1.0");
 }
 
 bool ChunkManager::shouldBeActive(const BlockRecord& rec,
