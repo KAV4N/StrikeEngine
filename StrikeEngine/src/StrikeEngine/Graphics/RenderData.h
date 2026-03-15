@@ -127,7 +127,7 @@ namespace Strike {
      * @brief Sun/directional light rendering data
      */
     struct SunRenderData {
-        Sun* sun; /**< Pointer to the sun light source */
+        Sun* sun = nullptr; /**< Pointer to the sun light source */
         glm::mat4 lightSpaceMatrix; /**< Light space transformation matrix for shadow mapping */
         
         /**
@@ -140,6 +140,7 @@ namespace Strike {
          */
         void clear() {
             shadowBatches.clear();
+            sun = nullptr;
         }
     };
     
@@ -160,16 +161,16 @@ namespace Strike {
          * @brief Instance batches for this camera view
          */
         std::unordered_map<InstanceKey, InstanceBatch, InstanceKeyHash> instanceBatches;
-        
-        std::vector<PointLight> pointLights; /**< Point lights visible to this camera */
+
+        // pointLights removed — lights live on the Renderer, shared across all cameras
         
         /**
          * @brief Clear all camera render data
          */
         void clear() {
             instanceBatches.clear();
-            pointLights.clear();
             sunData.clear();
+            mSkyboxTexture.reset();
         }
     };
 }

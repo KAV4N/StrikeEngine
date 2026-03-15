@@ -23,8 +23,7 @@ namespace Strike {
     void RenderSystem::onUpdate(float dt) {
         Renderer::get().beginFrame();
         Scene* scene = World::get().getScene();
-        if (!scene) 
-            return;
+        if (!scene) return;
         processScene(scene);
     }
 
@@ -32,16 +31,14 @@ namespace Strike {
         Scene* scene = World::get().getScene();
         if (!scene) return;
 
-
-        auto& renderer    = Renderer::get();
+        auto& renderer        = Renderer::get();
         uint32_t screenWidth  = renderer.getWidth();
         uint32_t screenHeight = renderer.getHeight();
-
 
         renderer.display();
 
         auto& registry = scene->getRegistry();
-        auto view = registry.view<TextComponent>();
+        auto  view     = registry.view<TextComponent>();
 
         for (auto entity : view) {
             auto& textComp = view.get<TextComponent>(entity);
@@ -51,16 +48,11 @@ namespace Strike {
             glm::vec2 normalizedPos = textComp.getPosition();
             float screenX = normalizedPos.x * static_cast<float>(screenWidth);
             float screenY = normalizedPos.y * static_cast<float>(screenHeight);
-
             glm::vec3 scale = ent.getScale();
 
             FontRenderer::get().renderText(
-                textComp.getText(),
-                screenX,
-                screenY,
-                scale.x,
-                textComp.getColor(),
-                textComp.getPivot()
+                textComp.getText(), screenX, screenY,
+                scale.x, textComp.getColor(), textComp.getPivot()
             );
         }
     }
@@ -71,13 +63,12 @@ namespace Strike {
 
         auto& renderer = Renderer::get();
         auto& registry = scene->getRegistry();
-        auto view = registry.view<CameraComponent>();
+        auto  view     = registry.view<CameraComponent>();
 
         for (auto entity : view) {
             Entity ent(entity, scene);
             auto& camera = registry.get<CameraComponent>(entity);
-            glm::mat4 worldMatrix = ent.getWorldMatrix();
-            camera.update(worldMatrix, renderer.getWidth(), renderer.getHeight());
+            camera.update(ent.getWorldMatrix(), renderer.getWidth(), renderer.getHeight());
         }
     }
 
@@ -86,46 +77,47 @@ namespace Strike {
         auto& renderer = Renderer::get();
         std::multimap<int, CameraRenderData> cameras;
 
-        auto skybox = scene->getSkybox();
-        auto view = registry.view<CameraComponent>();
+        auto skybox  = scene->getSkybox();
+        auto camView = registry.view<CameraComponent>();
 
-        for (auto entity : view) {
+        for (auto entity : camView) {
             Entity ent(entity, scene);
             if (!ent.isActive()) continue;
 
             auto& camera = registry.get<CameraComponent>(entity);
 
-            CameraRenderData cameraRenderData;
-            cameraRenderData.camera         = camera;
-            cameraRenderData.cameraPosition = ent.getWorldPosition();
-            cameraRenderData.cameraForward  = ent.getForward();
-
-            cameras.emplace(camera.getRenderOrder(), cameraRenderData);
+            CameraRenderData data;
+            data.camera          = camera;
+            data.cameraPosition  = ent.getWorldPosition();
+            data.cameraForward   = ent.getForward();
+            cameras.emplace(camera.getRenderOrder(), data);
         }
+
+        // Gather and submit lights once — shared across all cameras this frame
+        processLights(scene);
 
         for (const auto& [renderOrder, camData] : cameras) {
             renderer.beginCamera(camData.camera, camData.cameraPosition);
-
             renderer.submitSkybox(skybox);
-            processLights(scene);
             processRenderables(scene, camData.camera);
-
             renderer.endCamera();
         }
     }
 
     void RenderSystem::processLights(Scene* scene) {
-        auto& registry = scene->getRegistry();
+        auto& registry      = scene->getRegistry();
+        auto  pointLightView = registry.view<LightComponent>();
 
-        auto pointLightView = registry.view<LightComponent>();
         for (auto entity : pointLightView) {
             Entity ent(entity, scene);
             auto& light = registry.get<LightComponent>(entity);
-
             if (!ent.isActive() || !light.isActive()) continue;
 
-            submitPointLight(ent.getWorldPosition(), light.getColor(),
-                             light.getIntensity(), light.getRadius());
+            // submitPointLight now writes directly to Renderer::mPointLights
+            Renderer::get().submitPointLight(
+                ent.getWorldPosition(), light.getColor(),
+                light.getIntensity(),   light.getRadius()
+            );
         }
     }
 
@@ -133,11 +125,10 @@ namespace Strike {
         auto& registry = scene->getRegistry();
         auto& renderer = Renderer::get();
 
-        auto& sun          = scene->getSun();
-        glm::mat4 lsm      = sun.calculateLightSpaceMatrix(camera);
+        auto& sun     = scene->getSun();
+        glm::mat4 lsm = sun.calculateLightSpaceMatrix(camera);
         renderer.submitSun(&sun, lsm);
 
-        // Build sun frustum from the light space matrix for shadow caster culling.
         CameraComponent::Frustum sunFrustum;
         {
             sunFrustum.planes[0] = glm::vec4(lsm[0][3] + lsm[0][0], lsm[1][3] + lsm[1][0], lsm[2][3] + lsm[2][0], lsm[3][3] + lsm[3][0]);
@@ -159,16 +150,13 @@ namespace Strike {
         for (auto entity : view) {
             Entity ent(entity, scene);
             auto& rendererComp = registry.get<RendererComponent>(entity);
-
             if (!ent.isActive() || !rendererComp.isActive()) continue;
 
-            auto model       = rendererComp.getModel();
-            auto texture     = rendererComp.getTexture();
-            glm::uvec3 color = rendererComp.getColor();
-            glm::mat4 worldMatrix = ent.getWorldMatrix();
+            auto       model       = rendererComp.getModel();
+            auto       texture     = rendererComp.getTexture();
+            glm::uvec3 color       = rendererComp.getColor();
+            glm::mat4  worldMatrix = ent.getWorldMatrix();
 
-            // Resolve bounds once for both frustum tests.
-            // Passes are responsible for checking asset readiness before drawing.
             const Bounds* bounds = nullptr;
             if (rendererComp.hasMesh()) {
                 auto mesh = rendererComp.getMesh();
@@ -179,31 +167,29 @@ namespace Strike {
                 continue;
             }
 
-            glm::vec3 center      = glm::vec3(worldMatrix * glm::vec4(bounds->getMidPoint(), 1.0f));
+            glm::vec3 center       = glm::vec3(worldMatrix * glm::vec4(bounds->getMidPoint(), 1.0f));
             glm::vec3 worldExtents = bounds->getSize() * 0.5f * ent.getWorldScale();
 
-            // Shadow pass: cull against sun frustum.
-            if (isInFrustum(sunFrustum, center, worldExtents)) {
-                if (rendererComp.hasMesh()) {
-                    auto mesh = rendererComp.getMesh();
-                    if (mesh) renderer.addShadowCaster(mesh, worldMatrix);
-                } else if (model) {
-                    uint32_t meshCount = model->getMeshCount();
-                    for (uint32_t i = 0; i < meshCount; ++i) {
-                        auto mesh = model->getMesh(i);
-                        if (mesh) renderer.addShadowCaster(mesh, worldMatrix);
-                    }
-                }
-            }
+            const bool inSunFrustum    = isInFrustum(sunFrustum, center, worldExtents);
+            const bool inCameraFrustum = isInFrustum(frustum,    center, worldExtents);
 
-            // Geometry pass: cull against camera frustum.
-            if (!isInFrustum(frustum, center, worldExtents)) continue;
+            if (!inSunFrustum && !inCameraFrustum) continue;
 
             if (rendererComp.hasMesh()) {
                 auto mesh = rendererComp.getMesh();
-                if (mesh) submitMesh(mesh, texture, color, worldMatrix);
+                if (mesh) {
+                    if (inSunFrustum)    renderer.addShadowCaster(mesh, worldMatrix);
+                    if (inCameraFrustum) submitMesh(mesh, texture, color, worldMatrix);
+                }
             } else if (model) {
-                submitModel(model, texture, color, worldMatrix);
+                uint32_t meshCount = model->getMeshCount();
+                for (uint32_t i = 0; i < meshCount; ++i) {
+                    auto mesh = model->getMesh(i);
+                    if (mesh) {
+                        if (inSunFrustum)    renderer.addShadowCaster(mesh, worldMatrix);
+                        if (inCameraFrustum) submitMesh(mesh, texture, color, worldMatrix);
+                    }
+                }
             }
         }
     }
@@ -212,9 +198,9 @@ namespace Strike {
                                    const glm::vec3& center,
                                    const glm::vec3& halfExtents) const {
         for (int i = 0; i < 6; i++) {
-            const glm::vec4& plane = frustum.planes[i];
-            glm::vec3 normal = glm::vec3(plane);
-            float distance   = plane.w;
+            const glm::vec4& plane   = frustum.planes[i];
+            glm::vec3        normal  = glm::vec3(plane);
+            float            distance = plane.w;
 
             glm::vec3 positiveVertex = center;
             positiveVertex.x += (normal.x >= 0.0f) ? halfExtents.x : -halfExtents.x;
@@ -223,7 +209,6 @@ namespace Strike {
 
             if (glm::dot(normal, positiveVertex) + distance < 0.0f) return false;
         }
-
         return true;
     }
 

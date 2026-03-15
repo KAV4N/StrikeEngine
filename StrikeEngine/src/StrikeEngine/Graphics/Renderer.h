@@ -98,7 +98,9 @@ namespace Strike {
                         const glm::mat4& transform);
 
         /**
-         * @brief Submit a point light for rendering
+         * @brief Submit a point light for the current frame
+         * 
+         * Does NOT require an active camera — lights are shared across all cameras.
          * 
          * @param position World position of the light
          * @param color RGB color of the light (0-255 range)
@@ -128,11 +130,11 @@ namespace Strike {
         /**
          * @brief Submit a shadow casting mesh for rendering
          * 
-         * @param mesh for rendering
-         * @param transform of the  mesh
+         * @param mesh Mesh for rendering
+         * @param transform Transform of the mesh
          */
         void addShadowCaster(const std::shared_ptr<Mesh>& mesh,
-                                   const glm::mat4& transform);
+                             const glm::mat4& transform);
 
         /**
          * @brief Display the final rendered frame
@@ -140,7 +142,7 @@ namespace Strike {
          * Renders the framebuffer contents to the screen with post-processing.
          */
         void display();
-        
+
         /**
          * @brief Set the fog start distance
          * 
@@ -198,6 +200,15 @@ namespace Strike {
         glm::uvec3 getFogColor() const { return mFogColor; }
 
         /**
+         * @brief Get all point lights submitted this frame
+         * 
+         * Used by LightCullingPass — shared across all cameras.
+         * 
+         * @return const std::vector<PointLight>& Reference to the point light list
+         */
+        const std::vector<PointLight>& getPointLights() const { return mPointLights; }
+
+        /**
          * @brief Get a render pass by type
          * 
          * @tparam T Type of render pass to retrieve
@@ -235,12 +246,10 @@ namespace Strike {
          */
         void resize(uint32_t width, uint32_t height);
 
-        
         /**
-         * @brief clear the frameBuffer
-         * 
+         * @brief Clear the frameBuffer
          */
-        void beginFrame(); 
+        void beginFrame();
 
     private:
         Renderer();
@@ -287,13 +296,15 @@ namespace Strike {
         GLuint mScreenVAO = 0;
         GLuint mScreenVBO = 0;
         GLuint mScreenEBO = 0;
-        uint32_t mWidth = 1920;
+        uint32_t mWidth  = 1920;
         uint32_t mHeight = 1080;
-        
+
+        std::vector<PointLight> mPointLights; /**< Point lights submitted this frame, shared across all cameras */
+
         // Fog parameters
-        float mFogStart = 10.0f;                  /**< Distance where fog begins */
-        float mFogEnd = 100.0f;                   /**< Distance where fog reaches maximum density */
-        float mFogDensity = 0.0f;                 /**< Fog density factor (0-1) */
+        float mFogStart   = 10.0f;                        /**< Distance where fog begins */
+        float mFogEnd     = 100.0f;                       /**< Distance where fog reaches maximum density */
+        float mFogDensity = 0.0f;                         /**< Fog density factor (0-1) */
         glm::uvec3 mFogColor = glm::uvec3(128, 153, 179); /**< Fog color (0-255 range) */
     };
 
