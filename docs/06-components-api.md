@@ -82,9 +82,6 @@ Set the camera's render order for multi-camera setups.
 
 ### Camera Control
 
-#### `void lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f))`
-Orient the camera to look at a target position.
-
 #### `void update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height)`
 Update camera matrices and frustum. Should be called each frame to update camera state.
 

@@ -74,10 +74,6 @@ namespace Strike {
     float CameraComponent::getAspectRatio() const {
         return mAspectRatio;
     }
-
-    void CameraComponent::lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
-        mViewMatrix = glm::lookAt(eye, center, up);
-    }
     
     void CameraComponent::update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height) {
         updateViewMatrix(worldMatrix);

@@ -246,15 +246,6 @@ namespace Strike {
          */
         void setRenderOrder(int order) { mRenderOrder = order; }
 
-        /**
-         * @brief Orient the camera to look at a target position
-         * 
-         * @param eye Camera position
-         * @param center Target position to look at
-         * @param up Up direction vector (default: world up)
-         */
-        void lookAt(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
-
     private:
         /**
          * @brief Update camera matrices and frustum

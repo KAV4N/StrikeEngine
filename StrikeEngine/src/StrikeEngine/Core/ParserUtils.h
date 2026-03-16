@@ -28,10 +28,17 @@ namespace Strike::ParserUtils {
 
         inline std::vector<std::string> splitComma(const std::string& s) {
             std::vector<std::string> tokens;
-            std::istringstream ss(s);
-            std::string token;
-            while (std::getline(ss, token, ','))
-                tokens.push_back(token);
+            size_t pos = 0;
+
+            while (true) {
+                size_t next = s.find(',', pos);
+                if (next == std::string::npos) {
+                    tokens.push_back(s.substr(pos)); 
+                    break;
+                }
+                tokens.push_back(s.substr(pos, next - pos));
+                pos = next + 1;
+            }
             return tokens;
         }
 
