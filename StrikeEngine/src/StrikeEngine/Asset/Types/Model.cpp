@@ -83,7 +83,7 @@ namespace Strike {
 
         glGenBuffers(1, &mInstanceVBO);
         glBindBuffer(GL_ARRAY_BUFFER, mInstanceVBO);
-        glBufferData(GL_ARRAY_BUFFER, 10000 * mat4Size, nullptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, Renderer::MAX_INSTANCES * mat4Size, nullptr, GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(0 * vec4Size));

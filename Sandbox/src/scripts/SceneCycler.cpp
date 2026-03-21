@@ -1,6 +1,6 @@
 #include "SceneCycler.h"
 
-void SceneCycler::onCreate() {
+void SceneCycler::onStart() {
     mScenes = { "Assets/Scenes/lightTest.xml", "Assets/Scenes/assetTest.xml", "Assets/Scenes/game.xml" };
 
     auto& gd = Strike::GameData::get();

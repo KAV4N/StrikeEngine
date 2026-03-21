@@ -30,7 +30,6 @@ namespace Strike {
                 // Set entity if not already set
                 if (!script->getEntity().isValid()) {
                     script->setEntity(entityWrapper);
-                    script->onCreate();
                 }
 
                 // Call onStart once

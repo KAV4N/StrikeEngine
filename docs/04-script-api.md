@@ -21,7 +21,7 @@ public:
 #include "MyScript.h"
 
 void MyScript::onStart() {
-    // runs once, after all entities are initialized
+    // runs once, before the first update
 }
 
 void MyScript::onUpdate(float deltaTime) {
@@ -45,23 +45,21 @@ Override any of these in your script class. All have empty default implementatio
 
 | Method | When it runs |
 |---|---|
-| `onCreate()` | Once, immediately when the entity is assigned to the script |
-| `onStart()` | Once, on the first frame update after `onCreate()` |
+| `onStart()` | Once, on the first frame update after the entity is assigned |
 | `onUpdate(float deltaTime)` | Every frame while the script is active |
-| `onDestroy()` | Once, when the script is destroyed (destructor) |
+| `onDestroy()` | Once, when the script is destroyed |
 | `onEvent(Event& event)` | When an input or system event is dispatched |
 
 **Execution order per frame:**
 ```
-setEntity() → onCreate()          ← first time only
-             → onStart()          ← first update only
-             → onUpdate(dt)       ← every frame
+setEntity()  ← first time only
+→ onStart()  ← first update only
+→ onUpdate(dt) ← every frame
 ```
 
 **Recommended usage:**
 
-- `onCreate()` - cache component references that don't depend on other entities
-- `onStart()` - setup that requires other entities or systems to exist first
+- `onStart()` - initialization, caching component references, setup that requires the entity to be valid
 - `onUpdate()` - per-frame logic, input polling, movement
 - `onEvent()` - discrete input events (single key press, mouse click)
 - `onDestroy()` - cleanup (releasing resources, unsubscribing, etc.)
@@ -75,50 +73,29 @@ setEntity() → onCreate()          ← first time only
 Strike::Entity entity = getEntity();
 ```
 
-`getEntity()` returns a copy of the entity handle. Since `Entity` is a lightweight value type (a registry pointer + an ID), copying it is cheap and safe. There is no risk of a dangling reference if the script is destroyed.
-
-### Activity Control
-```cpp
-bool active = isActive();   // checks mActive on the script itself
-setActive(false);           // deactivates the script itself
-bool started = isStarted(); // true after onStart() has been called
-```
-
-`isActive()` and `setActive()` operate on the script's own `mActive` flag. `isStarted()` can be useful if you need to guard logic that should only run after `onStart()` has completed, for example in helper methods called from both `onUpdate()` and `onEvent()`.
-
-### Component Methods
-
-All component methods are templated on the component type:
-```cpp
-// Add
-auto& rb = addComponent<Strike::PhysicsComponent>();
-
-// Get (throws if not present) - mutable and const overloads available
-auto& renderer = getComponent<Strike::RendererComponent>();
-const auto& renderer = getComponent<Strike::RendererComponent>(); // from const context
-
-// Check
-if (hasComponent<Strike::LightComponent>()) { ... }
-
-// Remove
-removeComponent<Strike::LightComponent>();
-
-// Get or add
-auto& logic = getOrAddComponent<Strike::LogicComponent>();
-```
+`getEntity()` returns a copy of the entity handle. Since `Entity` is a lightweight value type, copying it is cheap and safe.
 
 ### scriptEntity Alias
 
-The protected member `scriptEntity` is a reference to the internal `mEntity` and can be used directly in subclass implementations as a shorthand for calling non-const methods on the entity:
+The protected member `scriptEntity` is a direct reference to the internal entity and is the preferred way to access it from within subclasses:
 ```cpp
 class MyScript : public Strike::Script {
     void onUpdate(float dt) override {
         scriptEntity.move(glm::vec3(0, 0, 1) * dt);
+        scriptEntity.getComponent<Strike::RendererComponent>();
+        scriptEntity.addComponent<Strike::LightComponent>();
     }
 };
 ```
 
-`getEntity()` returns a copy of the entity. Use `scriptEntity` when you need to call non-const methods on the entity directly from within a subclass without the copy overhead.
+All component operations (`getComponent`, `addComponent`, `hasComponent`, `removeComponent`, `getOrAddComponent`) are available directly on `scriptEntity` or on the copy returned by `getEntity()`.
+
+### Activity Control
+```cpp
+bool active = isActive();    // checks the script's own active flag
+setActive(false);            // deactivates this script
+bool started = isStarted();  // true after onStart() has been called
+```
 
 ---
 
@@ -141,76 +118,56 @@ void onUpdate(float deltaTime) override {
 }
 ```
 
-Timers are stored internally as a `float`-keyed map, so the interval value itself is the key. Calling `tick()` with the same literal value always refers to the same timer.
+Timers are stored as a `float`-keyed map, so the interval value itself is the key. Calling `tick()` with the same literal always refers to the same timer.
 
 ---
 
 ## LogicComponent
 
-Multiple scripts of **different types** can be attached to a single entity via `LogicComponent`. Each script type may only appear **once per entity** - adding the same script type more than once is not allowed and will log a warning at runtime.
+Multiple scripts of **different types** can be attached to a single entity via `LogicComponent`. Each script type may only appear **once per entity**.
 
-> **Note:** Only one instance of each script type can exist on a given entity at a time. Attempting to add a duplicate type - either programmatically via `addScript<T>()` or through XML - will be rejected with a warning log, and a reference to the existing instance will be returned instead. To replace a script, call `removeScript<T>()` first.
+> **Note:** Attempting to add a duplicate type - via `addScript<T>()` or through XML - will be rejected with a warning, and a reference to the existing instance will be returned. Use `removeScript<T>()` first to replace a script.
 
-Scripts are managed by the `LogicComponent`. You can add and query scripts programmatically at runtime rather than through XML:
 ```cpp
 auto& logic = entity.getComponent<Strike::LogicComponent>();
 
-// Add - always returns a valid reference.
-// Asserts if the type is not registered.
-// Logs a warning and returns the existing instance if the type is already attached.
-auto& script = logic.addScript<MyScript>();
-
-// Get (returns nullptr if not found)
-MyScript* existing = logic.getScript<MyScript>();
-
-// Check
-if (logic.hasScript<MyScript>()) { ... }
-
-// Remove the instance of a type
-logic.removeScript<MyScript>();
+auto& script = logic.addScript<MyScript>();       // add
+MyScript* existing = logic.getScript<MyScript>(); // get (nullptr if not found)
+if (logic.hasScript<MyScript>()) { ... }          // check
+logic.removeScript<MyScript>();                   // remove
 ```
 
-**To replace a script of a given type:**
+**To replace a script:**
 ```cpp
-logic.removeScript<MyScript>(); // remove existing instance first
-logic.addScript<MyScript>();    // then add a fresh one
+logic.removeScript<MyScript>();
+logic.addScript<MyScript>();
 ```
 
 ---
 
 ## REGISTER_SCRIPT Macro
 
-Every script **must** be registered at the bottom of its `.cpp` file. Without this, the engine cannot instantiate the script from XML, and any call to `addScript<T>()` for that type will trigger an assertion.
+Every script **must** be registered at the bottom of its `.cpp` file:
 ```cpp
 REGISTER_SCRIPT(MyScript)
 ```
 
-This registers a factory function under the class name as a string. The name used in XML `type="..."` must match the class name exactly.
-
-Under the hood, the macro expands to a static initializer that calls `ScriptRegistry::registerScriptFactory()` at program startup.
+Without this, the engine cannot instantiate the script from XML and any call to `addScript<T>()` will trigger an assertion. The `type="..."` value in XML must match the class name exactly.
 
 ---
 
 ## ScriptRegistry (Advanced)
 
-The `ScriptRegistry` is the factory system that backs `REGISTER_SCRIPT`. You generally don't need to use it directly, but it can be useful for tooling or debugging:
 ```cpp
-// Check if a script type is registered
 bool exists = Strike::ScriptRegistry::hasScriptFactory("MyScript");
-
-// Instantiate by name
-auto script = Strike::ScriptRegistry::createScript("MyScript");
-// returns std::unique_ptr<Script>, or nullptr if not registered
-
-// List all registered scripts
-auto names = Strike::ScriptRegistry::getRegisteredScripts();
+auto script = Strike::ScriptRegistry::createScript("MyScript"); // unique_ptr<Script> or nullptr
+auto names  = Strike::ScriptRegistry::getRegisteredScripts();
 ```
 
 ---
 
 ## XML Integration
 
-Attach scripts to entities in your scene file using the `<logic>` component:
 ```xml
 <entity tag="Player">
   <components>
@@ -222,19 +179,18 @@ Attach scripts to entities in your scene file using the `<logic>` component:
 </entity>
 ```
 
-Scripts are instantiated in the order they appear. The `type` value must exactly match the registered class name. Each `type` may only appear **once per `<logic>` block** - duplicate entries will be rejected with a warning and the second entry will be ignored. Unknown type names will be rejected with an error log and skipped - they do not assert, since a bad XML value is a content error rather than a programmer error.
+Scripts are instantiated in order. Each `type` may only appear once per `<logic>` block - duplicates are rejected with a warning. Unknown types are skipped with an error log.
 
 ---
+
 ## Camera Movement Example
 ```cpp
 // CameraMovement.h
 #pragma once
 #include "StrikeEngine.h"
 
-class CameraMovement : public Strike::Script
-{
+class CameraMovement : public Strike::Script {
 public:
-    void onStart()  override;
     void onUpdate(float deltaTime) override;
 
 private:
@@ -246,9 +202,7 @@ private:
 // CameraMovement.cpp
 #include "CameraMovement.h"
 
-void CameraMovement::onUpdate(float deltaTime)
-{
-    // Movement
+void CameraMovement::onUpdate(float deltaTime) {
     glm::vec3 move(0.0f);
     float speed = mMoveSpeed * deltaTime;
 
@@ -262,7 +216,6 @@ void CameraMovement::onUpdate(float deltaTime)
     if (glm::length(move) > 0.0f)
         scriptEntity.move(move);
 
-    // Look
     float look = mLookSpeed * deltaTime;
     glm::vec3 euler(0);
 
@@ -281,21 +234,13 @@ REGISTER_SCRIPT(CameraMovement)
 
 ## Notes
 
-### One Script Type Per Entity
-
-Each script type can only be attached **once per entity**. Attempting to add a duplicate type - via `addScript<T>()` at runtime or via a duplicate `<script type="..."/>` entry in XML - will be rejected with a warning log and a reference to the existing instance will be returned. Use `removeScript<T>()` before re-adding if a fresh instance is needed.
+### Memory Management
+Scripts are owned by `std::unique_ptr` inside `LogicComponent`. The engine handles their entire lifecycle - you do not need to manually allocate or delete them. Scripts are non-copyable and non-movable by design.
 
 ### addScript Always Returns a Valid Reference
+`addScript<T>()` always returns a valid reference - either a new script or the already-attached one. It asserts at startup if the type was never registered with `REGISTER_SCRIPT`.
 
-`addScript<T>()` always returns a valid reference - it either creates a new script or returns the already-attached one. It asserts at startup if the type was never registered with `REGISTER_SCRIPT`.
-
-
-### Memory Management
-
-Scripts are owned by `std::unique_ptr` inside `LogicComponent`. The engine handles their entire lifecycle - you do not need to manually allocate or delete them.
-
-Scripts are non-copyable and non-movable by design. Copy and move constructors and assignment operators are all deleted. This ensures scripts are never accidentally sliced or aliased when stored inside the `LogicComponent`.
-
+---
 
 ## Next Step
 

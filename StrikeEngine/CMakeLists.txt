@@ -134,7 +134,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     GLFW_INCLUDE_NONE
     $<$<CONFIG:Debug>:STRIKE_DEBUG>
     $<$<CONFIG:Release>:STRIKE_RELEASE>
-    $<$<CONFIG:Dist>:STRIKE_DIST>
 )
 
 # ============================================================================

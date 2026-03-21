@@ -1,26 +1,21 @@
 #include "strikepch.h"
 #include "Script.h"
 #include "StrikeEngine/Events/Event.h"
-#include "StrikeEngine/Events/KeyEvent.h"
-#include "StrikeEngine/Events/MouseEvent.h"
 #include "Entity.h"
 
 namespace Strike {
 
-    void Script::onCreate() {}
     void Script::onStart() {}
     void Script::onUpdate(float deltaTime) {}
     void Script::onDestroy() {}
     void Script::onEvent(Event& event) {}
-    
+
     void Script::internalUpdate(float deltaTime) {
         for (auto& [interval, timer] : mTimers) {
             timer += deltaTime;
         }
-
         onUpdate(deltaTime);
     }
-    
 
     Entity Script::getEntity() const {
         return mEntity;
@@ -39,7 +34,7 @@ namespace Strike {
     }
 
     void Script::setEntity(const Entity& entity) {
-        if (mStarted == false && entity.isValid()) {
+        if (!mStarted && entity.isValid()) {
             mEntity = entity;
         }
     }
@@ -49,16 +44,11 @@ namespace Strike {
     }
 
     bool Script::tick(float seconds) {
-        // Get or create timer for this interval
         auto& timer = mTimers[seconds];
-        
-        // Check if the interval has passed
         if (timer >= seconds) {
-            timer = 0.0f;  // Reset the timer
+            timer = 0.0f;
             return true;
         }
-        
         return false;
     }
-
 }

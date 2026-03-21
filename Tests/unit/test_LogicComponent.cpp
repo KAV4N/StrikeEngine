@@ -3,12 +3,9 @@
 
 class LogicScriptA : public Strike::Script {
 public:
-    int onCreateCount  = 0;
     int onStartCount   = 0;
     int onUpdateCount  = 0;
     int onDestroyCount = 0;
-
-    void onCreate()              override { ++onCreateCount;  }
     void onStart()               override { ++onStartCount;   }
     void onUpdate(float)         override { ++onUpdateCount;  }
     void onDestroy()             override { ++onDestroyCount; }

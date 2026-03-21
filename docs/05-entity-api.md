@@ -72,7 +72,7 @@ void MyScript::onUpdate(float deltaTime) {
 Tags are string identifiers used to look up entities by name in the scene.
 
 ```cpp
-void MyScript::onCreate() {
+void MyScript::onStart() {
     // Rename this entity
     scriptEntity.setTag("PlayerController");
 
@@ -88,7 +88,7 @@ void MyScript::onCreate() {
 All component methods are templated on the component type. When writing scripts, prefer the inherited shorthand methods (`addComponent<T>()`, `getComponent<T>()`, etc.) over calling them through `getEntity()` - they resolve to the same thing with less typing.
 
 ```cpp
-void MyScript::onCreate() {
+void MyScript::onStart() {
     // Add a component
     auto& light = addComponent<Strike::LightComponent>();
 

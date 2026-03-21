@@ -41,7 +41,7 @@ A fast-paced endless space racing game built entirely on StrikeEngine. Fly throu
 StrikeEngine's architecture and API design were inspired by:
 
 - **[PlayCanvas](https://playcanvas.com)** - Entity hierarchy management
-- **[Unity](https://unity.com)** - Component-based entity model, script lifecycle (`onCreate`, `onStart`, `onUpdate`, `onDestroy`)
+- **[Unity](https://unity.com)** - Component-based entity model, script lifecycle ( `onStart`, `onUpdate`, `onDestroy`)
 - **[Hazel](https://github.com/TheCherno/Hazel)** - Application lifecycle, event system design, and logging architecture, based on the [Hazel game engine tutorial series](https://www.youtube.com/playlist?list=PLlrATfBNZ98dC-V-N3m0Go4deliWHPFwT) by [TheCherno](https://github.com/TheCherno)
 
 ---

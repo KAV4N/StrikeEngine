@@ -45,3 +45,4 @@ void CameraMovement::onUpdate(float deltaTime)
 }
 
 REGISTER_SCRIPT(CameraMovement)
+

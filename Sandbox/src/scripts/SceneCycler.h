@@ -4,7 +4,7 @@
 
 class SceneCycler : public Strike::Script {
 public:
-    void onCreate() override;
+    void onStart() override;
     void onEvent(Strike::Event& e) override;
 
 private:

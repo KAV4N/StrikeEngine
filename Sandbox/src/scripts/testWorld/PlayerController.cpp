@@ -80,7 +80,7 @@ void PlayerController::onUpdate(float deltaTime)
 
     mIsGrounded = isGrounded();
 
-    auto& physics = getComponent<Strike::PhysicsComponent>();
+    auto& physics = scriptEntity.getComponent<Strike::PhysicsComponent>();
 
     auto [dX, dY] = Strike::Input::getMouseDelta();
 
@@ -139,7 +139,7 @@ void PlayerController::onEvent(Strike::Event& e)
 
     if (key.getKeyCode() == STRIKE_KEY_SPACE && mIsGrounded)
     {
-        auto& physics = getComponent<Strike::PhysicsComponent>();
+        auto& physics = scriptEntity.getComponent<Strike::PhysicsComponent>();
         glm::vec3 vel = physics.getVelocity();
         vel.y = mJumpImpulse;
         physics.setVelocity(vel);

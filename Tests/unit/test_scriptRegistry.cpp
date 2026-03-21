@@ -4,7 +4,6 @@
 class TestScriptA : public Strike::Script {
 public:
     int value = 0;
-    void onCreate() override { value = 1; }
 };
 REGISTER_SCRIPT(TestScriptA)
 
