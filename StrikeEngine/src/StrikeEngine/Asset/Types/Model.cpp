@@ -16,18 +16,16 @@ namespace Strike {
         if (mInstanceVBO) glDeleteBuffers(1, &mInstanceVBO);
     }
 
-    void Mesh::setOwner(const Model* owner) {
-        mOwner = owner;
-    }
+    void Mesh::setOwner(const Model* owner) { mOwner = owner; }
 
     bool Mesh::isReady() const {
         return mOwner && mOwner->isReady();
     }
 
-    const std::vector<Vertex>&   Mesh::getVertices() const { return mVertices; }
-    const std::vector<uint32_t>& Mesh::getIndices()  const { return mIndices; }
-    const Bounds&                Mesh::getBounds()   const { return mBounds; }
-    GLuint                       Mesh::getVAO()      const { return mVAO; }
+    const std::vector<Vertex>&   Mesh::getVertices()    const { return mVertices; }
+    const std::vector<uint32_t>& Mesh::getIndices()     const { return mIndices; }
+    const Bounds&                Mesh::getBounds()      const { return mBounds; }
+    GLuint                       Mesh::getVAO()         const { return mVAO; }
     GLuint                       Mesh::getInstanceVBO() const { return mInstanceVBO; }
 
     void Mesh::setVertices(const std::vector<Vertex>& vertices) { mVertices = vertices; }
@@ -65,10 +63,6 @@ namespace Strike {
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                               (void*)offsetof(Vertex, texCoord));
-        // Tangent
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (void*)offsetof(Vertex, tangent));
 
         glBindVertexArray(0);
 
@@ -85,19 +79,20 @@ namespace Strike {
         glBindBuffer(GL_ARRAY_BUFFER, mInstanceVBO);
         glBufferData(GL_ARRAY_BUFFER, Renderer::MAX_INSTANCES * mat4Size, nullptr, GL_STATIC_DRAW);
 
+        // Instance matrix  occupies locations 3-6 
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(0 * vec4Size));
         glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(0 * vec4Size));
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(1 * vec4Size));
         glEnableVertexAttribArray(5);
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(1 * vec4Size));
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(2 * vec4Size));
         glEnableVertexAttribArray(6);
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(2 * vec4Size));
-        glEnableVertexAttribArray(7);
-        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(3 * vec4Size));
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(3 * vec4Size));
 
+        glVertexAttribDivisor(3, 1);
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
         glVertexAttribDivisor(6, 1);
-        glVertexAttribDivisor(7, 1);
 
         glBindVertexArray(0);
     }

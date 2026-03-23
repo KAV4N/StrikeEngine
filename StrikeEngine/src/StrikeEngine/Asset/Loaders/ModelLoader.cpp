@@ -36,10 +36,10 @@ namespace Strike {
         const aiScene* scene = importer.ReadFile(filePath.string(),
             aiProcess_Triangulate           |
             aiProcess_GenSmoothNormals      |
-            aiProcess_CalcTangentSpace      |
             aiProcess_JoinIdenticalVertices |
             aiProcess_ImproveCacheLocality  |
             aiProcess_ValidateDataStructure);
+            // aiProcess_CalcTangentSpace removed
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             STRIKE_CORE_ERROR("Assimp failed to load model {}: {}",
@@ -102,11 +102,7 @@ namespace Strike {
                             aiMesh->mTextureCoords[0][i].y)
                 : glm::vec2(0.0f);
 
-            vertex.tangent = aiMesh->HasTangentsAndBitangents()
-                ? glm::vec3(aiMesh->mTangents[i].x,
-                            aiMesh->mTangents[i].y,
-                            aiMesh->mTangents[i].z)
-                : glm::vec3(1.0f, 0.0f, 0.0f);
+            // tangent removed
 
             vertices.push_back(vertex);
         }

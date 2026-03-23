@@ -2,8 +2,8 @@
 #version 430 core
 layout (location = 0) in vec3 aPosition;
 
-// Instance attribute (model matrix) - consumes locations 4, 5, 6, 7
-layout (location = 4) in mat4 aInstanceModel;
+// Instance attribute (model matrix) - consumes locations 3,4, 5, 6
+layout (location = 3) in mat4 aInstanceModel;
 
 uniform mat4 uLightSpaceMatrix;
 
