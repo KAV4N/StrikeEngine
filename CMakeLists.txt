@@ -22,7 +22,6 @@ else()
         $<$<CONFIG:Release>:-O3>
         $<$<CONFIG:Release>:-march=native>
         $<$<CONFIG:Release>:-funroll-loops>
-        $<$<CONFIG:Release>:-ffast-math>
     )
 endif()
 
