@@ -76,9 +76,6 @@ add_compile_options(
     $<$<CONFIG:Debug>:-O0>
     $<$<CONFIG:Debug>:-g>
     $<$<CONFIG:Release>:-O3>
-    $<$<CONFIG:Release>:-march=native>
-    $<$<CONFIG:Release>:-funroll-loops>
-    $<$<CONFIG:Release>:-ffast-math>
 )
 
 
@@ -94,7 +91,7 @@ strike_setup(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
 ```
 
-> `strike_setup` automatically creates junction links (Windows Debug), symlinks (Linux/macOS Debug), or full directory copies (Release/Dist) of both the engine's internal resources and your assets folder next to your executable.
+> `strike_setup` automatically creates junction links (Windows Debug), symlinks (Linux/macOS Debug), or full directory copies (Release) of both the engine's internal resources and your assets folder next to your executable.
 
 ---
 

@@ -18,10 +18,10 @@ set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_OBJ_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_FBX_IMPORTER ON CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_GLTF_IMPORTER ON CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_DRACO OFF CACHE BOOL "" FORCE)  
+set(ASSIMP_BUILD_DRACO OFF CACHE BOOL "" FORCE)
 
 set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES        OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 
 # Pugixml configuration
 set(PUGIXML_INSTALL OFF CACHE BOOL "" FORCE)
@@ -40,7 +40,7 @@ set(USE_GRAPHICAL_BENCHMARK  OFF CACHE BOOL "" FORCE)
 set(INSTALL_LIBS             OFF CACHE BOOL "" FORCE)
 set(INSTALL_CMAKE_FILES      OFF CACHE BOOL "" FORCE)
 
-
+# FreeType configuration
 set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
@@ -152,7 +152,6 @@ function(strike_setup TARGET_NAME ASSETS_DIR)
             COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/res\" \"${STRIKE_ENGINE_RES_DIR}\"">
             COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
             COMMAND $<$<CONFIG:Debug>:cmd> /c $<$<CONFIG:Debug>:"mklink /J \"$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}\" \"${ASSETS_DIR}\"">
-            COMMENT "Creating junction links for res and ${ASSETS_NAME} (Debug)"
         )
     else()
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
@@ -160,15 +159,13 @@ function(strike_setup TARGET_NAME ASSETS_DIR)
             COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink "${STRIKE_ENGINE_RES_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
             COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E remove "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
             COMMAND $<$<CONFIG:Debug>:${CMAKE_COMMAND}> -E create_symlink "${ASSETS_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
-            COMMENT "Creating symlinks for res and ${ASSETS_NAME} (Debug)"
         )
     endif()
 
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory "${STRIKE_ENGINE_RES_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
-        COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:Dist>>:${CMAKE_COMMAND}> -E copy_directory "${ASSETS_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
-        COMMENT "Copying res and ${ASSETS_NAME} (Release/Dist)"
+        COMMAND $<$<CONFIG:Release>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+        COMMAND $<$<CONFIG:Release>:${CMAKE_COMMAND}> -E copy_directory "${STRIKE_ENGINE_RES_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/res"
+        COMMAND $<$<CONFIG:Release>:${CMAKE_COMMAND}> -E remove_directory "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
+        COMMAND $<$<CONFIG:Release>:${CMAKE_COMMAND}> -E copy_directory "${ASSETS_DIR}" "$<TARGET_FILE_DIR:${TARGET_NAME}>/${ASSETS_NAME}"
     )
 endfunction()
