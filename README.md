@@ -52,7 +52,7 @@ StrikeEngine's architecture and API design were inspired by:
 |---|---|---|
 | 01 | [Getting Started](docs/01-getting-started.md) | Build setup, CMake configuration, project structure |
 | 02 | [Scene Format](docs/02-scene-format.md) | XML scene reference: assets, entities, components |
-| 03 | [Template Format](docs/03-template-format.md) | Prefab/template XML format and instantiation |
+| 03 | [Template Format](docs/03-template-format.md) | Template XML format and instantiation |
 | 04 | [Script API](docs/04-script-api.md) | Script lifecycle, `REGISTER_SCRIPT`, LogicComponent |
 | 05 | [Entity API](docs/05-entity-api.md) | Entity creation, hierarchy, transform methods |
 | 06 | [Components API](docs/06-components-api.md) | All built-in components and their properties |
@@ -60,17 +60,15 @@ StrikeEngine's architecture and API design were inspired by:
 | 08 | [Asset API](docs/08-asset-api.md) | Model, Texture, CubeMap, Audio, Template asset classes |
 | 09 | [World API](docs/09-world-api.md) | Scene loading, raycasting, gravity, fog |
 | 10 | [Scene API](docs/10-scene-api.md) | Entity management, ECS access, skybox, sun |
-| 11 | [Sun API](docs/11-sun-api.md) | Directional light, rotation, shadows, day/night cycle |
-| 12 | [Application API](docs/12-application-api.md) | Application lifecycle, window, FPS control, master volume |
-| 13 | [Event API](docs/13-event-api.md) | Event types, dispatcher, script event handling, key codes |
-| 14 | [Input API](docs/14-input-api.md) | Polling-based keyboard, mouse, and cursor control |
+| 11 | [Sun API](docs/11-sun-api.md) | Directional light, rotation, shadows |
+| 12 | [Application API](docs/12-application-api.md) | Application lifecycle, window, master volume |
+| 13 | [Event API](docs/13-event-api.md) | Event types, script event handling, key codes |
+| 14 | [Input API](docs/14-input-api.md) | Polling, mouse, and cursor control |
 | 15 | [GameData API](docs/15-gameData-api.md) | Persistent key-value game data storage |
 | 16 | [Utilities](docs/16-utilities.md) | Logging macros, ComponentRegistry, ScriptRegistry |
 
 ---
 
 ## Dependencies
-
-All dependencies are vendored and built automatically - no separate installs required.
-
+Built in dependencies:
 GLFW · Glad · GLM · Assimp · stb_image · FreeType · Bullet3 · miniaudio · EnTT · spdlog · pugixml
