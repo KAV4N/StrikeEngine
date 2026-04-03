@@ -145,8 +145,6 @@ The `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER` paths below point to a MinGW/MSY
 }
 ```
 
-> If you are using MSVC instead of MinGW, remove the `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER` entries entirely and let CMake find MSVC automatically via a Developer Command Prompt.
-
 ---
 
 ### 5. Build
@@ -171,8 +169,6 @@ int main(int argc, char** argv) {
 ```
 
 This creates a window and starts the game loop. Rendering, physics, audio, and script updates all run automatically.
-
-> **Note:** All paths shown in the docs are for illustrative purposes and do not represent a required project structure.
 
 ---
 

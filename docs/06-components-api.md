@@ -80,10 +80,6 @@ Get the camera's render order (lower values render first).
 #### `void setRenderOrder(int order)`
 Set the camera's render order for multi-camera setups.
 
-### Camera Control
-
-#### `void update(const glm::mat4& worldMatrix, uint32_t width, uint32_t height)`
-Update camera matrices and frustum. Should be called each frame to update camera state.
 
 ### Frustum Culling
 

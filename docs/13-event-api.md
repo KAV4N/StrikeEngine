@@ -48,23 +48,6 @@ enum class EventType {
 
 ---
 
-## EventDispatcher
-
-The `EventDispatcher` class provides type-safe event routing. Construct it with an event reference, then call `dispatch<T>()` with a handler function. The handler is only called if the event type matches `T`.
-
-```cpp
-EventDispatcher dispatcher(event);
-dispatcher.dispatch<KeyPressedEvent>([](KeyPressedEvent& e) -> bool {
-    // handle event
-    return true; // return true to mark as handled
-});
-```
-
-#### `template<typename T> bool dispatch(EventFn<T> func)`
-Dispatches the event to `func` if the event type matches `T`. Sets `event.handled` to the return value of `func`. Returns true if dispatched, false if the type did not match.
-
----
-
 ## Application Events
 
 ### `WindowResizeEvent`
@@ -262,18 +245,6 @@ STRIKE_MOUSE_BUTTON_8       // 7  (STRIKE_MOUSE_BUTTON_LAST)
 ```
 
 ---
-
-## Notes
-
-**Event Propagation** - Events flow from GLFW → Window → Application → World → ScriptSystem → Scripts. Each layer can stop propagation by setting `event.handled = true`.
-
-**Type Safety** - The `EventDispatcher::dispatch<T>()` template method ensures type safety by checking the event type before casting.
-
-**Window Resize Throttling** - Window resize events are throttled with a 150ms delay to prevent excessive rendering updates during resize drags.
-
-**Script Dispatch Order** - Scripts receive events in entity order. The first script to set `event.handled = true` stops all further dispatch for that event.
-
-**`EVENT_CLASS_TYPE` Macro** - Used internally by all event classes to implement `getEventType()`, `getStaticType()`, and `getName()` without boilerplate. You do not need to use this macro in script code.
 
 ## Next Step
 

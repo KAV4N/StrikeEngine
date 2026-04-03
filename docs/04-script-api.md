@@ -50,16 +50,10 @@ Override any of these in your script class. All have empty default implementatio
 | `onDestroy()` | Once, when the script is destroyed |
 | `onEvent(Event& event)` | When an input or system event is dispatched |
 
-**Execution order per frame:**
-```
-setEntity()  ← first time only
-→ onStart()  ← first update only
-→ onUpdate(dt) ← every frame
-```
 
 **Recommended usage:**
 
-- `onStart()` - initialization, caching component references, setup that requires the entity to be valid
+- `onStart()` - initialization, setup that requires the entity to be valid
 - `onUpdate()` - per-frame logic, input polling, movement
 - `onEvent()` - discrete input events (single key press, mouse click)
 - `onDestroy()` - cleanup (releasing resources, unsubscribing, etc.)
@@ -125,8 +119,6 @@ Timers are stored as a `float`-keyed map, so the interval value itself is the ke
 ## LogicComponent
 
 Multiple scripts of **different types** can be attached to a single entity via `LogicComponent`. Each script type may only appear **once per entity**.
-
-> **Note:** Attempting to add a duplicate type - via `addScript<T>()` or through XML - will be rejected with a warning, and a reference to the existing instance will be returned. Use `removeScript<T>()` first to replace a script.
 
 ```cpp
 auto& logic = entity.getComponent<Strike::LogicComponent>();

@@ -12,11 +12,6 @@ Returns a reference to the singleton Application instance.
 
 ### Application Lifecycle Control
 
-#### `Application()`
-Constructor that initializes the application, creates the window, and initializes renderers.
-
-#### `virtual ~Application()`
-Destructor for cleanup.
 
 #### `void run()`
 Runs the main application loop with delta time calculation and FPS limiting.

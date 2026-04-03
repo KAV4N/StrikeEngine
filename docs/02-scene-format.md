@@ -41,7 +41,6 @@ Declares all resources used in the scene. Paths support the `@/` prefix for root
 |---|---|---|
 | `id` | Yes | Unique identifier referenced by components |
 | `src` | Yes | File path to the asset |
-| `async` | No | Load asynchronously (boolean) |
 
 ```xml
 <assets>

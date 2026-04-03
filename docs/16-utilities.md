@@ -133,7 +133,4 @@ void MyScript::onUpdate(float deltaTime) { ... }
 REGISTER_SCRIPT(MyScript)
 ```
 
-### Notes
-
-**Ownership** - Scripts are managed with `std::unique_ptr` and owned by `LogicComponent`. The engine handles their full lifecycle.
 

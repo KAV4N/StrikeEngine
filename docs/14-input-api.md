@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `Input` class is a static utility class that provides polling-based access to keyboard and mouse input state. All methods are static - no instance is needed. Use it alongside the [Event System](EVENT_SYSTEM_API.md) for complete input handling: polling for continuous actions (held keys, cursor position), events for discrete actions (single press, release).
+The `Input` class is a static utility class that provides polling-based access to keyboard and mouse input state. All methods are static. Polling for continuous actions (held keys, cursor position), events for discrete actions (single press, release).
 ```cpp
 // Example: polling in onUpdate()
 if (Strike::Input::isKeyPressed(STRIKE_KEY_W)) {
@@ -91,9 +91,6 @@ enum class CursorMode {
 };
 ```
 
-`Locked` is the correct mode for FPS-style camera controls. It also enables raw mouse motion on supported platforms, which removes OS pointer acceleration and gives 1:1 physical movement. Switching back to `Normal` or `Hidden` disables raw input automatically.
-
-Calling `setCursorMode(Locked)` resets the internal delta state, so the first frame after locking will always produce a `(0, 0)` delta rather than a jump.
 ```cpp
 // Lock cursor for FPS camera
 Strike::Input::setCursorMode(Strike::CursorMode::Locked);
