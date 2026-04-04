@@ -101,8 +101,12 @@ namespace Strike {
          *
          * @param entity          The entity that owns the AudioSourceComponent.
          * @param framesToSample  Number of PCM frames used for RMS calculation.
+        * @return RMS amplitude [0.0, 1.0]
          */
         float getAudioAmplitude(const Entity& entity) const;
+
+
+        static bool isInitialized() { return sInstance != nullptr; }
 
     private:
         friend class Renderer;

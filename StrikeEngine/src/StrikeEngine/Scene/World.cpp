@@ -19,7 +19,7 @@
 namespace Strike {
 
     World& World::get() {
-        STRIKE_CORE_ASSERT(Application::getInstance(), "World accessed before Application was created!");
+        STRIKE_CORE_ASSERT(Application::isInitialized(), "World accessed before Application was created!");
         static World instance;
         return instance;
     }

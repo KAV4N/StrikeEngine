@@ -13,9 +13,8 @@
 namespace Strike {
 
     AssetManager& AssetManager::get() {
-        STRIKE_CORE_ASSERT(Application::getInstance(), "AssetManager accessed before Application was created!");
+        STRIKE_CORE_ASSERT(Application::isInitialized(), "AssetManager accessed before Application was created!");
         static AssetManager instance;
-        STRIKE_CORE_ASSERT(!instance.mShuttingDown, "AssetManager accessed after shutdown!");
         return instance;
     }
 
