@@ -154,6 +154,7 @@ Inside the MyGame folder you will also see  a `/res` folder filled with resource
 
 ---
 
+
 ## Minimal Application
 
 StrikeEngine exposes its entire public API through a single header.
@@ -169,6 +170,23 @@ int main(int argc, char** argv) {
 ```
 
 This creates a window and starts the game loop. Rendering, physics, audio, and script updates all run automatically.
+
+> **Warning - OpenGL version error**
+> If the system's OpenGL version is below the required minimum, constructing `Strike::Application` will throw a `std::runtime_error`. Wrap construction in a try/catch to handle this gracefully on unsupported hardware.
+
+```cpp
+#include <StrikeEngine.h>
+
+int main(int argc, char** argv) {
+    try {
+        Strike::Application app;
+        app.run();
+    } catch (const std::runtime_error& e) {
+        return 1;
+    }
+    return 0;
+}
+```
 
 ---
 

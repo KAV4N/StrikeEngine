@@ -30,8 +30,10 @@ namespace Strike {
          * @brief Initialize the graphics context
          * 
          * Sets up GLAD and verifies OpenGL version requirements.
+         * 
+         * @returns true if success
          */
-        void init();
+        bool init();
         
         /**
          * @brief Swap the front and back buffers

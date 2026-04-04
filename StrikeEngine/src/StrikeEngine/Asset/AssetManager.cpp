@@ -1,6 +1,7 @@
 #include "strikepch.h"
 #include "AssetManager.h"
 
+#include "StrikeEngine/Core/Application.h"
 #include "StrikeEngine/Asset/Loaders/AssetLoader.h"
 #include "StrikeEngine/Asset/Loaders/ModelLoader.h"
 #include "StrikeEngine/Asset/Loaders/TemplateLoader.h"
@@ -12,7 +13,9 @@
 namespace Strike {
 
     AssetManager& AssetManager::get() {
+        STRIKE_CORE_ASSERT(Application::getInstance(), "AssetManager accessed before Application was created!");
         static AssetManager instance;
+        STRIKE_CORE_ASSERT(!instance.mShuttingDown, "AssetManager accessed after shutdown!");
         return instance;
     }
 
@@ -33,18 +36,18 @@ namespace Strike {
     }
 
     std::shared_ptr<Asset> AssetManager::getAssetBase(const std::string& id) const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex);  
         auto it = mLoadedAssets.find(id);
         return (it != mLoadedAssets.end()) ? it->second : nullptr;
     }
 
     bool AssetManager::hasAsset(const std::string& id) const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex);  
         return mLoadedAssets.find(id) != mLoadedAssets.end();
     }
 
     bool AssetManager::isAssetLoading(const std::string& id) const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex);  
         auto it = mLoadedAssets.find(id);
         if (it != mLoadedAssets.end()) {
             return it->second->isLoading();
@@ -53,7 +56,6 @@ namespace Strike {
     }
 
     bool AssetManager::isLoading() const {
-        // mLoaders is write-once at init, no lock needed here
         for (const auto& [type, loader] : mLoaders) {
             if (loader->hasLoadingTasks()) {
                 return true;
@@ -74,7 +76,7 @@ namespace Strike {
         }
 
         {
-            std::unique_lock lock(mAssetsMutex);  // write lock
+            std::unique_lock lock(mAssetsMutex);  
             mLoadedAssets.clear();
         }
 
@@ -83,7 +85,7 @@ namespace Strike {
 
     void AssetManager::shutdown() {
         if (mShuttingDown.exchange(true)) {
-            return;  // already shutting down
+            return;  
         }
 
         for (auto& [type, loader] : mLoaders) {
@@ -91,7 +93,7 @@ namespace Strike {
         }
 
         {
-            std::unique_lock lock(mAssetsMutex);  // write lock
+            std::unique_lock lock(mAssetsMutex);  
             mLoadedAssets.clear();
         }
 
@@ -109,12 +111,12 @@ namespace Strike {
     }
 
     void AssetManager::removeAsset(const std::string& id) {
-        std::unique_lock lock(mAssetsMutex);  // write lock
+        std::unique_lock lock(mAssetsMutex);  
         mLoadedAssets.erase(id);
     }
 
     std::vector<std::string> AssetManager::getLoadedAssetIds() const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex); 
         std::vector<std::string> ids;
         ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
@@ -126,7 +128,7 @@ namespace Strike {
     }
 
     std::vector<std::string> AssetManager::getLoadingAssetIds() const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex); 
         std::vector<std::string> ids;
         ids.reserve(mLoadedAssets.size());
         for (const auto& [id, asset] : mLoadedAssets) {
@@ -138,7 +140,7 @@ namespace Strike {
     }
 
     size_t AssetManager::getLoadedAssetCount() const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex);  
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isReady()) ++count;
@@ -147,7 +149,7 @@ namespace Strike {
     }
 
     size_t AssetManager::getLoadingAssetCount() const {
-        std::shared_lock lock(mAssetsMutex);  // read lock
+        std::shared_lock lock(mAssetsMutex);  
         size_t count = 0;
         for (const auto& [id, asset] : mLoadedAssets) {
             if (asset->isLoading()) ++count;
@@ -156,12 +158,11 @@ namespace Strike {
     }
 
     void AssetManager::removeAssetInternal(const std::string& id) {
-        std::unique_lock lock(mAssetsMutex);  // write lock
+        std::unique_lock lock(mAssetsMutex);  
         mLoadedAssets.erase(id);
     }
 
     AssetLoader* AssetManager::getLoader(const std::string& typeName) {
-        // mLoaders is write-once at init, no lock needed
         auto it = mLoaders.find(typeName);
         return (it != mLoaders.end()) ? it->second.get() : nullptr;
     }
@@ -189,7 +190,7 @@ namespace Strike {
 
         if (async) {
             {
-                std::unique_lock lock(mAssetsMutex);  // write lock
+                std::unique_lock lock(mAssetsMutex); 
                 mLoadedAssets[id] = placeholder;
             }
             loader->loadAsync(id, filePath, placeholder);
@@ -197,7 +198,7 @@ namespace Strike {
         } else {
             auto loaded = loader->load(id, filePath);
             {
-                std::unique_lock lock(mAssetsMutex);  // write lock
+                std::unique_lock lock(mAssetsMutex);  
                 mLoadedAssets[id] = loaded;
             }
             return loaded;
@@ -213,7 +214,7 @@ namespace Strike {
             const std::string assetId = node.attribute("id").as_string();
 
             {
-                std::shared_lock lock(mAssetsMutex);  // read lock for check
+                std::shared_lock lock(mAssetsMutex);  
                 auto it = mLoadedAssets.find(assetId);
                 if (it != mLoadedAssets.end()) {
                     STRIKE_CORE_ASSERT(it->second->getTypeName() == node.name(),
@@ -228,7 +229,7 @@ namespace Strike {
 
             auto asset = loader->loadFromNode(node, basePath);
             if (asset) {
-                std::unique_lock lock(mAssetsMutex);  // write lock
+                std::unique_lock lock(mAssetsMutex);  
                 mLoadedAssets[asset->getId()] = asset;
             }
         } else {
@@ -236,7 +237,7 @@ namespace Strike {
                 const std::string assetId = assetNode.attribute("id").as_string();
 
                 {
-                    std::shared_lock lock(mAssetsMutex);  // read lock for check
+                    std::shared_lock lock(mAssetsMutex); 
                     auto it = mLoadedAssets.find(assetId);
                     if (it != mLoadedAssets.end()) {
                         STRIKE_CORE_ASSERT(it->second->getTypeName() == assetNode.name(),
@@ -251,7 +252,7 @@ namespace Strike {
 
                 auto asset = loader->loadFromNode(assetNode, basePath);
                 if (asset) {
-                    std::unique_lock lock(mAssetsMutex);  // write lock
+                    std::unique_lock lock(mAssetsMutex); 
                     mLoadedAssets[asset->getId()] = asset;
                 }
             }

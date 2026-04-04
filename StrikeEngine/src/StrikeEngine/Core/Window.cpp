@@ -72,7 +72,13 @@ namespace Strike {
         mImpl->window = glfwCreateWindow((int)props.width, (int)props.height, mImpl->data.title.c_str(), nullptr, nullptr);
 
         mImpl->graphicsContext = GraphicsContext::create(mImpl->window);
-        mImpl->graphicsContext->init();
+        if (!mImpl->graphicsContext->init()) {
+            glfwDestroyWindow(mImpl->window);
+            mImpl->window = nullptr;
+            glfwTerminate();
+            sGLFWInitialized = false;
+            throw std::runtime_error("Window creation failed (unsupported OpenGL version). Aborting.");
+        }
 
         glfwSetWindowUserPointer(mImpl->window, &mImpl->data);
         setVSync(false);

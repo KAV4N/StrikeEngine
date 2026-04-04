@@ -1,6 +1,7 @@
 #include "strikepch.h"
 #include "World.h"
 
+#include "StrikeEngine/Core/Application.h"
 #include "Scene.h"
 #include "SceneLoader.h"
 #include "StrikeEngine/Events/Event.h"
@@ -18,6 +19,7 @@
 namespace Strike {
 
     World& World::get() {
+        STRIKE_CORE_ASSERT(Application::getInstance(), "World accessed before Application was created!");
         static World instance;
         return instance;
     }
