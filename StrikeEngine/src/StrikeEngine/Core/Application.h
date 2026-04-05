@@ -1,5 +1,8 @@
 #pragma once
 
+// Inspired by the Hazel Engine (The Cherno)
+// https://github.com/thecherno/hazel
+
 #include "Core.h"
 #include "StrikeEngine/Events/Event.h"
 #include "StrikeEngine/Events/ApplicationEvent.h"

@@ -1,17 +1,19 @@
 #pragma once
 
+// Inspired by the Hazel Engine (The Cherno)
+// https://github.com/thecherno/hazel
+
 #include "StrikeEngine/Core/Core.h"
 #include "StrikeEngine/Events/Event.h"
 #include <functional>
 #include <string>
 #include <memory>
 
-// Forward declarations
+
 struct GLFWwindow;
 
 namespace Strike {
 
-    // Forward declaration
     class GraphicsContext;
 
     /**

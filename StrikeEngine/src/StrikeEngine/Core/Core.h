@@ -1,4 +1,8 @@
 #pragma once
+
+// Inspired by the Hazel Engine (The Cherno)
+// https://github.com/thecherno/hazel
+
 #define GLM_ENABLE_EXPERIMENTAL
 
 #ifdef STRIKE_DEBUG

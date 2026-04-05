@@ -1,5 +1,8 @@
 #pragma once
 
+// Inspired by the Hazel Engine (The Cherno)
+// https://github.com/thecherno/hazel
+
 #include "StrikeEngine/Core/Core.h"
 #include <utility>
 
